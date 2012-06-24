@@ -13,7 +13,7 @@ setup(
     license = "BSD",
     keywords = "django tag tagging",
     url = "http://radiac.net/projects/django-tagulous/",
-    long_description=read('README'),
+    long_description=read('README.txt'),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
