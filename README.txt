@@ -192,11 +192,8 @@ Roadmap
 -------
 
 Template tags
-    {% tagcloud obj.tags %}, using a template for each entry
+    {% tagcloud obj.tags %}, using the block contents as a template for each entry
 
-Admin support
-    Simple definition of tag model admin
-    
 Support for heirarchical tags
     Add to tag.Tag.__init__ kwargs:
         tag_child_separator='.'
