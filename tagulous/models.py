@@ -688,6 +688,9 @@ class BaseTagField(object):
             # Name is _Tagulous_MODELNAME_FIELDNAME
             model_name = "%s_%s_%s" % (MODEL_PREFIX, cls._meta.object_name, name)
             self.tag_model = type(model_name, (TagModel,), model_attrs)
+            
+            # Give it a verbose name, for admin filters
+            self.tag_model._meta.verbose_name = name
         # else: tag model already specified
         
         
