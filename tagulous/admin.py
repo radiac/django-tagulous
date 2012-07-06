@@ -86,7 +86,6 @@ def register_site(site, model, admin_class=None, **options):
     
     
     # Ensure every tag field uses the correct widget
-#    print hasattr(admin_class, 'formfield_overrides')
     admin_class.formfield_overrides = {
         models.SingleTagField: {'widget': forms.AdminTagWidget},
         models.TagField: {'widget': forms.AdminTagWidget},
@@ -97,6 +96,6 @@ def register_site(site, model, admin_class=None, **options):
     
 def create_display(field):
     def display(self, obj):
-        return 'xx' +  getattr(obj, field).get_tag_string()
+        return getattr(obj, field).get_tag_string()
     display.short_description = field.replace('_', ' ')
     return display
