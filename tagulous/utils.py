@@ -6,8 +6,11 @@ In turn that is ported from Jonathan Buchanan's django-tagging
 http://django-tagging.googlecode.com
 """
 
+from django.conf import settings as global_settings
 from django.utils.encoding import force_unicode
 from django.utils.functional import wraps
+
+from tagulous import settings
 
 def parse_tags(tag_string, max_count=0):
     """
@@ -120,3 +123,15 @@ def edit_string_for_tags(tags):
         else:
             names.append(name)
     return u', '.join(sorted(names))
+
+
+def get_setting(setting):
+    """
+    Helper function to get a setting from global settings, or tagulous defaults
+    """
+    if hasattr(global_settings, setting):
+        return getattr(global_settings, setting)
+    if hasattr(settings, setting):
+        return getattr(settings, setting)
+    raise ValueError("Invalid setting %s" % setting)
+    

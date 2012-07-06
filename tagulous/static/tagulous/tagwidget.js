@@ -1,4 +1,4 @@
-$(function () {
+(function ($) {
     /*
     ** Variables which should probably be customisable
     */
@@ -236,12 +236,14 @@ $(function () {
                     this.$root
                         .height(this.$ul.outerHeight())
                         .css('overflow', 'hidden')
+                        .removeClass('scrolled')
                     ;
                 } else {
                     var itemHeight = this.items[0].outerHeight();
                     this.$root
-                        .height(itemHeight * (count + 0.5))
+                        .height(itemHeight * (count - 0.5))
                         .css('overflow-y', 'scroll')
+                        .addClass('scrolled')
                     ;
                 }
             } else {
@@ -519,12 +521,16 @@ $(function () {
     shared between cloned HTML elements
     */
     var TagField = function (id, $el) {
+        var thisTagField = this;
         this.id = id;
         this.options = $el.data('tag-options') || {};
         AutoComplete.call(this, $el, {
             known:  $el.data('tag-autocomplete') || [],
             url:    $el.data('tag-autocomplete-url') || '',
-            caseSensitive: this.options.case_sensitive
+            caseSensitive: this.options.case_sensitive,
+            action: function (newStr) {
+                thisTagField.replace(newStr);
+            }
         });
         this.isSingle = ($el.data('tag-autocomplete-type') == 'single');
         
@@ -622,11 +628,25 @@ $(function () {
             var tagStart = lastParse.caretIndex - lastParse.caretTagIndex;
             
             // Get the text to the left and right of the old tag and replace it
-            this.$el.val(
-                str.substr(0, tagStart)
+            var val = str.substr(0, tagStart)
                 + newStr
                 + str.substr(tagStart + this.last.length)
-            ).change();
+            ;
+            
+            // If it's not a single tag, make sure it ends ready for a new tag
+            if (!this.isSingle) {
+                val = val.trim();
+                if (val.charAt(val.length-1) != ',') {
+                    val += ','
+                }
+                val += ' ';
+            }
+            
+            // Update the element
+            this.$el.val(val).change();
+            
+            // Move the focus to the end
+            setCaretIndex(this.$el, val.length);
         }
     });
     
@@ -665,24 +685,26 @@ $(function () {
     ** Element binding and initialisation
     */
     
-    // Find tagulous tag fields
-    $('input[data-tag-tagulous]')
-        // Initialise tag fields which exists
-        .each(function () {
-            // Don't need to do anything with it yet, just initialise
-            getField($(this));
-        })
-        // Watch for TagField events on existing and new fields
-        .live('focus click', function (e) {
-            // Initialise or retrieve TagField, then focus it
-            getField($(this)).focus(e);
-        })
-        .live('blur', function (e) {
-            getField($(this)).blur(e);
-        })
-        .live('keypress', function (e) {
-            getField($(this)).keypress(e);
-        })
-        
-    ;
-});
+    $(function () {
+        // Find tagulous tag fields
+        $('input[data-tag-tagulous]')
+            // Initialise tag fields which exists
+            .each(function () {
+                // Don't need to do anything with it yet, just initialise
+                getField($(this));
+            })
+            // Watch for TagField events on existing and new fields
+            .live('focus click', function (e) {
+                // Initialise or retrieve TagField, then focus it
+                getField($(this)).focus(e);
+            })
+            .live('blur', function (e) {
+                getField($(this)).blur(e);
+            })
+            .live('keypress', function (e) {
+                getField($(this)).keypress(e);
+            })
+            
+        ;
+    });
+})(window.jQuery);

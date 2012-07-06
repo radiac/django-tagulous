@@ -73,6 +73,49 @@ to save the tags.
 If you have a straight form, m2m_save will be called automatically so you don't
 need to do anything else.
 
+The JavaScript code requires jQuery 1.4.3 or later. For convenience there is a
+bundled copy of jQuery 1.7.2 in the tagulous static directory. This is not
+included in public pages by default, but can be configured by changing the
+TAGULOUS_PUBLIC_JQUERY setting.
+
+
+Admin
+-----
+
+To add support TagField and SingleTagField fields in the admin, you need to
+register the Model and ModelAdmin using Tagulous's `register()` function,
+instead of the standard one, `django.contrib.admin.site.register()`:
+
+    class MyAdmin(admin.ModelAdmin):
+        list_display = ['name', 'tags']
+    tagulous.admin.register(myModel, MyAdmin)
+
+This will make a few changes to MyAdmin to add tag field support (detailed
+below), and then call the standard admin `site.register()` to register as
+normal.
+
+Alternatively you can specify a custom admin site by calling `register_site()`:
+
+    # These two lines are equivalent:
+    tagulous.admin.register(myModel, MyAdmin)
+    tagulous.admin.register_site(admin.site, myModel, MyAdmin)
+
+The changes tagulous's `register()` function makes to the ModelAdmin are:
+
+* Checks list_display for any tag fields, and adds functions to the ModelAdmin
+  to display the tag string (unless an attribute with that name already exists)
+
+Note:
+* You can only provide the Tagulous `register()` function with one model.
+* The admin class will be modified, so you must be careful if registering it
+  more than once.
+
+The JavaScript code requires jQuery 1.4.3 or later, but the admin site of both
+Django 1.3 and 1.4 only uses jQuery 1.4.2. There is therefore a bundled copy of 
+jQuery 1.7.2 in the tagulous static directory. This is included by default, but
+can be configured by changing the TAGULOUS_ADMIN_JQUERY setting, in case you
+already have a more recent version of jQuery in your admin site.
+
 
 Notes
 -----

@@ -6,20 +6,13 @@ from django.utils.translation import ugettext as _
 from django.utils.html import escape
 from django.utils.encoding import force_unicode
 
-from tagulous.utils import parse_tags, edit_string_for_tags
+from tagulous.utils import parse_tags, edit_string_for_tags, get_setting
 
 
-class TagWidget(forms.TextInput):
-    class Media:
-        css = {
-            'all': ('tagulous/tagwidget.css',)
-        }
-        js = ('tagulous/tagwidget.js',)
-    
-    # Admin will be expecting this to have a choices attribute
-    # Set this so the admin will behave as expected
-    choices = None
-    
+class TagWidgetBase(forms.TextInput):
+    """
+    Base class for tags
+    """
     # Based on django-taggit
     def render(self, name, value, attrs={}):
         # Build data attrs
@@ -46,7 +39,36 @@ class TagWidget(forms.TextInput):
         attrs['autocomplete'] = 'off'
         
         # Render value
-        return super(TagWidget, self).render(name, value, attrs)
+        return super(TagWidgetBase, self).render(name, value, attrs)
+
+
+public_js = get_setting('TAGULOUS_PUBLIC_JQUERY')
+class TagWidget(TagWidgetBase):
+    """
+    Tag widget for public-facing forms
+    """
+    class Media:
+        css = {
+            'all': ('tagulous/tagwidget.css',)
+        }
+        js = ([public_js] if public_js else []) + ['tagulous/tagwidget.js']
+
+
+admin_js = get_setting('TAGULOUS_ADMIN_JQUERY')
+class AdminTagWidget(TagWidgetBase):
+    """
+    Tag widget for admin forms
+    """
+    class Media:
+        css = {
+            'all': ('tagulous/tagwidget.css',)
+        }
+        js = ([admin_js] if admin_js else []) + ['tagulous/tagwidget.js',]
+
+    # Admin will be expecting this to have a choices attribute
+    # Set this so the admin will behave as expected
+    choices = None
+
 
 class TagField(forms.CharField):
     widget = TagWidget
