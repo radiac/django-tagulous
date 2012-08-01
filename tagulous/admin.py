@@ -72,6 +72,10 @@ def register_site(site, model, admin_class=None, **options):
     # would cause problems for TagFields, and the display function would never
     # get called, which would be unexpected for anyone maintaining this code.
     if hasattr(admin_class, 'list_display'):
+        # Make sure we're working with a list
+        if isinstance(admin_class.list_display, tuple):
+            admin_class.list_display = list(admin_class.list_display)
+        
         for i, field in enumerate(admin_class.list_display):
             # If the field's not a callable, and not in the admin class already
             if not callable(field) and not hasattr(admin_class, field):
