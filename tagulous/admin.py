@@ -89,13 +89,33 @@ def register_site(site, model, admin_class=None, **options):
                     setattr(admin_class, display_name, create_display(field))
     
     
-    # Ensure every tag field uses the correct widget
-    admin_class.formfield_overrides = {
-        models.SingleTagField: {'widget': forms.AdminTagWidget},
-        models.TagField: {'widget': forms.AdminTagWidget},
-    }
+    # Ensure every tag field uses the correct widgets
+    add_formfield_overrides(admin_class)
     
+    # Check for inlines
+    if hasattr(admin_class, 'inlines'):
+        for inline in admin_class.inlines:
+            add_formfield_overrides(inline)
+    
+    # Register the model
     site.register(model, admin_class)
+    
+def add_formfield_overrides(cls):
+    """
+    Extend formfield to ensure every tag field uses the correct widgets
+    """
+    if not cls.formfield_overrides:
+        cls.formfield_overrides = {}
+        
+    if models.SingleTagField not in cls.formfield_overrides:
+        cls.formfield_overrides[models.SingleTagField] = {
+            'widget': forms.AdminTagWidget
+        }
+        
+    if models.TagField not in cls.formfield_overrides:
+        cls.formfield_overrides[models.TagField] = {
+            'widget': forms.AdminTagWidget
+        }
     
     
 def create_display(field):
