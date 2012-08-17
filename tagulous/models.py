@@ -142,17 +142,6 @@ class BaseTagDescriptor(object):
         # Add a convenient reference to the tag model
         self.model = self.field.rel.to
         
-        # Add a post_syncdb handler to load initial data
-        if self.tag_options.initial:
-            def post_syncdb_handler(sender, created_models, **kwargs):
-                # Only try to load initial if the model has been synced
-                if self.model not in created_models:
-                    return
-                self.load_initial()
-            models.signals.post_syncdb.connect(post_syncdb_handler,
-                sender=sys.modules[self.field.model.__module__], weak=False
-            )
-        
     def load_initial(self):
         """
         Load initial tags
