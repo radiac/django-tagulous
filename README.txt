@@ -162,9 +162,21 @@ they will flush the cache to ensure count changes are accurate.
 
 A SingleTagField with blank=True must also have null=True.
 
+If your tests require a tag field to have been loaded with initial tags, you
+must call tagulous.models.model_initialise_tags(myModel) from your setUp().
+
+You can compare a tag field against a string - the string will be parsed into
+tags, and matched according to the tag options for that field.
+
+
 
 To Do
 -----
+
+Add support for comparing tag fields against lists of tags
+Test comparing one model tag field against another
+Test single tag manager
+Test (and add support for, if necessary), BaseTagManager.__contains__
 
 Test forms
 Make sure all tag options are tested - autocomplete_limit is not
@@ -193,6 +205,7 @@ Roadmap
 
 Template tags
     {% tagcloud obj.tags %}, using the block contents as a template for each entry
+    {% taglinks obj.tags %}, using the block contents as a template for each link
 
 Support for heirarchical tags
     Add to tag.Tag.__init__ kwargs:
