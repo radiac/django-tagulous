@@ -32,7 +32,7 @@ class MultiTestModel(models.Model):
     """
     name = models.CharField(blank=True, max_length=100)
     tagset1 = TagField(protect_all=True, case_sensitive=True)
-    tagset2 = TagField(initial="blue, green, red", force_lowercase=False)
+    tagset2 = TagField(initial="blue, green, red", force_lowercase=True)
     tagset3 = TagField(initial='Adam', protect_initial=False)
     
 class CustomTestTagModel(TagModel):

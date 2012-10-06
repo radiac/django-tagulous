@@ -37,7 +37,9 @@ class Command(BaseCommand):
         if field_name:
             model = models[0]
             field = model._meta.get_field_by_name(field_name)[0]
-            loaded = self.initialise_tag(model, field)
+            loaded = tagulous.models.field_initialise_tags(
+                model, field, report=True,
+            )
             
             if not loaded:
                 print "Nothing to load for %s.%s.%s" % (
@@ -46,27 +48,7 @@ class Command(BaseCommand):
                     field.name,
                 )
             return
-            
-        # Step through all fields on all models
+        
+        # Step through all models and load
         for model in models:
-            for field in model._meta.fields + model._meta.many_to_many:
-                if isinstance(
-                    field,
-                    (tagulous.SingleTagField, tagulous.TagField)
-                ):
-                    self.initialise_tag(model, field)
-
-    def initialise_tag(self, model, field):
-        if not field.tag_options.initial:
-            return False
-            
-        print "Loading initial tags for %s.%s.%s" % (
-            model._meta.app_label,
-            model.__name__,
-            field.name,
-        )
-        
-        descriptor = getattr(model, field.name)
-        descriptor.load_initial()
-        return True
-        
+            tagulous.models.model_initialise_tags(model, report=True)

@@ -7,7 +7,8 @@ from django.contrib.auth.models import User
 
 from tagulous.models import \
     TagModel, TagDescriptor, \
-    RelatedManagerTagMixin, SingleTagDescriptor
+    RelatedManagerTagMixin, SingleTagDescriptor, \
+    model_initialise_tags
     
 from tagulous.tests_app.models import \
     TestModel, OrderTestModel, MultiTestModel, CustomTestTagModel, \
@@ -15,8 +16,15 @@ from tagulous.tests_app.models import \
     SingleTestModel, SingleOrderTestModel, \
     SingleRequiredTestModel, SingleOptionalTestModel
 
+from tagulous.management.commands import initialtags
+
 class TestModelTestCase(TestCase):
-    
+    def setUp(self):
+        # Load initial tags for all models which have them
+        model_initialise_tags(MultiTestModel)
+        model_initialise_tags(CustomTestFirstModel)
+        model_initialise_tags(CustomTestSecondModel)
+        
     def test_model_correct(self):
         """
         Test that the tag model is created correctly
@@ -492,12 +500,13 @@ class TestModelTestCase(TestCase):
         })
         
         # Test tagset2 force_lowercase
-        test2.tagset2 = 'Blue, grEEn'
-        self.assertEqual(test2.tagset2.get_tag_string(), 'blue, green')
+        test2.tagset2 = 'BLUE, GREEN, YELLOW'
+        self.assertEqual(test2.tagset2.get_tag_string(), 'blue, green, yellow')
         self.assertTagModel(MultiTestModel.tagset2.model, {
             'red':      1,
             'green':    2,
             'blue':     2,
+            'yellow':   1,
         })
         
         # Test tagset3 case insensitive
@@ -516,15 +525,15 @@ class TestModelTestCase(TestCase):
         
         # Test protect_initial=True
         test1.tagset2.clear()
-        test2.tagset2 = 'yellow'
+        test2.tagset2 = 'pink'
         self.assertEqual(test1.tagset2.get_tag_string(), '')
-        self.assertEqual(test2.tagset2.get_tag_string(), 'yellow')
+        self.assertEqual(test2.tagset2.get_tag_string(), 'pink')
         # Should leave initials
         self.assertTagModel(MultiTestModel.tagset2.model, {
             'red':      0,
             'green':    0,
             'blue':     0,
-            'yellow':   1,
+            'pink':     1,
         })
         
         # Test protect_initial=False
@@ -596,6 +605,51 @@ class TestModelTestCase(TestCase):
         the_exception = cm.exception
         field = SingleRequiredTestModel._meta.get_field_by_name('tag')[0]
         self.assertEqual(the_exception.messages[0], u'This field cannot be null.')
+        
+    def test_tag_comparison(self):
+        """
+        Test that tag comparison works
+        """
+        # Using MultiTestModel to test case
+        #   tagset1     case_sensitive=True
+        #   tagset2     force_lowercase=True
+        #   tagset3     case_sensitive=False, force_lowercase=False
+        # Set up initial test
+        test1 = MultiTestModel.objects.create(name='CmpOne')
+        test1.tagset1 = 'django, html'
+        test1.tagset2 = 'blue, green, red'
+        test1.tagset3 = 'Adam, Brian, Chris'
+        
+        # Test case sensitive match
+        self.assertEqual(test1.tagset1, 'django, html')
+        self.assertNotEqual(test1.tagset1, 'django, HTML')
+        self.assertNotEqual(test1.tagset1, 'Django, html')
+        self.assertNotEqual(test1.tagset1, 'django')
+        self.assertNotEqual(test1.tagset1, 'django, html, javascript')
+        
+        # Test lowercase match
+        self.assertEqual(test1.tagset2, 'blue, green, red')
+        self.assertEqual(test1.tagset2, 'Blue, grEEn, RED')
+        self.assertNotEqual(test1.tagset2, 'blue, green')
+        self.assertNotEqual(test1.tagset2, 'blue, green, red, yellow')
+        
+        # Test tags with neither case_sensitive nor force_lowercase
+        self.assertEqual(test1.tagset3, 'Adam, Brian, Chris')
+        self.assertEqual(test1.tagset3, 'adam, brian, chris')
+        self.assertEqual(test1.tagset3, 'ADAM, BRIAN, CHRIS')
+        self.assertNotEqual(test1.tagset3, 'Adam, Brian')
+        self.assertNotEqual(test1.tagset3, 'Adam, Brian, Chris, David')
+        
+        # Check strings are parsed for matching
+        self.assertEqual(test1.tagset1, 'html django')
+        self.assertEqual(test1.tagset2, 'red green blue')
+        self.assertEqual(test1.tagset3, 'chris adam brian')
+        self.assertEqual(test1.tagset3, 'adam adam brian')
+        
+        # ++ Test comparing against a list
+        # ++ Test comparing one model field against another
+        # ++ Test single tag manager
+        
         
     def assertTagModel(self, model, tag_counts):
         """

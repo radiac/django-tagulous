@@ -34,6 +34,47 @@ EXCLUDE_FIELD_OPTIONS = [
 
 
 #
+# Functions to load initial tags
+# Used by tests and the management command `initialtags`
+#
+
+def field_initialise_tags(model, field, report=False):
+    """
+    Load any initial tags for the specified tag field
+    Returns True if loaded, False if nothing to load
+    If report=True, a line is written to STDOUT to report the field is loading
+    """
+    if not field.tag_options.initial:
+        return False
+        
+    if report:
+        print "Loading initial tags for %s.%s.%s" % (
+            model._meta.app_label,
+            model.__name__,
+            field.name,
+        )
+    
+    descriptor = getattr(model, field.name)
+    descriptor.load_initial()
+    return True
+    
+def model_initialise_tags(model, report=False):
+    """
+    Load any initial tags for the given model
+    Do not call directly - instead use the management command `initialtags`
+    Arguments:
+        model       Model to check for tag fields to load
+        report      Passed to field_initialise_tags
+    """
+    for field in model._meta.fields + model._meta.many_to_many:
+        if isinstance(
+            field,
+            (SingleTagField, TagField)
+        ):
+            field_initialise_tags(model, field, report)
+
+
+#
 # Tag options
 #
 
@@ -151,9 +192,56 @@ class BaseTagDescriptor(object):
             self.model.objects.get_or_create(name=tag_name, defaults={
                 'protected': self.tag_options.protect_initial,
             })
+            
+            
+class BaseTagManager(object):
+    """
+    Base class for SingleTagManager and RelatedManagerTagMixin
+    """
+    def __eq__(self, other):
+        """
+        Treat the other value as a string and compare to tags
+        """
+        other_str = u"%s" % other
+        
+        # Enforce case non-sensitivity or lowercase
+        lower = False
+        if self.tag_options.force_lowercase or not self.tag_options.case_sensitive:
+            lower = True
+            other_str = other_str.lower()
+        
+        # Parse other_str into list of tags
+        other_tags = parse_tags(other_str)
+        
+        # Get list of set tags
+        self_tags = self.get_tag_list()
+        
+        # Compare tag count
+        if len(other_tags) != len(self_tags):
+            return False
+        
+        # ++ Could optimise comparison for lots of tags by using an object
+        
+        # Compare tags
+        for tag in self_tags:
+            # If lowercase or not case sensitive, lower for comparison
+            if lower:
+                tag = tag.lower()
+            
+            # Check tag in other tags
+            if tag not in other_tags:
+                return False
+        
+        # Same number of tags, and all self tags present in other tags
+        # It's a match
+        return True
+        
+    def __ne__(self, other):
+        return not self.__eq__(other)
         
 
-class SingleTagManager(object):
+# ++ Test single tag manager
+class SingleTagManager(BaseTagManager):
     """
     Manage single tags - behaves like a descriptor, but holds additional
     information about the tag field between saves
@@ -191,7 +279,8 @@ class SingleTagManager(object):
         
         # ++ Init should not be calling this in django's normal world
         # ++ So we need to either stop doing that, or add a flag to get_actual
-        # which only tests if the instance exists, or value!=None or somethign
+        # which only tests if the instance exists, or value!=None
+        # ++ Think this is fixed now?
         if hasattr(self.instance, self.field.attname):
         #if getattr(self.instance, self.field.attname, None):
             return self.descriptor.descriptor.__get__(self.instance)
@@ -199,6 +288,25 @@ class SingleTagManager(object):
     
     def set_actual(self, value):
         return self.descriptor.descriptor.__set__(self.instance, value)
+        
+    
+    def get_tag_string(self):
+        """
+        Get the tag edit string for this instance as a string
+        """
+        if not self.instance:
+            raise AttributeError("Function get_tag_string is only accessible via an instance")
+        
+        return edit_string_for_tags( self.get() )
+    
+    def get_tag_list(self):
+        """
+        Get the tag names for this instance as a list of tag names
+        """
+        if not self.instance:
+            raise AttributeError("Function get_tag_list is only accessible via an instance")
+        
+        return [tag.name for tag in self.get() ]
         
     def get(self):
         """
@@ -456,7 +564,7 @@ class TagDescriptor(BaseTagDescriptor):
             manager.add(*value)
         
         
-class RelatedManagerTagMixin(object):
+class RelatedManagerTagMixin(BaseTagManager):
     """
     Mixin for RelatedManager to add tag functions
     """
