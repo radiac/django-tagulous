@@ -173,6 +173,9 @@ tags, and matched according to the tag options for that field.
 To Do
 -----
 
+Known bugs:
+* get_or_create(singletag='Bob') will fail due to get() part
+
 Add support for comparing tag fields against lists of tags
 Test comparing one model tag field against another
 Test single tag manager
