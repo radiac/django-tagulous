@@ -45,8 +45,8 @@ you would normally do.
 To set tags:
 
     instance = MyModel()
-    instance.tags.set_tags('foo bar')
     instance.save()
+    instance.tags.set_tags('foo bar')
 
 Manual tag class:
 
@@ -66,12 +66,12 @@ Testing:
 Forms
 -----
 
-Because this is based on a ManyToManyField, if call `myform.save(commit=False)`
-(eg your form consists of formsets), remember to call `myform.m2m_save()` after
+Because this is based on a ManyToManyField, if you call `.save(commit=False)`
+(eg your form consists of formsets), remember to call `.m2m_save()` after
 to save the tags.
 
-If you have a straight form, m2m_save will be called automatically so you don't
-need to do anything else.
+If you have a straight form, `.m2m_save()` will be called automatically so you
+don't need to do anything else.
 
 The JavaScript code requires jQuery 1.4.3 or later. For convenience there is a
 bundled copy of jQuery 1.7.2 in the tagulous static directory. This is not
@@ -173,6 +173,8 @@ tags, and matched according to the tag options for that field.
 To Do
 -----
 
+Add a way to allow tags to be set before the item is saved
+
 Known bugs:
 * get_or_create(singletag='Bob') will fail due to get() part
 
@@ -180,6 +182,8 @@ Add support for comparing tag fields against lists of tags
 Test comparing one model tag field against another
 Test single tag manager
 Test (and add support for, if necessary), BaseTagManager.__contains__
+
+Support filtering tags against another field in the model, eg by user
 
 Test forms
 Make sure all tag options are tested - autocomplete_limit is not
@@ -191,15 +195,11 @@ Test
     Order of fields - new model with two M2M fields either side, check
     model._meta.local_many_to_many
     max_count
-    stuff goign through to forms:
+    stuff going through to forms:
         test that django hasnt changed
         that widget gets tag_options and autocomplete
 
-Field
-* as CharField with no length limit
-
 Widget
-    Autocomplete
     Nice tag entry
 
 
@@ -239,6 +239,7 @@ Autocomplete
         The autocomplete code which Tagulous uses has been released as a
         stand-alone jquery plugin, so you have two options: either re-style the
         tagulous widget, or switch to use the same autocomplete as tagulous.
+        // ++ Release the jquery plugin
         // ++ Styling
         // ++ Using the same autocomplete
         
