@@ -30,7 +30,7 @@ Example usage:
         tags = tagulous.TagField()
     
 This will create two new models:
-    _Tagulous_Person_title      Tags for the title field
+    _Tagulous_Person_title      Tag for the title field
     _Tagulous_Person_tags       Tags for the tags field
 
 Person.title will now act as a ForeignKey to _Tagulous_Person_title
@@ -52,12 +52,13 @@ Manual tag class:
 
     import tagulous
     class MyTags(tagulous.TagModel):
+        # Custom tag fields
         class TagMeta:
             # Options as passed to TagField
     
     class MyModel(models.Model):
         ...
-        tags = tagulous.TagField(tag_model=MyTags)
+        tags = tagulous.TagField(to=MyTags)
 
 Testing:
     ./manage.py test tagulous
@@ -88,7 +89,7 @@ instead of the standard one, `django.contrib.admin.site.register()`:
 
     class MyAdmin(admin.ModelAdmin):
         list_display = ['name', 'tags']
-    tagulous.admin.register(myModel, MyAdmin)
+    tagulous.admin.register(MyModel, MyAdmin)
 
 This will make a few changes to MyAdmin to add tag field support (detailed
 below), and then call the standard admin `site.register()` to register as
@@ -115,6 +116,16 @@ Django 1.3 and 1.4 only uses jQuery 1.4.2. There is therefore a bundled copy of
 jQuery 1.7.2 in the tagulous static directory. This is included by default, but
 can be configured by changing the TAGULOUS_ADMIN_JQUERY setting, in case you
 already have a more recent version of jQuery in your admin site.
+
+You can also register a ModelAdmin to manipulate the tag table directly:
+
+    class MyModelTagsAdmin(admin.ModelAdmin):
+        list_display = ('name', 'count', 'protected')
+    admin.site.reguster(MyModel.tags.model, MyModelTagsAdmin)
+
+Remember that the relationship between your entries and tags are standard
+ForeignKey or ManyToMany relationships, so deletion propagation will work as
+it would normally.
 
 
 Notes
