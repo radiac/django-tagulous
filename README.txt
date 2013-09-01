@@ -63,6 +63,13 @@ Manual tag class:
 Testing:
     ./manage.py test tagulous
 
+Notes on TagMeta:
+* if a tag class has a TagMeta, its options will be used as defaults, but they
+  can be overridden by a tag field.
+* TagMeta can be inherited, so can be set on abstract models. Options in the
+  TagMeta of a parent model can be overridden by options in the TagMeta of a
+  child model 
+
 
 Forms
 -----
@@ -121,12 +128,24 @@ You can also register a ModelAdmin to manipulate the tag table directly:
 
     class MyModelTagsAdmin(admin.ModelAdmin):
         list_display = ('name', 'count', 'protected')
-    admin.site.reguster(MyModel.tags.model, MyModelTagsAdmin)
+        exclude = ('count',)
+    admin.site.register(MyModel.tags.model, MyModelTagsAdmin)
+
+However, if you do this you should set ``TAGULOUS_DISABLE_ADMIN_ADD = True`` to
+disable the RelatedFieldWidgetWrapper in automatically generated admin forms -
+see documentation for this setting for more details.
 
 Remember that the relationship between your entries and tags are standard
 ForeignKey or ManyToMany relationships, so deletion propagation will work as
 it would normally.
 
+
+Management commands
+-------------------
+
+initial_tags [<app_name>[.<model_name>[.<field_name>]]]
+    Add initial tagulous tags to the database as required
+    
 
 Notes
 -----
@@ -186,8 +205,17 @@ To Do
 
 Add a way to allow tags to be set before the item is saved
 
+Document:
+* using a custom admin form
+* settings
+
 Known bugs:
 * get_or_create(singletag='Bob') will fail due to get() part
+* Add tag in upper case with if case_sensitive=False and force_lowercase=False,
+  then change force_lowercase=True and re-save; count increases, case stays the
+  same.
+
+Test TagMeta overriding. Also, is it valid for all options?
 
 Add support for comparing tag fields against lists of tags
 Test comparing one model tag field against another
@@ -195,6 +223,8 @@ Test single tag manager
 Test (and add support for, if necessary), BaseTagManager.__contains__
 
 Support filtering tags against another field in the model, eg by user
+
+field_initialise_tags currently prints to stdout - it should not. Check for others.
 
 Test forms
 Make sure all tag options are tested - autocomplete_limit is not
@@ -211,6 +241,7 @@ Test
         that widget gets tag_options and autocomplete
 
 Widget
+    Look at option to replace current widget with jquery ui
     Nice tag entry
 
 

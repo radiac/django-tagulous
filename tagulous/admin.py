@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models.base import ModelBase
 from django.db.models import FieldDoesNotExist
 
-from tagulous import models, forms
+from tagulous import models, forms, settings
 
     
 def register(*args, **kwargs):
@@ -38,14 +38,17 @@ def register_site(site, model, admin_class=None, **options):
         options['__module__'] = __name__
         admin_class = type("%sAdmin" % model.__name__, (admin_class,), options)
     
-    
     #
-    # Set up tag support
-    #
-    
     # Get a list of all tag fields
+    #
+    
+    # Dict of single tag fields, {name: tag}
     single_tag_fields = {}
+    
+    # Dict of normal tag fields, {name: tag}
     tag_fields = {}
+    
+    # List of all single and normal tag fields
     tag_field_names = []
     
     # Check for SingleTagField related fields
@@ -60,6 +63,10 @@ def register_site(site, model, admin_class=None, **options):
             tag_fields[field.name] = field
             tag_field_names.append(field.name)
     
+    
+    #
+    # Set up tag support
+    #
     
     # Ensure any tag fields in list_display are rendered by functions
     #
@@ -100,6 +107,7 @@ def register_site(site, model, admin_class=None, **options):
     # Register the model
     site.register(model, admin_class)
     
+    
 def add_formfield_overrides(cls):
     """
     Extend formfield to ensure every tag field uses the correct widgets
@@ -109,12 +117,12 @@ def add_formfield_overrides(cls):
         
     if models.SingleTagField not in cls.formfield_overrides:
         cls.formfield_overrides[models.SingleTagField] = {
-            'widget': forms.AdminTagWidget
+            'widget': forms.AdminTagWidget,
         }
         
     if models.TagField not in cls.formfield_overrides:
         cls.formfield_overrides[models.TagField] = {
-            'widget': forms.AdminTagWidget
+            'widget': forms.AdminTagWidget,
         }
     
     
@@ -123,3 +131,29 @@ def create_display(field):
         return getattr(obj, field).get_tag_string()
     display.short_description = field.replace('_', ' ')
     return display
+
+
+def monkeypatch_formfield_for_dbfield():
+    """
+    This will monkey-patch BaseModelAdmin.formfield_for_dbfield to remove
+    a RelatedFieldWidgetWrapper from an AdminTagWidget created for a
+    SingleTagField or TagField
+    """
+    old = admin.options.BaseModelAdmin.formfield_for_dbfield
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        formfield = old(self, db_field, **kwargs)
+        if (
+            isinstance(db_field, (models.SingleTagField, models.TagField))
+            and
+            isinstance(formfield.widget, admin.widgets.RelatedFieldWidgetWrapper)
+            and
+            isinstance(formfield.widget.widget, forms.AdminTagWidget)
+        ):
+            formfield.widget = formfield.widget.widget
+        return formfield
+    
+    # Monkeypatch
+    admin.options.BaseModelAdmin.formfield_for_dbfield = formfield_for_dbfield
+    
+if settings.DISABLE_ADMIN_ADD:
+    monkeypatch_formfield_for_dbfield()
