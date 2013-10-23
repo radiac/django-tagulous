@@ -71,6 +71,24 @@ Notes on TagMeta:
   child model 
 
 
+Installation
+------------
+
+1. Install ``django-tagulous`` (currently only on github)::
+
+    pip install -e ...#egg=django-tagulous
+
+
+2. Add Tagulous to ``INSTALLED_APPS``::
+
+    INSTALLED_APPS = (
+        ...
+        'tagulous',
+    )
+
+You are now ready to add tagulous fields to your models
+
+
 Forms
 -----
 
