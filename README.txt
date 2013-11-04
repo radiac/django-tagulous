@@ -30,7 +30,7 @@ Example usage:
         tags = tagulous.TagField()
     
 This will create two new models:
-    _Tagulous_Person_title      Tags for the title field
+    _Tagulous_Person_title      Tag for the title field
     _Tagulous_Person_tags       Tags for the tags field
 
 Person.title will now act as a ForeignKey to _Tagulous_Person_title
@@ -45,54 +45,84 @@ following extra fields:
     # A TagOptions class
     tag_options = Person.tags.tag_options
     
-A bound field (called on an instance, eg ``person1.tags``) is a bit more
+A bound field (called on an instance, eg ``instance.tags``) is a bit more
 special - although it will act as a ForeignKey or ManyToManyField, it has some
 extra features:
     
+    instance = MyModel()
+    instance.tags.set_tags('foo bar')
+    instance.save()
+    
     # Access the tag model and options
-    tag_model = person1.tags.tag_model
-    tag_model = person1.tags.tag_options
+    tag_model = instance.tags.tag_model
+    tag_model = instance.tags.tag_options
     
     # Set tags
-    person1.tags = 'hello, there'
-    print u'%s' % person1.tags
-    person1.tags.set_tags('foo bar')
-    person1.save()
+    instance.tags = 'hello, there'
+    print u'%s' % instance.tags
+    instance.tags.set_tags('foo bar')
+    instance.save()
     
     # Write a list of tags
-    person1.tags = ['hello', 'there']
+    instance.tags = ['hello', 'there']
 
-If you want to read a list of tags, just use person1.tags as you would a normal
-foreign relationship:
+If you want to read a list of tags, just use instance.tags as you would a
+normal foreign relationship:
 
-    for tag in person1.tags.all():
+    for tag in instance.tags.all():
         ...
-
+        
 Manual tag class:
 
     import tagulous
     class MyTags(tagulous.TagModel):
+        # Custom tag fields
         class TagMeta:
             # Options as passed to TagField
     
     class MyModel(models.Model):
         ...
-        tags = tagulous.TagField(tag_model=MyTags)
+        tags = tagulous.TagField(to=MyTags)
 
 Testing:
     ./manage.py test tagulous
+
+Notes on TagMeta:
+* if a tag class has a TagMeta, its options will be used as defaults, but they
+  can be overridden by a tag field.
+* TagMeta can be inherited, so can be set on abstract models. Options in the
+  TagMeta of a parent model can be overridden by options in the TagMeta of a
+  child model 
+
+
+Installation
+------------
+
+1. Install ``django-tagulous`` (currently only on github)::
+
+    pip install -e ...#egg=django-tagulous
+
+
+2. Add Tagulous to ``INSTALLED_APPS``::
+
+    INSTALLED_APPS = (
+        ...
+        'tagulous',
+    )
+
+You are now ready to add tagulous fields to your models
 
 
 
 Forms
 -----
 
-Because this is based on a ManyToManyField, if call `myform.save(commit=False)`
-(eg your form consists of formsets), remember to call `myform.m2m_save()` after
+Because this is based on a ManyToManyField, if you call `.save(commit=False)`
+(eg your form consists of formsets), remember to call `.m2m_save()` after
 to save the tags.
 
-If you have a straight form, m2m_save will be called automatically so you don't
-need to do anything else.
+If you have a straight form, `.m2m_save()` will be called automatically so you
+don't need to do anything else.
 
 The JavaScript code requires jQuery 1.4.3 or later. For convenience there is a
 bundled copy of jQuery 1.7.2 in the tagulous static directory. This is not
@@ -109,7 +139,7 @@ instead of the standard one, `django.contrib.admin.site.register()`:
 
     class MyAdmin(admin.ModelAdmin):
         list_display = ['name', 'tags']
-    tagulous.admin.register(myModel, MyAdmin)
+    tagulous.admin.register(MyModel, MyAdmin)
 
 This will make a few changes to MyAdmin to add tag field support (detailed
 below), and then call the standard admin `site.register()` to register as
@@ -137,6 +167,28 @@ jQuery 1.7.2 in the tagulous static directory. This is included by default, but
 can be configured by changing the TAGULOUS_ADMIN_JQUERY setting, in case you
 already have a more recent version of jQuery in your admin site.
 
+You can also register a ModelAdmin to manipulate the tag table directly:
+
+    class MyModelTagsAdmin(admin.ModelAdmin):
+        list_display = ('name', 'count', 'protected')
+        exclude = ('count',)
+    admin.site.register(MyModel.tags.model, MyModelTagsAdmin)
+
+However, if you do this you should set ``TAGULOUS_DISABLE_ADMIN_ADD = True`` to
+disable the RelatedFieldWidgetWrapper in automatically generated admin forms -
+see documentation for this setting for more details.
+
+Remember that the relationship between your entries and tags are standard
+ForeignKey or ManyToMany relationships, so deletion propagation will work as
+it would normally.
+
+
+Management commands
+-------------------
+
+initial_tags [<app_name>[.<model_name>[.<field_name>]]]
+    Add initial tagulous tags to the database as required
+    
 
 Notes
 -----
@@ -201,8 +253,19 @@ good idea to be safe and back up your data before you migrate.
 To Do
 -----
 
+Add a way to allow tags to be set before the item is saved
+
+Document:
+* using a custom admin form
+* settings
+
 Known bugs:
 * get_or_create(singletag='Bob') will fail due to get() part
+* Add tag in upper case with if case_sensitive=False and force_lowercase=False,
+  then change force_lowercase=True and re-save; count increases, case stays the
+  same.
+
+Test TagMeta overriding. Also, is it valid for all options?
 
 Test and document setting tags on unsaved instances
 Add support for passing tags into create()
@@ -211,6 +274,10 @@ Add support for comparing tag fields against lists of tags
 Test comparing one model tag field against another
 Test single tag manager
 Test (and add support for, if necessary), BaseTagManager.__contains__
+
+Support filtering tags against another field in the model, eg by user
+
+field_initialise_tags currently prints to stdout - it should not. Check for others.
 
 Test forms
 Make sure all tag options are tested - autocomplete_limit is not
@@ -222,15 +289,12 @@ Test
     Order of fields - new model with two M2M fields either side, check
     model._meta.local_many_to_many
     max_count
-    stuff goign through to forms:
+    stuff going through to forms:
         test that django hasnt changed
         that widget gets tag_options and autocomplete
 
-Field
-* as CharField with no length limit
-
 Widget
-    Autocomplete
+    Look at option to replace current widget with jquery ui
     Nice tag entry
 
 
@@ -270,6 +334,7 @@ Autocomplete
         The autocomplete code which Tagulous uses has been released as a
         stand-alone jquery plugin, so you have two options: either re-style the
         tagulous widget, or switch to use the same autocomplete as tagulous.
+        // ++ Release the jquery plugin
         // ++ Styling
         // ++ Using the same autocomplete
         

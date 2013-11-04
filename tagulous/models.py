@@ -1,5 +1,6 @@
 import sys
 
+import django
 from django.core.urlresolvers import reverse
 from django.core import exceptions
 from django.db import models
@@ -722,23 +723,26 @@ class BaseTagField(object):
         # Save tag model
         self.tag_model = to
         
-        # Extract options
-        options = {}
-        for key, default in OPTION_DEFAULTS.items():
-            options[key] = kwargs.pop(key, default)
-            
         # See if this tag model is to be auto-generated
-        # If manual, override options with TagMeta
+        # If manual, collect options from TagMeta
+        tag_meta = {}
         if self.tag_model:
             self.auto_tag_model = False
             
-            if hasattr(self.tag_model, 'TagMeta'):
-                # Pull attributes from TagMeta class
-                options = {}
-                for key, default in OPTION_DEFAULTS.items():
-                    options[key] = getattr(self.tag_model.TagMeta, key, default)
+            # Get ancestors' TagMeta options, oldest first
+            for klass in reversed(self.tag_model.mro()):
+                if 'TagMeta' in klass.__dict__:
+                    for key in OPTION_DEFAULTS.keys():
+                        if key in klass.TagMeta.__dict__:
+                            tag_meta[key] = getattr(klass.TagMeta, key)
         else:
             self.auto_tag_model = True
+        
+        # Extract options
+        options = {}
+        for key, default in OPTION_DEFAULTS.items():
+            # Look in kwargs, then in tag_meta, then in OPTION_DEFAULTS
+            options[key] = kwargs.pop(key, tag_meta.get(key, default))
             
         # Create tag options
         self.tag_options = TagOptions(**options)
@@ -770,7 +774,7 @@ class BaseTagField(object):
         
         # This attribute will let us tell South to supress undesired M2M fields
         self.south_supression = True
-        
+    
     def contribute_tagfield(self, cls, name):
         """
         Create the tag model if necessary, then initialise and contribute the
@@ -955,6 +959,8 @@ class TagField(BaseTagField, models.ManyToManyField):
                 * Tags which are new will be created
                 * Tags which have been deleted will be recreated
                 * Tags which exist will be untouched
+                * Value can be a tag string to be parsed, or an array of
+                  strings with one tag in each string.
                 Note: see TagDescriptor.load_initial() to update manually,
                 although this will not remove old protected initial tags.
                 If you find you need to update initial regularly, you would be
@@ -1019,20 +1025,53 @@ class TagField(BaseTagField, models.ManyToManyField):
         
     def value_from_object(self, obj):
         """
-        Tricks django.forms.models.model_to_dict into passing data to the form
-        Returns a list containing a single fake item, which has the tag string
-        on its pk attribute
+        Tricks django.forms.models.model_to_dict into passing data to the form.
+        
+        Because the models.TagField is based on a django ManyToManyField,
+        model_to_dict expects a queryset, which it changes to a list of pks
+        for use in a ModelMultipleChoiceField.
+        
+        Instead, we want to pass the tag string to a forms.TagField, which is a
+        subclass of CharField. We can't do this in the TagField itself because
+        there's no model context by that stage to do the pk lookup.
+        
+        We therefore return a fake queryset containing a single fake item,
+        where the pk attribute is the tag string.
+        
+        It's a bit of a hack to avoid monkey-patching django, but this may
+        leave it vulnerable to changes in future versions of Django.
         """
-        # django.forms.models.model_to_dict expects to get an iterable
-        # containing model objects with pk attributes, which a ModelChoiceField
-        # will use use in a MultipleChoiceWidget.
-        #
-        # However, TagField and TagWidget just want the tag string
-        # We'll put our data on the pk of a fake object and wrap it in a list,
-        # so model_to_dict can be left to work as normal
-        class Fake(object):
-            pk = getattr(obj, self.attname).get_tag_string()
-        return [Fake]
+        class FakeObject(object):
+            """
+            FakeObject so m2d can check obj.pk (django <= 1.4)
+            """
+            def __init__(self, value):
+                self.pk = value
+        
+        class FakeQuerySet(object):
+            """
+            FakeQuerySet so m2d can call qs.values_list() (django >= 1.5)
+            Only contains one FakeObject instance
+            """
+            def __init__(self, obj):
+                self.obj = obj
+                
+            def __iter__(self):
+                """
+                Iterable so m2d can use in list comprehension (django <= 1.4)
+                """
+                yield self.obj
+            
+            def values_list(self, *fields, **kwargs):
+                """
+                Ignores arguments and returns an empty list with the object.pk
+                """
+                return [self.obj.pk]
+        
+        return FakeQuerySet(FakeObject(
+            getattr(obj, self.attname).get_tag_string()
+        ))
+        
         
     def formfield(self, form_class=forms.TagField, **kwargs):
         """

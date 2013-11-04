@@ -6,7 +6,8 @@ from django.utils.translation import ugettext as _
 from django.utils.html import escape
 from django.utils.encoding import force_unicode
 
-from tagulous.utils import parse_tags, edit_string_for_tags, get_setting
+from tagulous import settings
+from tagulous.utils import parse_tags, edit_string_for_tags
 
 
 class TagWidgetBase(forms.TextInput):
@@ -42,7 +43,6 @@ class TagWidgetBase(forms.TextInput):
         return super(TagWidgetBase, self).render(name, value, attrs)
 
 
-public_js = get_setting('TAGULOUS_PUBLIC_JQUERY')
 class TagWidget(TagWidgetBase):
     """
     Tag widget for public-facing forms
@@ -51,10 +51,11 @@ class TagWidget(TagWidgetBase):
         css = {
             'all': ('tagulous/tagwidget.css',)
         }
-        js = ([public_js] if public_js else []) + ['tagulous/tagwidget.js']
+        js = (
+            [settings.PUBLIC_JQUERY] if settings.PUBLIC_JQUERY else []
+        ) + ['tagulous/tagwidget.js']
 
 
-admin_js = get_setting('TAGULOUS_ADMIN_JQUERY')
 class AdminTagWidget(TagWidgetBase):
     """
     Tag widget for admin forms
@@ -63,7 +64,9 @@ class AdminTagWidget(TagWidgetBase):
         css = {
             'all': ('tagulous/tagwidget.css',)
         }
-        js = ([admin_js] if admin_js else []) + ['tagulous/tagwidget.js',]
+        js = (
+            [settings.ADMIN_JQUERY] if settings.ADMIN_JQUERY else []
+        ) + ['tagulous/tagwidget.js',]
 
     # Admin will be expecting this to have a choices attribute
     # Set this so the admin will behave as expected
@@ -103,9 +106,10 @@ class TagField(forms.CharField):
             tag_string = value
         
         # Otherwise will be given by the model's TagField.value_from_object().
-        # django.forms.model.model_to_dict thinks it produced a list of pks
-        # but TagField.value_from_object tricked it
+        # The value comes from django.forms.model.model_to_dict, which thinks
+        # it produced a list of pks but TagField.value_from_object tricked it
         else:
+            # Catch changes in model_to_dict which broke the trick
             if len(value) != 1:
                 raise ValueError(_("TagField could not prepare unexpected value"))
             tag_string = value[0]
