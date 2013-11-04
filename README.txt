@@ -36,17 +36,37 @@ This will create two new models:
 Person.title will now act as a ForeignKey to _Tagulous_Person_title
 Person.tags will now act as a ManyToManyField to _Tagulous_Person_tags
 
-There are minor differences between the two; for example, they allow you to
-specify a string when setting the value, and they have a `model` property
-so that you can get at the tag model for that field. However, they are based
-on ForeignKey and ManyToManyField, so you can do everything with them that
-you would normally do.
+An unbound field (called on the class, eg ``Person.tags``) will have the
+following extra fields:
+    
+    # The related tag model
+    tag_model = Person.tags.tag_model
+    
+    # A TagOptions class
+    tag_options = Person.tags.tag_options
+    
+A bound field (called on an instance, eg ``person1.tags``) is a bit more
+special - although it will act as a ForeignKey or ManyToManyField, it has some
+extra features:
+    
+    # Access the tag model and options
+    tag_model = person1.tags.tag_model
+    tag_model = person1.tags.tag_options
+    
+    # Set tags
+    person1.tags = 'hello, there'
+    print u'%s' % person1.tags
+    person1.tags.set_tags('foo bar')
+    person1.save()
+    
+    # Write a list of tags
+    person1.tags = ['hello', 'there']
 
-To set tags:
+If you want to read a list of tags, just use person1.tags as you would a normal
+foreign relationship:
 
-    instance = MyModel()
-    instance.tags.set_tags('foo bar')
-    instance.save()
+    for tag in person1.tags.all():
+        ...
 
 Manual tag class:
 
@@ -61,6 +81,7 @@ Manual tag class:
 
 Testing:
     ./manage.py test tagulous
+
 
 
 Forms
@@ -169,12 +190,22 @@ You can compare a tag field against a string - the string will be parsed into
 tags, and matched according to the tag options for that field.
 
 
+Migrating with South
+--------------------
+
+Tagulous should just work out of the box for both schema and data migrations.
+However, given the slightly magical nature of both South and Tagulous, it's a
+good idea to be safe and back up your data before you migrate.
+
 
 To Do
 -----
 
 Known bugs:
 * get_or_create(singletag='Bob') will fail due to get() part
+
+Test and document setting tags on unsaved instances
+Add support for passing tags into create()
 
 Add support for comparing tag fields against lists of tags
 Test comparing one model tag field against another
