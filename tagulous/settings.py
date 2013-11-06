@@ -8,6 +8,7 @@ from django.conf import settings
 # Path to jQuery >= 1.4.3, for use in the public-facing side of the site
 # Relative to STATIC_URL
 # Default: use the version of jQuery which is bundled with tagulous
+# Set to False to disable
 PUBLIC_JQUERY = getattr(
     settings, 'TAGULOUS_PUBLIC_JQUERY', 'tagulous/jquery.min.js',
 )
@@ -15,6 +16,7 @@ PUBLIC_JQUERY = getattr(
 # Path to jQuery => 1.4.3, for use in the admin site
 # Relative to STATIC_URL
 # Default: use the version of jQuery which is bundled with tagulous
+# Set to False to disable
 ADMIN_JQUERY = getattr(
     settings, 'TAGULOUS_ADMIN_JQUERY', 'tagulous/jquery.min.js',
 )
