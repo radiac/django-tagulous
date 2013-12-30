@@ -984,6 +984,8 @@ class TagField(BaseTagField, models.ManyToManyField):
                 returned.
                 This is the limit for both embed and JSON request
                 If 0, there will be no limit and all results will be returned
+        Most normal ManyToManyField arguments are supported (blank, help_text
+        etc) but some are forbidden: db_table, through, symmetrical
         """
         # Forbid certain ManyToManyField arguments
         for forbidden in ['db_table', 'through', 'symmetrical']:
