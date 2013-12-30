@@ -117,22 +117,11 @@ class TagOptions(object):
 #
 # Abstract base class for all TagModel models
 #
-
-class TagModel(models.Model):
+class BaseTagModel(models.Model):
     """
-    Abstract base class for tag models
+    Base tag model, without fields
+    Required for South
     """
-    name        = models.CharField(max_length=255, unique=True)
-    count       = models.IntegerField(default=0,
-        help_text="Internal counter to keep track of how many relationships there are"
-    )
-    protected   = models.BooleanField(default=False,
-        help_text="Will not be deleted when the count reaches 0"
-    )
-    
-    # For consistency with SingleTagField, provide .model attribute
-    model = property(lambda self: self.__class__)
-    
     def __unicode__(self):
         return u'%s' % self.name
         
@@ -161,7 +150,25 @@ class TagModel(models.Model):
     
     class Meta:
         abstract = True
+        
+        
+class TagModel(BaseTagModel):
+    """
+    Abstract base class for tag models
+    """
+    name        = models.CharField(max_length=255, unique=True)
+    count       = models.IntegerField(default=0,
+        help_text="Internal counter to keep track of how many relationships there are"
+    )
+    protected   = models.BooleanField(default=False,
+        help_text="Will not be deleted when the count reaches 0"
+    )
     
+    # For consistency with SingleTagField, provide .model attribute
+    model = property(lambda self: self.__class__)
+    
+    class Meta:
+        abstract = True
 
 #
 # Descriptors for originating models
@@ -559,8 +566,16 @@ class TagDescriptor(BaseTagDescriptor):
         elif isinstance(value, (list, tuple)) and isinstance(value[0], basestring):
             # It's a list or tuple of tag names
             manager.set_tag_list(value)
-            
+        
+        elif isinstance(value, RelatedManagerTagMixin):
+            manager.clear()
+            manager.set_tag_list(value.get_tag_list())
+        
         else:
+            # ++ This is a risky fallthrough
+            # ++ The intention is to set a list of TagModel instances
+            # ++ But that needs to be explicitly tested here
+            # ++ Causes problems when trying to save a queryset from a different tagmodel
             manager.clear()
             manager.add(*value)
         
@@ -638,6 +653,9 @@ class RelatedManagerTagMixin(BaseTagManager):
         if self.tag_options.max_count and len(tag_names) > self.tag_options.max_count:
             raise ValueError("Cannot set more than %d tags on this field" % self.tag_options.max_count)
         
+        # Force tag_names to unicode strings, just in case
+        tag_names = [u'%s' % tag_name for tag_name in tag_names]
+        
         # Find tag model
         tag_model = self.model
         
@@ -672,7 +690,7 @@ class RelatedManagerTagMixin(BaseTagManager):
                     tag = tag_model.objects.get(name=tag_name)
                 else:
                     tag = tag_model.objects.get(name__iexact=tag_name)
-            except tag_model.DoesNotExist, e:
+            except tag_model.DoesNotExist:
                 tag = tag_model.objects.create(name=tag_name, protected=False)
             
             # Add the tag to this
@@ -1069,7 +1087,18 @@ class TagField(BaseTagField, models.ManyToManyField):
 # South migrations
 #
 try:
-    from south.modelsinspector import add_introspection_rules
+    from south import modelsinspector
+    
+    # Monkey-patch South to use TagModel as the base class for tag models
+    # This will allow Tagulous to work in data migrations
+    old_get_model_meta = modelsinspector.get_model_meta
+    def get_model_meta(model):
+        meta_def = old_get_model_meta(model)
+        if isinstance(getattr(model, 'tag_options', None), TagOptions):
+            meta_def['_bases'] = ['tagulous.models.BaseTagModel']
+        return meta_def
+    modelsinspector.get_model_meta = get_model_meta
+    
     
     # Build keyword arguments for south
     south_kwargs = {
@@ -1097,7 +1126,7 @@ try:
         south_kwargs[key] = ['tag_options.%s' % seek, {'default':value}]
     
     # Add introspection rule for TagField
-    add_introspection_rules([
+    modelsinspector.add_introspection_rules([
         (
             [TagField],     # Class(es) these apply to
             [],             # Positional arguments (not used)
@@ -1107,7 +1136,7 @@ try:
     
     # No max_count for SingleTagField
     del(south_kwargs['max_count'])
-    add_introspection_rules([
+    modelsinspector.add_introspection_rules([
         (
             [SingleTagField],     # Class(es) these apply to
             [],             # Positional arguments (not used)
@@ -1118,4 +1147,3 @@ try:
 except ImportError, e:
     # South not installed
     pass
-
