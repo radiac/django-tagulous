@@ -693,15 +693,18 @@
                 // Don't need to do anything with it yet, just initialise
                 getField($(this));
             })
-            // Watch for TagField events on existing and new fields
-            .live('focus click', function (e) {
+        ;
+
+        // Watch for TagField events on existing and new fields
+        $('body')
+            .on('focus click', 'input[data-tag-tagulous]', function (e) {
                 // Initialise or retrieve TagField, then focus it
                 getField($(this)).focus(e);
             })
-            .live('blur', function (e) {
+            .on('blur', 'input[data-tag-tagulous]', function (e) {
                 getField($(this)).blur(e);
             })
-            .live('keypress', function (e) {
+            .on('keypress', 'input[data-tag-tagulous]', function (e) {
                 getField($(this)).keypress(e);
             })
             

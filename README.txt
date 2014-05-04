@@ -124,10 +124,10 @@ to save the tags.
 If you have a straight form, `.m2m_save()` will be called automatically so you
 don't need to do anything else.
 
-The JavaScript code requires jQuery 1.4.3 or later. For convenience there is a
-bundled copy of jQuery 1.7.2 in the tagulous static directory. This is not
-included in public pages by default, but can be configured by changing the
-TAGULOUS_PUBLIC_JQUERY setting.
+The JavaScript code requires jQuery 1.7 or later. For convenience there is a
+bundled copy of jQuery in the tagulous static directory. This is included in
+public pages by default, but can be turned off by changing the
+TAGULOUS_PUBLIC_JQUERY setting to ``False``.
 
 
 Admin

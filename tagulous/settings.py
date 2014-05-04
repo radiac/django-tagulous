@@ -10,7 +10,7 @@ from django.conf import settings
 # Default: use the version of jQuery which is bundled with tagulous
 # Set to False to disable
 PUBLIC_JQUERY = getattr(
-    settings, 'TAGULOUS_PUBLIC_JQUERY', 'tagulous/jquery.min.js',
+    settings, 'TAGULOUS_PUBLIC_JQUERY', 'tagulous/jquery-1.10.2.min.js',
 )
 
 # Path to jQuery => 1.4.3, for use in the admin site
@@ -18,7 +18,7 @@ PUBLIC_JQUERY = getattr(
 # Default: use the version of jQuery which is bundled with tagulous
 # Set to False to disable
 ADMIN_JQUERY = getattr(
-    settings, 'TAGULOUS_ADMIN_JQUERY', 'tagulous/jquery.min.js',
+    settings, 'TAGULOUS_ADMIN_JQUERY', 'tagulous/jquery-1.10.2.min.js',
 )
 
 # Option to disable the add related widget in auto-generated admin fields.
