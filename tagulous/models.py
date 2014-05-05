@@ -148,6 +148,18 @@ class BaseTagModel(models.Model):
         """
         self.update_count(self.count - 1)
     
+    def __eq__(self, obj):
+        """
+        If comparing to a string, is equal if string value matches
+        Otherwise compares normally
+        """
+        if isinstance(obj, basestring):
+            return self.name == obj
+        return super(BaseTagModel, self).__eq__(obj)
+
+    def __ne__(self, obj):
+        return not self == obj
+        
     class Meta:
         abstract = True
         
