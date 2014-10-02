@@ -86,12 +86,12 @@ def register_site(site, model, admin_class=None, **options):
         for i, field in enumerate(admin_class.list_display):
             # If the field's not a callable, and not in the admin class already
             if not callable(field) and not hasattr(admin_class, field):
-                # Check to see if it's a SingleTagField or a TagField
-                if field in tag_field_names:
+                # Only TagFields (admin can already handle SingleTagField FKs)
+                if field in tag_fields:
                     # Create new field name and replace in list_display
                     display_name = '_tagulous_display_%s' % field
                     admin_class.list_display[i] = display_name
-                    
+                
                     # Add display function to admin class
                     setattr(admin_class, display_name, create_display(field))
     
