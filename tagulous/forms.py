@@ -1,10 +1,16 @@
 from django import forms
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
-from django.utils import simplejson
+from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext as _
 from django.utils.html import escape
 from django.utils.encoding import force_unicode
+
+# ++ Can remove this try/except when min req is Django 1.5
+try:
+    import json
+except ImportError:
+   from django.utils import simplejson as json
 
 from tagulous import settings
 from tagulous.utils import parse_tags, edit_string_for_tags
@@ -19,7 +25,10 @@ class TagWidgetBase(forms.TextInput):
         # Build data attrs
         if self.autocomplete:
             attrs['data-tag-autocomplete'] = escape(force_unicode(
-                simplejson.dumps([tag.name for tag in self.autocomplete])
+                json.dumps(
+                    [tag.name for tag in self.autocomplete],
+                    cls=DjangoJSONEncoder,
+                )
             ))
         elif self.autocomplete_view:
             try:
@@ -30,7 +39,7 @@ class TagWidgetBase(forms.TextInput):
         
         # Store tag options
         attrs['data-tag-options'] = escape(force_unicode(
-            simplejson.dumps(self.tag_options.field_items())
+            json.dumps(self.tag_options.field_items(), cls=DjangoJSONEncoder)
         ))
         
         # Mark it for the javascript to find

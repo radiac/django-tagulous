@@ -1,6 +1,13 @@
 from django.contrib.auth.decorators import login_required
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
-from django.utils import simplejson
+
+# ++ Can remove this try/except when min req is Django 1.5
+try:
+    import json
+except ImportError:
+   from django.utils import simplejson as json
+
 
 @login_required
 def autocomplete_login(*args, **kwargs):
@@ -46,6 +53,7 @@ def autocomplete(request, tag_model):
         'results':  [tag.name for tag in results],
     }
     return HttpResponse(
-        simplejson.dumps(response), mimetype='application/json'
+        json.dumps(response, cls=DjangoJSONEncoder),
+        mimetype='application/json',
     )
     
