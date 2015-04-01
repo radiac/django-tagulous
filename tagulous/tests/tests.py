@@ -702,7 +702,18 @@ class TestFormTestCase(TestCase, TagTestManager):
     def setUp(self):
         # Load initial tags for all models which have them
         tag_models.model_initialise_tags(test_models.SingleFormTest)
-        
+
+    def test_form_field(self):
+        """
+        Test the form field basics
+        """
+        self.assertTrue(tag_forms.SingleTagField(required=True).required)
+        self.assertTrue(tag_forms.SingleTagField(required=True).widget.is_required)
+        self.assertFalse(tag_forms.SingleTagField(required=False).required)
+        self.assertFalse(tag_forms.SingleTagField(required=False).widget.is_required)
+        self.assertTrue(tag_forms.SingleTagField().required)
+        self.assertTrue(tag_forms.SingleTagField().widget.is_required)
+
     def test_single_model_formfield(self):
         """
         Test that model.SingleTagField.formfield works correctly
@@ -724,6 +735,33 @@ class TestFormTestCase(TestCase, TagTestManager):
         self.assertEqual(tag3_field.tag_options.case_sensitive, False)
         self.assertEqual(tag3_field.tag_options.force_lowercase, False)
     
+    def test_form_field_output(self):
+        # Check field output
+        self.assertFieldOutput(tag_forms.SingleTagField,
+            valid={
+                'Mr': 'Mr',
+                'Mr, Mrs': 'Mr, Mrs',
+            },
+            invalid={
+                '"': [u'This field cannot contain the " character'],
+            },
+            empty_value=None
+        )
+        self.assertFieldOutput(tag_forms.SingleTagField,
+            field_kwargs={
+                'tag_options': tag_models.TagOptions(
+                    force_lowercase=True
+                )
+            },
+            valid={
+                'Mr': 'mr',
+                'Mr, Mrs': 'mr, mrs',
+            },
+            invalid={
+                '"': [u'This field cannot contain the " character'],
+            },
+            empty_value=None
+        )
         
     def test_single_model_form(self):
         """
@@ -731,4 +769,5 @@ class TestFormTestCase(TestCase, TagTestManager):
         """
         # Check that the form is created correctly
         form = test_forms.SingleFormTest()
-        
+        print ">>>FIELDS:", form.fields
+        print ">>>FORM:", form.as_p()

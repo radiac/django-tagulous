@@ -48,7 +48,8 @@ You are now ready to add tagulous fields to your models - see
 Settings
 --------
 
-If you want to use tagulous constants, remember to have ``from tagulous import constants as tagulous_contants`` at the top of your settings.
+If you want to use tagulous constants, you will need to
+``from tagulous.constants import *`` at the top of your settings.
 
 ``TAGULOUS_AUTOCOMPLETE_JS``
     List of paths under ``STATIC_URL`` to any javascript files which are
@@ -59,11 +60,11 @@ If you want to use tagulous constants, remember to have ``from tagulous import c
     with the tagulous Select2 adaptor. See `Autocomplete Adaptors`_ for
     information about using other included adaptors, or writing your own.
     
-    If you want to use included files, it is advised that you use the values in
-    ``constants.py``, so that when you upgrade Tagulous any paths to third
+    If you want to use included files, it is advised that you use the tagulous
+    constants, so that when you upgrade Tagulous any paths to third
     party code will by updated too.
     
-    Default: ``[tagulous_contants.PATH_JQUERY, tagulous_contants.PATH_SELECT2_JS, tagulous_contants.PATH_SELECT2_ADAPTOR]``
+    Default: ``[PATH_JQUERY, PATH_SELECT2_JS, PATH_SELECT2_ADAPTOR]``
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``
     List of paths under ``STATIC_URL`` to any CSS files which are required for
@@ -73,12 +74,12 @@ If you want to use tagulous constants, remember to have ``from tagulous import c
     The default list will use the included version of Select2. As with
     javascript files it is advised that you use the values in ``constants.py``.
     
-    Default: ``[tagulous_contants.PATH_SELECT2_CSS]``
+    Default: ``[PATH_SELECT2_CSS]``
 
 ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
     Any settings which you want to override in the default adaptor. These will
     be converted to a JSON value and embedded in the HTML field's
-    ``data-tagulous-settings`` attribute. They can be overridden by a field's
+    ``data-tag-options`` attribute. They can be overridden by a field's
     ``autocomplete_settings`` option.
     
     Default: ``{}``
@@ -91,7 +92,7 @@ If you want to use tagulous constants, remember to have ``from tagulous import c
     By default this will be the same as you have set for
     ``TAGULOUS_AUTOCOMPLETE_JS``.
     
-    Default: ``TAGULOUS_AUTOCOMPLETE_JS``
+    Default: value of setting ``TAGULOUS_AUTOCOMPLETE_JS``
 
 ``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
     List of paths under ``STATIC_URL`` to any CSS files which are required for
@@ -101,7 +102,7 @@ If you want to use tagulous constants, remember to have ``from tagulous import c
     By default this will be the same as you have set for
     ``TAGULOUS_AUTOCOMPLETE_CSS``.
     
-    Default: ``TAGULOUS_AUTOCOMPLETE_CSS``
+    Default: value of setting ``TAGULOUS_AUTOCOMPLETE_CSS``
 
 ``TAGULOUS_ADMIN_AUTOCOMPLETE_SETTINGS``
     Admin settings for overriding the adaptor defaults.
@@ -109,7 +110,7 @@ If you want to use tagulous constants, remember to have ``from tagulous import c
     By default this will be the same as you have set for
     ``TAGULOUS_AUTOCOMPLETE_SETTINGS``.
     
-    Default: ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
+    Default: value of setting ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
 
 
 Management Commands

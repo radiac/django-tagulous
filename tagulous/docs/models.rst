@@ -85,17 +85,6 @@ The following arguments can be passed to the field when adding it to the model:
     
     Default: ``0``
     
-``autocomplete_embed``
-    If ``True``, all tags will be embedded in the form's generated HTML,
-    ready for autocompletion.
-    
-    If ``False``, no tags will be embedded.
-    
-    Ignored if `autocomplete_view`_ is set, or an `autocomplete`_
-    argument is passed to the form TagField.
-    
-    Default: ``True``
-
 :: _autocomplete_view:
 ``autocomplete_view``
     Specify the view to use for autocomplete queries.
@@ -103,17 +92,19 @@ The following arguments can be passed to the field when adding it to the model:
     This should be a value which can be passed to `reverse()`, eg the name of
     the view.
     
-    Ignored if an `autocomplete`_ argument is passed to the form TagField.
+    If ``None``, all tags will be embedded into the form field HTML as the
+    ``data-autocomplete`` attribute.
+    
+    If this is an invalid view, a ``ValueError`` will be raised.
     
     Default: ``None``
     
 ``autocomplete_limit``
-    Maximum number of tags to provide at once.
+    Maximum number of tags to provide at once, when ``autocomplete_view`` is
+    set.
     
     If there are more tags for autocompleting than this, they will be sorted
     alphabetically and any after this limit will not be returned.
-    
-    This is the limit for both embedded tags, and JSON request
     
     If ``0``, there will be no limit and all results will be returned
 

@@ -1,6 +1,6 @@
 /** Tagulous adaptor for Select2 */
 $(function () {
-    $('input[data-tag-tagulous]')
+    $('input[data-tagulous]')
         // Initialise tag fields which exists
         .each(function () {
             var $el = $(this),

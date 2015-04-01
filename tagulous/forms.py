@@ -13,7 +13,7 @@ except ImportError:
    from django.utils import simplejson as json
 
 from tagulous import settings
-#from tagulous import models
+from tagulous.models import options
 from tagulous.utils import parse_tags, edit_string_for_tags
 
 
@@ -26,34 +26,33 @@ class TagWidgetBase(forms.TextInput):
     
     # Attributes that the calling Field must set
     tag_options = None
-    autocomplete = None
-    autocomplete_url = None
-    autocomplete_view = None
+    autocomplete_tags = None
     
     # Based on django-taggit
     def render(self, name, value, attrs={}):
-        # Build data attrs
-        if self.autocomplete:
-            attrs['data-tag-autocomplete'] = escape(force_unicode(
+        # Try to provide a URL for the autocomplete to load tags on demand
+        autocomplete_view = self.tag_options.autocomplete_view
+        if autocomplete_view:
+            try:
+                attrs['data-tag-url'] = reverse(self.autocomplete_view)
+            except Exception, e:
+                raise ValueError('Invalid autocomplete view: %s' % e)
+        
+        # Otherwise embed them, if provided
+        elif self.autocomplete_tags:
+            attrs['data-tag-list'] = escape(force_unicode(
                 json.dumps(
-                    [tag.name for tag in self.autocomplete],
+                    [str(tag) for tag in self.autocomplete_tags],
                     cls=DjangoJSONEncoder,
                 )
             ))
-        elif self.autocomplete_view:
-            try:
-                attrs['data-tag-autocomplete-url'] = reverse(self.autocomplete_view)
-            except Exception, e:
-                # If we can't resolve it, fail silently
-                pass
         
         # Merge default autocomplete settings into tag options
-        tag_options = self.tag_options.field_items()
+        tag_options = self.tag_options.field_items(with_defaults=False)
+        print "TAG OPTIONS", tag_options
         autocomplete_settings = {}
-        autocomplete_settings.update(
-            self.default_autocomplete_settings,
-            tag_options.get('autocomplete_settings', {}),
-        )
+        autocomplete_settings.update(self.default_autocomplete_settings)
+        autocomplete_settings.update(tag_options.get('autocomplete_settings', {}))
         tag_options['autocomplete_settings'] = autocomplete_settings
         
         # Store tag options
@@ -62,7 +61,7 @@ class TagWidgetBase(forms.TextInput):
         ))
         
         # Mark it for the javascript to find
-        attrs['data-tag-tagulous'] = 'true'
+        attrs['data-tagulous'] = 'true'
         
         # Turn off browser's autocomplete
         attrs['autocomplete'] = 'off'
@@ -98,22 +97,18 @@ class AdminTagWidget(TagWidgetBase):
 class TagField(forms.CharField):
     widget = TagWidget
     
-    def __init__(self, tag_options, autocomplete=None,
-        autocomplete_url=None, autocomplete_view=None,
-        **kwargs
-    ):
+    def __init__(self, tag_options=None, autocomplete_tags=None, **kwargs):
         """
         Takes all CharField options, plus:
-            tag_options     A TagOptions instance
-                            If not provided, uses Tagulous defaults
-            autocomplete    Queryset of Tags that can be used for autocomplete
-                            Note: autocomplete_embed_limit and autocomplete_url
-                            will be ignored; the full queryset will be embedded
+            tag_options         A TagOptions instance
+                                If not provided, uses Tagulous defaults
+            autocomplete_tags   Iterable of tags to be used for autocomplete,
+                                ie a queryset from a TagModel, or a list of
+                                strings. Will be ignored if tag_options
+                                contains autocomplete_view
         """
-        self.tag_options = tag_options# or models.TagOptions()
-        self.autocomplete = autocomplete
-        self.autocomplete_url = autocomplete_url
-        self.autocomplete_view = autocomplete_view
+        self.tag_options = tag_options or options.TagOptions()
+        self.autocomplete_tags = autocomplete_tags
         super(TagField, self).__init__(**kwargs)
         
     def prepare_value(self, value):
@@ -147,9 +142,7 @@ class TagField(forms.CharField):
         """
         # Add tag options and autocomplete to the widget
         widget.tag_options = self.tag_options
-        widget.autocomplete = self.autocomplete
-        widget.autocomplete_url = self.autocomplete_url
-        widget.autocomplete_view = self.autocomplete_view
+        widget.autocomplete_tags = self.autocomplete_tags
         
         # But nothing to add yet
         return {}
@@ -160,7 +153,8 @@ class TagField(forms.CharField):
             return parse_tags(value, self.tag_options.max_count)
         except ValueError, e:
             raise forms.ValidationError(_('%s' % e))
-            
+
+
 class SingleTagField(TagField):
     """
     A single tag field assumes the contents is in " quotes
@@ -186,15 +180,13 @@ class SingleTagField(TagField):
         """
         Validate by ensuring no quotes other than those at the start and end
         """
-        if not (value.startswith('"') and value.endswith('"')):
-            raise ValidationError('This field value must start and end with " character')
-        
-        # Rest of validation only cares about the string itself
-        true_value = value[1:-1]
+        # Validation only cares about the string itself
+        if value.startswith('"') and value.endswith('"'):
+            value = value[1:-1]
         
         # Validation by parent class will expect empty value to be None
-        super(SingleTagField, self).validate(true_value)
-        if '"' in true_value:
+        super(SingleTagField, self).validate(value)
+        if '"' in value:
             raise ValidationError('This field cannot contain the " character')
       
     def widget_attrs(self, widget):
@@ -205,7 +197,7 @@ class SingleTagField(TagField):
         """
         attrs = super(SingleTagField, self).widget_attrs(widget)
         attrs.update({
-            'data-tag-autocomplete-type': 'single',
+            'data-tag-type': 'single',
         })
         return attrs
         
@@ -213,17 +205,10 @@ class SingleTagField(TagField):
         """
         Clean by parsing tag with quotes
         """
-        #try:
-        #    tags = parse_tags('"%s"' % value, self.tag_options.max_count)
-        #    if len(tags) > 0:
-        #        value = tags[0]
-        #    else:
-        #        value = ''
-        #except ValueError, e:
-        #    raise forms.ValidationError(_('%s' % e))
-        tags = super(SingleTagField, self).clean('"%s"' % value)
+        if value not in self.empty_values:
+            value = '"%s"' % value
+        tags = super(SingleTagField, self).clean(value)
         if tags:
             return tags[0]
         else:
             return None
-        

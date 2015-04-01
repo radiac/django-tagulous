@@ -24,7 +24,7 @@ Only Select2 is included with Tagulous; if you want to use a different library,
 you will need to add it to your project's static files, and add the relative
 path under ``STATIC_URL`` to the appropriate ``TAGULOUS_`` settings.
 
-The included adaptors have their path names stored in ``constants.py``:
+The included adaptors have their path names stored in ``tagulous.constants``:
 
 ``PATH_SELECT2_ADAPTOR``
     The default adaptor for `Select2 <https://select2.github.io/>`_.
@@ -47,10 +47,16 @@ included adaptors to see how they work.
 
 Tagulous puts certain settings on the HTML field's ``data-`` attribute:
 
-``data-tag-autocomplete``
+``data-tagulous``
+    Always ``true`` - used to identify a tagulous class to JavaScript
+
+``data-tag-type``
+    Set to ``single`` when a ``SingleTagField``, otherwise not present.
+
+``data-tag-list``
     JSON-encoded list of tags
 
-``data-tag-autocomplete-url``
+``data-tag-url``
     URL to request tags
 
 ``data-tag-options``
@@ -59,3 +65,38 @@ Tagulous puts certain settings on the HTML field's ``data-`` attribute:
 These settings can be used to initialise your autocomplete library of choice.
 You should initialise it using ``data-tag-options``'s ``autocomplete_settings``
 for default values.
+
+
+Using form fields without models
+--------------------------------
+
+Although in most cases you will want to generate forms with tag fields from a
+model with corresponding tag fields, it is possible to use the form fields
+directly.
+
+To initialise a ``SingleTagField`` or ``TagField``, you can pass the standard
+form field arguments, as well as:
+
+``tag_options``
+    A ``TagOptions`` instance. The model-specific options (``protect_all``,
+    ``initial`` and ``protect_initial``) will be ignored.
+
+``autocomplete_tags``
+    A list of strings of tags. It can actually be any iterable of anything
+    which can be converted to a string, so could also be a queryset from a
+    ``TagModel`` class, for example.
+
+
+The ``clean`` methods on these fields returns values suitable for setting on
+their corresponding model fields:
+
+``forms.SingleTagField.clean(value)``
+    When called on an instance, will return ``None`` if the value is empty,
+    or will return a single valid tag as a string.
+    
+    Note that the ``SingleTagField`` does not allow the character ``"``.
+
+``forms.TagField.clean(value)``
+    When called on an instance, will return a sorted list of unique tags, or an
+    empty list if there are no tags.
+
