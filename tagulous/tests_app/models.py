@@ -8,6 +8,43 @@ from tagulous import SingleTagField, TagField, TagModel
 
 
 #
+# Models for testing SingleTagField
+#
+
+class SingleTestModel(models.Model):
+    """
+    For testing simple single tag fields
+    """
+    name = models.CharField(blank=True, max_length=100)
+    title = SingleTagField(blank=True, null=True)
+
+class SingleOrderTestModel(models.Model):
+    """
+    For testing ordering of a SingleTagField when next to other non-M2M fields
+    """
+    first   = models.CharField(blank=True, max_length=100)
+    second  = models.ForeignKey(SingleTestModel)
+    third   = models.CharField(blank=True, max_length=100)
+    tag     = SingleTagField() # blank=False, null=False
+    fourth  = models.CharField(blank=True, max_length=100)
+    fifth   = models.CharField(blank=True, max_length=100)
+    
+class SingleRequiredTestModel(models.Model):
+    """
+    Test required single tag fields
+    """
+    name = models.CharField(blank=True, max_length=100)
+    tag = SingleTagField(blank=False, null=False)
+    
+class SingleOptionalTestModel(models.Model):
+    """
+    Test optional single tag fields
+    """
+    name = models.CharField(blank=True, max_length=100)
+    tag = SingleTagField(blank=True, null=True)
+
+
+#
 # Models for testing TagField
 #
 
@@ -55,29 +92,23 @@ class CustomTestSecondModel(models.Model):
     tags = TagField(CustomTestTagModel)
 
 
+
 #
-# Models for testing SingleTagField
+# Models for testing forms
 #
 
-class SingleTestModel(models.Model):
-    name = models.CharField(blank=True, max_length=100)
-    title = SingleTagField(blank=True, null=True)
+class FormTest(models.Model):
+    """
+    For testing multiple tag fields in model forms
+    """
+    tagset1 = TagField(initial="Adam, Brian, Chris", case_sensitive=True)
+    tagset2 = TagField(initial="blue, green, red", force_lowercase=True)
+    tagset3 = TagField(initial='html, django')
 
-class SingleOrderTestModel(models.Model):
+class SingleFormTest(models.Model):
     """
-    For testing ordering of a SingleTagField when next to other non-M2M fields
+    For testing single tag fields in model forms
     """
-    first   = models.CharField(blank=True, max_length=100)
-    second  = models.ForeignKey(SingleTestModel)
-    third   = models.CharField(blank=True, max_length=100)
-    tag     = SingleTagField() # blank=False, null=False
-    fourth  = models.CharField(blank=True, max_length=100)
-    fifth   = models.CharField(blank=True, max_length=100)
-    
-class SingleRequiredTestModel(models.Model):
-    name = models.CharField(blank=True, max_length=100)
-    tag = SingleTagField(blank=False, null=False)
-    
-class SingleOptionalTestModel(models.Model):
-    name = models.CharField(blank=True, max_length=100)
-    tag = SingleTagField(blank=True, null=True)
+    tag1 = SingleTagField(initial="Adam, Brian, Chris", case_sensitive=True)
+    tag2 = SingleTagField(initial="blue, green, red", force_lowercase=True)
+    tag3 = SingleTagField(initial='html, django')

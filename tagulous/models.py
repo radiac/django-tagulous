@@ -25,6 +25,7 @@ OPTION_DEFAULTS = {
     'autocomplete_embed':   True,
     'autocomplete_view':    '',
     'autocomplete_limit':   100,
+    # ++ Add widget_settings to override 
 }
 
 # List of model TagField options to exclude from the form TagField
@@ -576,14 +577,17 @@ class TagDescriptor(BaseTagDescriptor):
             manager.set_tag_string(value)
         
         elif isinstance(value, (list, tuple)) and isinstance(value[0], basestring):
-            # It's a list or tuple of tag names
+            # It's a list of tuple of tag names
             manager.set_tag_list(value)
         
+        
         elif isinstance(value, RelatedManagerTagMixin):
+            ##24# ++ Why does this clear first? Unnecessary?
             manager.clear()
             manager.set_tag_list(value.get_tag_list())
         
         else:
+            ##24# ++ Handle a list of Tag instances, or a queryset of Tags
             # ++ This is a risky fallthrough
             # ++ The intention is to set a list of TagModel instances
             # ++ But that needs to be explicitly tested here
@@ -636,6 +640,7 @@ class RelatedManagerTagMixin(BaseTagManager):
         """
         Get the tag names for this instance as a list of tag names
         """
+        # ++ Better as get_tag_strings?
         if not self.instance:
             raise AttributeError("Function get_tag_list is only accessible via an instance")
         
@@ -755,7 +760,7 @@ class BaseTagField(object):
         for key, default in OPTION_DEFAULTS.items():
             # Look in kwargs, then in tag_meta, then in OPTION_DEFAULTS
             options[key] = kwargs.pop(key, tag_meta.get(key, default))
-            
+        
         # Create tag options
         self.tag_options = TagOptions(**options)
         
@@ -771,7 +776,7 @@ class BaseTagField(object):
         # model name for tags here in __init__ - we can only do that in
         # contribute_to_class once we know the name of the field in the model.
         # We'll therefore use the string '-'; Django will not do anything about
-        # resolving it until contribute_to_class, by which point we'll replace
+        # resolving it until contribute_to_class, at which point we'll replace
         # it with a reference to the real tag model.
         kwargs['to'] = self.tag_model if self.tag_model else '-'
         
@@ -881,9 +886,8 @@ class SingleTagField(BaseTagField, models.ForeignKey):
     def __init__(self, *args, **kwargs):
         """
         Create a single tag field - a tag field which can only take one tag
-        Arguments as TagField, except:
-            max_count
-                Not allowed (always 1)
+        
+        See docs/models.rst for a list of arguments
         """
         # Forbid certain ForeignKey arguments
         for forbidden in ['to_field', 'rel_class', 'max_count']:
@@ -950,72 +954,8 @@ class TagField(BaseTagField, models.ManyToManyField):
     def __init__(self, *args, **kwargs):
         """
         Create a Tag field
-        Arguments:
-            to
-                Default: _Tagulous_<ModelName>_<FieldName> (auto-generated)
-                Manually specify the tag model class.
-                Must be a subclass of TagModel
-                If the tag model is specified, it should have a TagMeta class
-                to ensure settings on different tag fields for the same model
-                do not conflict.
-                If the tag model has a TagMeta class, it will override all
-                other arguments passed to the TagField constructor.
-            protect_all
-                Default: False
-                Whether all tags with count 0 should be protected
-                If false, will be decided by tag.protected
-            initial
-                Default: ''
-                List of tags to ensure are in the tag model when the model
-                is first synced (load triggered by post_syncdb signal)
-                * Tags which are new will be created
-                * Tags which have been deleted will be recreated
-                * Tags which exist will be untouched
-                * Value can be a tag string to be parsed, or an array of
-                  strings with one tag in each string.
-                Note: see TagDescriptor.load_initial() to update manually,
-                although this will not remove old protected initial tags.
-                If you find you need to update initial regularly, you would be
-                better off using fixtures with a named TagModel
-            protect_initial
-                Default: True
-                The value for any tags created by the `initial` argument
-            case_sensitive
-                Default: False
-                If True, tags will be case sensitive, eg "django, Django" would
-                be two separate tags.
-                If False, tags will be capitalised by the first time they are used
-            force_lowercase
-                Default: False
-                Force all tags to lower case
-            max_count
-                Default: 0
-                Specifies the maximum number of tags allowed
-                If 0, no maximum number of tags
-            autocomplete_embed
-                Default: True
-                If true, all tags will be embedded with the TagField for
-                autocompletion.
-                If false, no tags will be embedded.
-                Ignored if `autocomplete_view` is set, or an `autocomplete`
-                argument is passed to the form TagField.
-            autocomplete_view
-                Default: None
-                Specify the view to use for autocomplete queries.
-                This should be a value which can be passed to `reverse()`, eg
-                the name of the view.
-                Ignored it an `autocomplete` argument is passed to the form
-                TagField.
-            autocomplete_limit
-                Default: 100
-                Maximum number of tags to provide at once
-                If there are more tags for autocompleting than this, they will
-                be sorted alphabetically and any after this limit will not be
-                returned.
-                This is the limit for both embed and JSON request
-                If 0, there will be no limit and all results will be returned
-        Most normal ManyToManyField arguments are supported (blank, help_text
-        etc) but some are forbidden: db_table, through, symmetrical
+        
+        See docs/models.rst for a list of arguments
         """
         # Forbid certain ManyToManyField arguments
         for forbidden in ['db_table', 'through', 'symmetrical']:

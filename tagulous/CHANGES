@@ -1,0 +1,24 @@
+===================================
+Django Tagulous Changes and Roadmap
+===================================
+
+
+Changelog
+=========
+
+0.5.0       2015-04-10
+            Feature:    Initial public release
+
+
+Roadmap
+=======
+
+Target
+0.5.0       Template tags
+            Hierarchical tag support
+            Advanced admin features
+                Ability to merge tags
+                Ability to change tag hierarchy
+            Migration support (if possible)
+                To and from django-tagging
+                To and from django-taggit

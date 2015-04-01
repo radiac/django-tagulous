@@ -13,6 +13,7 @@ except ImportError:
    from django.utils import simplejson as json
 
 from tagulous import settings
+#from tagulous import models
 from tagulous.utils import parse_tags, edit_string_for_tags
 
 
@@ -20,6 +21,15 @@ class TagWidgetBase(forms.TextInput):
     """
     Base class for tags
     """
+    # Attributes that subclasses must set
+    autocomplete_settings = None
+    
+    # Attributes that the calling Field must set
+    tag_options = None
+    autocomplete = None
+    autocomplete_url = None
+    autocomplete_view = None
+    
     # Based on django-taggit
     def render(self, name, value, attrs={}):
         # Build data attrs
@@ -37,9 +47,18 @@ class TagWidgetBase(forms.TextInput):
                 # If we can't resolve it, fail silently
                 pass
         
+        # Merge default autocomplete settings into tag options
+        tag_options = self.tag_options.field_items()
+        autocomplete_settings = {}
+        autocomplete_settings.update(
+            self.default_autocomplete_settings,
+            tag_options.get('autocomplete_settings', {}),
+        )
+        tag_options['autocomplete_settings'] = autocomplete_settings
+        
         # Store tag options
         attrs['data-tag-options'] = escape(force_unicode(
-            json.dumps(self.tag_options.field_items(), cls=DjangoJSONEncoder)
+            json.dumps(tag_options, cls=DjangoJSONEncoder)
         ))
         
         # Mark it for the javascript to find
@@ -56,26 +75,20 @@ class TagWidget(TagWidgetBase):
     """
     Tag widget for public-facing forms
     """
+    default_autocomplete_settings = settings.AUTOCOMPLETE_SETTINGS
     class Media:
-        css = {
-            'all': ('tagulous/tagwidget.css',)
-        }
-        js = (
-            [settings.PUBLIC_JQUERY] if settings.PUBLIC_JQUERY else []
-        ) + ['tagulous/tagwidget.js']
+        css = settings.AUTOCOMPLETE_CSS
+        js = settings.AUTOCOMPLETE_JS
 
 
 class AdminTagWidget(TagWidgetBase):
     """
     Tag widget for admin forms
     """
+    default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
     class Media:
-        css = {
-            'all': ('tagulous/tagwidget.css',)
-        }
-        js = (
-            [settings.ADMIN_JQUERY] if settings.ADMIN_JQUERY else []
-        ) + ['tagulous/tagwidget.js',]
+        css = settings.ADMIN_AUTOCOMPLETE_CSS
+        js = settings.ADMIN_AUTOCOMPLETE_JS
 
     # Admin will be expecting this to have a choices attribute
     # Set this so the admin will behave as expected
@@ -91,12 +104,13 @@ class TagField(forms.CharField):
     ):
         """
         Takes all CharField options, plus:
-            tag_options     A TagOptions instance (required)
+            tag_options     A TagOptions instance
+                            If not provided, uses Tagulous defaults
             autocomplete    Queryset of Tags that can be used for autocomplete
                             Note: autocomplete_embed_limit and autocomplete_url
                             will be ignored; the full queryset will be embedded
         """
-        self.tag_options = tag_options
+        self.tag_options = tag_options# or models.TagOptions()
         self.autocomplete = autocomplete
         self.autocomplete_url = autocomplete_url
         self.autocomplete_view = autocomplete_view

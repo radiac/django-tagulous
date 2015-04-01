@@ -5,20 +5,34 @@ Override these by setting new values in your global settings file
 """
 from django.conf import settings
 
-# Path to jQuery >= 1.4.3, for use in the public-facing side of the site
-# Relative to STATIC_URL
-# Default: use the version of jQuery which is bundled with tagulous
-# Set to False to disable
-PUBLIC_JQUERY = getattr(
-    settings, 'TAGULOUS_PUBLIC_JQUERY', 'tagulous/jquery-1.10.2.min.js',
+from tagulous import constants
+
+
+AUTOCOMPLETE_JS = getattr(
+    settings, 'TAGULOUS_AUTOCOMPLETE_JS', [
+        constants.PATH_JQUERY,
+        constants.PATH_SELECT2_JS,
+        constants.PATH_SELECT2_ADAPTOR,
+    ]
+)
+AUTOCOMPLETE_CSS = getattr(
+    settings, 'TAGULOUS_AUTOCOMPLETE_CSS', [
+        constants.PATH_SELECT2_CSS,
+    ]
+)
+AUTOCOMPLETE_SETTINGS = getattr(
+    settings, 'TAGULOUS_AUTOCOMPLETE_SETTINGS', {}
 )
 
-# Path to jQuery => 1.4.3, for use in the admin site
-# Relative to STATIC_URL
-# Default: use the version of jQuery which is bundled with tagulous
-# Set to False to disable
-ADMIN_JQUERY = getattr(
-    settings, 'TAGULOUS_ADMIN_JQUERY', 'tagulous/jquery-1.10.2.min.js',
+# Admin overrides
+ADMIN_AUTOCOMPLETE_JS = getattr(
+    settings, 'TAGULOUS_ADMIN_AUTOCOMPLETE_JS', AUTOCOMPLETE_JS
+)
+ADMIN_AUTOCOMPLETE_CSS = getattr(
+    settings, 'TAGULOUS_ADMIN_AUTOCOMPLETE_CSS', AUTOCOMPLETE_CSS
+)
+ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
+    settings, 'TAGULOUS_ADMIN_AUTOCOMPLETE_SETTINGS', AUTOCOMPLETE_SETTINGS
 )
 
 # Option to disable the add related widget in auto-generated admin fields.

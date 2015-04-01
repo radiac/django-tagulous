@@ -5,46 +5,281 @@ from django.core import exceptions
 from django.test import TestCase, TransactionTestCase
 from django.contrib.auth.models import User
 
-from tagulous.models import \
-    TagModel, TagDescriptor, \
-    RelatedManagerTagMixin, SingleTagDescriptor, \
-    model_initialise_tags
-    
+from tagulous import models as tag_models
+from tagulous import forms as tag_forms
+
 from tagulous.tests_app.models import \
     TestModel, OrderTestModel, MultiTestModel, CustomTestTagModel, \
     CustomTestFirstModel, CustomTestSecondModel, \
     SingleTestModel, SingleOrderTestModel, \
     SingleRequiredTestModel, SingleOptionalTestModel
 
-from tagulous.management.commands import initialtags
+from tagulous.tests_app import models as test_models
+from tagulous.tests_app import forms as test_forms
 
-class TestModelTestCase(TestCase):
+
+class TagTestManager(object):
+    """
+    Test mixin with helper functions
+    """ 
+    def assertTagModel(self, model, tag_counts):
+        """
+        Assert the tag model matches the specified tag counts
+        """
+        if len(tag_counts) != model.objects.count():
+            self.fail("Incorrect number of tags in '%s'; expected %d, got %d" % (model, len(tag_counts), model.objects.count()))
+        
+        for tag_name, count in tag_counts.items():
+            try:
+                tag = model.objects.get(name=tag_name)
+            except model.DoesNotExist:
+                self.fail("Tag model missing expected tag '%s'" % tag_name)
+            if tag.count != count:
+                self.fail("Tag count for '%s' incorrect; expected %d, got %d" % (tag_name, count, tag.count))
+        
+    def debugTagModel(self, field):
+        print "-=-=-=-=-=-"
+        print "Tag model: %s" % field.model
+        for tag in field.model.objects.all():
+            print '%s: %d' % (tag.name, tag.count)
+        print "-=-=-=-=-=-"
+
+
+###############################################################################
+######################################################## models.SingleTagField
+###############################################################################
+
+class ModelSingleTagFieldTest(TestCase, TagTestManager):
+    
+    def test_model_correct(self):
+        """
+        Test that the single tag model is created correctly
+        """
+        # Check SingleTagDescriptor is in place
+        self.assertTrue(isinstance(
+            SingleTestModel.title, tag_models.SingleTagDescriptor
+        ))
+        
+        # Check the tag table exists
+        self.assertTrue(issubclass(
+            SingleTestModel.title.model, tag_models.TagModel
+        ))
+    
+
+    def test_single_instances_correct(self):
+        """
+        Create instances and check that basic single tag works
+        """
+        # Get tag model
+        tag_model = SingleTestModel.title.model
+        
+        # Check basic model still works (!)
+        test1 = SingleTestModel(name="First")
+        test1.save()
+        self.assertEqual(test1.name, 'First')
+        
+        # Check the SingleTagDescriptor is returning None as expected
+        self.assertEqual(test1.title, None)
+        
+        # Set a tag and check it is available before saving
+        test1.title = 'Mr'
+        self.assertEqual(test1.title.__class__, SingleTestModel.title.model)
+        self.assertEqual(test1.title.name, 'Mr')
+        self.assertEqual('%s' % test1.title, 'Mr')
+        self.assertEqual(u'%s' % test1.title, 'Mr')
+        self.assertTagModel(tag_model, {})
+        
+        # Check it is available after saving
+        test1.save()
+        self.assertEqual(test1.title.__class__, SingleTestModel.title.model)
+        self.assertEqual(test1.title.name, 'Mr')
+        self.assertEqual('%s' % test1.title, 'Mr')
+        self.assertEqual(u'%s' % test1.title, 'Mr')
+        self.assertTagModel(tag_model, {
+            'Mr':   1,
+        })
+        
+        # Check setting a title before saving works
+        test2 = SingleTestModel(name="Second", title='Mrs')
+        test2.save()
+        self.assertEqual(test2.name, 'Second')
+        self.assertEqual(test2.title.name, 'Mrs')
+        self.assertTagModel(tag_model, {
+            'Mr':   1,
+            'Mrs':  1,
+        })
+        
+        # Set a title using a tag object, and check tag is incremented
+        tagMr = test1.title
+        tagMrs = test2.title
+        test3 = SingleTestModel(name="Third", title=tagMr)
+        test3.save()
+        self.assertEqual(test3.name, 'Third')
+        self.assertEqual(test3.title.name, 'Mr')
+        self.assertTagModel(tag_model, {
+            'Mr':   2,
+            'Mrs':  1,
+        })
+        
+        # Change a title using a string, and check tag counts are updated
+        test3.title = 'Mrs'
+        test3.save()
+        self.assertEqual(test3.name, 'Third')
+        self.assertEqual(test3.title.name, 'Mrs')
+        self.assertTagModel(tag_model, {
+            'Mr':   1,
+            'Mrs':  2,
+        })
+        
+        # Change a title using a tag object and check tag counts are updated
+        test3.title = tagMr
+        test3.save()
+        self.assertEqual(test3.name, 'Third')
+        self.assertEqual(test3.title.name, 'Mr')
+        self.assertTagModel(tag_model, {
+            'Mr':   2,
+            'Mrs':  1,
+        })
+        
+        # Remove a tag by changing to another and reducing its count to 0
+        test2.title = tagMr
+        test2.save()
+        self.assertTagModel(tag_model, {
+            'Mr':   3,
+        })
+        
+        # Decrement a tag by deleting an instance
+        test3.delete()
+        self.assertTagModel(tag_model, {
+            'Mr':   2,
+        })
+        
+        # Change the value, not saving, then delete, updating the count of
+        # the old tag, but leaving the correct new tag on the object
+        test2.title = "Mrs"
+        self.assertEqual(test2.title.name, 'Mrs')
+        self.assertTagModel(tag_model, {
+            'Mr':   2,
+        })
+        test2.delete()
+        self.assertEqual(test2.title.name, 'Mrs')
+        
+        # Remove a tag by deleting an instance
+        test1.delete()
+        self.assertTagModel(tag_model, {})
+        
+        # Re-save a deleted tag
+        self.assertEqual(test1.title.name, 'Mr')
+        self.assertTagModel(tag_model, {})
+        test1.save()
+        self.assertEqual(test1.title.name, 'Mr')
+        self.assertTagModel(tag_model, {
+            'Mr':   1,
+        })
+        
+        # Check that multiple unsaved changes work
+        test1.title = 'Dr'
+        self.assertEqual(test1.title.name, 'Dr')
+        self.assertTagModel(tag_model, {'Mr': 1,})
+        test1.title = 'Ms'
+        self.assertEqual(test1.title.name, 'Ms')
+        self.assertTagModel(tag_model, {'Mr': 1,})
+        test1.save()
+        self.assertTagModel(tag_model, {
+            'Ms':   1,
+        })
+        test1.title = 'Mr'
+        self.assertTagModel(tag_model, {
+            'Ms':   1,
+        })
+        test1.save()
+        self.assertTagModel(tag_model, {
+            'Mr':   1,
+        })
+        
+        # Make two unsaved changes at once
+        test2.save()
+        self.assertTagModel(tag_model, {
+            'Mr':   1,
+            'Mrs':  1,
+        })
+        test1.title = 'Dr'
+        test2.title = 'Ms'
+        self.assertEqual(test1.title.name, 'Dr')
+        self.assertEqual(test2.title.name, 'Ms')
+        self.assertTagModel(tag_model, {
+            'Mr':   1,
+            'Mrs':  1,
+        })
+        test1.save()
+        test2.save()
+        self.assertTagModel(tag_model, {
+            'Dr':   1,
+            'Ms':   1,
+        })
+        
+        # Check that loading works with SingleTagManager
+        test1 = SingleTestModel.objects.get(name="First")
+        self.assertEqual(test1.title.name, 'Dr')
+        self.assertTagModel(tag_model, {
+            'Dr':   1,
+            'Ms':   1,
+        })
+
+    def test_single_field_order_correct(self):
+        """
+        Test that the order of the non-ManyToMany fields is correct
+        This is to check that Django internals haven't changed significantly
+        """
+        # Check the ordering is as expected
+        # 6 + auto pk 'id'
+        self.assertEqual(len(SingleOrderTestModel._meta.local_fields), 7)
+        self.assertEqual(SingleOrderTestModel._meta.local_fields[0].name, 'id')
+        self.assertEqual(SingleOrderTestModel._meta.local_fields[1].name, 'first')
+        self.assertEqual(SingleOrderTestModel._meta.local_fields[2].name, 'second')
+        self.assertEqual(SingleOrderTestModel._meta.local_fields[3].name, 'third')
+        self.assertEqual(SingleOrderTestModel._meta.local_fields[4].name, 'tag')
+        self.assertEqual(SingleOrderTestModel._meta.local_fields[5].name, 'fourth')
+        self.assertEqual(SingleOrderTestModel._meta.local_fields[6].name, 'fifth')
+
+    def test_single_exceptions(self):
+        """
+        Test that correct exceptions are raised by SingleTagField
+        """
+        # Check optional field saves without exception
+        opt1 = SingleOptionalTestModel(name="First")
+        opt1.save()
+        
+        # Check required field raises exception
+        with self.assertRaises(exceptions.ValidationError) as cm:
+            test1 = SingleRequiredTestModel(name="First")
+            test1.save()
+        the_exception = cm.exception
+        field = SingleRequiredTestModel._meta.get_field_by_name('tag')[0]
+        self.assertEqual(the_exception.messages[0], u'This field cannot be null.')
+        
+
+###############################################################################
+######################################################## models.SingleTagField
+###############################################################################
+
+class TestModelTestCase(TestCase, TagTestManager):
     def setUp(self):
         # Load initial tags for all models which have them
-        model_initialise_tags(MultiTestModel)
-        model_initialise_tags(CustomTestFirstModel)
-        model_initialise_tags(CustomTestSecondModel)
+        tag_models.model_initialise_tags(MultiTestModel)
+        tag_models.model_initialise_tags(CustomTestFirstModel)
+        tag_models.model_initialise_tags(CustomTestSecondModel)
         
     def test_model_correct(self):
         """
         Test that the tag model is created correctly
         """
         # Check that the TagDescriptor is in place
-        self.assertTrue(isinstance(TestModel.tags, TagDescriptor))
+        self.assertTrue(isinstance(TestModel.tags, tag_models.TagDescriptor))
         
         # Check that the tag table exists
-        self.assertTrue(issubclass(TestModel.tags.field.rel.to, TagModel))
-        self.assertTrue(issubclass(TestModel.tags.model, TagModel))
-    
-    def test_single_model_correct(self):
-        """
-        Test that the single tag model is created correctly
-        """
-        # Check SingleTagDescriptor is in place
-        self.assertTrue(isinstance(SingleTestModel.title, SingleTagDescriptor))
-        
-        # Check the tag table exists
-        self.assertTrue(issubclass(SingleTestModel.title.model, TagModel))
+        self.assertTrue(issubclass(TestModel.tags.field.rel.to, tag_models.TagModel))
+        self.assertTrue(issubclass(TestModel.tags.model, tag_models.TagModel))
     
     def test_field_order_correct(self):
         """
@@ -61,22 +296,6 @@ class TestModelTestCase(TestCase):
         self.assertEqual(OrderTestModel._meta.local_many_to_many[0].name, 'first')
         self.assertEqual(OrderTestModel._meta.local_many_to_many[1].name, 'tags')
         self.assertEqual(OrderTestModel._meta.local_many_to_many[2].name, 'second')
-    
-    def test_single_field_order_correct(self):
-        """
-        Test that the order of the non-ManyToMany fields is correct
-        This is to check that Django internals haven't changed significantly
-        """
-        # Check the ordering is as expected
-        # 6 + auto pk 'id'
-        self.assertEqual(len(SingleOrderTestModel._meta.local_fields), 7)
-        self.assertEqual(SingleOrderTestModel._meta.local_fields[0].name, 'id')
-        self.assertEqual(SingleOrderTestModel._meta.local_fields[1].name, 'first')
-        self.assertEqual(SingleOrderTestModel._meta.local_fields[2].name, 'second')
-        self.assertEqual(SingleOrderTestModel._meta.local_fields[3].name, 'third')
-        self.assertEqual(SingleOrderTestModel._meta.local_fields[4].name, 'tag')
-        self.assertEqual(SingleOrderTestModel._meta.local_fields[5].name, 'fourth')
-        self.assertEqual(SingleOrderTestModel._meta.local_fields[6].name, 'fifth')
     
     def test_instances_correct(self):
         """
@@ -286,165 +505,6 @@ class TestModelTestCase(TestCase):
             'javascript':   2,
         })
     
-    def test_single_instances_correct(self):
-        """
-        Create instances and check that basic single tag works
-        """
-        # Get tag model
-        tag_model = SingleTestModel.title.model
-        
-        # Check basic model still works (!)
-        test1 = SingleTestModel(name="First")
-        test1.save()
-        self.assertEqual(test1.name, 'First')
-        
-        # Check the SingleTagDescriptor is returning None as expected
-        self.assertEqual(test1.title, None)
-        
-        # Set a tag and check it is available before saving
-        test1.title = 'Mr'
-        self.assertEqual(test1.title.__class__, SingleTestModel.title.model)
-        self.assertEqual(test1.title.name, 'Mr')
-        self.assertEqual('%s' % test1.title, 'Mr')
-        self.assertEqual(u'%s' % test1.title, 'Mr')
-        self.assertTagModel(tag_model, {})
-        
-        # Check it is available after saving
-        test1.save()
-        self.assertEqual(test1.title.__class__, SingleTestModel.title.model)
-        self.assertEqual(test1.title.name, 'Mr')
-        self.assertEqual('%s' % test1.title, 'Mr')
-        self.assertEqual(u'%s' % test1.title, 'Mr')
-        self.assertTagModel(tag_model, {
-            'Mr':   1,
-        })
-        
-        # Check setting a title before saving works
-        test2 = SingleTestModel(name="Second", title='Mrs')
-        test2.save()
-        self.assertEqual(test2.name, 'Second')
-        self.assertEqual(test2.title.name, 'Mrs')
-        self.assertTagModel(tag_model, {
-            'Mr':   1,
-            'Mrs':  1,
-        })
-        
-        # Set a title using a tag object, and check tag is incremented
-        tagMr = test1.title
-        tagMrs = test2.title
-        test3 = SingleTestModel(name="Third", title=tagMr)
-        test3.save()
-        self.assertEqual(test3.name, 'Third')
-        self.assertEqual(test3.title.name, 'Mr')
-        self.assertTagModel(tag_model, {
-            'Mr':   2,
-            'Mrs':  1,
-        })
-        
-        # Change a title using a string, and check tag counts are updated
-        test3.title = 'Mrs'
-        test3.save()
-        self.assertEqual(test3.name, 'Third')
-        self.assertEqual(test3.title.name, 'Mrs')
-        self.assertTagModel(tag_model, {
-            'Mr':   1,
-            'Mrs':  2,
-        })
-        
-        # Change a title using a tag object and check tag counts are updated
-        test3.title = tagMr
-        test3.save()
-        self.assertEqual(test3.name, 'Third')
-        self.assertEqual(test3.title.name, 'Mr')
-        self.assertTagModel(tag_model, {
-            'Mr':   2,
-            'Mrs':  1,
-        })
-        
-        # Remove a tag by changing to another and reducing its count to 0
-        test2.title = tagMr
-        test2.save()
-        self.assertTagModel(tag_model, {
-            'Mr':   3,
-        })
-        
-        # Decrement a tag by deleting an instance
-        test3.delete()
-        self.assertTagModel(tag_model, {
-            'Mr':   2,
-        })
-        
-        # Change the value, not saving, then delete, updating the count of
-        # the old tag, but leaving the correct new tag on the object
-        test2.title = "Mrs"
-        self.assertEqual(test2.title.name, 'Mrs')
-        self.assertTagModel(tag_model, {
-            'Mr':   2,
-        })
-        test2.delete()
-        self.assertEqual(test2.title.name, 'Mrs')
-        
-        # Remove a tag by deleting an instance
-        test1.delete()
-        self.assertTagModel(tag_model, {})
-        
-        # Re-save a deleted tag
-        self.assertEqual(test1.title.name, 'Mr')
-        self.assertTagModel(tag_model, {})
-        test1.save()
-        self.assertEqual(test1.title.name, 'Mr')
-        self.assertTagModel(tag_model, {
-            'Mr':   1,
-        })
-        
-        # Check that multiple unsaved changes work
-        test1.title = 'Dr'
-        self.assertEqual(test1.title.name, 'Dr')
-        self.assertTagModel(tag_model, {'Mr': 1,})
-        test1.title = 'Ms'
-        self.assertEqual(test1.title.name, 'Ms')
-        self.assertTagModel(tag_model, {'Mr': 1,})
-        test1.save()
-        self.assertTagModel(tag_model, {
-            'Ms':   1,
-        })
-        test1.title = 'Mr'
-        self.assertTagModel(tag_model, {
-            'Ms':   1,
-        })
-        test1.save()
-        self.assertTagModel(tag_model, {
-            'Mr':   1,
-        })
-        
-        # Make two unsaved changes at once
-        test2.save()
-        self.assertTagModel(tag_model, {
-            'Mr':   1,
-            'Mrs':  1,
-        })
-        test1.title = 'Dr'
-        test2.title = 'Ms'
-        self.assertEqual(test1.title.name, 'Dr')
-        self.assertEqual(test2.title.name, 'Ms')
-        self.assertTagModel(tag_model, {
-            'Mr':   1,
-            'Mrs':  1,
-        })
-        test1.save()
-        test2.save()
-        self.assertTagModel(tag_model, {
-            'Dr':   1,
-            'Ms':   1,
-        })
-        
-        # Check that loading works with SingleTagManager
-        test1 = SingleTestModel.objects.get(name="First")
-        self.assertEqual(test1.title.name, 'Dr')
-        self.assertTagModel(tag_model, {
-            'Dr':   1,
-            'Ms':   1,
-        })
         
     def test_multipletags_correct(self):
         """
@@ -590,22 +650,6 @@ class TestModelTestCase(TestCase):
             'javascript': 0,
         })
         
-    def test_single_exceptions(self):
-        """
-        Test that correct exceptions are raised by SingleTagField
-        """
-        # Check optional field saves without exception
-        opt1 = SingleOptionalTestModel(name="First")
-        opt1.save()
-        
-        # Check required field raises exception
-        with self.assertRaises(exceptions.ValidationError) as cm:
-            test1 = SingleRequiredTestModel(name="First")
-            test1.save()
-        the_exception = cm.exception
-        field = SingleRequiredTestModel._meta.get_field_by_name('tag')[0]
-        self.assertEqual(the_exception.messages[0], u'This field cannot be null.')
-        
     def test_tag_comparison(self):
         """
         Test that tag comparison works
@@ -644,33 +688,47 @@ class TestModelTestCase(TestCase):
         self.assertEqual(test1.tagset1, 'html django')
         self.assertEqual(test1.tagset2, 'red green blue')
         self.assertEqual(test1.tagset3, 'chris adam brian')
-        self.assertEqual(test1.tagset3, 'adam adam brian')
         
         # ++ Test comparing against a list
         # ++ Test comparing one model field against another
         # ++ Test single tag manager
         
+    
+###############################################################################
+######################################################################## Forms
+###############################################################################
+
+class TestFormTestCase(TestCase, TagTestManager):
+    def setUp(self):
+        # Load initial tags for all models which have them
+        tag_models.model_initialise_tags(test_models.SingleFormTest)
         
-    def assertTagModel(self, model, tag_counts):
+    def test_single_model_formfield(self):
         """
-        Assert the tag model matches the specified tag counts
+        Test that model.SingleTagField.formfield works correctly
         """
-        if len(tag_counts) != model.objects.count():
-            self.fail("Incorrect number of tags in '%s'; expected %d, got %d" % (model, len(tag_counts), model.objects.count()))
+        # Check that the model fields are generated correctly
+        tag1_field = test_models.SingleFormTest._meta.get_field('tag1').formfield()
+        tag2_field = test_models.SingleFormTest._meta.get_field('tag2').formfield()
+        tag3_field = test_models.SingleFormTest._meta.get_field('tag3').formfield()
+        self.assertTrue(isinstance(tag1_field, tag_forms.SingleTagField))
+        self.assertTrue(isinstance(tag2_field, tag_forms.SingleTagField))
+        self.assertTrue(isinstance(tag3_field, tag_forms.SingleTagField))
         
-        for tag_name, count in tag_counts.items():
-            try:
-                tag = model.objects.get(name=tag_name)
-            except model.DoesNotExist:
-                self.fail("Tag model missing expected tag '%s'" % tag_name)
-            if tag.count != count:
-                self.fail("Tag count for '%s' incorrect; expected %d, got %d" % (tag_name, count, tag.count))
+        # Check field options
+        self.assertTrue(isinstance(tag1_field.tag_options, tag_models.TagOptions))
+        self.assertTrue(isinstance(tag2_field.tag_options, tag_models.TagOptions))
+        self.assertTrue(isinstance(tag3_field.tag_options, tag_models.TagOptions))
+        self.assertEqual(tag1_field.tag_options.case_sensitive, True)
+        self.assertEqual(tag2_field.tag_options.force_lowercase, True)
+        self.assertEqual(tag3_field.tag_options.case_sensitive, False)
+        self.assertEqual(tag3_field.tag_options.force_lowercase, False)
+    
         
-    def debugTagModel(self, field):
-        print "-=-=-=-=-=-"
-        print "Tag model: %s" % field.model
-        for tag in field.model.objects.all():
-            print '%s: %d' % (tag.name, tag.count)
-        print "-=-=-=-=-=-"
-        
+    def test_single_model_form(self):
+        """
+        Test that a model form with a SingleTagField functions correctly
+        """
+        # Check that the form is created correctly
+        form = test_forms.SingleFormTest()
         
