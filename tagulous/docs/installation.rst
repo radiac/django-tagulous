@@ -64,7 +64,7 @@ If you want to use tagulous constants, you will need to
     constants, so that when you upgrade Tagulous any paths to third
     party code will by updated too.
     
-    Default: ``[PATH_JQUERY, PATH_SELECT2_JS, PATH_SELECT2_ADAPTOR]``
+    Default: ``(PATH_JQUERY, PATH_SELECT2_JS, PATH_SELECT2_ADAPTOR)``
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``
     List of paths under ``STATIC_URL`` to any CSS files which are required for
@@ -74,7 +74,7 @@ If you want to use tagulous constants, you will need to
     The default list will use the included version of Select2. As with
     javascript files it is advised that you use the values in ``constants.py``.
     
-    Default: ``[PATH_SELECT2_CSS]``
+    Default: ``{'all': (PATH_SELECT2_CSS,)}``
 
 ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
     Any settings which you want to override in the default adaptor. These will
@@ -82,7 +82,11 @@ If you want to use tagulous constants, you will need to
     ``data-tag-options`` attribute. They can be overridden by a field's
     ``autocomplete_settings`` option.
     
-    Default: ``{}``
+    See `Autocomplete Adaptors`_ for accepted values for this setting.
+    
+    If set to ``None``, no settings will be added to the HTML field.
+    
+    Default: ``None``
 
 ``TAGULOUS_ADMIN_AUTOCOMPLETE_JS``
     List of paths under ``STATIC_URL`` to any javascript files which are
@@ -111,6 +115,8 @@ If you want to use tagulous constants, you will need to
     ``TAGULOUS_AUTOCOMPLETE_SETTINGS``.
     
     Default: value of setting ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
+
+Model and form fields settings are managed by the `TagOptions`_ class.
 
 
 Management Commands

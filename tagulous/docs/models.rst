@@ -23,7 +23,7 @@ The following arguments can be passed to the field when adding it to the model:
 
 ``to``
     Manually specify a `Custom Tag Model`_, which must be a subclass of
-    ``tagulous.TagModel``.
+    ``tagulous.models.TagModel``.
     
     If the tag model is specified, it should have a `TagMeta`_ class to ensure
     settings on different tag fields for the same model do not conflict.
@@ -103,8 +103,8 @@ The following arguments can be passed to the field when adding it to the model:
     Maximum number of tags to provide at once, when ``autocomplete_view`` is
     set.
     
-    If there are more tags for autocompleting than this, they will be sorted
-    alphabetically and any after this limit will not be returned.
+    If the autocomplete adaptor supports pages, this will be the number shown
+    per page, otherwise any after this limit will not be returned.
     
     If ``0``, there will be no limit and all results will be returned
 
@@ -261,22 +261,44 @@ Example
 TagOptions
 ----------
 
-The ``TagOptions`` class is a simple container for tag options, available
-from the ``tag_options`` property of the `Unbound Field <_unbound_fields>`_.
+The ``TagOptions`` class is a simple container for tag options. The options for
+a model field are available from the ``tag_options`` property of the
+`Unbound Field <_unbound_fields>`_.
 
 All options listed in `Model Field Arguments`_ are available directly on the
 object, except for ``to``. It also provides two instance methods:
 
-``items()``
+``items(with_defaults=True)``
     Get a dict of all options
+    
+    If with_defaults is true, any missing settings will be taken from the
+    defaults in ``constants.OPTION_DEFAULTS``.
 
-``field_items()``
+``field_items(with_defaults=True)``
     Get a dict of just the options for a form field.
+    
+    If with_defaults is true, any missing settings will be taken from the
+    defaults in ``constants.OPTION_DEFAULTS``.
 
 Example::
     print MyModel.tags.tag_options.initial
     if "force_lowercase" in MyModel.tags.tag_options.items():
         ...
+
+``TagOptions`` instances can be added together to create a new merged set of
+options; note though that this is a shallow merge, ie the value of
+``autocomplete_settings`` on the left will be replaced by the value on the
+right::
+
+    merged_options = TagOptions(
+        autocomplete_settings={'width': 'resolve'}
+    ) + TagOptions(
+        autocomplete_settings={'allowClear': True}
+    )
+    # merged_options.autocomplete_settings == {'allowClear': True}
+
+In the same way, setting ``autocomplete_settings`` on the field will replace
+any default value.
 
 
 Database Migrations

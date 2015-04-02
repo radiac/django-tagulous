@@ -49,11 +49,16 @@ class TagWidgetBase(forms.TextInput):
         
         # Merge default autocomplete settings into tag options
         tag_options = self.tag_options.field_items(with_defaults=False)
-        print "TAG OPTIONS", tag_options
-        autocomplete_settings = {}
-        autocomplete_settings.update(self.default_autocomplete_settings)
-        autocomplete_settings.update(tag_options.get('autocomplete_settings', {}))
-        tag_options['autocomplete_settings'] = autocomplete_settings
+        if (
+            'autocomplete_settings' not in tag_options
+            and self.default_autocomplete_settings is not None
+        ):
+            tag_options['autocomplete_settings'] = self.default_autocomplete_settings
+        
+        # Inject extra settings
+        tag_options.update({
+            'required': self.is_required,
+        })
         
         # Store tag options
         attrs['data-tag-options'] = escape(force_unicode(
@@ -149,11 +154,15 @@ class TagField(forms.CharField):
         
     def clean(self, value):
         value = super(TagField, self).clean(value)
+        
+        if self.tag_options.force_lowercase:
+            value = value.lower()
+        
         try:
             return parse_tags(value, self.tag_options.max_count)
         except ValueError, e:
             raise forms.ValidationError(_('%s' % e))
-
+        
 
 class SingleTagField(TagField):
     """

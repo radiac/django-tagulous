@@ -20,10 +20,14 @@ def autocomplete(request, tag_model):
             The request object from the dispatcher
         tag_model
             Reference to the tag model (eg myModel.tags.model)
+    
+    The following GET parameters can be set:
+        q   The query string to filter by
+        p   The current page
             
-    JSON object returned:
-    {
-        results:    []
+    Response is a JSON object with following keys:
+        results     List of tags
+        more        Boolean if there is more
     }
     """
     # Get tag options
@@ -31,6 +35,7 @@ def autocomplete(request, tag_model):
     
     # Get query string
     query = request.GET.get('q', '')
+    page = request.GET.get('p', 1)
     
     # Perform search
     if query:
@@ -46,14 +51,17 @@ def autocomplete(request, tag_model):
     
     # Limit results
     if options.autocomplete_limit:
-        results = results.order_by('name')[:options.autocomplete_limit]
+        start = options.autocomplete_limit * (page - 1)
+        end = options.autocomplete_limit * page
+        results = results.order_by('name')[start:end]
+        more = results.order_by('name').count() > end
     
     # Build response
     response = {
         'results':  [tag.name for tag in results],
+        'more':     more,
     }
     return HttpResponse(
         json.dumps(response, cls=DjangoJSONEncoder),
         mimetype='application/json',
     )
-    

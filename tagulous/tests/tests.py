@@ -5,8 +5,10 @@ from django.core import exceptions
 from django.test import TestCase, TransactionTestCase
 from django.contrib.auth.models import User
 
+from tagulous import constants as tag_constants
 from tagulous import models as tag_models
 from tagulous import forms as tag_forms
+from tagulous import settings as tag_settings
 
 from tagulous.tests_app.models import \
     TestModel, OrderTestModel, MultiTestModel, CustomTestTagModel, \
@@ -46,11 +48,34 @@ class TagTestManager(object):
 
 
 ###############################################################################
+######################################################## models.TagOptions
+###############################################################################
+
+class TagOptionsTest(TestCase):
+    """
+    Test TagOptions
+    """
+    def test_defaults(self):
+        opt = tag_models.TagOptions()
+        self.assertEqual(opt.items(with_defaults=False), {})
+        self.assertEqual(opt.items(), tag_constants.OPTION_DEFAULTS)
+        self.assertEqual(opt.field_items(with_defaults=False), {})
+        self.assertEqual(opt.field_items(), dict([
+            (k, v) for k, v in tag_constants.OPTION_DEFAULTS.items()
+            if k in tag_constants.FIELD_OPTIONS
+        ]))
+
+    # ++ more
+
+
+###############################################################################
 ######################################################## models.SingleTagField
 ###############################################################################
 
 class ModelSingleTagFieldTest(TestCase, TagTestManager):
-    
+    """
+    Test model.SingleTagField
+    """
     def test_model_correct(self):
         """
         Test that the single tag model is created correctly
@@ -769,5 +794,14 @@ class TestFormTestCase(TestCase, TagTestManager):
         """
         # Check that the form is created correctly
         form = test_forms.SingleFormTest()
-        print ">>>FIELDS:", form.fields
-        print ">>>FORM:", form.as_p()
+        
+        # Check the form media - crude, but should be good enough
+        media = form.media
+        for js in tag_settings.AUTOCOMPLETE_JS:
+            self.assertTrue(js in media)
+        for grp, files in tag_settings.AUTOCOMPLETE_CSS.items():
+            for css in files:
+                self.assertTrue(css in media)
+        
+        # ++
+        

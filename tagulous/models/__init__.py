@@ -699,8 +699,11 @@ class BaseTagField(object):
         # Extract options
         options = {}
         for key, default in constants.OPTION_DEFAULTS.items():
-            # Look in kwargs, then in tag_meta, then in OPTION_DEFAULTS
-            options[key] = kwargs.pop(key, tag_meta.get(key, default))
+            # Look in kwargs, then in tag_meta
+            if key in kwargs:
+                options[key] = kwargs.pop(key)
+            elif key in tag_meta:
+                options[key] = tag_meta[key]
         
         # Create tag options
         self.tag_options = TagOptions(**options)

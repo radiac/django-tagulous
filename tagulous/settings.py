@@ -9,19 +9,20 @@ from tagulous import constants
 
 
 AUTOCOMPLETE_JS = getattr(
-    settings, 'TAGULOUS_AUTOCOMPLETE_JS', [
+    settings, 'TAGULOUS_AUTOCOMPLETE_JS', (
         constants.PATH_JQUERY,
+        constants.PATH_TAGULOUS_JS,
         constants.PATH_SELECT2_JS,
         constants.PATH_SELECT2_ADAPTOR,
-    ]
+    )
 )
 AUTOCOMPLETE_CSS = getattr(
-    settings, 'TAGULOUS_AUTOCOMPLETE_CSS', [
-        constants.PATH_SELECT2_CSS,
-    ]
+    settings, 'TAGULOUS_AUTOCOMPLETE_CSS', {
+        'all':  [constants.PATH_SELECT2_CSS],
+    }
 )
 AUTOCOMPLETE_SETTINGS = getattr(
-    settings, 'TAGULOUS_AUTOCOMPLETE_SETTINGS', {}
+    settings, 'TAGULOUS_AUTOCOMPLETE_SETTINGS', None
 )
 
 # Admin overrides

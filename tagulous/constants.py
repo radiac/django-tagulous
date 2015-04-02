@@ -9,6 +9,9 @@ Tagulous constants
 # Path to version of jQuery included with tagulous
 PATH_JQUERY = 'tagulous/lib/jquery-1.11.2.min.js'
 
+# Path to tagulous library code, for window.Tagulous
+PATH_TAGULOUS_JS = 'tagulous/tagulous.js'
+
 # Paths to version of Select2 included with tagulous
 PATH_SELECT2_JS = 'tagulous/lib/select2-3.5.2/select2.min.js'
 PATH_SELECT2_CSS = 'tagulous/lib/select2-3.5.2/select2.css'

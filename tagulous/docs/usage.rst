@@ -13,9 +13,9 @@ and two ``TagField``s (a typical tag field, using ``ManyToManyField``).
     import tagulous
     
     class Person(models.Model):
-        title = tagulous.SingleTagField(initial="Mr, Mrs, Miss, Ms")
+        title = tagulous.models.SingleTagField(initial="Mr, Mrs, Miss, Ms")
         name = models.CharField(max_length=255)
-        skills = tagulous.TagField()
+        skills = tagulous.models.TagField()
     
 * This will create two new models at runtime to store the tags,
   ``_Tagulous_Person_title`` and ``_Tagulous_Person_skills``.
@@ -63,7 +63,7 @@ Custom models
 Explicitly specify the tag model
 
     import tagulous
-    class Hobbies(tagulous.TagModel):
+    class Hobbies(tagulous.models.TagModel):
         # All custom tag models must provide a ``name`` CharField. This is what
         # the tag will be shown as and parsed using.
         name = CharField()
@@ -80,7 +80,7 @@ Explicitly specify the tag model
     
     class Person(models.Model):
         ...
-        hobbies = tagulous.TagField(to=Hobbies, autocomplete_view=None)
+        hobbies = tagulous.models.TagField(to=Hobbies, autocomplete_view=None)
 
 
 Forms

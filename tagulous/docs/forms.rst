@@ -28,12 +28,12 @@ The included adaptors have their path names stored in ``tagulous.constants``:
 
 ``PATH_SELECT2_ADAPTOR``
     The default adaptor for `Select2 <https://select2.github.io/>`_.
-
-``PATH_CHOSEN_ADAPTOR``
-    The adaptor for `chosen <http://harvesthq.github.io/chosen/>`_.
+    
+    Autocomplete settings should be a dict, and will be passed to the Select2
+    constructor.
 
 ``PATH_SELECTIZE_ADAPTOR``
-    The adaptor for `selectize.js <http://brianreavis.github.io/selectize.js/>`_.
+    The adaptor for `Selectize <http://brianreavis.github.io/selectize.js/>`_.
 
 ``PATH_JQUERYUI_ADAPTOR``
     The adaptor for `jQuery UI autocomplete <https://jqueryui.com/autocomplete/>`_.
@@ -43,7 +43,9 @@ Writing a custom adaptor
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Writing a custom adaptor should be fairly self-explanatory - take a look at the
-included adaptors to see how they work.
+included adaptors to see how they work. It's mostly just a case of pulling data
+out of the HTML field, and fiddling with it a bit to pass it into the library's
+constructor.
 
 Tagulous puts certain settings on the HTML field's ``data-`` attribute:
 
@@ -61,10 +63,18 @@ Tagulous puts certain settings on the HTML field's ``data-`` attribute:
 
 ``data-tag-options``
     JSON-encoded dict of tag options
+    
+    In addition to the dict from `TagOptions.field_items`_, there will also be:
+    
+    ``required``
+        A boolean indicating whether the form field is required or not
 
 These settings can be used to initialise your autocomplete library of choice.
 You should initialise it using ``data-tag-options``'s ``autocomplete_settings``
 for default values.
+
+If you write an adaptor which you think would be a good addition to this
+project, please do send it in, or make a pull request on github.
 
 
 Using form fields without models
