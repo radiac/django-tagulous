@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from tagulous import constants as tag_constants
 from tagulous import models as tag_models
 from tagulous import forms as tag_forms
+from tagulous import utils as tag_utils
 from tagulous import settings as tag_settings
 
 from tagulous.tests_app.models import \
@@ -67,6 +68,70 @@ class TagOptionsTest(TestCase):
 
     # ++ more
 
+
+###############################################################################
+######################################################## utils
+###############################################################################
+
+class UtilsTest(TestCase):
+    """
+    Test TagOptions
+    """
+    def test_parse_tags_commas(self):
+        tags = tag_utils.parse_tags("adam,brian,chris")
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian")
+        self.assertEqual(tags[2], "chris")
+    
+    def test_parse_tags_spaces(self):
+        tags = tag_utils.parse_tags("adam brian chris")
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian")
+        self.assertEqual(tags[2], "chris")
+        
+    def test_parse_tags_commas_and_spaces(self):
+        tags = tag_utils.parse_tags("adam, brian chris")
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian chris")
+        
+    def test_parse_tags_commas_over_spaces(self):
+        tags = tag_utils.parse_tags("adam brian, chris")
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], "adam brian")
+        self.assertEqual(tags[1], "chris")
+        
+    def test_parse_tags_order(self):
+        tags = tag_utils.parse_tags("chris, adam, brian")
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian")
+        self.assertEqual(tags[2], "chris")
+        
+    def test_parse_tags_quotes(self):
+        tags = tag_utils.parse_tags('"adam,one","brian,two","chris,three"')
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam,one")
+        self.assertEqual(tags[1], "brian,two")
+        self.assertEqual(tags[2], "chris,three")
+        
+    def test_parse_tags_quotes_delimit(self):
+        tags = tag_utils.parse_tags('adam"brian,chris dave')
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], 'adam')
+        self.assertEqual(tags[1], "brian")
+        self.assertEqual(tags[2], "chris dave")
+        
+    def test_parse_tags_quotes_mismatched(self):
+        tags = tag_utils.parse_tags('"adam,one","brian,two","chris,dave')
+        self.assertEqual(len(tags), 4)
+        self.assertEqual(tags[0], "adam,one")
+        self.assertEqual(tags[1], "brian,two")
+        self.assertEqual(tags[2], "chris")
+        self.assertEqual(tags[3], "dave")
+        
 
 ###############################################################################
 ######################################################## models.SingleTagField
@@ -795,13 +860,14 @@ class TestFormTestCase(TestCase, TagTestManager):
         # Check that the form is created correctly
         form = test_forms.SingleFormTest()
         
-        # Check the form media - crude, but should be good enough
+        # Check the form media
         media = form.media
         for js in tag_settings.AUTOCOMPLETE_JS:
-            self.assertTrue(js in media)
+            self.assertTrue(js in media._js)
         for grp, files in tag_settings.AUTOCOMPLETE_CSS.items():
+            self.assertTrue(grp in media._css)
             for css in files:
-                self.assertTrue(css in media)
+                self.assertTrue(css in media._css[grp])
         
         # ++
         

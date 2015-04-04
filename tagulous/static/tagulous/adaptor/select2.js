@@ -1,10 +1,63 @@
 /** Tagulous adaptor for Select2 */
 (function () {
-    if (!window.Tagulous) {
+    if (!window.Select2 || !window.Tagulous) {
         return;
     }
     
-    function setupTagField(el) {
+    /** Select2 monkeypatching */
+    // ++ Add support for new option - quotedTags
+    // ++ New getVal/setVal check for !this.select and this.opts.quotes
+    //    then pass off into new code, otherwise call old code
+    var MultiSelect2 = Select2['class'].multi,
+        oldGetVal = MultiSelect2.prototype.getVal,
+        oldSetVal = MultiSelect2.prototype.setVal
+    ;
+    MultiSelect2.prototype.getVal = function () {
+        if (this.select && !this.opts.quotes) {
+            return oldGetVal.call(this);
+        }
+        return Tagulous.parseTagString(this.opts.element.val());
+    };
+    MultiSelect2.prototype.setVal = function (val) {
+        if (this.select && !this.opts.quotes) {
+            return oldSetVal.call(this, val);
+        }
+        // ++ Join tags into a string
+        // ++ port utils.edit_string_for_tags
+        var unique = [],
+            valMap = {},
+            selector = this.opts.separator,
+            name, i
+        ;
+        // Filter out duplicates
+        $(val).each(function () {
+            name = this;
+            // Escape them
+            for (i=0; i<tokenSeparators.length; i++) {
+                if (name.indexOf(tokenSeparators[i]) !== -1) {
+                    name = '"' + name + '"';
+                    break;
+                }
+            }
+            if (!(name in valMap)) {
+                unique.push(name);
+                valMap[name] = 0;
+            }
+        });
+        this.opts.element.val(
+            unique.length === 0 ? "" : unique.join(this.opts.separator)
+        );
+    };
+    function tokenizer(input, selection, selectCallback, opts) {
+        // Same conditions as normal
+        if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
+        // ++ notice if it starts with quotes and handle differently
+        return $.fn.select2.defaults.tokenizer(
+            input, selection, selectCallback, opts
+        );
+    }
+        
+    function select2(el) {
         // Convert element to jQuery object
         var $el = $(el),
             thisTagField = this,
@@ -30,7 +83,8 @@
             maximumSelectionSize: isSingle ? 1 : options.max_count || 0,
             allowClear: !options.required,
             multiple: !isSingle,
-            tokenSeparators: [',', ' ']
+            tokenSeparators: [',', ' '],
+            tokenizer: tokenizer
         };
         
         // Merge in any overrides
@@ -51,9 +105,15 @@
                     return {id:term, text:term};
                 }
             };
+        } else {
+            // Select2 doesn't understand quotes and doesn't allow us to
+            // override the things we need to, so we have to use a character
+            // we hope won't appear in any tags
+            
         }
         
         // Merge in compulsory settings
+        args['quotes'] = true;
         if (url) {
             args['ajax'] = {
                 url: url,
@@ -97,22 +157,22 @@
         return data;
     }
     
-    
+    // Make functions public
     $.extend(Tagulous, {
-            // ++
+        select2: select2
+    });
+    
+    // Finally, initialise the tags
+    $(function () {
+        $('input[data-tagulous]')
+            // Initialise tag fields which exists
+            .each(function () {
+                Tagulous.select2(this);
+            })
+        ;
+        
+        this.raise.error()
     });
 })();
 
 
-$(function () {
-    /** Initialise the tags */
-    
-    $('input[data-tagulous]')
-        // Initialise tag fields which exists
-        .each(function () {
-            setupTagField(this);
-        })
-    ;
-    
-    this.raise.error()
-});
