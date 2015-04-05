@@ -98,7 +98,7 @@ class UtilsTest(TestCase):
         self.assertEqual(tags[1], "brian chris")
         
     def test_parse_tags_commas_over_spaces(self):
-        tags = tag_utils.parse_tags("adam brian, chris")
+        tags = tag_utils.parse_tags("adam brian  ,  chris")
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], "adam brian")
         self.assertEqual(tags[1], "chris")
@@ -111,27 +111,75 @@ class UtilsTest(TestCase):
         self.assertEqual(tags[2], "chris")
         
     def test_parse_tags_quotes(self):
-        tags = tag_utils.parse_tags('"adam,one","brian,two","chris,three"')
-        self.assertEqual(len(tags), 3)
-        self.assertEqual(tags[0], "adam,one")
-        self.assertEqual(tags[1], "brian,two")
-        self.assertEqual(tags[2], "chris,three")
+        tags = tag_utils.parse_tags('"adam, one"')
+        self.assertEqual(len(tags), 1)
+        self.assertEqual(tags[0], "adam, one")
         
-    def test_parse_tags_quotes_delimit(self):
+    def test_parse_tags_quotes_comma_delim(self):
+        tags = tag_utils.parse_tags('"adam, one","brian, two","chris, three"')
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam, one")
+        self.assertEqual(tags[1], "brian, two")
+        self.assertEqual(tags[2], "chris, three")
+        
+    def test_parse_tags_quotes_space_delim(self):
+        tags = tag_utils.parse_tags('"adam one" "brian two" "chris three"')
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam one")
+        self.assertEqual(tags[1], "brian two")
+        self.assertEqual(tags[2], "chris three")
+        
+    def test_parse_tags_quotes_comma_delim_spaces_ignored(self):
+        tags = tag_utils.parse_tags('"adam, one"  ,  "brian, two"  ,  "chris, three"')
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam, one")
+        self.assertEqual(tags[1], "brian, two")
+        self.assertEqual(tags[2], "chris, three")
+        
+    def test_parse_tags_quotes_comma_delim_early_wins(self):
+        tags = tag_utils.parse_tags('"adam one","brian two" "chris three"')
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], "adam one")
+        self.assertEqual(tags[1], 'brian two" "chris three')
+        
+    def test_parse_tags_quotes_comma_delim_late_wins(self):
+        tags = tag_utils.parse_tags('"adam one" "brian two","chris three"')
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], 'adam one" "brian two')
+        self.assertEqual(tags[1], "chris three")
+        
+    def test_parse_tags_quotes_dont_delimit(self):
         tags = tag_utils.parse_tags('adam"brian,chris dave')
-        self.assertEqual(len(tags), 3)
-        self.assertEqual(tags[0], 'adam')
-        self.assertEqual(tags[1], "brian")
-        self.assertEqual(tags[2], "chris dave")
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], 'adam"brian')
+        self.assertEqual(tags[1], "chris dave")
         
-    def test_parse_tags_quotes_mismatched(self):
-        tags = tag_utils.parse_tags('"adam,one","brian,two","chris,dave')
-        self.assertEqual(len(tags), 4)
+    def test_parse_tags_quotes_dont_close(self):
+        tags = tag_utils.parse_tags('"adam,one","brian,two","chris, dave')
+        self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam,one")
         self.assertEqual(tags[1], "brian,two")
-        self.assertEqual(tags[2], "chris")
-        self.assertEqual(tags[3], "dave")
-        
+        self.assertEqual(tags[2], '"chris, dave')
+    
+    def test_parse_tags_quotes_and_unquoted(self):
+        tags = tag_utils.parse_tags('adam , "brian, chris" , dave')
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian, chris")
+        self.assertEqual(tags[2], "dave")
+    
+    def test_parse_tags_limit(self):
+        with self.assertRaises(ValueError) as cm:
+            print tag_utils.parse_tags("adam,brian,chris", 1)
+        e = cm.exception
+        self.assertEqual(str(e), 'This field can only have 1 argument')
+
+    def test_parse_tags_limit_quotes(self):
+        with self.assertRaises(ValueError) as cm:
+            print tag_utils.parse_tags('"adam","brian",chris', 2)
+        e = cm.exception
+        self.assertEqual(str(e), 'This field can only have 2 arguments')
+
 
 ###############################################################################
 ######################################################## models.SingleTagField
