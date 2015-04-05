@@ -12,7 +12,7 @@ from django.utils.text import capfirst
 from tagulous import constants
 from tagulous import forms
 from tagulous.models.options import TagOptions
-from tagulous.utils import parse_tags, edit_string_for_tags
+from tagulous.utils import parse_tags, render_tags
 
 
 #
@@ -259,7 +259,7 @@ class SingleTagManager(BaseTagManager):
         if not self.instance:
             raise AttributeError("Function get_tag_string is only accessible via an instance")
         
-        return edit_string_for_tags( self.get() )
+        return render_tags( self.get() )
     
     def get_tag_list(self):
         """
@@ -575,7 +575,7 @@ class RelatedManagerTagMixin(BaseTagManager):
         if not self.instance:
             raise AttributeError("Function get_tag_string is only accessible via an instance")
         
-        return edit_string_for_tags( self.all() )
+        return render_tags( self.all() )
     
     def get_tag_list(self):
         """
@@ -872,7 +872,7 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         """
         tag = getattr(obj, self.name)
         if tag:
-            return edit_string_for_tags([tag.name])
+            return render_tags([tag.name])
         return ''
         
     def formfield(self, form_class=forms.SingleTagField, **kwargs):

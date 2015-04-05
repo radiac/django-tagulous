@@ -29,7 +29,9 @@ var Tagulous = (function () {
     }
         
         
-    function parseTagString(str) {
+    function parseTags(str) {
+        // ++ translate new parser
+        
         // If there are no commas or double quotes, just split on spaces
         if (str.indexOf(',') == -1 && str.indexOf('"') == -1) {
             return stripSplit(str, ' ');
@@ -123,9 +125,11 @@ var Tagulous = (function () {
         return words;
     }
     
+    // ++ translate render_tags
+    
     return {
         trim: trim,
         stripSplit: stripSplit,
-        parseTagString: parseTagString
+        parseTags: parseTags
     };
 })();

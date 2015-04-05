@@ -16,14 +16,14 @@
         if (this.select && !this.opts.quotes) {
             return oldGetVal.call(this);
         }
-        return Tagulous.parseTagString(this.opts.element.val());
+        return Tagulous.parseTags(this.opts.element.val());
     };
     MultiSelect2.prototype.setVal = function (val) {
         if (this.select && !this.opts.quotes) {
             return oldSetVal.call(this, val);
         }
         // ++ Join tags into a string
-        // ++ port utils.edit_string_for_tags
+        // ++ port utils.render_tags
         var unique = [],
             valMap = {},
             selector = this.opts.separator,

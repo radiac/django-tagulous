@@ -3,7 +3,7 @@ Tag options
 """
 
 from tagulous import constants
-from tagulous.utils import parse_tags, edit_string_for_tags
+from tagulous.utils import parse_tags, render_tags
 
 PROPERTIES = ['_initial', 'initial_string']
 
@@ -30,7 +30,7 @@ class TagOptions(object):
                 self.__dict__['initial_string'] = value
                 self.__dict__['initial'] = parse_tags(value)
             else:
-                self.__dict__['initial_string'] = edit_string_for_tags(value)
+                self.__dict__['initial_string'] = render_tags(value)
                 self.__dict__['initial'] = value
                 
         elif name in constants.OPTION_DEFAULTS:

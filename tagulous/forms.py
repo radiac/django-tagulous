@@ -14,7 +14,7 @@ except ImportError:
 
 from tagulous import settings
 from tagulous.models import options
-from tagulous.utils import parse_tags, edit_string_for_tags
+from tagulous.utils import parse_tags, render_tags
 
 
 class TagWidgetBase(forms.TextInput):

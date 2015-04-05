@@ -178,98 +178,6 @@ def parse_tags(tag_string, max_count=0):
     return tags
     
     
-def old_parse_tags(tag_string, max_count=0):
-    """
-    Parses tag input, with multiple word input being activated and
-    delineated by commas and double quotes. Quotes take precedence, so
-    they may contain commas.
-
-    Returns a sorted list of unique tag names.
-    """
-    if not tag_string:
-        return []
-
-    tag_string = force_unicode(tag_string)
-
-    # Special case - if there are no commas or double quotes in the
-    # input, we don't *do* a recall... I mean, we know we only need to
-    # split on spaces.
-    if u',' not in tag_string and u'"' not in tag_string:
-        words = list(set(split_strip(tag_string, u' ')))
-        words.sort()
-        return words
-
-    words = []
-    buffer = []
-    # Defer splitting of non-quoted sections until we know if there are
-    # any unquoted commas.
-    to_be_split = []
-    saw_loose_comma = False
-    open_quote = False
-    i = iter(tag_string)
-    try:
-        while True:
-            c = i.next()
-            if c == u'"':
-                if buffer:
-                    to_be_split.append(u''.join(buffer))
-                    buffer = []
-                # Find the matching quote
-                open_quote = True
-                c = i.next()
-                while c != u'"':
-                    buffer.append(c)
-                    c = i.next()
-                if buffer:
-                    word = u''.join(buffer).strip()
-                    if word:
-                        words.append(word)
-                    buffer = []
-                open_quote = False
-            else:
-                if not saw_loose_comma and c == u',':
-                    saw_loose_comma = True
-                buffer.append(c)
-    except StopIteration:
-        # If we were parsing an open quote which was never closed treat
-        # the buffer as unquoted.
-        if buffer:
-            if open_quote and u',' in buffer:
-                saw_loose_comma = True
-            to_be_split.append(u''.join(buffer))
-    if to_be_split:
-        if saw_loose_comma:
-            delimiter = u','
-        else:
-            delimiter = u' '
-        for chunk in to_be_split:
-            words.extend(split_strip(chunk, delimiter))
-    words = list(set(words))
-    words.sort()
-    
-    # Check the count
-    if max_count and len(words) > max_count:
-        raise ValueError('This field can only have %s argument%s'
-            % (max_count, '' if max_count == 1 else 's')
-        )
-    
-    return words
-
-
-def find_all(string, char):
-    """
-    Finds all indexes of the char in the string
-    """
-    index = -1
-    found = []
-    while True:
-        index = string.find(match, index + 1)
-        if index == -1:
-            break
-        found.append(index)
-    return found
-        
-    
 def split_strip(string, delimiter=u','):
     """
     Splits ``string`` on ``delimiter``, stripping each resulting string
@@ -282,24 +190,20 @@ def split_strip(string, delimiter=u','):
     return [w for w in words if w]
 
 
-def edit_string_for_tags(tags):
+def render_tags(tags):
     """
-    Given list of ``Tag`` instances, creates a string representation of
-    the list suitable for editing by the user, such that submitting the
-    given string representation back without changing it will give the
-    same list of tags.
+    Creates a tag string from a list of Tag instances or strings, suitable for
+    editing.
 
-    Tag names which contain commas will be double quoted.
-
-    If any tag name which isn't being quoted contains whitespace, the
-    resulting string of tag names will be comma-delimited, otherwise
-    it will be space-delimited.
+    Tag names which contain commas will be quoted, existing quotes will be
+    escaped.
     """
     names = []
     for tag in tags:
         # This will catch a list of Tag objects or tag name strings
         name = u'%s' % tag
-        if u',' in name or u' ' in name:
+        name = name.replace(QUOTE, QUOTE + QUOTE)
+        if COMMA in name or SPACE in name:
             names.append(u'"%s"' % name)
         else:
             names.append(name)
