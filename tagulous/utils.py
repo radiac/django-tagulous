@@ -3,13 +3,7 @@ Tag parsing and printing
 
 Loosely based on django-taggit and django-tagging
 """
-from collections import deque
-
-from django.conf import settings as global_settings
 from django.utils.encoding import force_unicode
-from django.utils.functional import wraps
-
-from tagulous import settings
 
 # Constants to improve legibility
 COMMA = u','
@@ -28,10 +22,8 @@ def parse_tags(tag_string, max_count=0):
     
     Rules with quotes
         Quotes can be escaped by double quotes, eg ""
-        All unescaped quotes are checked to see if they're followed by 
-    
-        First space or comma after a quote 
-        If a tag starts with a quote
+        Commas outside quotes take precedence over spaces as delimiter
+        Unmatched quotes will be left in the string
     """
     # Empty string easiest case
     if not tag_string:
@@ -46,7 +38,7 @@ def parse_tags(tag_string, max_count=0):
     in_quote = None
     chars = False
     
-    # Bypass main parser if no quotes - simple split and strip
+    # Bypass main parser for efficiency if no quotes - simple split and strip
     if QUOTE not in tag_string:
         # Normally split on commas
         delimiter = COMMA
@@ -55,9 +47,8 @@ def parse_tags(tag_string, max_count=0):
         if COMMA not in tag_string:
             delimiter = SPACE
         
-        # Return sorted list of unique stripped tags
-        tags = list(set(split_strip(tag_string, delimiter)))
-        tags.sort()
+        # Split and strip tags
+        tags = split_strip(tag_string, delimiter)
         
     else:
         # Break tag string into list of (index, char)
@@ -77,16 +68,23 @@ def parse_tags(tag_string, max_count=0):
                 tag = tag_string[0:index].strip()
                 tags = []
                 
-                # Escape quotes
+                # Strip start/end quotes
                 tag_len = len(tag)
                 tag = tag.lstrip(QUOTE)
                 left_quote_count = tag_len - len(tag)
-                tag = QUOTE * (left_quote_count / 2) + tag
-                
                 tag_len = len(tag)
                 tag = tag.rstrip(QUOTE)
                 right_quote_count = tag_len - len(tag)
-                tag = QUOTE * (right_quote_count / 2) + tag
+                
+                # Escape inner quotes
+                tag = tag.replace(QUOTE + QUOTE, QUOTE)
+                
+                # Add back escaped start/end quotes
+                tag = (
+                    QUOTE * (left_quote_count / 2)
+                ) + tag + (
+                    QUOTE * (right_quote_count / 2)
+                )
                 
                 # Add back insignificant unquoted quotes
                 if left_quote_count % 2 == 1:
@@ -98,8 +96,10 @@ def parse_tags(tag_string, max_count=0):
             
             # Found end of tag
             if char == delimiter:
-                tags.append(tag.rstrip())
-                tag = ''
+                tag = tag.rstrip()
+                if tag:
+                    tags.append(tag)
+                    tag = ''
                 continue
                 
             # If tag is empty, ignore whitespace
@@ -168,6 +168,10 @@ def parse_tags(tag_string, max_count=0):
             # Add the quote back to the start - it wasn't significant after all
             tag = QUOTE + tag
         tags.append(tag)
+
+    # Enforce uniqueness and sort
+    tags = list(set(tags))
+    tags.sort()
     
     # Check the count
     if max_count and len(tags) > max_count:
@@ -202,21 +206,10 @@ def render_tags(tags):
     for tag in tags:
         # This will catch a list of Tag objects or tag name strings
         name = u'%s' % tag
+        
         name = name.replace(QUOTE, QUOTE + QUOTE)
         if COMMA in name or SPACE in name:
             names.append(u'"%s"' % name)
         else:
             names.append(name)
     return u', '.join(sorted(names))
-
-
-def get_setting(setting):
-    """
-    Helper function to get a setting from global settings, or tagulous defaults
-    """
-    if hasattr(global_settings, setting):
-        return getattr(global_settings, setting)
-    if hasattr(settings, setting):
-        return getattr(settings, setting)
-    raise ValueError("Invalid setting %s" % setting)
-    

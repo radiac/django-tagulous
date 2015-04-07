@@ -23,7 +23,9 @@ setup(
         'Programming Language :: Python',
         'Framework :: Django',
     ],
-    
+    extras_require = {
+        'dev':  ['jasmine'],
+    },
     zip_safe=True,
     packages=find_packages()
 )

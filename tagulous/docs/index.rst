@@ -82,5 +82,6 @@ Unlike django-tagging, Tagulous also comes with autocomplete for public and
 admin sites, and has template tags without needing a third-party plugin like
 django-taggit.
 
-Tagulous also has a more robust tag string parser, which is also implemented in
-javascript for full compatibility with client-side autocompletion.
+Tagulous also has a more robust tag string parser with better support for
+quoted tags, which is also implemented in javascript for full compatibility
+with client-side autocompletion.
