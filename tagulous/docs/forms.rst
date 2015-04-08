@@ -1,3 +1,5 @@
+.. _forms:
+
 Forms
 =====
 
@@ -73,8 +75,9 @@ These settings can be used to initialise your autocomplete library of choice.
 You should initialise it using ``data-tag-options``'s ``autocomplete_settings``
 for default values.
 
-If you write an adaptor which you think would be a good addition to this
-project, please do send it in, or make a pull request on github.
+If you write an adaptor which you think would make a good addition to this
+project, please do send it in or make a pull request on github - see
+`Contributing`_ for more information.
 
 
 Using form fields without models

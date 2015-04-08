@@ -18,6 +18,7 @@ Contents
  forms
  views
  admin
+ contributing
 
 
 Comparison with other tagging libraries

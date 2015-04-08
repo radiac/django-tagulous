@@ -14,14 +14,41 @@ var Tagulous = (function () {
         QUOTE = '"'
     ;
     
-    function parseTags(str) {
+    function escapeQuotes(count) {
+        return Array(Math.floor(count / 2) + 1).join(QUOTE);
+    }
+        
+    
+    function parseTags(str, withRaw) {
+        /** Parse a tag string
+        
+            Returns a sorted list of unique tags
+            
+            If withRaw == true, returns a tuple of two lists:
+                tags    List of tags, unsorted and not unique
+                raws    List of raw strings after parsed tag
+                
+                        If the last tag is not explicitly ended with a
+                        delimiter, the corresponding item in ``raws `` will be
+                        ``null`` to indicate that the parser unexpectedly ran
+                        out of characters.
+                        
+                        This can help with parsing live input; if the last item
+                        in ``raw`` is an empty string the tag has been closed;
+                        if it is ``null`` then the tag is still being written.
+        */
+        
         // Empty string is easy
         if (!str) {
+            if (withRaw) {
+                return [[],[]];
+            }
             return [];
         }
         
         // Prep vars for parser
         var tags = [],
+            raws = [],
             tag = '',
             delimiter = SPACE,
             strLen = str.length,
@@ -42,6 +69,7 @@ var Tagulous = (function () {
                     // All previous tags were actually just one tag
                     tag = str.substring(0, index).replace(/^ +| +$/g, '');
                     tags = [];
+                    raws = [];
                     
                     // Strip start/end quotes
                     tagLen = tag.length;
@@ -52,12 +80,12 @@ var Tagulous = (function () {
                     rightCount = tagLen - tag.length;
                     
                     // Escape inner quotes
-                    tag = tag.replace(QUOTE + QUOTE, QUOTE);
+                    tag = tag.replace(/""/g, QUOTE);
                     
                     // Add back escaped start/end quotes
-                    tag = Array(Math.floor(leftCount / 2) + 1).join(QUOTE) +
+                    tag = escapeQuotes(leftCount) +
                         tag +
-                        Array(Math.floor(rightCount / 2) + 1).join(QUOTE)
+                        escapeQuotes(rightCount)
                     ;
                     
                     // Add back insignificant unquoted quotes
@@ -75,6 +103,9 @@ var Tagulous = (function () {
                     tag = tag.replace(/ +$/, '');
                     if (tag) {
                         tags.push(tag);
+                        if (withRaw) {
+                            raws.push(str.substring(index + 1));
+                        }
                         tag = '';
                     }
                     continue;
@@ -109,11 +140,11 @@ var Tagulous = (function () {
                 }
                 
                 // Tag starts with escaped quotes
-                tag = Array(Math.floor(leftCount / 2) + 1).join(QUOTE);
+                tag = escapeQuotes(leftCount);
             } else {
                 // Quote in middle or at end
                 // Add any escaped
-                tag += Array(Math.floor(leftCount / 2) + 1).join(QUOTE);
+                tag += escapeQuotes(leftCount);
                 
                 // An odd number followed by a delimiter will mean it has ended
                 // Need to look ahead to figure it out
@@ -160,6 +191,15 @@ var Tagulous = (function () {
                 tag = QUOTE + tag;
             }
             tags.push(tag);
+            if (withRaw) {
+                // Indicate that the ending was unexpected
+                raws.push(null);
+            }
+        }
+        
+        // If withRaw is true, don't want to filter or sort tags
+        if (withRaw) {
+            return [tags, raws];
         }
         
         // Enforce uniqueness and sort
@@ -179,6 +219,9 @@ var Tagulous = (function () {
         var safe = [], i, str;
         for (i=0; i<tags.length; i++) {
             str = tags[i].replace(/"/g, QUOTE + QUOTE);
+            if (!str) {
+                continue;
+            }
             if (str.indexOf(COMMA) > -1 || str.indexOf(SPACE) > -1) {
                 safe.push(QUOTE + str + QUOTE);
             } else {
@@ -188,7 +231,6 @@ var Tagulous = (function () {
         safe.sort();
         return safe.join(', ');
     }
-    
     
     return {
         parseTags: parseTags,

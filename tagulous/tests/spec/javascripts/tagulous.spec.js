@@ -143,6 +143,40 @@ describe("Tagulous.parseTags", function () {
     // Limit tests don't apply to javascript port
 });
 
+describe("Tagulous.parseTags withRaw=true", function () {
+    it("parses tags with commas", function () {
+        var results = Tagulous.parseTags('chris,adam,brian', true),
+            tags = results[0],
+            raw = results[1]
+        ;
+        expect(tags.length).toBe(3);
+        // Won't be sorted
+        expect(tags[0]).toBe('chris');
+        expect(tags[1]).toBe('adam');
+        expect(tags[2]).toBe('brian');
+        expect(raw.length).toBe(3);
+        expect(raw[0]).toBe('adam,brian');
+        expect(raw[1]).toBe('brian');
+        expect(raw[2]).toBe(null);
+    });
+    it("parses tags with quotes which don't close", function () {
+        var results = Tagulous.parseTags('"adam,one","brian,two","chris, dave', true),
+            tags = results[0],
+            raw = results[1]
+        ;
+        expect(tags.length).toBe(3);
+        expect(tags[0]).toBe('adam,one');
+        expect(tags[1]).toBe('brian,two');
+        expect(tags[2]).toBe('"chris, dave');
+        expect(raw.length).toBe(3);
+        expect(raw[0]).toBe('"brian,two","chris, dave');
+        expect(raw[1]).toBe('"chris, dave');
+        expect(raw[2]).toBe(null);
+    });
+    
+});
+
+
 describe("Tagulous.renderTags", function () {
     it("renders tags", function () {
         var tagstr = Tagulous.renderTags(['adam', 'brian', 'chris']);
@@ -170,7 +204,7 @@ describe("Tagulous.renderTags", function () {
         expect(tagstr).toBe(tagstr2);
     });
     
-    it("parses simple rendered tags", function () {
+    it("parses complex rendered tags", function () {
         var tagstr = '"""adam brian"", ""chris, dave", "ed, frank", gary';
         var tags = Tagulous.parseTags(tagstr);
         var tagstr2 = Tagulous.renderTags(tags);

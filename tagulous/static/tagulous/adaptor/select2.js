@@ -4,59 +4,125 @@
         return;
     }
     
-    /** Select2 monkeypatching */
-    // ++ Add support for new option - quotedTags
-    // ++ New getVal/setVal check for !this.select and this.opts.quotes
-    //    then pass off into new code, otherwise call old code
+    /** Select2 monkeypatching
+        Adds support for new option, quotedTags
+        
+        This is used by tagulous to add quote support to the tag parser,
+        without affecting other use of select2 on the page.
+    */
     var MultiSelect2 = Select2['class'].multi,
         oldGetVal = MultiSelect2.prototype.getVal,
         oldSetVal = MultiSelect2.prototype.setVal
     ;
     MultiSelect2.prototype.getVal = function () {
-        if (this.select && !this.opts.quotes) {
+        /** Parse tag string into tags */
+        if (this.select || !this.opts.quotedTags) {
             return oldGetVal.call(this);
         }
         return Tagulous.parseTags(this.opts.element.val());
     };
     MultiSelect2.prototype.setVal = function (val) {
-        if (this.select && !this.opts.quotes) {
+        /** Join tags into a string */
+        if (this.select || !this.opts.quotedTags) {
             return oldSetVal.call(this, val);
         }
-        // ++ Join tags into a string
-        // ++ port utils.render_tags
-        var unique = [],
-            valMap = {},
-            selector = this.opts.separator,
-            name, i
-        ;
-        // Filter out duplicates
-        $(val).each(function () {
-            name = this;
-            // Escape them
-            for (i=0; i<tokenSeparators.length; i++) {
-                if (name.indexOf(tokenSeparators[i]) !== -1) {
-                    name = '"' + name + '"';
-                    break;
-                }
-            }
-            if (!(name in valMap)) {
-                unique.push(name);
-                valMap[name] = 0;
-            }
-        });
-        this.opts.element.val(
-            unique.length === 0 ? "" : unique.join(this.opts.separator)
-        );
-    };
-    function tokenizer(input, selection, selectCallback, opts) {
-        // Same conditions as normal
-        if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
-        // ++ notice if it starts with quotes and handle differently
-        return $.fn.select2.defaults.tokenizer(
-            input, selection, selectCallback, opts
-        );
-    }
         
+        var str = Tagulous.renderTags(val);
+        this.opts.element.val(str);
+    };
+    
+    /** Select2 option functions
+        
+        These replace default options with quote-aware ones
+    */
+    function initSelectionMulti(element, callback) {
+        /** Initialises selection for fields with multiple tags */
+        var tags = Tagulous.parseTags(element.val()),
+            data = [],
+            i
+        ;
+        for (i=0; i<tags.length; i++) {
+            data.push({id: tags[i], text: tags[i]});
+        }
+        callback(data);
+    }
+    
+    function tokenizer(input, selection, selectCallback, opts) {
+        /** Tokenises input and detects when a tag has been completed */
+        if (!this.opts.quotedTags) {
+            return $.fn.select2.defaults.tokenizer.call(
+                this, input, selection, selectCallback, opts
+            );
+        }
+        
+        // Still need to be able to create search options
+        if (!opts.createSearchChoice) return undefined;
+        
+        // Parse with raw
+        var parsed = Tagulous.parseTags(input, true),
+            tags = parsed[0],
+            raws = parsed[1],
+            lastRaw = raws.slice(-1)[0],
+            i, token
+        ;
+        
+        if (!tags.length) {
+            return input;
+        }
+        
+        if (lastRaw === null) {
+            // Last tag wasn't completed
+            tags.pop();
+            raws.pop();
+            lastRaw = raws.slice(-1)[0];
+        }
+        
+        for (i=0; i<tags.length; i++) {
+            token = opts.createSearchChoice.call(this, tags[i], selection);
+            
+            // De-dupe using select2 logic (without equal call)
+            if (token !== undefined && token !== null && opts.id(token) !== undefined && opts.id(token) !== null) {
+                dupe = false;
+                for (i = 0, l = selection.length; i < l; i++) {
+                    if (opts.id(token) === opts.id(selection[i])) {
+                        dupe = true; break;
+                    }
+                }
+
+                if (!dupe) selectCallback(token);
+            }
+            // End select2 dedupe logic
+        }
+        
+        // Return whatever was left after the last completed tag was parsed
+        return (lastRaw === undefined) ? input : lastRaw;
+    }
+    
+    function createSearchChoice(term, data) {
+        /** Creates quote-aware search options from new input
+            
+            Also makes SingleTagField look like a select field, thanks to
+            https://github.com/select2/select2/issues/521
+        */
+        if (this.opts.multiple && this.opts.quotedTags) {
+            var tags = Tagulous.parseTags(term);
+            if (tags.length == 1) {
+                term = tags[0];
+            }
+        }
+        if ($(data).filter(
+            function () {
+                return this.text.localeCompare(term) === 0;
+            }).length === 0
+        ) {
+            return {id:term, text:term};
+        }
+    }
+    
+    /** Select2 initialiser
+    
+        This initialises select2 on the specified element
+    */
     function select2(el) {
         // Convert element to jQuery object
         var $el = $(el),
@@ -78,13 +144,11 @@
             .text('')
         ;
         
-        // Default constructor args
+        // Default constructor args which can be overridden
         args = {
-            maximumSelectionSize: isSingle ? 1 : options.max_count || 0,
+            quotedTags: true,
             allowClear: !options.required,
-            multiple: !isSingle,
-            tokenSeparators: [',', ' '],
-            tokenizer: tokenizer
+            maximumSelectionSize: isSingle ? 1 : options.max_count || 0
         };
         
         // Merge in any overrides
@@ -93,27 +157,17 @@
             $.extend(args, field_args);
         }
         
-        // SingleTagField should look like a select field
-        // Thanks to https://github.com/select2/select2/issues/521
-        if (isSingle) {
-            args['createSearchChoice'] = function (term, data) {
-                if ($(data).filter(
-                    function () {
-                        return this.text.localeCompare(term) === 0;
-                    }).length === 0
-                ) {
-                    return {id:term, text:term};
-                }
-            };
-        } else {
-            // Select2 doesn't understand quotes and doesn't allow us to
-            // override the things we need to, so we have to use a character
-            // we hope won't appear in any tags
-            
-        }
+        // Merge in common compulsory settings
+        $.extend(args, {
+            multiple: !isSingle,
+            tokenizer: tokenizer,
+            createSearchChoice: createSearchChoice
+        });
         
-        // Merge in compulsory settings
-        args['quotes'] = true;
+        // Add in any specific to the field type
+        if (!isSingle) {
+            args['initSelection'] = initSelectionMulti;
+        }
         if (url) {
             args['ajax'] = {
                 url: url,
@@ -170,8 +224,6 @@
                 Tagulous.select2(this);
             })
         ;
-        
-        this.raise.error()
     });
 })();
 
