@@ -112,6 +112,11 @@ The following arguments can be passed to the field when adding it to the model:
 
     Default: ``100``
 
+``autocomplete_settings``
+    Override the default ``TAGULOUS_AUTOCOMPLETE_SETTINGS``.
+    
+    Default: None
+
 
 :: _unbound_fields:
 
