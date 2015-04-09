@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models.query import QuerySet
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
@@ -40,9 +41,15 @@ class TagWidgetBase(forms.TextInput):
         
         # Otherwise embed them, if provided
         elif self.autocomplete_tags:
+            autocomplete_tags = self.autocomplete_tags
+            # If it's a queryset, make sure it hasn't been consumed, otherwise
+            # changes won't show in the list
+            if isinstance(autocomplete_tags, QuerySet):
+                autocomplete_tags = autocomplete_tags.all()
+                
             attrs['data-tag-list'] = escape(force_unicode(
                 json.dumps(
-                    [str(tag) for tag in self.autocomplete_tags],
+                    [str(tag) for tag in autocomplete_tags],
                     cls=DjangoJSONEncoder,
                 )
             ))
