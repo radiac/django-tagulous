@@ -1,5 +1,5 @@
 /** Tagulous adaptor for Select2 */
-(function () {
+(function ($) {
     if (!window.Select2 || !window.Tagulous) {
         return;
     }
@@ -101,9 +101,9 @@
     function createSearchChoice(term, data) {
         /** Creates quote-aware search options from new input
             
-            Also makes SingleTagField look like a select field, thanks to
-            https://github.com/select2/select2/issues/521
+            Also makes SingleTagField look like a select field
         */
+        // Thanks to https://github.com/select2/select2/issues/521
         if (this.opts.multiple && this.opts.quotedTags) {
             var tags = Tagulous.parseTags(term);
             if (tags.length == 1) {
@@ -225,6 +225,6 @@
             })
         ;
     });
-})();
+})(jQuery);
 
 

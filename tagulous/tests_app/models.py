@@ -94,6 +94,39 @@ class CustomTestSecondModel(models.Model):
 
 
 #
+# Models for testing merging
+#
+
+class MergeTestTagModel(tagulous.models.TagModel):
+    pass
+
+class MergeTest(models.Model):
+    """
+    For testing merging of tags
+    """
+    name = models.CharField(max_length=10)
+    singletags = tagulous.models.SingleTagField(
+        MergeTestTagModel, related_name='as',
+        blank=True,
+    )
+    tags = tagulous.models.TagField(
+        MergeTestTagModel, related_name='at',
+        blank=True,
+    )
+
+class MergeRefTest(models.Model):
+    name = models.CharField(max_length=10)
+    singletags = tagulous.models.SingleTagField(
+        MergeTest.singletags.model, related_name='bs',
+        blank=True,
+    )
+    tags = tagulous.models.TagField(
+        MergeTest.tags.model, related_name='bt',
+        blank=True,
+    )
+
+
+#
 # Models for testing forms
 #
 

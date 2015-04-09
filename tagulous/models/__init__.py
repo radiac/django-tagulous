@@ -3,7 +3,7 @@ import sys
 import django
 from django.core.urlresolvers import reverse
 from django.core import exceptions
-from django.db import models
+from django.db import models, router
 from django.db.utils import DatabaseError
 from django.db.models.signals import pre_save, post_syncdb
 from django.dispatch import receiver
@@ -101,6 +101,45 @@ class BaseTagModel(models.Model):
 
     def __ne__(self, obj):
         return not self == obj
+    
+    def merge_tags(self, tags):
+        """
+        Merge the specified tags into this tag
+        """
+        model = self.model
+        meta = model._meta
+        if hasattr(meta, 'get_fields'):
+            # Django 1.8
+            related_fields = meta.get_fields(include_hidden=True)
+        else:
+            related_fields = meta.get_all_related_objects()
+            related_fields += meta.get_all_related_many_to_many_objects()
+        
+        # Ensure tags is a list of tag instances
+        if not isinstance(tags, models.query.QuerySet):
+            tags = model.objects.filter(name__in=tags)
+            
+        # Make sure self isn't in tags
+        tags = tags.exclude(pk=self.pk)
+        
+        for related in related_fields:
+            # Get the related instances for this field
+            objs = related.model._base_manager.using(
+                router.db_for_write(self.model)
+            ).filter(
+                **{"%s__in" % related.field.name: tags}
+            )
+            
+            # Switch the tags
+            if isinstance(related.field, SingleTagField):
+                for obj in objs:
+                    setattr(obj, related.field.name, self)
+                    obj.save()
+                    
+            elif isinstance(related.field, TagField):
+                for obj in objs:
+                    getattr(obj, related.field.name).remove(*tags)
+                    getattr(obj, related.field.name).add(self)
         
     class Meta:
         abstract = True
@@ -124,6 +163,7 @@ class TagModel(BaseTagModel):
     class Meta:
         abstract = True
 
+        
 #
 # Descriptors for originating models
 # Return a tag-aware manager
@@ -546,21 +586,22 @@ class RelatedManagerTagMixin(BaseTagManager):
     # Will be switched into place by TagDescriptor
     #
     def _add(self, *objs):
+        self._old_add(*objs)
         for tag in objs:
             tag.increment()
-        self._old_add(*objs)
     _add.alters_data = True
     
     def _remove(self, *objs):
+        self._old_remove(*objs)
         for tag in objs:
             tag.decrement()
-        self._old_remove(*objs)
     _remove.alters_data = True
 
     def _clear(self):
-        for tag in self.all():
-            tag.decrement()
+        tags = list(self.all())
         self._old_clear()
+        for tag in tags:
+            tag.decrement()
     _clear.alters_data = True
     
         
@@ -772,7 +813,9 @@ class BaseTagField(object):
             self.tag_model = type(model_name, (TagModel,), model_attrs)
             
             # Give it a verbose name, for admin filters
-            self.tag_model._meta.verbose_name = name
+            verbose_name = '%s %s tag' % (cls._meta.object_name, name)
+            self.tag_model._meta.verbose_name = verbose_name
+            self.tag_model._meta.verbose_name_plural = verbose_name + 's'
         # else: tag model already specified
         
         

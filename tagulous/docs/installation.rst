@@ -95,6 +95,10 @@ If you want to use tagulous constants, you will need to
     required for the admin site. This lets you configure your public and admin
     sites separately if you need to.
     
+    If your autocomplete library uses jQuery and you want to use the Django
+    admin's version, you will need to set ``window.jQuery = django.jQuery;``
+    before loading the autocomplete javascript.
+    
     By default this will be the same as you have set for
     ``TAGULOUS_AUTOCOMPLETE_JS``.
     

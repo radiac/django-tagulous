@@ -117,6 +117,11 @@ The following arguments can be passed to the field when adding it to the model:
     
     Default: None
 
+The ``related_name`` will default to ``<field>_set``, as is normal for
+``ForeignKey``s and ``ManyToManyField``s. If using the same tag table on
+multiple fields, it is highly recommended that you set this to something else
+to avoid clashes.
+
 
 :: _unbound_fields:
 

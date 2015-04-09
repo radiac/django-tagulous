@@ -899,6 +899,105 @@ class TestModelTestCase(TestCase, TagTestManager):
         
     
 ###############################################################################
+###################################################################### Merging
+###############################################################################
+
+class TestMerging(TestCase, TagTestManager):
+    def setUp(self):
+        # Load initial tags for all models which have them
+        tag_models.model_initialise_tags(test_models.MergeTest)
+        tag_models.model_initialise_tags(test_models.MergeRefTest)
+
+        test_a1 = test_models.MergeTest.objects.create(name='a1')
+        test_a2 = test_models.MergeTest.objects.create(name='a2')
+        test_a3 = test_models.MergeTest.objects.create(name='a3')
+        test_a1.singletags = 'one'
+        test_a2.singletags = 'two'
+        test_a3.singletags = 'three'
+        test_a1.tags = 'one'
+        test_a2.tags = 'two'
+        test_a3.tags = 'three'
+        test_a1.save()
+        test_a2.save()
+        test_a3.save()
+        
+        test_b1 = test_models.MergeRefTest.objects.create(name='b1')
+        test_b2 = test_models.MergeRefTest.objects.create(name='b2')
+        test_b3 = test_models.MergeRefTest.objects.create(name='b3')
+        test_b1.singletags = 'one'
+        test_b2.singletags = 'two'
+        test_b3.singletags = 'three'
+        test_b1.tags = 'one'
+        test_b2.tags = 'two'
+        test_b3.tags = 'three'
+        test_b1.save()
+        test_b2.save()
+        test_b3.save()
+        
+        self.tag_model = test_models.MergeTestTagModel
+    
+    def test_merge_tags(self):
+        self.assertEqual(self.tag_model.objects.count(), 3)
+        a1 = test_models.MergeTest.objects.get(name='a1')
+        a2 = test_models.MergeTest.objects.get(name='a2')
+        a3 = test_models.MergeTest.objects.get(name='a3')
+        b1 = test_models.MergeRefTest.objects.get(name='b1')
+        b2 = test_models.MergeRefTest.objects.get(name='b2')
+        b3 = test_models.MergeRefTest.objects.get(name='b3')
+        
+        self.assertEqual(a1.singletags, 'one')
+        self.assertEqual(a2.singletags, 'two')
+        self.assertEqual(a3.singletags, 'three')
+        self.assertEqual(b1.singletags, 'one')
+        self.assertEqual(b2.singletags, 'two')
+        self.assertEqual(b3.singletags, 'three')
+        
+        self.assertEqual(a1.singletags.count, 4)
+        self.assertEqual(a2.singletags.count, 4)
+        self.assertEqual(a3.singletags.count, 4)
+        self.assertEqual(b1.singletags.count, 4)
+        self.assertEqual(b2.singletags.count, 4)
+        self.assertEqual(b3.singletags.count, 4)
+        
+        self.assertEqual(a1.tags, 'one')
+        self.assertEqual(a2.tags, 'two')
+        self.assertEqual(a3.tags, 'three')
+        self.assertEqual(b1.tags, 'one')
+        self.assertEqual(b2.tags, 'two')
+        self.assertEqual(b3.tags, 'three')
+        
+        # Merge tags
+        self.assertEqual(self.tag_model.objects.count(), 3)
+        s1 = self.tag_model.objects.get(name='one')
+        s1.merge_tags(
+            self.tag_model.objects.filter(name__in=['one', 'two', 'three'])
+        )
+        self.assertEqual(self.tag_model.objects.count(), 1)
+        return
+        
+        a1 = test_models.MergeTest.objects.get(name='a1')
+        a2 = test_models.MergeTest.objects.get(name='a2')
+        a3 = test_models.MergeTest.objects.get(name='a3')
+        b1 = test_models.MergeRefTest.objects.get(name='b1')
+        b2 = test_models.MergeRefTest.objects.get(name='b2')
+        b3 = test_models.MergeRefTest.objects.get(name='b3')
+        
+        self.assertEqual(a1.singletags, 'one')
+        self.assertEqual(a2.singletags, 'one')
+        self.assertEqual(a3.singletags, 'one')
+        self.assertEqual(b1.singletags, 'one')
+        self.assertEqual(b2.singletags, 'one')
+        self.assertEqual(b3.singletags, 'one')
+        
+        self.assertEqual(a1.tags, 'one')
+        self.assertEqual(a2.tags, 'one')
+        self.assertEqual(a3.tags, 'one')
+        self.assertEqual(b1.tags, 'one')
+        self.assertEqual(b2.tags, 'one')
+        self.assertEqual(b3.tags, 'one')
+        
+
+###############################################################################
 ######################################################################## Forms
 ###############################################################################
 

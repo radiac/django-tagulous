@@ -213,3 +213,4 @@ def render_tags(tags):
         else:
             names.append(name)
     return u', '.join(sorted(names))
+

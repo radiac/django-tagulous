@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst|escape }}</a>
+&rsaquo; {% trans 'Merge' %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<p>Tags to merge:</p>
+<ul>
+    {% for tag in tags %}
+    <li>{{ tag }} ({{ tag.count }})</li>
+    {% endfor %}
+</ul>
+
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ merge_form.as_p }}
+    <div>
+    <input type="submit" name="merge" value="Merge tags">
+    <input class="default" type="hidden" name="action" value="merge_tags">
+    </div>
+</form>
+
+
+{% endblock %}
