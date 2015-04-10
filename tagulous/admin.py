@@ -197,9 +197,9 @@ def tag_model(model, site=None):
     """
     Create a new ModelAdmin for the specified tag model
     """
-    # Allow model to be a descriptor
     if isinstance(model, tag_models.BaseTagDescriptor):
-        model = model.model
+        # It's a tag descriptor; change it for the tag model itself
+        model = model.tag_model
         
     # Default site to admin.site - but here instead of constructor, in the
     # unlikely but possible case that someone changed it during initialisation

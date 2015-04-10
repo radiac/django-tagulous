@@ -32,7 +32,7 @@ class BaseTagDescriptor(object):
             setattr(self, key, val)
             
         # Add a convenient reference to the tag model
-        self.model = self.field.rel.to
+        self.tag_model = self.field.rel.to
         
     def load_initial(self):
         """
@@ -40,7 +40,7 @@ class BaseTagDescriptor(object):
         Be prepared to receive a DatabaseError if the model has not been synced
         """
         for tag_name in self.tag_options.initial:
-            self.model.objects.get_or_create(name=tag_name, defaults={
+            self.tag_model.objects.get_or_create(name=tag_name, defaults={
                 'protected': self.tag_options.protect_initial,
             })
 
@@ -60,20 +60,26 @@ class SingleTagDescriptor(BaseTagDescriptor):
         def pre_save_handler(sender, instance, **kwargs):
             manager = self.get_manager(instance)
             manager.pre_save_handler()
-        models.signals.pre_save.connect(pre_save_handler, sender=self.field.model, weak=False)
+        models.signals.pre_save.connect(
+            pre_save_handler, sender=self.field.model, weak=False
+        )
         
         # The manager needs to know after the model has been saved, so it can
         # decrement the old tag without risk of cascading the delete if count=0
         def post_save_handler(sender, instance, **kwargs):
             manager = self.get_manager(instance)
             manager.post_save_handler()
-        models.signals.post_save.connect(post_save_handler, sender=self.field.model, weak=False)
+        models.signals.post_save.connect(
+            post_save_handler, sender=self.field.model, weak=False
+        )
         
         # Update tag count on delete
         def post_delete_handler(sender, instance, **kwargs):
             manager = self.get_manager(instance)
             manager.post_delete_handler()
-        models.signals.post_delete.connect(post_delete_handler, sender=self.field.model, weak=False)
+        models.signals.post_delete.connect(
+            post_delete_handler, sender=self.field.model, weak=False
+        )
         
     def get_manager(self, instance):
         """
@@ -154,6 +160,7 @@ class TagDescriptor(BaseTagDescriptor):
         
         # Add options to manager
         manager.tag_options = self.tag_options
+        manager.tag_model = self.tag_model
         
         return manager
 

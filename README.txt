@@ -35,8 +35,10 @@ Remember, because TagField is a M2M field, you can't read or write to it until
 the instance has been saved.
 
 Because SingleTagField is a ForeignKey, it may return None rather than a
-TagModel instance - so if you want to get the model from an instance, you
-should not rely on the .model property without checking it is not None first.
+TagModel instance - so if you want to get the tag model from an instance, you
+should not rely on the .tag_model property without checking it is not None
+first. The general rules is that you should always get the tag model from the
+unbound class field.
 
 When you set a TagField, the changes will be saved in the database immediately
 as they would be normally for a ManyToManyField.

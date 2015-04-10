@@ -18,16 +18,12 @@ class SingleTestModel(models.Model):
     name = models.CharField(blank=True, max_length=100)
     title = tagulous.models.SingleTagField(blank=True, null=True)
 
-class SingleOrderTestModel(models.Model):
+class SingleOptionalTestModel(models.Model):
     """
-    For testing ordering of a SingleTagField when next to other non-M2M fields
+    Test optional single tag fields
     """
-    first   = models.CharField(blank=True, max_length=100)
-    second  = models.ForeignKey(SingleTestModel)
-    third   = models.CharField(blank=True, max_length=100)
-    tag     = tagulous.models.SingleTagField() # blank=False, null=False
-    fourth  = models.CharField(blank=True, max_length=100)
-    fifth   = models.CharField(blank=True, max_length=100)
+    name = models.CharField(blank=True, max_length=100)
+    tag = tagulous.models.SingleTagField(blank=True, null=True)
     
 class SingleRequiredTestModel(models.Model):
     """
@@ -35,13 +31,66 @@ class SingleRequiredTestModel(models.Model):
     """
     name = models.CharField(blank=True, max_length=100)
     tag = tagulous.models.SingleTagField(blank=False, null=False)
-    
-class SingleOptionalTestModel(models.Model):
+
+
+
+#
+# Models for testing a mix of fields
+#
+
+class MixedTestTagModel(tagulous.models.TagModel):
+    pass
+
+class MixedTest(models.Model):
     """
-    Test optional single tag fields
+    For testing merging of tags
     """
-    name = models.CharField(blank=True, max_length=100)
-    tag = tagulous.models.SingleTagField(blank=True, null=True)
+    name = models.CharField(max_length=10)
+    singletags = tagulous.models.SingleTagField(
+        MixedTestTagModel, related_name='as',
+        blank=True,
+    )
+    tags = tagulous.models.TagField(
+        MixedTestTagModel, related_name='at',
+        blank=True,
+    )
+
+class MixedRefTest(models.Model):
+    name = models.CharField(max_length=10)
+    singletags = tagulous.models.SingleTagField(
+        MixedTest.singletags.tag_model, related_name='bs',
+        blank=True,
+    )
+    tags = tagulous.models.TagField(
+        MixedTest.tags.tag_model, related_name='bt',
+        blank=True,
+    )
+
+
+class MixedOrderTest(models.Model):
+    """
+    For testing ordering of a SingleTagField and TagField when next to other
+    M2M and non-M2M fields
+    """
+    char1   = models.CharField(blank=True, max_length=10)
+    fk1     = models.ForeignKey(MixedTest, related_name="order_fk1")
+    char2   = models.CharField(blank=True, max_length=10)
+    single1 = tagulous.models.SingleTagField()
+    char3   = models.CharField(blank=True, max_length=10)
+    m2m1    = models.ManyToManyField(MixedTest, related_name="order_m2m1")
+    char4   = models.CharField(blank=True, max_length=10)
+    multi1  = tagulous.models.TagField()
+    char5   = models.CharField(blank=True, max_length=10)
+    m2m2    = models.ManyToManyField(MixedTest, related_name="order_m2m2")
+    char6   = models.CharField(blank=True, max_length=10)
+    fk2     = models.ForeignKey(MixedTest, related_name="order_fk2")
+    char7   = models.CharField(blank=True, max_length=10)
+
+
+#
+# OLD TESTS
+#
+
 
 
 #
@@ -91,39 +140,6 @@ class CustomTestSecondModel(models.Model):
     name = models.CharField(blank=True, max_length=100)
     tags = tagulous.models.TagField(CustomTestTagModel)
 
-
-
-#
-# Models for testing merging
-#
-
-class MergeTestTagModel(tagulous.models.TagModel):
-    pass
-
-class MergeTest(models.Model):
-    """
-    For testing merging of tags
-    """
-    name = models.CharField(max_length=10)
-    singletags = tagulous.models.SingleTagField(
-        MergeTestTagModel, related_name='as',
-        blank=True,
-    )
-    tags = tagulous.models.TagField(
-        MergeTestTagModel, related_name='at',
-        blank=True,
-    )
-
-class MergeRefTest(models.Model):
-    name = models.CharField(max_length=10)
-    singletags = tagulous.models.SingleTagField(
-        MergeTest.singletags.model, related_name='bs',
-        blank=True,
-    )
-    tags = tagulous.models.TagField(
-        MergeTest.tags.model, related_name='bt',
-        blank=True,
-    )
 
 
 #

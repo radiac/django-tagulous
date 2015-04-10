@@ -35,7 +35,13 @@ def model_initialise_tags(model, report=False):
         model       Model to check for tag fields to load
         report      Passed to field_initialise_tags
     """
-    for field in model._meta.fields + model._meta.many_to_many:
+    if hasattr(model._meta, 'get_fields'):
+        # Django 1.8
+        fields = model._meta.get_fields()
+    else:
+        fields = model._meta.fields + model._meta.many_to_many
+        
+    for field in fields:
         if isinstance(
             field,
             (SingleTagField, TagField)

@@ -68,7 +68,7 @@ class SingleTagManager(BaseTagManager):
         self.instance = instance
         
         # Other vars we need
-        self.tag_model = self.descriptor.model
+        self.tag_model = self.descriptor.tag_model
         self.field = self.descriptor.field
         self.tag_options = self.descriptor.tag_options
         
@@ -322,7 +322,7 @@ class RelatedManagerTagMixin(BaseTagManager):
         tag_names = [u'%s' % tag_name for tag_name in tag_names]
         
         # Find tag model
-        tag_model = self.model
+        tag_model = self.tag_model
         
         # Get list of current tags
         old_tags = self.all()

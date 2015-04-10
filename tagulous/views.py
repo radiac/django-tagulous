@@ -19,7 +19,7 @@ def autocomplete(request, tag_model):
         request
             The request object from the dispatcher
         tag_model
-            Reference to the tag model (eg myModel.tags.model)
+            Reference to the tag model (eg myModel.tags.tag_model)
     
     The following GET parameters can be set:
         q   The query string to filter by
