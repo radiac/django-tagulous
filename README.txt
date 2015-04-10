@@ -74,7 +74,7 @@ they will flush the cache to ensure count changes are accurate.
 A SingleTagField with blank=True must also have null=True.
 
 If your tests require a tag field to have been loaded with initial tags, you
-must call tagulous.models.model_initialise_tags(myModel) from your setUp().
+must call tagulous.models.initial.model_initialise_tags(myModel) from your setUp().
 
 You can compare a tag field against a string - the string will be parsed into
 tags, and matched according to the tag options for that field.

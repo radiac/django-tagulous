@@ -470,9 +470,9 @@ class ModelSingleTagFieldTest(TestCase, TagTestManager):
 class TestModelTestCase(TestCase, TagTestManager):
     def setUp(self):
         # Load initial tags for all models which have them
-        tag_models.model_initialise_tags(MultiTestModel)
-        tag_models.model_initialise_tags(CustomTestFirstModel)
-        tag_models.model_initialise_tags(CustomTestSecondModel)
+        tag_models.initial.model_initialise_tags(MultiTestModel)
+        tag_models.initial.model_initialise_tags(CustomTestFirstModel)
+        tag_models.initial.model_initialise_tags(CustomTestSecondModel)
         
     def test_model_correct(self):
         """
@@ -905,8 +905,8 @@ class TestModelTestCase(TestCase, TagTestManager):
 class TestMerging(TestCase, TagTestManager):
     def setUp(self):
         # Load initial tags for all models which have them
-        tag_models.model_initialise_tags(test_models.MergeTest)
-        tag_models.model_initialise_tags(test_models.MergeRefTest)
+        tag_models.initial.model_initialise_tags(test_models.MergeTest)
+        tag_models.initial.model_initialise_tags(test_models.MergeRefTest)
 
         test_a1 = test_models.MergeTest.objects.create(name='a1')
         test_a2 = test_models.MergeTest.objects.create(name='a2')
@@ -1004,7 +1004,7 @@ class TestMerging(TestCase, TagTestManager):
 class TestFormTestCase(TestCase, TagTestManager):
     def setUp(self):
         # Load initial tags for all models which have them
-        tag_models.model_initialise_tags(test_models.SingleFormTest)
+        tag_models.initial.model_initialise_tags(test_models.SingleFormTest)
 
     def test_form_field(self):
         """

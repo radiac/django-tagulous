@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, NoArgsCommand, CommandError
 from django.db.models import get_app, get_models
 
-import tagulous
+from tagulous.models.initial import field_initialise_tags, model_initialise_tags
 
 
 class Command(BaseCommand):
@@ -37,7 +37,7 @@ class Command(BaseCommand):
         if field_name:
             model = models[0]
             field = model._meta.get_field_by_name(field_name)[0]
-            loaded = tagulous.models.field_initialise_tags(
+            loaded = field_initialise_tags(
                 model, field, report=True,
             )
             
@@ -51,4 +51,4 @@ class Command(BaseCommand):
         
         # Step through all models and load
         for model in models:
-            tagulous.models.model_initialise_tags(model, report=True)
+            model_initialise_tags(model, report=True)
