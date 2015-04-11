@@ -35,6 +35,20 @@ class SingleRequiredTestModel(models.Model):
 
 
 #
+# Models for testing TagField
+#
+
+class TagModel(models.Model):
+    """
+    For testing basic tags
+    """
+    name = models.CharField(blank=True, max_length=100)
+    tags = tagulous.models.TagField()
+
+
+
+
+#
 # Models for testing a mix of fields
 #
 
@@ -104,14 +118,7 @@ class TestModel(models.Model):
     name = models.CharField(blank=True, max_length=100)
     tags = tagulous.models.TagField()
 
-class OrderTestModel(models.Model):
-    """
-    For testing ordering of a TagField when next to other M2M fields
-    """
-    first   = models.ManyToManyField(TestModel, related_name="order_first_set")
-    tags    = tagulous.models.TagField()
-    second  = models.ManyToManyField(TestModel, related_name="order_second_set")
-    
+
 class MultiTestModel(models.Model):
     """
     For testing multiple tag fields, tag options

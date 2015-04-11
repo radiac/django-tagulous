@@ -12,7 +12,7 @@ from tagulous import utils as tag_utils
 from tagulous import settings as tag_settings
 
 from tagulous.tests_app.models import \
-    TestModel, OrderTestModel, MultiTestModel, CustomTestTagModel, \
+    TestModel, MultiTestModel, CustomTestTagModel, \
     CustomTestFirstModel, CustomTestSecondModel, \
     SingleTestModel, \
     SingleRequiredTestModel, SingleOptionalTestModel
@@ -641,13 +641,73 @@ class ModelSingleTagFieldRequiredTest(TagTestManager, TestCase):
         self.assertEqual(cm.exception.messages[0], u'This field cannot be null.')
     
     
-
-
-
 ###############################################################################
-######################################################## models.TagField
+####################################################### Model multi tag field
+###############################################################################
+####### tagulous.models.managers.BaseTagManager
+####### tagulous.models.managers.SingleTagManager
+####### tagulous.models.descriptors.BaseTagDescriptor
+####### tagulous.models.descriptors.SingleTagDescriptor
+####### tagulous.models.fields.SingleTagField
+####### tagulous.models.fields.SingleTagField
 ###############################################################################
 
+class ModelMultiTagFieldTest(TagTestManager, TestCase):
+    """
+    Test model TagField
+    """
+    manage_models = [
+        test_models.TagModel,
+    ]
+    
+    def setUpExtra(self):
+        self.tag_model = test_models.TagModel.tags.tag_model
+        self.tag_field = test_models.TagModel.tags
+    
+    def test_descriptor(self):
+        "Check TagDescriptor is in place"
+        self.assertTrue(isinstance(
+            self.tag_field, tag_models.TagDescriptor
+        ))
+    
+    def test_tag_table(self):
+        "Check the tag table exists"
+        self.assertTrue(issubclass(self.tag_field.field.rel.to, tag_models.TagModel))
+        self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
+    
+    def test_empty_value(self):
+        "Check the descriptor returns a TagRelatedManager"
+        t1 = self.create(test_models.TagModel, name="Test")
+        self.assertInstanceEquals(t1, name="Test")
+        
+        # Check the TagDescriptor is returning a TagRelatedManager
+        self.assertEqual(t1.tags.__class__.__name__, 'TagRelatedManager')
+        
+        # Check it also has a reference to the correct model
+        self.assertEqual(t1.tags.tag_model, self.tag_model)
+    
+    def test_tag_assignment(self):
+        "Check a tag string can be assigned to the descriptor and returned"
+        t1 = self.create(test_models.TagModel, name="Test")
+        t1.tags = 'django, javascript'
+        
+        # ++ do we want to treat as m2m? if so, has to be set after save
+        # ++ or do we want to treat as model value? if so, store in cache and
+        #   commit on save, like singletagfield
+        # ++ quite like that idea - then it makes sense in .create, .get_or_create etc
+        
+        # Check they come back as expected
+        self.assertEqual(t1.tags.get_tag_string(), 'django, javascript')
+        self.assertEqual('%s' % t1.tags, t1.tags.get_tag_string())
+        self.assertEqual(u'%s' % t1.tags, t1.tags.get_tag_string())
+        self.assertEqual(len(t1.tags.get_tag_list()), 2)
+        self.assertTrue('django' in t1.tags.get_tag_list())
+        self.assertTrue('javascript' in t1.tags.get_tag_list())
+        self.assertTagModel(self.tag_model, {
+            'django':       1,
+            'javascript':   1,
+        })
+    
 class OldModelTagFieldTestCase(TestCase, TagTestManager):
     def setUp(self):
         # Load initial tags for all models which have them
@@ -655,51 +715,11 @@ class OldModelTagFieldTestCase(TestCase, TagTestManager):
         tag_models.initial.model_initialise_tags(CustomTestFirstModel)
         tag_models.initial.model_initialise_tags(CustomTestSecondModel)
         
-    def test_model_correct(self):
-        """
-        Test that the tag model is created correctly
-        """
-        # Check that the TagDescriptor is in place
-        self.assertTrue(isinstance(TestModel.tags, tag_models.TagDescriptor))
-        
-        # Check that the tag table exists
-        self.assertTrue(issubclass(TestModel.tags.field.rel.to, tag_models.TagModel))
-        self.assertTrue(issubclass(TestModel.tags.tag_model, tag_models.TagModel))
-    
-    def test_field_order_correct(self):
-        """
-        Test that the order of ManyToMany fields is correct
-        This is to check that Django internals haven't changed significantly
-        """
-        # Make sure that there haven't been significant changes to the way
-        # fields are ordered. If this test fails, see the developer notes in
-        # Tagulous.models.TagField for possible solutions.
-        self.assertTrue(hasattr(models.fields.Field, 'creation_counter'))
-        
-        # Check the ordering is as expected
-        self.assertEqual(len(OrderTestModel._meta.local_many_to_many), 3)
-        self.assertEqual(OrderTestModel._meta.local_many_to_many[0].name, 'first')
-        self.assertEqual(OrderTestModel._meta.local_many_to_many[1].name, 'tags')
-        self.assertEqual(OrderTestModel._meta.local_many_to_many[2].name, 'second')
-    
+    @unittest.skip('converting')
     def test_instances_correct(self):
         """
         Create instances and check that basic tags work
         """
-        # Get tag model
-        tag_model = TestModel.tags.tag_model
-        
-        # Check basic model still works (!)
-        test1 = TestModel(name="First")
-        test1.save()
-        self.assertEqual(test1.name, 'First')
-        
-        # Check the TagDescriptor is returning a TagRelatedManager
-        self.assertEqual(test1.tags.__class__.__name__, 'TagRelatedManager')
-        
-        # Check it also has a reference to the correct model
-        self.assertEqual(test1.tags.tag_model, tag_model)
-        
         # Add some tags using the string converter
         test1.tags = 'django, javascript'
         
