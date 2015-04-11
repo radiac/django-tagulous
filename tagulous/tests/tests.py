@@ -13,9 +13,7 @@ from tagulous import settings as tag_settings
 
 from tagulous.tests_app.models import \
     TestModel, MultiTestModel, CustomTestTagModel, \
-    CustomTestFirstModel, CustomTestSecondModel, \
-    SingleTestModel, \
-    SingleRequiredTestModel, SingleOptionalTestModel
+    CustomTestFirstModel, CustomTestSecondModel
 
 from tagulous.tests_app import models as test_models
 from tagulous.tests_app import forms as test_forms
@@ -432,7 +430,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
     
     def test_tag_assignment_in_constructor(self):
         "Check a tag string can be passed in the constructor"
-        t1 = SingleTestModel(name="Test", title='Mr')
+        t1 = test_models.SingleTestModel(name="Test", title='Mr')
         t1.save()
         self.assertEqual(t1.name, 'Test')
         self.assertEqual(t1.title.name, 'Mr')
@@ -442,7 +440,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
     
     def test_tag_assignment_in_object_create(self):
         "Check a tag string can be passed in object.create"
-        t1 = SingleTestModel.objects.create(name='Test', title='Mr')
+        t1 = test_models.SingleTestModel.objects.create(name='Test', title='Mr')
         self.assertEqual(t1.name, 'Test')
         self.assertEqual(t1.title.name, 'Mr')
         self.assertTagModel(self.tag_model, {
@@ -454,8 +452,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         Check a tag object can be assigned to a SingleTagfield, and that its
         tag count is incremented
         """
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
-        t2 = SingleTestModel(name='Test 2')
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel(name='Test 2')
         t2.title = t1.title
         t2.save()
         self.assertEqual(t1.name, 'Test 1')
@@ -470,8 +468,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
     
     def test_assign_by_object_in_constructor(self):
         "Check a tag object can be passed in the constructor"
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
-        t2 = SingleTestModel(name='Test 2', title=t1.title)
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel(name='Test 2', title=t1.title)
         t2.save()
         self.assertEqual(t1.title, t2.title)
         self.assertEqual(t1.title.pk, t2.title.pk)
@@ -481,8 +479,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         
     def test_assign_by_object_in_object_create(self):
         "Check a tag object can be passed in object.create"
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
-        t2 = SingleTestModel.objects.create(name='Test 2', title=t1.title)
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel.objects.create(name='Test 2', title=t1.title)
         self.assertEqual(t1.title, t2.title)
         self.assertEqual(t1.title.pk, t2.title.pk)
         self.assertTagModel(self.tag_model, {
@@ -491,8 +489,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
     
     def test_change_decreases_count(self):
         "Check a tag string changes the count"
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
-        t2 = SingleTestModel.objects.create(name='Test 2', title=t1.title)
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel.objects.create(name='Test 2', title=t1.title)
         self.assertTagModel(self.tag_model, {
             'Mr': 2,
         })
@@ -504,8 +502,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         })
         
     def test_delete_decreases_count(self):
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
-        t2 = SingleTestModel.objects.create(name='Test 2', title=t1.title)
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel.objects.create(name='Test 2', title=t1.title)
         self.assertTagModel(self.tag_model, {
             'Mr': 2,
         })
@@ -517,7 +515,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         
     def test_count_zero_deletes_tag(self):
         "Check a count of 0 deletes an unprotected tag"
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
@@ -532,8 +530,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         Check that the actual tag in the database is decreased, not the one in
         the instance at time of deletion
         """
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
-        t2 = SingleTestModel.objects.create(name='Test 2', title='Mrs')
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel.objects.create(name='Test 2', title='Mrs')
         self.assertEqual(str(t1.title.name), 'Mr')
         self.assertEqual(str(t2.title.name), 'Mrs')
         self.assertTagModel(self.tag_model, {
@@ -558,7 +556,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
     
     def test_save_deleted_tag(self):
         "Check that a deleted tag in memory can be re-saved"
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
@@ -571,8 +569,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
     
     def test_multiple_unsaved(self):
         "Check that there's no leak between unsaved objects"
-        t1 = SingleTestModel(name='Test 1', title='Mr')
-        t2 = SingleTestModel(name='Test 1', title='Mrs')
+        t1 = test_models.SingleTestModel(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel(name='Test 1', title='Mrs')
         self.assertTagModel(self.tag_model, {})
         self.assertEqual(str(t1.title), 'Mr')
         self.assertEqual(str(t2.title), 'Mrs')
@@ -590,8 +588,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
     
     def test_load_instance(self):
         "Check that SingleTagField is loaded correctly"
-        t1 = SingleTestModel.objects.create(name='Test 1', title='Mr')
-        t2 = SingleTestModel.objects.get(pk=t1.pk)
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel.objects.get(pk=t1.pk)
         self.assertEqual(t1.title, t2.title)
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
@@ -611,9 +609,9 @@ class ModelSingleTagFieldOptionalTest(TagTestManager, TestCase):
     def test_optional_saves_without_exception(self):
         "Check an optional SingleTagField isn't required for save"
         try:
-            t1 = SingleOptionalTestModel(name='Test 1')
+            t1 = test_models.SingleOptionalTestModel(name='Test 1')
             t1.save()
-            t2 = SingleOptionalTestModel.objects.create(name='Test 1')
+            t2 = test_models.SingleOptionalTestModel.objects.create(name='Test 1')
         except Exception, e:
             self.fail(
                 'Optional SingleTagField raised exception unexpectedly: %s' % e
@@ -630,14 +628,14 @@ class ModelSingleTagFieldRequiredTest(TagTestManager, TestCase):
     def test_required_raises_exception_on_save(self):
         "Check a required SingleTagField raises an exception when saved"
         with self.assertRaises(exceptions.ValidationError) as cm:
-            t1 = SingleRequiredTestModel(name='Test')
+            t1 = test_models.SingleRequiredTestModel(name='Test')
             t1.save()
         self.assertEqual(cm.exception.messages[0], u'This field cannot be null.')
     
     def test_required_raises_exception_in_object_create(self):
         "Check a required SingleTagField raises an exception in object.create"
         with self.assertRaises(exceptions.ValidationError) as cm:
-            t1 = SingleRequiredTestModel.objects.create(name='Test')
+            t1 = test_models.SingleRequiredTestModel.objects.create(name='Test')
         self.assertEqual(cm.exception.messages[0], u'This field cannot be null.')
     
     
@@ -707,6 +705,13 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'django':       1,
             'javascript':   1,
         })
+    
+    
+    @unittest.skip('starting change')
+    def test_tag_assignment_in_constructor(self):
+        "Check a tag string can be passed in the constructor"
+        t1 = test_models.TagModel(name="Test", title='Mr')
+    
     
 class OldModelTagFieldTestCase(TestCase, TagTestManager):
     def setUp(self):
