@@ -38,7 +38,7 @@ The following arguments can be passed to the field when adding it to the model:
 ``protect_all``
     Whether all tags with count 0 should be protected from automatic deletion.
     
-    If false, will be decided by ``tag.protected``.
+    If false, will be decided by ``tag.protected`` - see `Protected tags`_.
     
     Default: ``False``
 
@@ -55,7 +55,8 @@ The following arguments can be passed to the field when adding it to the model:
     Default: ``''``
     
 ``protect_initial``
-    The ``protected`` state for any tags created by the `initial` argument.
+    The ``protected`` state for any tags created by the `initial` argument -
+    see `Protected tags`_.
     
     Default: True
     
@@ -234,18 +235,33 @@ A tag string is a string in tag format. This is parsed by an internal parser
 which can be configured.
 
 
+Protected tags
+--------------
+
+The tag model keeps a count of how many times each tag is referenced. When the
+tag count reaches ``0``, the tag will be deleted unless its ``protected`` field
+is ``True``, or the ``protect_all`` option has been used.
+
+Note that this only happens when the count is updated, when the tag is added
+or removed; tags can therefore be created directly on the model with the
+default count of ``0`` to be assigned later.
+
 
 Custom Tag Model
 ----------------
 
-A custom tag model is a normal model in every way, except:
+A custom tag model should extend ``tagulous.models.TagModel`` so that Tagulous
+can find the fields and methods it expects.
 
-* It **must** define a ``name`` ``CharField``, which will be used to identify
-  the tag in `tag strings`_.
-* It can set a `TagMeta`_ class to define default options for the class.
+A custom tag model is a normal model in every other way, except:
+
+* It can have a `TagMeta`_ class to define default options for the class.
+* If it uses a custom manager or queryset, check compatibility with the
+  Tagulous `enhanced queryset`_ - but it'll probably be fine.
 
 There is `an example <_example_custom_tag_model>`_ which illustrates both of
 these.
+
 
 TagMeta
 ~~~~~~~
@@ -311,6 +327,25 @@ right::
 
 In the same way, setting ``autocomplete_settings`` on the field will replace
 any default value.
+
+
+Querying using tag fields
+-------------------------
+
+When querying a model which uses a tag field, remember that a
+``SingleTagField`` is really a ``ForeignKey``, and a ``TagField`` is really a
+``ManyToManyField``.
+
+If you have not disabled the `enhanced queryset`_, you can compare a tag field
+to a tag string in ``get``, ``filter`` and ``exclude``::
+
+    qs = MyModel.objects.get(name="Bob", title="Mr", tags="red, blue, green")
+
+Note that when referring to a ``TagField`` in this way, the filter will expect
+an exact match - eg that it has all tags specified, but only those specified.
+If you want to do partial matches, use standard many to many queries, eg::
+
+    qs = MyModel.objects.get(tags__name__in=['red', 'blue', 'green'])
 
 
 Database Migrations

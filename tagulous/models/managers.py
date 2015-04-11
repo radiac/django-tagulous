@@ -76,7 +76,7 @@ class SingleTagManager(BaseTagManager):
         self.changed = False
         
         # The descriptor stores an unsaved tag string
-        # Start of with the actual value, if it exists
+        # Start off with the actual value, if it exists
         self.tag_cache = self.get_actual()
         self.tag_name = self.tag_cache.name if self.tag_cache else None
         

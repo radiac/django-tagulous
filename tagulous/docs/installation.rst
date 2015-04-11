@@ -125,6 +125,43 @@ If you want to use tagulous constants, you will need to
 Model and form fields settings are managed by the `TagOptions`_ class.
 
 
+Feature flags
+~~~~~~~~~~~~~
+
+In most situations Tagulous is able to sprinkle its syntactic sugar in a way
+which works alongside Django's darkest magical depths. However, in a few places
+Django needs a helping hand to understand the tag fields.
+
+Tagulous can therefore apply some monkey patches to make tag fields operate in
+exactly the way you would expect. These patches are written to be as
+future-proof as possible, but because this isn't exactly best practice, they
+come as optional flags which you can disable using the settings below:
+
+:: _enhanced_queryset:
+
+``TAGULOUS_ENHANCED_QUERYSET``
+    Tag fields are just sugar-coated ``ForeignKey``s and ``ManyToManyField``s,
+    so Django expects them to be tag model instances with primary keys. In most
+    cases this doesn't cause a problem, but it does mean that you can't pass
+    tag strings to ``QuerySet`` methods such as ``.get()``, ``.filter()`` etc.
+    
+    When set to ``True``, this will monkey patch ``QuerySet`` to support
+    passing tag strings as values for for tag fields. It does this by wrapping
+    the original calls; for example, ``.get(title='Mr')`` is essentially
+    converted to ``.get(title__name='Mr')``. You can see the changes made in
+    ``tagulous.models.queryset``.
+
+    When set to ``False``, the ``QuerySet`` cannot be passed tag strings in
+    most cases; ``SingleTagField``s have to be passed an instance or primary
+    key like a normal ``ForeignKey``, and ``TagField``s need to be assigned
+    afterwards using ``field.add()``, like a normal ``ManyToManyField``.
+    
+    If set to ``False``, you can still pass custom ``QuerySet`` classes into
+    ``tagulous.models.queryset.enhance_queryset()`` to just monkey-patch those.
+    
+    Default: ``True``
+
+
 Management Commands
 -------------------
 

@@ -16,6 +16,7 @@ from tagulous.models.fields import (
     BaseTagField, SingleTagField, TagField
 )
 
+from tagulous.models import queryset
 from tagulous.models import initial
 from tagulous.models import migrations
 

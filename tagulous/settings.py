@@ -36,6 +36,17 @@ ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
     settings, 'TAGULOUS_ADMIN_AUTOCOMPLETE_SETTINGS', AUTOCOMPLETE_SETTINGS
 )
 
+
+#
+# Monkey-patch flags
+#
+
+# Option to enhance QuerySet methods to support text strings for
+# SingleTagFields and TagFields.
+#
+# This will monkey-patch the base django QuerySet - see settings docs for more.
+ENHANCE_QUERYSET = getattr(settings, 'TAGULOUS_ENHANCE_QUERYSET', True)
+
 # Option to disable the add related widget in auto-generated admin fields.
 #
 # If the tag model is registered with the admin site, without this setting
@@ -44,6 +55,7 @@ ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
 # should set this to True.
 #
 # This will monkey-patch BaseModelAdmin.formfield_for_dbfield to not add
-# a RelatedFieldWidgetWrapper to a TagWidget or SingleTagWidget. Even though
-# it should not cause any problems, it is off by default, just in case.
+# a RelatedFieldWidgetWrapper to a TagWidget or SingleTagWidget.
+# Because monkey-patching is bad practice and cannot be predicted in future
+# it is off 
 DISABLE_ADMIN_ADD = getattr(settings, 'TAGULOUS_DISABLE_ADMIN_ADD', False)

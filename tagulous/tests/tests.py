@@ -429,7 +429,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         })
     
     def test_tag_assignment_in_constructor(self):
-        "Check a tag string can be passed in the constructor"
+        "Check a tag string can be set in the constructor"
         t1 = test_models.SingleTestModel(name="Test", title='Mr')
         t1.save()
         self.assertEqual(t1.name, 'Test')
@@ -447,6 +447,35 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mr': 1,
         })
     
+    def test_tag_assignment_in_object_get_or_create_true(self):
+        """
+        Check a tag string can be passed in object.get_or_create, when object
+        does not exist
+        """
+        t1, state = test_models.SingleTestModel.objects.get_or_create(name='Test', title='Mr')
+        self.assertEqual(state, True)
+        self.assertEqual(t1.name, 'Test')
+        self.assertEqual(t1.title.name, 'Mr')
+        self.assertTagModel(self.tag_model, {
+            'Mr': 1,
+        })
+        
+    def test_tag_assignment_in_object_get_or_create_false(self):
+        """
+        Check a tag string can be passed in object.get_or_create, when object
+        does exist
+        """
+        t1 = test_models.SingleTestModel.objects.create(name='Test', title='Mr')
+        t2, state = test_models.SingleTestModel.objects.get_or_create(name='Test', title='Mr')
+        self.assertEqual(state, False)
+        self.assertEqual(t1.pk, t2.pk)
+        self.assertEqual(t1.name, t2.name)
+        self.assertEqual(t2.name, 'Test')
+        self.assertEqual(t2.title.name, 'Mr')
+        self.assertTagModel(self.tag_model, {
+            'Mr': 1,
+        })
+        
     def test_assign_by_object(self):
         """
         Check a tag object can be assigned to a SingleTagfield, and that its
@@ -594,9 +623,49 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
+    
+    def test_object_get(self):
+        "Check that object.get loads the item correctly"
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel.objects.get(title='Mr')
+        self.assertEqual(t1.name, t2.name)
+        self.assertEqual(t1.title, t2.title)
 
-
+    def test_object_filter(self):
+        "Check that object.filter finds the correct items"
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel.objects.create(name='Test 2', title='Mrs')
+        t3 = test_models.SingleTestModel.objects.create(name='Test 3', title='Mr')
         
+        qs1 = test_models.SingleTestModel.objects.filter(title='Mr')
+        qs2 = test_models.SingleTestModel.objects.filter(title='Mrs')
+        
+        self.assertEqual(qs1.count(), 2)
+        self.assertEqual(str(qs1[0].title), 'Mr')
+        self.assertEqual(str(qs1[0].name), 'Test 1')
+        self.assertEqual(str(qs1[1].name), 'Test 3')
+
+        self.assertEqual(qs2.count(), 1)
+        self.assertEqual(str(qs2[0].title), 'Mrs')
+        self.assertEqual(str(qs2[0].name), 'Test 2')
+
+    def test_object_exclude(self):
+        "Check that object.exclude finds the correct items"
+        t1 = test_models.SingleTestModel.objects.create(name='Test 1', title='Mr')
+        t2 = test_models.SingleTestModel.objects.create(name='Test 2', title='Mrs')
+        t3 = test_models.SingleTestModel.objects.create(name='Test 3', title='Mr')
+        
+        qs1 = test_models.SingleTestModel.objects.exclude(title='Mr')
+        qs2 = test_models.SingleTestModel.objects.exclude(title='Mrs')
+        
+        self.assertEqual(qs1.count(), 1)
+        self.assertEqual(str(qs1[0].title), 'Mrs')
+        self.assertEqual(str(qs1[0].name), 'Test 2')
+        
+        self.assertEqual(qs2.count(), 2)
+        self.assertEqual(str(qs2[0].title), 'Mr')
+        self.assertEqual(str(qs2[0].name), 'Test 1')
+        self.assertEqual(str(qs2[1].name), 'Test 3')
 
 
 class ModelSingleTagFieldOptionalTest(TagTestManager, TestCase):
@@ -683,18 +752,28 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         
         # Check it also has a reference to the correct model
         self.assertEqual(t1.tags.tag_model, self.tag_model)
-    
+
+    @unittest.skip('starting change')
     def test_tag_assignment(self):
-        "Check a tag string can be assigned to the descriptor and returned"
+        """
+        Check a tag string can be assigned to the descriptor and returned
+        
+        Checks TagRelatedManager post_save listener
+        """
         t1 = self.create(test_models.TagModel, name="Test")
         t1.tags = 'django, javascript'
         
-        # ++ do we want to treat as m2m? if so, has to be set after save
-        # ++ or do we want to treat as model value? if so, store in cache and
-        #   commit on save, like singletagfield
-        # ++ quite like that idea - then it makes sense in .create, .get_or_create etc
+        # Returned before save
+        self.assertEqual(t1.tags.get_tag_string(), 'django, javascript')
+        self.assertEqual('%s' % t1.tags, t1.tags.get_tag_string())
+        self.assertEqual(u'%s' % t1.tags, t1.tags.get_tag_string())
+        self.assertEqual(len(t1.tags.get_tag_list()), 2)
+        self.assertTrue('django' in t1.tags.get_tag_list())
+        self.assertTrue('javascript' in t1.tags.get_tag_list())
+        self.assertTagModel(self.tag_model, {})
         
-        # Check they come back as expected
+        # Returned after save
+        t1.save()
         self.assertEqual(t1.tags.get_tag_string(), 'django, javascript')
         self.assertEqual('%s' % t1.tags, t1.tags.get_tag_string())
         self.assertEqual(u'%s' % t1.tags, t1.tags.get_tag_string())
@@ -705,12 +784,50 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'django':       1,
             'javascript':   1,
         })
-    
-    
+
+    @unittest.skip('starting change')
+    def test_tag_assignment_manager_save(self):
+        """
+        Check a tag string can be assigned to the descriptor and returned
+        
+        Checks TagRelatedManager.save
+        """
+        t1 = self.create(test_models.TagModel, name="Test")
+        t1.tags = 'django, javascript'
+        
+        # Returned before save
+        self.assertEqual(t1.tags.get_tag_string(), 'django, javascript')
+        self.assertEqual('%s' % t1.tags, t1.tags.get_tag_string())
+        self.assertEqual(u'%s' % t1.tags, t1.tags.get_tag_string())
+        self.assertEqual(len(t1.tags.get_tag_list()), 2)
+        self.assertTrue('django' in t1.tags.get_tag_list())
+        self.assertTrue('javascript' in t1.tags.get_tag_list())
+        self.assertTagModel(self.tag_model, {})
+        
+        # Returned after save
+        t1.tags.save()
+        self.assertEqual(t1.tags.get_tag_string(), 'django, javascript')
+        self.assertEqual('%s' % t1.tags, t1.tags.get_tag_string())
+        self.assertEqual(len(t1.tags.get_tag_list()), 2)
+        self.assertTrue('django' in t1.tags.get_tag_list())
+        self.assertTrue('javascript' in t1.tags.get_tag_list())
+        self.assertTagModel(self.tag_model, {
+            'django':       1,
+            'javascript':   1,
+        })
+
     @unittest.skip('starting change')
     def test_tag_assignment_in_constructor(self):
-        "Check a tag string can be passed in the constructor"
-        t1 = test_models.TagModel(name="Test", title='Mr')
+        "Check a tag string can be set in the constructor"
+        t1 = test_models.TagModel(name="Test", tags='django, javascript')
+        self.assertEqual(t1.tags.get_tag_string(), 'django, javascript')
+        self.assertTagModel(self.tag_model, {})
+        t1.save()
+        self.assertEqual(t1.tags.get_tag_string(), 'django, javascript')
+        self.assertTagModel(self.tag_model, {
+            'django':       1,
+            'javascript':   1,
+        })
     
     
 class OldModelTagFieldTestCase(TestCase, TagTestManager):

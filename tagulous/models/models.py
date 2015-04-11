@@ -33,7 +33,7 @@ class BaseTagModel(models.Model):
         """
         meta = cls._meta
         if hasattr(meta, 'get_fields'):
-            # Django 1.8
+            ##38# ++ Django 1.8
             related_fields = meta.get_fields(include_hidden=True)
         else:
             related_fields = meta.get_all_related_objects()
@@ -144,10 +144,12 @@ class TagModel(BaseTagModel):
     Abstract base class for tag models
     """
     name        = models.CharField(max_length=255, unique=True)
-    count       = models.IntegerField(default=0,
-        help_text="Internal counter to keep track of how many relationships there are"
+    count       = models.IntegerField(
+        default=0,
+        help_text="Internal counter of how many times this tag is in use"
     )
-    protected   = models.BooleanField(default=False,
+    protected   = models.BooleanField(
+        default=False,
         help_text="Will not be deleted when the count reaches 0"
     )
     
