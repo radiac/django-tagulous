@@ -7,6 +7,7 @@ the tags.
 
 from django.core import exceptions
 
+from tagulous.models import BaseTagModel
 from tagulous.utils import parse_tags, render_tags
 
 
@@ -252,14 +253,35 @@ class RelatedManagerTagMixin(BaseTagManager):
     # Will be switched into place by TagDescriptor
     #
     def _add(self, *objs):
-        self._old_add(*objs)
+        # Convert strings to tag objects
+        tags = []
         for tag in objs:
+            if isinstance(tag, basestring):
+                tags.append(self.tag_model.objects.create(name=tag))
+            else:
+                tags.append(tag)
+        
+        # Add and increment
+        self._old_add(*tags)
+        for tag in tags:
             tag.increment()
     _add.alters_data = True
     
     def _remove(self, *objs):
-        self._old_remove(*objs)
+        # Convert strings to tag objects - if object doesn't exist, skip
+        tags = []
         for tag in objs:
+            if isinstance(tag, basestring):
+                try:
+                    tags.append(self.tag_model.objects.get(name=tag))
+                except self.tag_model.DoesNotExist:
+                    continue
+            else:
+                tags.append(tag)
+        
+        # Remove and decrement
+        self._old_remove(*tags)
+        for tag in tags:
             tag.decrement()
     _remove.alters_data = True
 

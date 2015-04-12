@@ -11,21 +11,21 @@ import tagulous
 # Models for testing SingleTagField
 #
 
-class SingleTestModel(models.Model):
+class SingleTagFieldModel(models.Model):
     """
     For testing simple single tag fields
     """
     name = models.CharField(blank=True, max_length=100)
     title = tagulous.models.SingleTagField(blank=True, null=True)
 
-class SingleOptionalTestModel(models.Model):
+class SingleTagFieldOptionalModel(models.Model):
     """
     Test optional single tag fields
     """
     name = models.CharField(blank=True, max_length=100)
     tag = tagulous.models.SingleTagField(blank=True, null=True)
     
-class SingleRequiredTestModel(models.Model):
+class SingleTagFieldRequiredModel(models.Model):
     """
     Test required single tag fields
     """
@@ -33,12 +33,21 @@ class SingleRequiredTestModel(models.Model):
     tag = tagulous.models.SingleTagField(blank=False, null=False)
 
 
+class SingleTagFieldMultipleModel(models.Model):
+    """
+    For testing multiple tag fields, tag options
+    """
+    name = models.CharField(blank=True, max_length=100)
+    tag1 = tagulous.models.SingleTagField(blank=False, null=False)
+    tag2 = tagulous.models.SingleTagField(blank=False, null=False)
+    tag3 = tagulous.models.SingleTagField(blank=False, null=False)
+
 
 #
 # Models for testing TagField
 #
 
-class TagModel(models.Model):
+class MultiTestModel(models.Model):
     """
     For testing basic tags
     """
@@ -110,13 +119,6 @@ class MixedOrderTest(models.Model):
 #
 # Models for testing TagField
 #
-
-class TestModel(models.Model):
-    """
-    For testing basic tags
-    """
-    name = models.CharField(blank=True, max_length=100)
-    tags = tagulous.models.TagField()
 
 
 class MultiTestModel(models.Model):

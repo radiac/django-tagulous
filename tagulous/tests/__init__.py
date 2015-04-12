@@ -9,5 +9,12 @@ from django.db.models import loading
 settings.INSTALLED_APPS += ('tagulous.tests_app',)
 loading.cache.loaded = False
 
-# Now test the models
-from tagulous.tests.tests import *
+# Load all tests
+from tagulous.tests.test_options import *
+from tagulous.tests.test_utils import *
+from tagulous.tests.test_models_tagmodel import *
+from tagulous.tests.test_models_singletagfield import *
+from tagulous.tests.test_models_tagfield import *
+from tagulous.tests.test_models_order import *
+from tagulous.tests.test_models_queryset import *
+from tagulous.tests.test_forms import *
