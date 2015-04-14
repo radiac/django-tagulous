@@ -3,6 +3,7 @@ Tagulous test: Tag options
 
 Modules tested:
     tagulous.options
+    tagulous.constants
 """
 from tagulous.tests.lib import *
 
@@ -21,9 +22,5 @@ class TagOptionsTest(TestCase):
             if k in tag_constants.FIELD_OPTIONS
         ]))
 
-    # ++ More tests:
-    # ++ Set options in model field, access in form field
-    # ++ Override options in formfield()
-    # ++ Set options in form field
-    # ++ Test each option and combo (in a single model with multiple fields)
+    # ++ More tests: overriding defaults, items(), field_items(), __add__
     

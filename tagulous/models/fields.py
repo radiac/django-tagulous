@@ -19,6 +19,10 @@ from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
 from tagulous.utils import render_tags
 
 
+###############################################################################
+####### Mixin for model tag fields
+###############################################################################
+
 class BaseTagField(object):
     """
     Mixin for TagField and SingleTagField
@@ -170,6 +174,11 @@ class BaseTagField(object):
         # Create the field instance
         return form_class(**options)
 
+
+###############################################################################
+####### Single tag field
+###############################################################################
+
 class SingleTagField(BaseTagField, models.ForeignKey):
     """
     Build the tag model and register the TagForeignKey
@@ -186,7 +195,7 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         # Forbid certain ForeignKey arguments
         for forbidden in ['to_field', 'rel_class', 'max_count']:
             if forbidden in kwargs:
-                raise ValueError("Invalid argument '%s' for TagField" % forbidden)
+                raise ValueError("Invalid argument '%s' for SingleTagField" % forbidden)
         
         kwargs['max_count'] = 1
         
@@ -237,6 +246,10 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         return "_%s_tagulous" % self.name
 
         
+###############################################################################
+####### Tag field
+###############################################################################
+
 class TagField(BaseTagField, models.ManyToManyField):
     """
     Build the tag model and register the TagManyToManyField

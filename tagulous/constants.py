@@ -28,9 +28,9 @@ MODEL_PREFIX = '_Tagulous'
 
 # Default model TagField options
 OPTION_DEFAULTS = {
-    'protect_all':      False,
     'initial':          '',
     'protect_initial':  True,
+    'protect_all':      False,
     'case_sensitive':   False,
     'force_lowercase':  False,
     'max_count':        0,

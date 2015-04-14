@@ -34,13 +34,6 @@ The following arguments can be passed to the field when adding it to the model:
     other arguments passed to the TagField constructor.
     
     Default: ``_Tagulous_<ModelName>_<FieldName>`` (auto-generated)
-    
-``protect_all``
-    Whether all tags with count 0 should be protected from automatic deletion.
-    
-    If false, will be decided by ``tag.protected`` - see `Protected tags`_.
-    
-    Default: ``False``
 
 ``initial``
     List of initial tags for the tag model. Must be loaded into the database
@@ -59,6 +52,13 @@ The following arguments can be passed to the field when adding it to the model:
     see `Protected tags`_.
     
     Default: True
+    
+``protect_all``
+    Whether all tags with count 0 should be protected from automatic deletion.
+    
+    If false, will be decided by ``tag.protected`` - see `Protected tags`_.
+    
+    Default: ``False``
     
 ``case_sensitive``
     If ``True``, tags will be case sensitive. For example, ``"django, Django"``
@@ -217,6 +217,41 @@ evaluated; eg ``tag_manager = instance.tags``.
     Same as ``get_tag_string``
     
     Example: ``print u'%s' % person.skills
+
+``save()``
+    Commit tag changes to the database.
+    
+    If you are only changing the tags you can call this directly to reduce
+    database operations.
+    
+    You do not need to call this if you are saving the instance; changes to
+    tags will be saved as part of that process.
+    
+    Example: ``person.skills
+
+``add(tag, tag, ...)``
+    Based on a normal ``ManyToManyField``'s ``.add`` method; adds a list of
+    tags or tag names directly to the instance - no need to save.
+    
+    Note, this does not parse tag strings - you will need to pass separate tags
+    as either instances of the tag model, or as separate strings.
+    
+    Example: ``person.skills.add('Judo', kung_fu_tag)
+
+``remove(tag, tag, ...)``
+    Based on a normal ``ManyToManyField``'s ``.remove`` method; removes a list
+    of tags or tag names directly from the instance - no need to save.
+    
+    Note, this does not parse tag strings - you will need to pass separate tags
+    as either instances of the tag model, or as separate strings.
+    
+    Example: ``person.skills.remove('Judo', kung_fu_tag)
+
+``clear()``
+    Based on a normal ``ManyToManyField``'s ``.clear`` method; clears all tags
+    from the instance immediately - no need to save.
+    
+    Example: ``person.skills.clear()``
 
 
 A bound ``TagField`` can also be compared to other bound fields or tag strings

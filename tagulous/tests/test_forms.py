@@ -97,3 +97,9 @@ class FormTest(TestCase, TagTestManager):
         
         # ++
         
+
+# ++ Re-use SingleTagFieldOptionsModel to check data is passed through
+# ++ Perhaps ditch current form test models and switch to *OptionsModel?
+# ++ Set options in model field, access in form field
+# ++ Override options in formfield()
+# ++ Set options in form field

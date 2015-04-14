@@ -7,9 +7,12 @@ the tags.
 
 from django.core import exceptions
 
-from tagulous.models import BaseTagModel
 from tagulous.utils import parse_tags, render_tags
 
+
+###############################################################################
+####### Base class for tag field managers
+###############################################################################
 
 class BaseTagManager(object):
     """
@@ -57,7 +60,10 @@ class BaseTagManager(object):
         return not self.__eq__(other)
         
 
-# ++ Test single tag manager
+###############################################################################
+####### Manager for SingleTagField
+###############################################################################
+
 class SingleTagManager(BaseTagManager):
     """
     Manage single tags - behaves like a descriptor, but holds additional
@@ -243,6 +249,9 @@ class SingleTagManager(BaseTagManager):
             self.changed = True
         
 
+###############################################################################
+####### Mixin for TagField manager
+###############################################################################
         
 class RelatedManagerTagMixin(BaseTagManager):
     """
@@ -261,6 +270,16 @@ class RelatedManagerTagMixin(BaseTagManager):
             else:
                 tags.append(tag)
         
+        # Enforce max_count
+        if self.tag_options.max_count:
+            current_count = self.count()
+            if current_count + len(tags) > self.tag_options.max_count:
+                raise ValueError(
+                    "Cannot set more than %s tags on this field; it already has %s" % (
+                        self.tag_options.max_count, current_count,
+                    )
+                )
+        
         # Add and increment
         self._old_add(*tags)
         for tag in tags:
@@ -278,6 +297,11 @@ class RelatedManagerTagMixin(BaseTagManager):
                     continue
             else:
                 tags.append(tag)
+        
+        # Cut tags back to only ones already set
+        tags = [
+            tag for tag in self.all() if tag in tags
+        ]
         
         # Remove and decrement
         self._old_remove(*tags)

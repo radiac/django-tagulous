@@ -1,6 +1,6 @@
 from django import forms
 
-from tagulous.tests_app import models
+from tagulous.tests.app import models
 
 
 class FormTest(forms.ModelForm):

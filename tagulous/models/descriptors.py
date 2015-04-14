@@ -13,10 +13,9 @@ from django.db import models
 from tagulous.models.managers import SingleTagManager, RelatedManagerTagMixin
 
 
-#
-# Descriptors for originating models
-# Return a tag-aware manager
-#
+###############################################################################
+####### Base class for tag field descriptors
+###############################################################################
 
 class BaseTagDescriptor(object):
     """
@@ -45,6 +44,9 @@ class BaseTagDescriptor(object):
             })
 
 
+###############################################################################
+####### Descriptor for SingleTagField
+###############################################################################
 
 class SingleTagDescriptor(BaseTagDescriptor):
     """
@@ -113,6 +115,10 @@ class SingleTagDescriptor(BaseTagDescriptor):
         manager.set(value)
         
         
+###############################################################################
+####### Descriptor for TagField
+###############################################################################
+
 class TagDescriptor(BaseTagDescriptor):
     """
     Descriptor to add tag functions to the RelatedManager
@@ -134,7 +140,8 @@ class TagDescriptor(BaseTagDescriptor):
             # Get the manager and tell it to clear
             manager = self.__get__(instance)
             manager.clear()
-        models.signals.pre_delete.connect(pre_delete_handler,
+        models.signals.pre_delete.connect(
+            pre_delete_handler,
             sender=self.field.model, weak=False
         )
         
@@ -148,7 +155,8 @@ class TagDescriptor(BaseTagDescriptor):
         
         # Add in the mixin
         # Thanks, http://stackoverflow.com/questions/8544983/dynamically-mixin-a-base-class-to-an-instance-in-python
-        manager.__class__ = type('TagRelatedManager',
+        manager.__class__ = type(
+            'TagRelatedManager',
             (manager.__class__, RelatedManagerTagMixin),
             {}
         )

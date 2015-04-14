@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.db.models import loading
 
-settings.INSTALLED_APPS += ('tagulous.tests_app',)
+settings.INSTALLED_APPS += ('tagulous.tests.app',)
 loading.cache.loaded = False
 
 # Load all tests
