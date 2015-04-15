@@ -78,14 +78,10 @@ def enhance_queryset(queryset):
             
             # Now AND Q objects of the tags to filter/exclude any items which
             # are tagged with all of these tags
-            q_parts = []
             for tag in tags:
-                q_parts.append(
-                    models.Q(**{field_name + '__name': tag})
+                qs = new_filter_or_exclude(
+                    qs, negate, **{field_name + '__name': tag}
                 )
-            qs = new_filter_or_exclude(
-                qs, negate, reduce(operator.__and__, q_parts)
-            )
         
         return qs
     
@@ -105,6 +101,7 @@ def enhance_queryset(queryset):
         # Add tag fields
         for field_name, val in tag_fields.items():
             setattr(obj, field_name, val)
+            getattr(obj, field_name).save()
         
         return obj
     
@@ -116,27 +113,15 @@ def enhance_queryset(queryset):
         # will be fine for lookup
         safe_fields.update(singletag_fields)
         
-        # Use normal get_or_create
-        obj, created = old_get_or_create(self, **safe_fields)
+        # Use normal get_or_create if there are no tag fields
+        if len(tag_fields) == 0:
+            return old_get_or_create(self, **safe_fields)
         
-        # If created, add tags
-        if created:
-            for field_name, val in tag_fields.items():
-                setattr(obj, field_name, val)
-        
-        # If not created, check the m2m tag fields match
-        else:
-            matches = True
-            for field_name, val in tag_fields.items():
-                if getattr(obj, field_name) != val:
-                    matches = False
-                    break
-            
-            if not matches:
-                obj = new_create(**kwargs)
-                created = True
-        
-        return obj, created
+        # Try to find it using get - that is able to handle tag_fields
+        try:
+            return self.get(**kwargs), False
+        except self.model.DoesNotExist:
+            return new_create(self, **kwargs), True
     
     # Apply patch
     queryset._filter_or_exclude = new_filter_or_exclude

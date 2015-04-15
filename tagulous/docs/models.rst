@@ -218,20 +218,42 @@ evaluated; eg ``tag_manager = instance.tags``.
     
     Example: ``print u'%s' % person.skills
 
-``save()``
-    Commit tag changes to the database.
+``reload()``
+    Discard any unsaved changes to the tags and load tags from the database
+
+``save(force=False)``
+    Commit any tag changes to the database.
     
     If you are only changing the tags you can call this directly to reduce
     database operations.
     
-    You do not need to call this if you are saving the instance; changes to
+    In most circumstances you can ignore the ``force`` flag:
+    
+    * The manager has a ``.changed`` flag which is set to ``False`` whenver the
+      internal tag cache is loaded or saved. It is set to ``True`` when the
+      tags are changed without being saved.
+      
+    * If ``force=False`` (default), this method will only update the database
+      if the ``.changed`` flag is ``True`` - in other words, the database will
+      only be updated if there are changes to the internal cache since last
+      load or save.
+      
+    * If ``force=True``, the ``.changed`` flag will be ignored, and the current
+      tag status will be forced upon the database. This can be useful in the
+      rare cases where you have multiple references to the same database
+      object, and want the tags on this instance to override any changes other
+      instances may have made.
+    
+    You do not need to call this if you are saving the instance; any changes to
     tags will be saved as part of that process.
     
-    Example: ``person.skills
+    Example: ``person.skills.save()``
 
 ``add(tag, tag, ...)``
     Based on a normal ``ManyToManyField``'s ``.add`` method; adds a list of
     tags or tag names directly to the instance - no need to save.
+    
+    Will call ``reload()`` first, so any unsaved changes to tags will be lost.
     
     Note, this does not parse tag strings - you will need to pass separate tags
     as either instances of the tag model, or as separate strings.
@@ -241,6 +263,8 @@ evaluated; eg ``tag_manager = instance.tags``.
 ``remove(tag, tag, ...)``
     Based on a normal ``ManyToManyField``'s ``.remove`` method; removes a list
     of tags or tag names directly from the instance - no need to save.
+    
+    Will call ``reload()`` first, so any unsaved changes to tags will be lost.
     
     Note, this does not parse tag strings - you will need to pass separate tags
     as either instances of the tag model, or as separate strings.

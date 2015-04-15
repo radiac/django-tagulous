@@ -66,8 +66,11 @@ class BaseTagManager(object):
 
 class SingleTagManager(BaseTagManager):
     """
-    Manage single tags - behaves like a descriptor, but holds additional
-    information about the tag field between saves
+    Manage single tags
+    
+    Not a real Django manager; it's a per-instance abstraction between the
+    normal FK descriptor to hold in-memory changes of the SingleTagField before
+    passing them up to the normal FK descriptor on the pre-save signal.
     """
     def __init__(self, descriptor, instance):
         # The SingleTagDescriptor and instance this manages
@@ -83,36 +86,40 @@ class SingleTagManager(BaseTagManager):
         self.changed = False
         
         # The descriptor stores an unsaved tag string
-        # Start off with the actual value, if it exists
+        # Load the actual value into the cache, if it exists
         self.tag_cache = self.get_actual()
+        
+        # Start off the local tag name with the actual tag name
         self.tag_name = self.tag_cache.name if self.tag_cache else None
         
         # Pre/post save will need to keep track of an old tag
         self.removed_tag = None
         
     def flush_actual(self):
+        """
+        Clear the FK descriptor's cache
+        """
         # Flush the cache of actual
         cache_name = self.field.get_cache_name()
         if hasattr(self.instance, cache_name):
             delattr(self.instance, cache_name)
         
     def get_actual(self):
+        """
+        Get the actual value of the instance according to the FK descriptor
+        """
         # A ForeignKey would be on the .attname (field_id), but only
         # if it has been set, otherwise the attribute will not exist
-        
-        # ++ Init should not be calling this in django's normal world
-        # ++ So we need to either stop doing that, or add a flag to get_actual
-        # which only tests if the instance exists, or value!=None
-        # ++ Think this is fixed now?
         if hasattr(self.instance, self.field.attname):
-        #if getattr(self.instance, self.field.attname, None):
             return self.descriptor.descriptor.__get__(self.instance)
         return None
     
     def set_actual(self, value):
+        """
+        Set the actual value of the instance for the FK descriptor
+        """
         return self.descriptor.descriptor.__set__(self.instance, value)
         
-    
     def get_tag_string(self):
         """
         Get the tag edit string for this instance as a string
@@ -229,7 +236,7 @@ class SingleTagManager(BaseTagManager):
         """
         if self.removed_tag:
             self.removed_tag.decrement()
-            
+    
     def post_delete_handler(self):
         """
         When the model has been deleted, decrement the actual tag
@@ -242,7 +249,7 @@ class SingleTagManager(BaseTagManager):
             self.set_actual(None)
             
             # If there is no new value, mark the old one as a new one,
-            #  so the database will be updated if the instance is saved again
+            # so the database will be updated if the instance is saved again
             if not self.changed:
                 self.tag_name = old_tag.name
             self.tag_cache = None
@@ -256,64 +263,151 @@ class SingleTagManager(BaseTagManager):
 class RelatedManagerTagMixin(BaseTagManager):
     """
     Mixin for RelatedManager to add tag functions
+    
+    Added to the normal m2m RelatedManager, after it has been instantiated.
+    This holds in-memory changes of the TagField before committing them to the
+    database on the post-save signal.
     """
+    def __init_tagulous__(self, descriptor):
+        """
+        Called directly after the mixin is added to the instantiated manager
+        """
+        self.tag_model = descriptor.tag_model
+        self.tag_options = descriptor.tag_options
+        
+        # Maintain an internal set of tags, and track whether they've changed
+        # If internal tags are None, haven't been loaded yet
+        self.changed = False
+        self.tags = None
+        self.reload()
+    
+    def reload(self):
+        """
+        Get the actual tags
+        """
+        # Convert to a list to force it to load now, and so we can change it
+        self.tags = list(self.all())
+        self.changed = False
+    
+    def save(self, force=False):
+        """
+        Set the actual tags to the internal tag state
+        
+        If force is True, save whether we think it has changed or not
+        """
+        if not self.changed and not force:
+            return
+        
+        # Add and remove tags as necessary
+        new_tags = self._ensure_tags_db(self.tags)
+        self.reload()
+        # Add new tags
+        for new_tag in new_tags:
+            if new_tag not in self.tags:
+                self.add(new_tag)
+        
+        # Remove old tags
+        for old_tag in self.tags:
+            if old_tag not in new_tags:
+                self.remove(old_tag)
+        self.tags = new_tags
+        self.changed = False
+    
+    def _ensure_tags_db(self, tags):
+        """
+        Ensure that self.tags all exist in the database
+        """
+        db_tags = []
+        for tag in tags:
+            if tag.pk:
+                # Already in DB
+                db_tag = tag
+            else:
+                # Not in DB - get or create
+                try:
+                    if self.tag_options.case_sensitive:
+                        db_tag = self.tag_model.objects.get(name=tag.name)
+                    else:
+                        db_tag = self.tag_model.objects.get(name__iexact=tag.name)
+                except self.tag_model.DoesNotExist:
+                    db_tag = self.tag_model.objects.create(
+                        name=tag.name, protected=False,
+                    )
+            db_tags.append(db_tag)
+        return db_tags
+    
     #
     # New add, remove and clear, to update tag counts
     # Will be switched into place by TagDescriptor
     #
     def _add(self, *objs):
         # Convert strings to tag objects
-        tags = []
+        new_tags = []
         for tag in objs:
             if isinstance(tag, basestring):
-                tags.append(self.tag_model.objects.create(name=tag))
+                new_tags.append(self.tag_model.objects.create(name=tag))
             else:
-                tags.append(tag)
+                new_tags.append(tag)
+        
+        # Don't trust the internal tag cache
+        self.reload()
         
         # Enforce max_count
         if self.tag_options.max_count:
-            current_count = self.count()
-            if current_count + len(tags) > self.tag_options.max_count:
+            current_count = len(self.tags)
+            if current_count + len(new_tags) > self.tag_options.max_count:
                 raise ValueError(
                     "Cannot set more than %s tags on this field; it already has %s" % (
                         self.tag_options.max_count, current_count,
                     )
                 )
         
-        # Add and increment
-        self._old_add(*tags)
-        for tag in tags:
+        # Add to db, add to cache, and increment
+        self._old_add(*self._ensure_tags_db(new_tags))
+        for tag in new_tags:
+            self.tags.append(tag)
             tag.increment()
     _add.alters_data = True
     
     def _remove(self, *objs):
         # Convert strings to tag objects - if object doesn't exist, skip
-        tags = []
+        rm_tags = []
         for tag in objs:
             if isinstance(tag, basestring):
                 try:
-                    tags.append(self.tag_model.objects.get(name=tag))
+                    rm_tags.append(self.tag_model.objects.get(name=tag))
                 except self.tag_model.DoesNotExist:
                     continue
             else:
-                tags.append(tag)
+                rm_tags.append(tag)
+        
+        # Don't trust the internal tag cache
+        self.reload()
         
         # Cut tags back to only ones already set
-        tags = [
-            tag for tag in self.all() if tag in tags
+        rm_tags = [
+            tag for tag in self.tags if tag in rm_tags
         ]
         
-        # Remove and decrement
-        self._old_remove(*tags)
-        for tag in tags:
+        # Remove from cache
+        self.tags = [tag for tag in self.tags if tag not in rm_tags]
+        
+        # Remove from db and decrement
+        self._old_remove(*self._ensure_tags_db(rm_tags))
+        for tag in rm_tags:
             tag.decrement()
+        
     _remove.alters_data = True
 
     def _clear(self):
-        tags = list(self.all())
+        # Don't trust the internal tag cache
+        self.reload()
+        
+        # Clear db, then decrement and empty cache
         self._old_clear()
-        for tag in tags:
+        for tag in self.tags:
             tag.decrement()
+        self.tags = []
     _clear.alters_data = True
     
         
@@ -326,9 +420,9 @@ class RelatedManagerTagMixin(BaseTagManager):
         Get the tag edit string for this instance as a string
         """
         if not self.instance:
-            raise AttributeError("Function get_tag_string is only accessible via an instance")
+            raise AttributeError("Method is only accessible via an instance")
         
-        return render_tags( self.all() )
+        return render_tags(self.tags)
     
     def get_tag_list(self):
         """
@@ -336,16 +430,16 @@ class RelatedManagerTagMixin(BaseTagManager):
         """
         # ++ Better as get_tag_strings?
         if not self.instance:
-            raise AttributeError("Function get_tag_list is only accessible via an instance")
+            raise AttributeError("Method is only accessible via an instance")
         
-        return [tag.name for tag in self.all() ]
+        return [tag.name for tag in self.tags]
         
     def set_tag_string(self, tag_string):
         """
         Sets the tags for this instance, given a tag edit string
         """
         if not self.instance:
-            raise AttributeError("Function set_tag_string is only accessible via an instance")
+            raise AttributeError("Method is only accessible via an instance")
         
         # Get all tag names
         tag_names = parse_tags(tag_string)
@@ -359,7 +453,7 @@ class RelatedManagerTagMixin(BaseTagManager):
         Sets the tags for this instance, given a list of tag names
         """
         if not self.instance:
-            raise AttributeError("Function set_tag_list is only accessible via an instance")
+            raise AttributeError("Method is only accessible via an instance")
         
         if self.tag_options.max_count and len(tag_names) > self.tag_options.max_count:
             raise ValueError("Cannot set more than %d tags on this field" % self.tag_options.max_count)
@@ -367,46 +461,58 @@ class RelatedManagerTagMixin(BaseTagManager):
         # Force tag_names to unicode strings, just in case
         tag_names = [u'%s' % tag_name for tag_name in tag_names]
         
-        # Find tag model
-        tag_model = self.tag_model
+        # Apply force_lowercase
+        if self.tag_options.force_lowercase:
+            # Will be lowercase for later comparison
+            tag_names = [name.lower() for name in tag_names]
         
-        # Get list of current tags
-        old_tags = self.all()
+        # Prep tag lookup
+        # old_tags      = { cmp_name: tag }
+        # cmp_new_names = { cmp_name: cased_name }
+        if self.tag_options.case_sensitive:
+            old_tags = dict(
+                [(tag.name, tag) for tag in self.tags]
+            )
+            cmp_new_names = dict([(n, n) for n in tag_names])
+        else:
+            # Not case sensitive - need to compare on lowercase
+            old_tags = dict(
+                [(tag.name.lower(), tag) for tag in self.tags]
+            )
+            cmp_new_names = dict(
+                [(name.lower(), name) for name in tag_names]
+            )
         
-        # See which tags are staying and which are being removed
-        current_names = []
-        for tag in old_tags:
-            # If a tag is not in the new list, remove it
-            if tag.name not in tag_names:
-                self.remove(tag)
-                
-            # Otherwise note it
+        # See which tags are staying
+        new_tags = []
+        for cmp_old_name, old_tag in old_tags.items():
+            if cmp_old_name in cmp_new_names:
+                # Exists - add to new tags
+                new_tags.append(old_tag)
+                del cmp_new_names[cmp_old_name]
             else:
-                current_names.append(tag.name)
+                # Tag will be removed
+                self.changed = True
         
-        # Find or create these tags
-        for tag_name in tag_names:
-            # Force tags to lowercase
-            if self.tag_options.force_lowercase:
-                tag_name = tag_name.lower()
-            
-            # If this is already in there, don't do anything
-            if tag_name in current_names:
-                continue
-            
-            # Find or create the tag
-            # Do it manually, there's a problem with get_or_create, iexact and unique
+        # Only left with tag names which aren't present
+        for tag_name in cmp_new_names.values():
+            # Find or create all new tags
             try:
                 if self.tag_options.case_sensitive:
-                    tag = tag_model.objects.get(name=tag_name)
+                    tag = self.tag_model.objects.get(name=tag_name)
                 else:
-                    tag = tag_model.objects.get(name__iexact=tag_name)
-            except tag_model.DoesNotExist:
-                tag = tag_model.objects.create(name=tag_name, protected=False)
-            
-            # Add the tag to this
-            self.add(tag)
-    
+                    tag = self.tag_model.objects.get(name__iexact=tag_name)
+            except self.tag_model.DoesNotExist:
+                # Don't create it until it's saved
+                tag = self.tag_model(name=tag_name, protected=False)
+                
+            # Add the tag
+            new_tags.append(tag)
+            self.changed = True
+        
+        # Store in internal tag cache
+        self.tags = new_tags
+    # ++ Is this still true?
     set_tag_list.alters_data = True
     
     def __unicode__(self):

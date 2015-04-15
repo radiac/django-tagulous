@@ -139,19 +139,23 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         t1 = test_models.TagFieldModel.objects.create(
             name="Test", tags='blue, red',
         )
-        t2, state = test_models.TagFieldModel.objects.get_or_create(
+        t2 = test_models.TagFieldModel.objects.create(
+            name="Test", tags='green',
+        )
+        t3, state = test_models.TagFieldModel.objects.get_or_create(
             name='Test', tags='blue, red',
         )
         self.assertEqual(state, False)
-        self.assertEqual(t1.pk, t2.pk)
-        self.assertEqual(t1.name, 'Test')
-        self.assertEqual(t1.tags, 'blue, red')
+        self.assertEqual(t1.pk, t3.pk)
+        self.assertInstanceEqual(t2, name="Test", tags='green')
+        self.assertEqual(t3.name, 'Test')
+        self.assertEqual(t3.tags, 'blue, red')
         self.assertTagModel(self.tag_model, {
-            'red':  1,
-            'blue': 1,
+            'red':   1,
+            'blue':  1,
+            'green': 1,
         })
         
-    @unittest.skip('not yet implemented: cache value, save on obj')
     def test_tag_assign_string_obj_save(self):
         """
         Check a tag string can be assigned to the descriptor, saved when the
@@ -189,7 +193,6 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'blue': 1,
         })
         
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_tag_assign_string_manager_save(self):
         """
         Check a tag string can be assigned to the descriptor, saved by the tag
@@ -216,7 +219,6 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'blue':     1,
         })
 
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_assign_list_strings(self):
         "Check tags can be set with a list of strings"
         t1 = self.create(test_models.TagFieldModel, name="Test 1")
@@ -238,7 +240,6 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'blue':     1,
         })
         
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_assign_list_objs(self):
         "Check tags can be set with a list of strings"
         t1 = self.create(test_models.TagFieldModel, name="Test 1")
@@ -266,7 +267,6 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'blue':     1,
         })
         
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_assign_queryset(self):
         "Check tags can be set with a queryset of tags"
         t1 = self.create(test_models.TagFieldModel, name="Test 1")
@@ -293,10 +293,9 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'blue':     1,
         })
         
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_tag_assign_string_empty(self):
         "Check setting an empty string clears tags"
-        t1 = self.create(test_models.TagFieldModel, name="Test", tags='blue, red')
+        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,
@@ -320,7 +319,6 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t1, name='Test 1', tags='')
         self.assertTagModel(self.tag_model, {})
         
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_assign_list_empty(self):
         "Check setting an empty list clears tags"
         t1 = self.create(test_models.TagFieldModel, name="Test", tags='blue, red')
@@ -347,7 +345,6 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t1, name='Test 1', tags='')
         self.assertTagModel(self.tag_model, {})
         
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_assign_none(self):
         "Check setting None clears tags"
         t1 = self.create(test_models.TagFieldModel, name="Test", tags='blue, red')
@@ -389,7 +386,6 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'green':    2,
         })
         
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_change_string_add(self):
         "Add a tag by changing tag string"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue')
@@ -441,7 +437,6 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
             'green':    1,
         })
     
-    @unittest.skip('not yet implemented: cache, manager.save')
     def test_change_string_remove(self):
         "Remove a tag by changing tag string"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, green')

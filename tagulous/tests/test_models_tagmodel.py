@@ -264,52 +264,81 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(rel_t1[0], t1)
         self.assertEqual(rel_t1[1], t2)
         
-    def test_update_count_positive(self):
-        "Check update count"
+    def test_increment(self):
+        "Increment the tag count"
         tag1 = self.create(self.tag_model, name='blue')
         self.assertInstanceEqual(tag1, count=0)
-        tag1.update_count(2)
-        self.assertInstanceEqual(tag1, count=2)
+        tag1.increment()
+        self.assertInstanceEqual(tag1, count=1)
     
-    def test_update_count_zero_delete(self):
+    def test_increment_db(self):
+        "Increment the tag count using the DB value, not in-memory"
+        tag1 = self.create(self.tag_model, name='blue')
+        tag2 = self.tag_model.objects.get(pk=tag1.pk)
+        self.assertEqual(tag1.count, 0)
+        self.assertEqual(tag2.count, 0)
+        
+        tag1.increment()
+        self.assertInstanceEqual(tag1, count=1)
+        self.assertInstanceEqual(tag2, count=1)
+        self.assertEqual(tag1.count, 1)
+        self.assertEqual(tag2.count, 0)
+        
+        tag2.increment()
+        self.assertInstanceEqual(tag1, count=2)
+        self.assertInstanceEqual(tag2, count=2)
+        self.assertEqual(tag1.count, 1)
+        self.assertEqual(tag2.count, 2)
+    
+    def test_decrement(self):
         tag1 = self.create(self.tag_model, name='blue', count=2)
         self.assertTagModel(self.tag_model, {
             'blue': 2,
         })
-        tag1.update_count(0)
+        tag1.decrement()
+        self.assertTagModel(self.tag_model, {
+            'blue': 1,
+        })
+        
+    def test_decrement_delete(self):
+        tag1 = self.create(self.tag_model, name='blue', count=1)
+        self.assertTagModel(self.tag_model, {
+            'blue': 1,
+        })
+        tag1.decrement()
         self.assertTagModel(self.tag_model, {})
     
-    def test_update_count_zero_protected(self):
-        tag1 = self.create(self.tag_model, name='blue', count=2, protected=True)
+    def test_decrement_delete_protected(self):
+        tag1 = self.create(self.tag_model, name='blue', count=1, protected=True)
         self.assertTagModel(self.tag_model, {
-            'blue': 2,
+            'blue': 1,
         })
-        tag1.update_count(0)
+        tag1.decrement()
         self.assertTagModel(self.tag_model, {
             'blue': 0,
         })
         
     ##28# ++ Find other count bug first
     @unittest.skip('Disabled to find other bug')
-    def test_update_count_zero_hasrefs(self):
+    def test_decrement_delete_hasrefs(self):
         """
         Check that when a tag's count hits 0, but still has non-tag field
         references, that it isn't deleted - don't want to cascade/break refs
         """
-        tag1 = self.create(self.tag_model, name='blue', count=2)
+        tag1 = self.create(self.tag_model, name='blue', count=1)
         self.assertTagModel(self.tag_model, {
-            'blue': 2,
+            'blue': 1,
         })
         self.create(
             self.model_nontag,
             name="Non-tag field", fk=tag1, mm=[tag1]
         )
         self.assertTagModel(self.tag_model, {
-            'blue': 2,
+            'blue': 1,
         })
         
         # Now set blue to 0 (tags removed)
-        tag1.update_count(0)
+        tag1.decrement()
         self.assertTagModel(self.tag_model, {
             'blue': 0,
         })

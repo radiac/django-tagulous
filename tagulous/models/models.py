@@ -111,18 +111,54 @@ class BaseTagModel(models.Model):
             data = list(set(data))
         return data
         
-    def update_count(self, count=0):
+    def update_count(self):
         """
-        Update the count, then either save or delete the tag as appropriate
+        Count how many SingleTagFields and TagFields refer to this tag, save,
+        and try to delete.
         """
-        # If count is None, we need to update the count from true values
-        if count is None:
-            count = len(self.get_related_objects(flat=True))
+        self.count = len(self.get_related_objects(flat=True))
+        self.save()
+        self.try_delete()
+    
+    def increment(self):
+        """
+        Increase the count by one
+        """
+        self._change_count(1)
+    
+    def decrement(self):
+        """
+        Decrease the count by one, then try to delete
+        """
+        self._change_count(-1)
+    
+    def _change_count(self, amount):
+        """
+        Change count by amount
+        """
+        self.__class__.objects.filter(pk=self.pk).update(
+            count=models.F('count') + amount
+        )
+        # Reload count
+        if hasattr(self, 'refresh_from_db'):
+            ##38# Django 1.8
+            self.refresh_from_db()
+        else:
+            self.count = self.__class__.objects.get(pk=self.pk).count
+        
+        self.try_delete()
+    
+    def try_delete(self):
+        """
+        If count is 0, try to delete this tag
+        """
+        if self.count != 0:
+            return
         
         # See if it's protected
         is_protected = self.protected or self.tag_options.protect_all
         ##28# ++ Find other count bug first
-        if False and count == 0 and not is_protected:
+        if False and not is_protected:
             # Before we delete, check for any standard relationships
             true_count = len(
                 self.get_related_objects(flat=True, include_standard=True)
@@ -134,24 +170,9 @@ class BaseTagModel(models.Model):
                 is_protected = True
        
         # Try to delete
-        if count == 0 and not is_protected:
+        if not is_protected:
             # Tag is not in use and not protected. Delete.
             self.delete()
-        else:
-            self.count = count
-            self.save()
-    
-    def increment(self):
-        """
-        Increase the count by one
-        """
-        self.update_count(self.count + 1)
-    
-    def decrement(self):
-        """
-        Decrease the count by one
-        """
-        self.update_count(self.count - 1)
     
     def merge_tags(self, tags):
         """

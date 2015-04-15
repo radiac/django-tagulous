@@ -137,9 +137,20 @@ exactly the way you would expect. These patches are written to be as
 future-proof as possible, but because this isn't exactly best practice, they
 come as optional flags which you can disable using the settings below:
 
-:: _enhanced_queryset:
+:: _enhancements:
 
-``TAGULOUS_ENHANCED_QUERYSET``
+``TAGULOUS_ENHANCE_ALL``
+    If ``True``, turns on all enhancements. If ``False``, individual
+    enhancement settings apply.
+    
+    Default: True
+
+``TAGULOUS_ENHANCE_MODEL``
+    Django models cannot take ``ManyToManyField`` values in their constructors.
+    
+    This is the same 
+
+``TAGULOUS_ENHANCE_QUERYSET``
     Tag fields are just sugar-coated ``ForeignKey``s and ``ManyToManyField``s,
     so Django expects them to be tag model instances with primary keys. In most
     cases this doesn't cause a problem, but it does mean that you can't pass
@@ -159,7 +170,7 @@ come as optional flags which you can disable using the settings below:
     If set to ``False``, you can still pass custom ``QuerySet`` classes into
     ``tagulous.models.queryset.enhance_queryset()`` to just monkey-patch those.
     
-    Default: ``True``
+    Default: ``False``, overridden by ``TAGULOUS_ENHANCE_ALL``
 
 
 Management Commands

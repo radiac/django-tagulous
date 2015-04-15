@@ -22,7 +22,7 @@ class BaseTagDescriptor(object):
     Base TagDescriptor class
     """
     def __init__(self, descriptor, tag_options):
-        # Store arguments
+        # Store original FK/M2M descriptor and tag options
         self.descriptor = descriptor
         self.tag_options = tag_options
         
@@ -43,7 +43,25 @@ class BaseTagDescriptor(object):
                 'protected': self.tag_options.protect_initial,
             })
 
+    def get_manager(self, instance, instance_type=None):
+        """
+        Get the Manager instance for this field on this model instance.
+        
+        Descriptor is instantiated once per class, so we bind the Manager to
+        the instance and collect it again when needed.
+        """
+        # Get existing or create new SingleTagManager
+        attname = self.descriptor.field.get_manager_name()
+        manager = getattr(instance, attname, None)
+        if not manager:
+            manager = self.create_manager(instance, instance_type)
+            setattr(instance, attname, manager)
+        return manager
+    
+    def create_manager(self, instance, instance_type):
+        raise NotImplementedError('Implement in subclass')
 
+    
 ###############################################################################
 ####### Descriptor for SingleTagField
 ###############################################################################
@@ -67,7 +85,7 @@ class SingleTagDescriptor(BaseTagDescriptor):
         )
         
         # The manager needs to know after the model has been saved, so it can
-        # decrement the old tag without risk of cascading the delete if count=0
+        # change tag count
         def post_save_handler(sender, instance, **kwargs):
             manager = self.get_manager(instance)
             manager.post_save_handler()
@@ -83,27 +101,6 @@ class SingleTagDescriptor(BaseTagDescriptor):
             post_delete_handler, sender=self.field.model, weak=False
         )
         
-    def get_manager(self, instance):
-        """
-        Get the SingleTagManager instance for this field on this model instance
-        """
-        # Get existing or create new SingleTagManager
-        attname = self.descriptor.field.get_manager_name()
-        manager = getattr(instance, attname, None)
-        if not manager:
-            manager = SingleTagManager(self, instance)
-            setattr(instance, attname, manager)
-        return manager
-        
-    def __get__(self, instance, instance_type=None):
-        # If no instance, return self
-        if not instance:
-            return self
-        
-        # Otherwise get from the manager
-        manager = self.get_manager(instance)
-        return manager.get()
-        
     def __set__(self, instance, value):
         # Check we can do this
         # descriptor.__set__() will do this again, but can't be avoided
@@ -113,6 +110,18 @@ class SingleTagDescriptor(BaseTagDescriptor):
         # Otherwise set on the manager
         manager = self.get_manager(instance)
         manager.set(value)
+        
+    def create_manager(self, instance, instance_type):
+        return SingleTagManager(self, instance)
+    
+    def __get__(self, instance, instance_type=None):
+        # If no instance, return self
+        if not instance:
+            return self
+        
+        # Otherwise get from the manager
+        manager = self.get_manager(instance, instance_type)
+        return manager.get()
         
         
 ###############################################################################
@@ -129,6 +138,17 @@ class TagDescriptor(BaseTagDescriptor):
     def __init__(self, descriptor, tag_options):
         super(TagDescriptor, self).__init__(descriptor, tag_options)
         
+        # After an instance is saved, save any tag changes
+        def post_save_handler(sender, instance, **kwargs):
+            """
+            Save any tag changes
+            """
+            manager = self.__get__(instance)
+            manager.save()
+        models.signals.post_save.connect(
+            post_save_handler, sender=self.field.model, weak=False
+        )
+        
         # When deleting an instance, Django does not call the add/remove of the
         # M2M manager, so tag counts would be too high. Related to:
         #   https://code.djangoproject.com/ticket/6707
@@ -141,37 +161,39 @@ class TagDescriptor(BaseTagDescriptor):
             manager = self.__get__(instance)
             manager.clear()
         models.signals.pre_delete.connect(
-            pre_delete_handler,
-            sender=self.field.model, weak=False
+            pre_delete_handler, sender=self.field.model, weak=False
         )
         
-    def __get__(self, instance, instance_type=None):
-        # If no instance, return self
-        if not instance:
-            return self
-        
+    def create_manager(self, instance, instance_type):
         # Get the RelatedManager that should have been returned
         manager = self.descriptor.__get__(instance, instance_type)
         
         # Add in the mixin
-        # Thanks, http://stackoverflow.com/questions/8544983/dynamically-mixin-a-base-class-to-an-instance-in-python
         manager.__class__ = type(
             'TagRelatedManager',
             (manager.__class__, RelatedManagerTagMixin),
             {}
         )
         
-        # Switch add, remove and clear out, keeping the old versions to call later
+        # Switch add, remove and clear, keeping the old versions to call later
         manager._old_add,    manager.add    = manager.add,    manager._add
         manager._old_remove, manager.remove = manager.remove, manager._remove
         manager._old_clear,  manager.clear  = manager.clear,  manager._clear
         
-        # Add options to manager
-        manager.tag_options = self.tag_options
-        manager.tag_model = self.tag_model
+        # Manager is already instantiated; initialise tagulous in it
+        manager.__init_tagulous__(self)
         
         return manager
-
+    
+    def __get__(self, instance, instance_type=None):
+        # If no instance, return self
+        if not instance:
+            return self
+        
+        # Otherwise get from the manager
+        manager = self.get_manager(instance, instance_type)
+        return manager
+        
     def __set__(self, instance, value):
         # Check we can do this
         # descriptor.__set__() will do this again, but can't be avoided

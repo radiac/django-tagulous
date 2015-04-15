@@ -174,6 +174,12 @@ class BaseTagField(object):
         # Create the field instance
         return form_class(**options)
 
+    def get_manager_name(self):
+        """
+        Get the field name for the Manager
+        """
+        return "_%s_tagulous" % self.name
+
 
 ###############################################################################
 ####### Single tag field
@@ -238,12 +244,6 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         For arguments see forms.TagField
         """
         return self.tag_formfield(form_class=form_class, **kwargs)
-           
-    def get_manager_name(self):
-        """
-        Get the field name for the SingleTagManager
-        """
-        return "_%s_tagulous" % self.name
 
         
 ###############################################################################
