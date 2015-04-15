@@ -274,20 +274,16 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         self.tag_model.objects.create(name='red')
         t1.tags = self.tag_model.objects.all()
         
-        # Returned before save
+        # Returned before save, check DB hasn't changed
         self.assertEqual(str(t1.tags), 'blue, red')
+        self.assertInstanceEqual(t1, name='Test 1', tags='')
         self.assertTagModel(self.tag_model, {
             'red':      0,
             'blue':     0,
         })
         
-        # Check db hasn't changed
-        t2 = test_models.TagFieldModel.objects.get(name='Test 1')
-        self.assertEqual(str(t2.tags), '')
-        
         # Returned after save
         t1.tags.save()
-        self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,
             'blue':     1,
@@ -303,16 +299,13 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         })
         t1.tags = ''
         
-        # Returned before save
+        # Returned before save, check DB hasn't changed
         self.assertEqual(str(t1.tags), '')
+        self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,
             'blue':     1,
         })
-        
-        # Check db hasn't changed
-        t2 = test_models.TagFieldModel.objects.get(name='Test 1')
-        self.assertEqual(str(t2.tags), 'blue, red')
         
         # Returned after save
         t1.tags.save()
@@ -321,7 +314,7 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         
     def test_assign_list_empty(self):
         "Check setting an empty list clears tags"
-        t1 = self.create(test_models.TagFieldModel, name="Test", tags='blue, red')
+        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,
@@ -347,7 +340,7 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         
     def test_assign_none(self):
         "Check setting None clears tags"
-        t1 = self.create(test_models.TagFieldModel, name="Test", tags='blue, red')
+        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,

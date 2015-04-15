@@ -8,6 +8,8 @@ Their main purposes is to act as getter/setters and pass data to and from
 manager instances.
 """
 
+import collections
+
 from django.db import models
 
 from tagulous.models.managers import SingleTagManager, RelatedManagerTagMixin
@@ -206,27 +208,21 @@ class TagDescriptor(BaseTagDescriptor):
         # Set value
         if not value:
             # Clear
-            manager.clear()
+            manager.set_tag_string('')
         
         elif isinstance(value, basestring):
             # If it's a string, it must be a tag string
             manager.set_tag_string(value)
         
-        elif isinstance(value, (list, tuple)) and isinstance(value[0], basestring):
-            # It's a list of tuple of tag names
-            manager.set_tag_list(value)
-        
-        
         elif isinstance(value, RelatedManagerTagMixin):
-            ##24# ++ Why does this clear first? Unnecessary?
-            manager.clear()
+            # A manager's tags are copied
             manager.set_tag_list(value.get_tag_list())
-        
+            
+        elif isinstance(value, collections.Iterable):
+            # An iterable goes in as a list of things that are, or can be
+            # converted to, strings
+            manager.set_tag_list(value)
+            
         else:
-            ##24# ++ Handle a list of Tag instances, or a queryset of Tags
-            # ++ This is a risky fallthrough
-            # ++ The intention is to set a list of TagModel instances
-            # ++ But that needs to be explicitly tested here
-            # ++ Causes problems when trying to save a queryset from a different tagmodel
-            manager.clear()
-            manager.add(*value)
+            # Unknown
+            raise ValueError('Unexpected value assigned to TagField')

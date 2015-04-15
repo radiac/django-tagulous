@@ -299,7 +299,7 @@ class RelatedManagerTagMixin(BaseTagManager):
             return
         
         # Add and remove tags as necessary
-        new_tags = self._ensure_tags_db(self.tags)
+        new_tags = self._ensure_tags_in_db(self.tags)
         self.reload()
         # Add new tags
         for new_tag in new_tags:
@@ -313,7 +313,7 @@ class RelatedManagerTagMixin(BaseTagManager):
         self.tags = new_tags
         self.changed = False
     
-    def _ensure_tags_db(self, tags):
+    def _ensure_tags_in_db(self, tags):
         """
         Ensure that self.tags all exist in the database
         """
@@ -363,7 +363,7 @@ class RelatedManagerTagMixin(BaseTagManager):
                 )
         
         # Add to db, add to cache, and increment
-        self._old_add(*self._ensure_tags_db(new_tags))
+        self._old_add(*self._ensure_tags_in_db(new_tags))
         for tag in new_tags:
             self.tags.append(tag)
             tag.increment()
@@ -393,7 +393,7 @@ class RelatedManagerTagMixin(BaseTagManager):
         self.tags = [tag for tag in self.tags if tag not in rm_tags]
         
         # Remove from db and decrement
-        self._old_remove(*self._ensure_tags_db(rm_tags))
+        self._old_remove(*self._ensure_tags_in_db(rm_tags))
         for tag in rm_tags:
             tag.decrement()
         
@@ -450,7 +450,8 @@ class RelatedManagerTagMixin(BaseTagManager):
         
     def set_tag_list(self, tag_names):
         """
-        Sets the tags for this instance, given a list of tag names
+        Sets the tags for this instance, given a list of tag names, or a list
+        or queryset of tags
         """
         if not self.instance:
             raise AttributeError("Method is only accessible via an instance")
@@ -458,7 +459,7 @@ class RelatedManagerTagMixin(BaseTagManager):
         if self.tag_options.max_count and len(tag_names) > self.tag_options.max_count:
             raise ValueError("Cannot set more than %d tags on this field" % self.tag_options.max_count)
         
-        # Force tag_names to unicode strings, just in case
+        # Force tag_names to strings, in case it's a list of tags or a queryset
         tag_names = [u'%s' % tag_name for tag_name in tag_names]
         
         # Apply force_lowercase
