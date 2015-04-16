@@ -11,10 +11,6 @@ from tagulous import forms as tag_forms
 from tagulous import utils as tag_utils
 from tagulous import settings as tag_settings
 
-from tagulous.tests.app.models import \
-    TagFieldModel, CustomTestTagModel, \
-    CustomTestFirstModel, CustomTestSecondModel
-
 from tagulous.tests.app import models as test_models
 from tagulous.tests.app import forms as test_forms
 

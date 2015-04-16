@@ -7,9 +7,9 @@ from django.db import models
 import tagulous
 
 
-#
-# Models for testing SingleTagField
-#
+###############################################################################
+####### Models for testing SingleTagField
+###############################################################################
 
 class SingleTagFieldModel(models.Model):
     """
@@ -95,9 +95,10 @@ class SingleTagFieldOptionsModel(models.Model):
     )
 
 
-#
-# Models for testing TagField
-#
+
+###############################################################################
+####### Models for testing TagField
+###############################################################################
 
 class TagFieldModel(models.Model):
     """
@@ -174,10 +175,9 @@ class TagFieldOptionsModel(models.Model):
     )
 
 
-
-#
-# Models for testing a mix of fields
-#
+###############################################################################
+####### Models for testing a mix of fields
+###############################################################################
 
 class MixedTestTagModel(tagulous.models.TagModel):
     pass
@@ -242,65 +242,3 @@ class MixedOrderTest(models.Model):
     char6   = models.CharField(blank=True, max_length=10)
     fk2     = models.ForeignKey(MixedTest, related_name="order_fk2")
     char7   = models.CharField(blank=True, max_length=10)
-
-
-#
-# OLD TESTS
-#
-
-
-
-#
-# Models for testing TagField
-#
-
-
-class MultiTestModel(models.Model):
-    """
-    For testing multiple tag fields, tag options
-    """
-    name = models.CharField(blank=True, max_length=100)
-    tagset1 = tagulous.models.TagField(protect_all=True, case_sensitive=True)
-    tagset2 = tagulous.models.TagField(initial="blue, green, red", force_lowercase=True)
-    tagset3 = tagulous.models.TagField(initial='Adam', protect_initial=False)
-    
-class CustomTestTagModel(tagulous.models.TagModel):
-    class TagMeta:
-        protect_all = True
-        initial     = 'django, javascript'
-
-class CustomTestFirstModel(models.Model):
-    """
-    For testing a custom test model
-    """
-    name = models.CharField(blank=True, max_length=100)
-    tags = tagulous.models.TagField(CustomTestTagModel)
-
-class CustomTestSecondModel(models.Model):
-    """
-    For testing a custom test model shared between two models
-    """
-    name = models.CharField(blank=True, max_length=100)
-    tags = tagulous.models.TagField(CustomTestTagModel)
-
-
-
-#
-# Models for testing forms
-#
-
-class FormTest(models.Model):
-    """
-    For testing multiple tag fields in model forms
-    """
-    tagset1 = tagulous.models.TagField(initial="Adam, Brian, Chris", case_sensitive=True)
-    tagset2 = tagulous.models.TagField(initial="blue, green, red", force_lowercase=True)
-    tagset3 = tagulous.models.TagField(initial='html, django')
-
-class SingleFormTest(models.Model):
-    """
-    For testing single tag fields in model forms
-    """
-    tag1 = tagulous.models.SingleTagField(initial="Adam, Brian, Chris", case_sensitive=True)
-    tag2 = tagulous.models.SingleTagField(initial="blue, green, red", force_lowercase=True)
-    tag3 = tagulous.models.SingleTagField(initial='html, django')

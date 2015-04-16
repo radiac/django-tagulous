@@ -12,7 +12,7 @@ Modules tested:
 from tagulous.tests.lib import *
 
 
-class ModelMultiTagFieldTest(TagTestManager, TestCase):
+class ModelTagFieldTest(TagTestManager, TestCase):
     """
     Test model TagField
     """
@@ -557,7 +557,7 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
 ####### Test tag counter
 ###############################################################################
 
-class ModelMultiTagFieldCountTest(TagTestManager, TestCase):
+class ModelTagFieldCountTest(TagTestManager, TestCase):
     """
     Test tag model counter
     """
@@ -655,7 +655,7 @@ class ModelMultiTagFieldCountTest(TagTestManager, TestCase):
 ####### Test multiple TagFields on a model
 ###############################################################################
 
-class ModelMultiTagFieldMultipleTest(TagTestManager, TestCase):
+class ModelTagFieldMultipleTest(TagTestManager, TestCase):
     """
     Test multiple tag fields on a model
     """

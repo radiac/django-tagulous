@@ -163,3 +163,16 @@ def enhance_model(model):
     model.__init__ = new_init
     
 enhance_model(models.Model)
+
+
+
+
+def enhance_form():
+    from django import forms
+    old_save_instance = forms.models.save_instance
+    
+    def new_save_instance(*args, **kwargs):
+        print "NEW"
+        return old_save_instance(*args, **kwargs)
+        
+    forms.models.save_instance = new_save_instance

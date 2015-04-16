@@ -2,11 +2,19 @@ from django import forms
 
 from tagulous.tests.app import models
 
-
-class FormTest(forms.ModelForm):
+class SingleTagFieldForm(forms.ModelForm):
     class Meta:
-        model = models.FormTest
+        model = models.SingleTagFieldModel
 
-class SingleFormTest(forms.ModelForm):
+class SingleTagFieldOptionsForm(forms.ModelForm):
     class Meta:
-        model = models.SingleFormTest
+        model = models.SingleTagFieldOptionsModel
+
+
+class TagFieldForm(forms.ModelForm):
+    class Meta:
+        model = models.TagFieldModel
+
+class TagFieldOptionsForm(forms.ModelForm):
+    class Meta:
+        model = models.TagFieldOptionsModel
