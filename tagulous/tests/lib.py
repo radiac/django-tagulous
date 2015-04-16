@@ -39,21 +39,34 @@ class TagTestManager(object):
         
     def create(self, model, **kwargs):
         ##30# ++ This can be replaced when we've got create() working properly
-        pre = {}
-        post = {}
+        normal = {}
+        tagfield = {}
+        mmfield = {}
         for field_name, val in kwargs.items():
             if isinstance(
-                model._meta.get_field(field_name),
-                (tag_models.TagField, models.ManyToManyField,)
+                model._meta.get_field(field_name), tag_models.TagField
             ):
-                post[field_name] = val
+                tagfield[field_name] = val
+            elif isinstance(
+                model._meta.get_field(field_name), models.ManyToManyField
+            ):
+                mmfield[field_name] = val
             else:
-                pre[field_name] = val
+                normal[field_name] = val
         
-        item = model.objects.create(**pre)
-        for field_name, val in post.items():
+        # Create as normal
+        item = model.objects.create(**normal)
+        
+        # Add tagfields (may not be using enhanced queryset)
+        for field_name, val in tagfield.items():
             setattr(item, field_name, val)
-        item.save()
+            getattr(item, field_name).save()
+        
+        # Add mm fields
+        for field_name, val in mmfield.items():
+            field = getattr(item, field_name)
+            for obj in val:
+                field.add(obj)
         
         return item
     
@@ -69,6 +82,14 @@ class TagTestManager(object):
                     (tag_models.SingleTagField, tag_models.TagField)
                 ) and isinstance(val, basestring):
                     self.assertEqual(str(getattr(instance, field_name)), val)
+                elif isinstance(
+                    instance.__class__._meta.get_field(field_name),
+                    models.ManyToManyField
+                ):
+                    mm_objs = list(getattr(instance, field_name).all())
+                    self.assertEqual(len(val), len(mm_objs))
+                    for obj in val:
+                        self.assertTrue(obj in mm_objs)
                 else:
                     self.assertEqual(getattr(instance, field_name), val)
             except AssertionError, e:
@@ -94,10 +115,15 @@ class TagTestManager(object):
             if tag.count != count:
                 self.fail("Tag count for '%s' incorrect; expected %d, got %d" % (tag_name, count, tag.count))
         
-    def debugTagModel(self, field):
+    def debugTagModel(self, model):
+        """
+        Print tag model tags and their counts, to help debugging failed tests
+        """
         print "-=-=-=-=-=-"
-        print "Tag model: %s" % field.tag_model
-        for tag in field.tag_model.objects.all():
+        if isinstance(model, (tag_models.SingleTagDescriptor, tag_models.TagDescriptor)):
+            model = model.tag_model
+        print "Tag model: %s" % model
+        for tag in model.objects.all():
             print '%s: %d' % (tag.name, tag.count)
         print "-=-=-=-=-=-"
 

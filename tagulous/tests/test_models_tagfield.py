@@ -46,30 +46,38 @@ class ModelMultiTagFieldTest(TagTestManager, TestCase):
         # Check it also has a reference to the correct model
         self.assertEqual(t1.tags.tag_model, self.tag_model)
 
-    @unittest.skip('not yet implemented: constructor')
+    def test_tag_assign_before_save(self):
+        """
+        Check a tag string can be assigned to an instance which hasn't yet
+        been saved
+        """
+        t1 = test_models.TagFieldModel(name="Test")
+        t1.tags = 'blue, red'
+        self.assertEqual(t1.tags.get_tag_string(), 'blue, red')
+        self.assertTagModel(self.tag_model, {})
+        
     def test_tag_assign_in_constructor(self):
         "Check a tag string can be set in the constructor"
-        t1 = test_models.TagFieldModel(name="Test", tags='red, blue')
+        t1 = test_models.TagFieldModel(name="Test", tags='blue, red')
         
         # Returned before save
-        self.assertEqual(t1.tags.get_tag_string(), 'red, blue')
+        self.assertEqual(t1.tags.get_tag_string(), 'blue, red')
         self.assertTagModel(self.tag_model, {})
         
         # Returned after save
         t1.save()
         self.assertInstanceEqual(t1, name='Test', tags='blue, red')
         self.assertTagModel(self.tag_model, {
-            'red':  1,
             'blue': 1,
+            'red':  1,
         })
     
-    @unittest.skip('not yet implemented: constructor')
     def test_tag_assign_by_list_in_constructor(self):
         "Check a list of strings can be set in the constructor"
-        t1 = test_models.TagFieldModel(name="Test", tags=['red', 'blue'])
+        t1 = test_models.TagFieldModel(name="Test", tags=['blue', 'red'])
         
         # Returned before save
-        self.assertEqual(t1.tags.get_tag_string(), 'red, blue')
+        self.assertEqual(t1.tags.get_tag_string(), 'blue, red')
         self.assertTagModel(self.tag_model, {})
         
         # Returned after save
@@ -911,11 +919,10 @@ class ModelTagFieldOptionsTest(TagTestManager, TestCase):
             'Chris':    1,
         })
         
-    @unittest.skip('not yet implemented: constructor')
-    def test_max_count_above(self):
+    def test_max_count_create_above(self):
         with self.assertRaises(ValueError) as cm:
-            t1 = self.create(
-                self.test_model, name="Test 1",
+            t1 = self.test_model.objects.create(
+                name="Test 1",
                 max_count='Adam, Brian, Chris, David',
             )
         self.assertEqual(
@@ -924,6 +931,19 @@ class ModelTagFieldOptionsTest(TagTestManager, TestCase):
         )
         with self.assertRaises(self.test_model.DoesNotExist) as cm:
             t2 = self.test_model.objects.get(name="Test 1")
+        self.assertTagModel(self.test_model.max_count, {})
+        
+    def test_max_count_assign_above(self):
+        t1 = self.create(self.test_model, name="Test 1")
+        with self.assertRaises(ValueError) as cm:
+            t1.max_count = 'Adam, Brian, Chris, David'
+            #t1.max_count.save()
+            
+        self.assertEqual(
+            str(cm.exception),
+            "Cannot set more than 3 tags on this field"
+        )
+        self.assertInstanceEqual(t1, name="Test 1", max_count='')
         self.assertTagModel(self.test_model.max_count, {})
 
     def test_max_count_add_above(self):

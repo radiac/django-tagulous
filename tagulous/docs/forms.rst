@@ -26,19 +26,25 @@ Only Select2 is included with Tagulous; if you want to use a different library,
 you will need to add it to your project's static files, and add the relative
 path under ``STATIC_URL`` to the appropriate ``TAGULOUS_`` settings.
 
-The included adaptors have their path names stored in ``tagulous.constants``:
+Tagulous includes the following adaptors:
 
-``PATH_SELECT2_ADAPTOR``
-    The default adaptor for `Select2 <https://select2.github.io/>`_.
-    
+Select2, version 3
+    The default adaptor, for `Select2 <https://select2.github.io/>`_.
+
     Autocomplete settings should be a dict, and will be passed to the Select2
     constructor.
+    
+    Path: ``tagulous/adaptor/select2-3.js``
 
-``PATH_SELECTIZE_ADAPTOR``
+Selectize
     The adaptor for `Selectize <http://brianreavis.github.io/selectize.js/>`_.
+    
+    Not yet implemented
 
-``PATH_JQUERYUI_ADAPTOR``
+jQuery UI autocomplete
     The adaptor for `jQuery UI autocomplete <https://jqueryui.com/autocomplete/>`_.
+    
+    Not yet implemented
 
 
 Writing a custom adaptor

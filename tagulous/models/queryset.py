@@ -95,6 +95,16 @@ def enhance_queryset(queryset):
         # SingleTagFields are safe
         safe_fields.update(singletag_fields)
         
+        from django.db import transaction
+        if hasattr(transaction, 'atomic'):
+            with transaction.atomic():
+                return _do_create(self, safe_fields, tag_fields)
+                
+        else:
+            with transaction.commit_on_success():
+                return _do_create(self, safe_fields, tag_fields)
+
+    def _do_create(self, safe_fields, tag_fields):
         # Create as normal
         obj = old_create(self, **safe_fields)
         
@@ -102,7 +112,7 @@ def enhance_queryset(queryset):
         for field_name, val in tag_fields.items():
             setattr(obj, field_name, val)
             getattr(obj, field_name).save()
-        
+            
         return obj
     
     def new_get_or_create(self, **kwargs):
@@ -130,3 +140,26 @@ def enhance_queryset(queryset):
 
 if settings.ENHANCE_QUERYSET:
     enhance_queryset(models.query.QuerySet)
+
+
+
+
+def enhance_model(model):
+    old_init = model.__init__
+    
+    def new_init(self, *args, **kwargs):
+        safe_fields, singletag_fields, tag_fields = split_kwargs(self, kwargs)
+        
+        # Constructor has always been happy with ForeignKeys
+        safe_fields.update(singletag_fields)
+        
+        # Call old init
+        old_init(self, *args, **safe_fields)
+        
+        # Add on TagField values
+        for field_name, val in tag_fields.items():
+            setattr(self, field_name, val)
+
+    model.__init__ = new_init
+    
+enhance_model(models.Model)

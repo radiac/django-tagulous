@@ -50,9 +50,6 @@ You are now ready to add tagulous fields to your models - see
 Settings
 --------
 
-If you want to use tagulous constants, you will need to
-``from tagulous.constants import *`` at the top of your settings.
-
 ``TAGULOUS_AUTOCOMPLETE_JS``
     List of paths under ``STATIC_URL`` to any javascript files which are
     required for tagulous autocomplete. These will be added to the form media
@@ -62,21 +59,20 @@ If you want to use tagulous constants, you will need to
     with the tagulous Select2 adaptor. See `Autocomplete Adaptors`_ for
     information about using other included adaptors, or writing your own.
     
-    If you want to use included files, it is advised that you use the tagulous
-    constants, so that when you upgrade Tagulous any paths to third
-    party code will by updated too.
-    
-    Default: ``(PATH_JQUERY, PATH_SELECT2_JS, PATH_SELECT2_ADAPTOR)``
+    Default::
+        ('tagulous/lib/jquery.js',
+        'tagulous/lib/select2-3/select2.min.js',
+        'tagulous/tagulous.js',
+        'tagulous/adaptor/select2.js')
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``
     List of paths under ``STATIC_URL`` to any CSS files which are required for
     tagulous autocomplete. These will be added to the form media when a
     tagulous form field is used.
     
-    The default list will use the included version of Select2. As with
-    javascript files it is advised that you use the values in ``constants.py``.
+    The default list will use the included version of Select2.
     
-    Default: ``{'all': (PATH_SELECT2_CSS,)}``
+    Default: ``{'all':  ['tagulous/lib/select2-3/select2.css']}``
 
 ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
     Any settings which you want to override in the default adaptor. These will

@@ -12,7 +12,9 @@ import collections
 
 from django.db import models
 
-from tagulous.models.managers import SingleTagManager, RelatedManagerTagMixin
+from tagulous.models.managers import (
+    SingleTagManager, TagRelatedManagerMixin, FakeTagRelatedManager
+)
 
 
 ###############################################################################
@@ -45,25 +47,7 @@ class BaseTagDescriptor(object):
                 'protected': self.tag_options.protect_initial,
             })
 
-    def get_manager(self, instance, instance_type=None):
-        """
-        Get the Manager instance for this field on this model instance.
-        
-        Descriptor is instantiated once per class, so we bind the Manager to
-        the instance and collect it again when needed.
-        """
-        # Get existing or create new SingleTagManager
-        attname = self.descriptor.field.get_manager_name()
-        manager = getattr(instance, attname, None)
-        if not manager:
-            manager = self.create_manager(instance, instance_type)
-            setattr(instance, attname, manager)
-        return manager
-    
-    def create_manager(self, instance, instance_type):
-        raise NotImplementedError('Implement in subclass')
 
-    
 ###############################################################################
 ####### Descriptor for SingleTagField
 ###############################################################################
@@ -113,9 +97,21 @@ class SingleTagDescriptor(BaseTagDescriptor):
         manager = self.get_manager(instance)
         manager.set(value)
         
-    def create_manager(self, instance, instance_type):
-        return SingleTagManager(self, instance)
-    
+    def get_manager(self, instance, instance_type=None):
+        """
+        Get the Manager instance for this field on this model instance.
+        
+        Descriptor is instantiated once per class, so we bind the Manager to
+        the instance and collect it again when needed.
+        """
+        # Get existing or create new SingleTagManager
+        attname = self.descriptor.field.get_manager_name()
+        manager = getattr(instance, attname, None)
+        if not manager:
+            manager = SingleTagManager(self, instance)
+            setattr(instance, attname, manager)
+        return manager
+
     def __get__(self, instance, instance_type=None):
         # If no instance, return self
         if not instance:
@@ -166,6 +162,61 @@ class TagDescriptor(BaseTagDescriptor):
             pre_delete_handler, sender=self.field.model, weak=False
         )
         
+    def get_manager(self, instance, instance_type=None):
+        """
+        Get the Manager instance for this field on this model instance.
+        
+        Descriptor is instantiated once per class, so we bind the Manager to
+        the instance and collect it again when needed.
+        
+        While the instance is not saved (does not have a pk), a fake manager
+        is used to hold unsaved tags; database methods are disallowed.
+        """
+        # Get existing mamager
+        attname = self.descriptor.field.get_manager_name()
+        manager = getattr(instance, attname, None)
+        manager_type = self.descriptor.related_manager_cls
+        
+        # Find which manager we should be using
+        if instance.pk:
+            # Can use real manager
+            if isinstance(manager, FakeTagRelatedManager):
+                # Convert fake manager to real manager
+                fake_manager = manager
+                manager = self.create_manager(instance, instance_type)
+                manager.load_from_tagmanager(fake_manager)
+                
+            elif manager is None:
+                # Create real manager
+                manager = self.create_manager(instance, instance_type)
+                
+            # Otherwise already have real manager
+        else:
+            # Have to use the fake one
+            if isinstance(manager, manager_type):
+                # Was using a real manager, but instance must have been deleted
+                real_manager = manager
+                manager = FakeTagRelatedManager(self, instance, instance_type)
+                manager.load_from_tagmanager(real_manager)
+            
+            elif manager is None:
+                # Create fake manager
+                manager = FakeTagRelatedManager(self, instance, instance_type)
+            
+            # Otherwise already have a fake manager
+        
+        # Set it in case it changed
+        setattr(instance, attname, manager)
+        return manager
+        
+        # Get existing or create new SingleTagManager
+        attname = self.descriptor.field.get_manager_name()
+        manager = getattr(instance, attname, None)
+        if not manager:
+            manager = SingleTagManager(self, instance)
+            setattr(instance, attname, manager)
+        return manager
+    
     def create_manager(self, instance, instance_type):
         # Get the RelatedManager that should have been returned
         manager = self.descriptor.__get__(instance, instance_type)
@@ -173,7 +224,7 @@ class TagDescriptor(BaseTagDescriptor):
         # Add in the mixin
         manager.__class__ = type(
             'TagRelatedManager',
-            (manager.__class__, RelatedManagerTagMixin),
+            (manager.__class__, TagRelatedManagerMixin),
             {}
         )
         
@@ -183,7 +234,7 @@ class TagDescriptor(BaseTagDescriptor):
         manager._old_clear,  manager.clear  = manager.clear,  manager._clear
         
         # Manager is already instantiated; initialise tagulous in it
-        manager.__init_tagulous__(self)
+        manager.init_tagulous(self)
         
         return manager
     
@@ -214,7 +265,7 @@ class TagDescriptor(BaseTagDescriptor):
             # If it's a string, it must be a tag string
             manager.set_tag_string(value)
         
-        elif isinstance(value, RelatedManagerTagMixin):
+        elif isinstance(value, TagRelatedManagerMixin):
             # A manager's tags are copied
             manager.set_tag_list(value.get_tag_list())
             

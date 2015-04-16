@@ -5,20 +5,18 @@ Override these by setting new values in your global settings file
 """
 from django.conf import settings
 
-from tagulous import constants
-
 
 AUTOCOMPLETE_JS = getattr(
     settings, 'TAGULOUS_AUTOCOMPLETE_JS', (
-        constants.PATH_JQUERY,
-        constants.PATH_TAGULOUS_JS,
-        constants.PATH_SELECT2_JS,
-        constants.PATH_SELECT2_ADAPTOR,
+        'tagulous/lib/jquery.js',
+        'tagulous/lib/select2-3/select2.min.js',
+        'tagulous/tagulous.js',
+        'tagulous/adaptor/select2-3.js',
     )
 )
 AUTOCOMPLETE_CSS = getattr(
     settings, 'TAGULOUS_AUTOCOMPLETE_CSS', {
-        'all':  [constants.PATH_SELECT2_CSS],
+        'all':  ['tagulous/lib/select2-3/select2.css'],
     }
 )
 AUTOCOMPLETE_SETTINGS = getattr(

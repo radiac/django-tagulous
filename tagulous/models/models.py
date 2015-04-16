@@ -139,6 +139,7 @@ class BaseTagModel(models.Model):
         self.__class__.objects.filter(pk=self.pk).update(
             count=models.F('count') + amount
         )
+        
         # Reload count
         if hasattr(self, 'refresh_from_db'):
             ##38# Django 1.8
@@ -157,8 +158,7 @@ class BaseTagModel(models.Model):
         
         # See if it's protected
         is_protected = self.protected or self.tag_options.protect_all
-        ##28# ++ Find other count bug first
-        if False and not is_protected:
+        if not is_protected:
             # Before we delete, check for any standard relationships
             true_count = len(
                 self.get_related_objects(flat=True, include_standard=True)

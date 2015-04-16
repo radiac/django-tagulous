@@ -318,29 +318,47 @@ class TagModelTest(TagTestManager, TestCase):
             'blue': 0,
         })
         
-    ##28# ++ Find other count bug first
-    @unittest.skip('Disabled to find other bug')
     def test_decrement_delete_hasrefs(self):
         """
         Check that when a tag's count hits 0, but still has non-tag field
         references, that it isn't deleted - don't want to cascade/break refs
         """
+        # Create tags with false count
         tag1 = self.create(self.tag_model, name='blue', count=1)
+        tag2 = self.create(self.tag_model, name='red', count=1)
         self.assertTagModel(self.tag_model, {
             'blue': 1,
-        })
-        self.create(
-            self.model_nontag,
-            name="Non-tag field", fk=tag1, mm=[tag1]
-        )
-        self.assertTagModel(self.tag_model, {
-            'blue': 1,
+            'red':  1,
         })
         
-        # Now set blue to 0 (tags removed)
+        # Create object with conventional references to tags
+        t1 = self.create(
+            self.model_nontag, name="Non-tag field", fk=tag1, mm=[tag2]
+        )
+        self.assertInstanceEqual(
+            t1, name="Non-tag field", fk=tag1, mm=[tag2]
+        )
+        
+        # No change to count
+        self.assertTagModel(self.tag_model, {
+            'blue': 1,
+            'red':  1,
+        })
+        
+        # Check get_related_objects knows about them
+        self.assertEqual(
+            len(tag1.get_related_objects(flat=True, include_standard=True)), 1
+        )
+        self.assertEqual(
+            len(tag2.get_related_objects(flat=True, include_standard=True)), 1
+        )
+        
+        # Now decrement counts to 0, but tags remain
         tag1.decrement()
+        tag2.decrement()
         self.assertTagModel(self.tag_model, {
             'blue': 0,
+            'red':  0,
         })
 
 
@@ -353,7 +371,6 @@ class TagModelMergeTest(TagTestManager, TestCase):
         test_models.MixedRefTest,
     ]
     
-    @unittest.skip("buggy")
     def test_merge_tags(self):
         tag_model = test_models.MixedTestTagModel
         
