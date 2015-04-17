@@ -54,7 +54,6 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTrue(isinstance(tag2_field, tag_forms.SingleTagField))
         self.assertTrue(isinstance(tag2_field.tag_options, tag_models.TagOptions))
         
-        
     def test_single_model_form(self):
         """
         Test that a model form with a SingleTagField functions correctly

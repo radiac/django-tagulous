@@ -57,6 +57,9 @@ class BaseTagManager(object):
         return True
         
     def __ne__(self, other):
+        """
+        Compare tags, using opposite of __eq__
+        """
         return not self.__eq__(other)
     
 
@@ -279,18 +282,21 @@ class BaseTagRelatedManager(object):
         self.changed = False
         self.tags = None
         self.reload()
-    
+        
     def __unicode__(self):
         """
         If called on an instance, return the tag string
         """
-        if hasattr(self, 'instance'):
-            return self.get_tag_string()
-        else:
-            return super(TagRelatedManagerMixin, self).__str__()
+        return self.get_tag_string()
             
     def __str__(self):
         return unicode(self).encode('utf-8')
+    
+    def __contains__(self, item):
+        return item in [tag.name for tag in self.tags]
+    
+    def __len__(self):
+        return len(self.tags)
 
     def load_from_tagmanager(self, manager):
         """
@@ -346,7 +352,10 @@ class BaseTagRelatedManager(object):
             raise AttributeError("Method is only accessible via an instance")
         
         if self.tag_options.max_count and len(tag_names) > self.tag_options.max_count:
-            raise ValueError("Cannot set more than %d tags on this field" % self.tag_options.max_count)
+            raise ValueError(
+                "Cannot set more than %d tags on this field" %
+                self.tag_options.max_count
+            )
         
         # Force tag_names to strings, in case it's a list of tags or a queryset
         tag_names = [u'%s' % tag_name for tag_name in tag_names]
@@ -402,7 +411,6 @@ class BaseTagRelatedManager(object):
         
         # Store in internal tag cache
         self.tags = new_tags
-    # ++ Is this still true?
     set_tag_list.alters_data = True
     
 
@@ -455,6 +463,7 @@ class TagRelatedManagerMixin(BaseTagManager, BaseTagRelatedManager):
         # Convert to a list to force it to load now, and so we can change it
         self.tags = list(self.all())
         self.changed = False
+    reload.alters_data = True
     
     def save(self, force=False):
         """
@@ -479,6 +488,7 @@ class TagRelatedManagerMixin(BaseTagManager, BaseTagRelatedManager):
                 self.remove(old_tag)
         self.tags = new_tags
         self.changed = False
+    save.alters_data = True
     
     def _ensure_tags_in_db(self, tags):
         """
@@ -569,7 +579,6 @@ class TagRelatedManagerMixin(BaseTagManager, BaseTagRelatedManager):
         self._old_remove(*self._ensure_tags_in_db(rm_tags))
         for tag in rm_tags:
             tag.decrement()
-        
     _remove.alters_data = True
 
     def _clear(self):
