@@ -47,9 +47,13 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         # Check that the model fields are generated correctly
         tag1_field = self.model._meta.get_field('title').formfield()
         self.assertTrue(isinstance(tag1_field, tag_forms.SingleTagField))
-        
-        # Check field options exists
         self.assertTrue(isinstance(tag1_field.tag_options, tag_models.TagOptions))
+        
+        # Check we can get it from the descriptor shortcut method
+        tag2_field = self.model.title.formfield()
+        self.assertTrue(isinstance(tag2_field, tag_forms.SingleTagField))
+        self.assertTrue(isinstance(tag2_field.tag_options, tag_models.TagOptions))
+        
         
     def test_single_model_form(self):
         """
@@ -209,9 +213,13 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         # Check that the model fields are generated correctly
         tag1_field = self.model._meta.get_field('tags').formfield()
         self.assertTrue(isinstance(tag1_field, tag_forms.TagField))
-        
-        # Check field options exists
         self.assertTrue(isinstance(tag1_field.tag_options, tag_models.TagOptions))
+        
+        # Check we can get it from the descriptor shortcut method
+        tag2_field = self.model.tags.formfield()
+        self.assertTrue(isinstance(tag2_field, tag_forms.TagField))
+        self.assertTrue(isinstance(tag2_field.tag_options, tag_models.TagOptions))
+        
         
     def test_model_form(self):
         """

@@ -47,6 +47,13 @@ class BaseTagDescriptor(object):
                 'protected': self.tag_options.protect_initial,
             })
 
+    def formfield(self, *args, **kwargs):
+        """
+        Shortcut to access formfield
+        """
+        return self.descriptor.field.formfield(*args, **kwargs)
+        
+
 
 ###############################################################################
 ####### Descriptor for SingleTagField
