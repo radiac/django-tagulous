@@ -210,3 +210,30 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
             'blue': 1,
             'red': 1,
         })
+        
+    def test_model_form_save_commit_false(self):
+        """
+        Test that a model form with a SingleTagField saves correctly when
+        commit=False
+        """
+        form = test_forms.TagFieldForm(
+            data={
+                'name': 'Test 1',
+                'tags': 'blue, red',
+            }
+        )
+        self.assertTrue(form.is_valid())
+        t1 = form.save(commit=False)
+        t1.save()
+        self.assertTrue(t1.name, 'Test 1')
+        self.assertTrue(t1.tags, '')
+        self.assertTagModel(self.tag_model, {})
+        
+        form.save_m2m()
+        t1 = self.model.objects.get(pk=t1.pk)
+        self.assertTrue(t1.name, 'Test 1')
+        self.assertTrue(t1.tags, 'blue, red')
+        self.assertTagModel(self.tag_model, {
+            'blue': 1,
+            'red': 1,
+        })

@@ -12,6 +12,7 @@ from django.db import models
 from django.utils.text import capfirst
 
 from tagulous import constants
+from tagulous import settings
 from tagulous import forms
 from tagulous.models.options import TagOptions
 from tagulous.models.models import TagModel
@@ -341,3 +342,10 @@ class TagField(BaseTagField, models.ManyToManyField):
         """
         return self.tag_formfield(form_class=form_class, **kwargs)
 
+    def save_form_data(self, instance, data):
+        """
+        When the form wants to save this data, it will only be doing so after
+        the instance has been saved. This must be committed to the database.
+        """
+        setattr(instance, self.attname, data)
+        getattr(instance, self.attname).save()

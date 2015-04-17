@@ -209,7 +209,6 @@ def tag_model(model, site=None):
     # Register with the default TagModelAdmin class
     register_site(site, model, admin_class=TagModelAdmin)
     
-    print "Model now", model
 
 
 ###############################################################################

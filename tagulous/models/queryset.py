@@ -4,6 +4,7 @@ Tagulous queryset extensions
 import operator
 
 from django.db import models
+from django.db import transaction
 
 from tagulous.models.fields import SingleTagField, TagField
 from tagulous import settings
@@ -95,7 +96,6 @@ def enhance_queryset(queryset):
         # SingleTagFields are safe
         safe_fields.update(singletag_fields)
         
-        from django.db import transaction
         if hasattr(transaction, 'atomic'):
             with transaction.atomic():
                 return _do_create(self, safe_fields, tag_fields)
@@ -162,17 +162,76 @@ def enhance_model(model):
 
     model.__init__ = new_init
     
-enhance_model(models.Model)
+if settings.ENHANCE_MODEL:
+    enhance_model(models.Model)
 
 
 
 
 def enhance_form():
     from django import forms
-    old_save_instance = forms.models.save_instance
     
-    def new_save_instance(*args, **kwargs):
-        print "NEW"
-        return old_save_instance(*args, **kwargs)
+    # TagField.save_form_data will raise an AttributeError if ENHANCE_FORM is
+    # true, so the standard save_m2m will ignore it.
+    
+    old_save = forms.models.BaseModelForm.save
+    #def save_form_data(self, instance, data):
+    #    setattr(instance, self.attname, data)
+    
+    
+    def new_save(self, commit=True):
+        """
+        Save the model form to a model instance
         
-    forms.models.save_instance = new_save_instance
+        If ``commit=True``, tag fields will be saved immediately.
+        
+        If ``commit=False``, tag fields will have to be saved like a normal m2m
+        field, using ``form.save_m2m()``
+        """
+        # If not committing, tag fields will have to be saved as a normal m2m
+        # field, using 
+        if not commit:
+            return old_save(self, commit)
+        
+        # Going to be comitting tags at the same time - wrap in transaction
+        if hasattr(transaction, 'atomic'):
+            with transaction.atomic():
+                return _save_commit_true(self, commit)
+                
+        else:
+            with transaction.commit_on_success():
+                return _save_commit_true(self, commit)
+    
+    def _save_commit_true(self, commit):
+        """
+        Commit immediately. Tag fields are saved as part of form.save().
+        """
+        # Get list of tag fields
+        tag_fields = [
+            f for f in self.instance._meta.many_to_many or ()
+            if isinstance(f, TagField)
+        ]
+        
+        # Hack at _meta.exclude to exclude tag fields from save_m2m
+        old_exclude = self._meta.exclude or ()
+        self._meta.exclude = old_exclude + tuple([f.name for f in tag_fields])
+        
+        # Save everything except M2M and tag fields
+        instance = old_save(self, commit)
+        
+        # Restore meta immediately; changes will have been locked into save_m2m
+        self._meta.exclude = old_exclude
+        
+        # Now save tag fields
+        for f in tag_fields:
+            if self._meta.fields and f.name not in self._meta.fields:
+                continue
+            if self._meta.exclude and f.name in self._meta.exclude:
+                continue
+            if f.name in self.cleaned_data:
+                f.save_form_data(instance, self.cleaned_data[f.name])
+        return instance
+    forms.models.BaseModelForm.save = new_save
+
+if settings.ENHANCE_FORM:
+    enhance_form()

@@ -39,11 +39,25 @@ ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
 # Monkey-patch flags
 #
 
+ENHANCE_ALL = getattr(settings, 'TAGULOUS_ENHANCE_ALL', True)
+
 # Option to enhance QuerySet methods to support text strings for
 # SingleTagFields and TagFields.
 #
 # This will monkey-patch the base django QuerySet - see settings docs for more.
-ENHANCE_QUERYSET = getattr(settings, 'TAGULOUS_ENHANCE_QUERYSET', True)
+ENHANCE_QUERYSET = getattr(settings, 'TAGULOUS_ENHANCE_QUERYSET', ENHANCE_ALL)
+
+# Option to enhance Model methods to support text strings for
+# SingleTagFields and TagFields.
+#
+# This will monkey-patch the base django Model - see settings docs for more.
+ENHANCE_MODEL = getattr(settings, 'TAGULOUS_ENHANCE_MODEL', ENHANCE_ALL)
+
+# Option to enhance ModelForm methods to support text strings for
+# SingleTagFields and TagFields.
+#
+# This will monkey-patch the base django ModelForm - see settings docs for more.
+ENHANCE_FORM = getattr(settings, 'TAGULOUS_ENHANCE_FORM', ENHANCE_ALL)
 
 # Option to disable the add related widget in auto-generated admin fields.
 #
