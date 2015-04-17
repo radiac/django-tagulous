@@ -14,22 +14,5 @@ Known issues
 ============
 
 Since       Fix due     Details
-1.0.0                   Enhanced queryset doesn't add tag string support to
+1.0.0       -           Enhanced queryset doesn't add tag string support to
                         ``.update`` or ``.bulk_create``
-
-Roadmap
-=======
-
-Target
-1.0.0       Template tags
-            Hierarchical tag support
-            Advanced admin features
-                Ability to manually merge tags
-                Ability to change tag hierarchy
-            Migration support (if possible)
-                To and from django-tagging
-                To and from django-taggit
-0.6.0       Tag matching
-                Based on django-taggit-suggest
-                Keywords and regular expressions to auto-merge tags
-                Support for multi-lingual tags?

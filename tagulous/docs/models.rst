@@ -6,10 +6,23 @@ Models
 Tagulous offers two new model field types:
 * ``TagField`` - conventional tags using a ``ManyToManyField`` relationship.
 * ``SingleTagField`` - the same UI and helper functionality as a ``TagField``,
-  but for a single tag using a ForeignKey relationship.
+  but for a single tag using a ``ForeignKey`` relationship.
 
 These will automatically create the models for the tags themselves, or you can
 provide a custom model to use instead with ``to`` - see `Custom Models`_.
+
+Tagulous is designed so that you can treat these as ``CharField``s, while still
+leaving the underlying relationships available. For example, not only can you
+assign a queryset or list of tag primary keys to a ``TagField``, but you can
+also assign a list of strings (one per tag), or a tag string to parse.
+
+Like a ``CharField``, changes made by assigning a value will not be committed
+until the model is saved, although you can still make immediate changes by
+calling the standard m2m methods ``add``, ``remove`` and ``clear``.
+
+If you have `enhancements`_ enabled you can also ``get`` and ``filter`` by
+string, or pass tag field values as strings into model constructors and
+``object.create()`` as if it was a ``CharField``.
 
 
 Model Field Arguments
@@ -312,11 +325,8 @@ Custom Tag Model
 A custom tag model should extend ``tagulous.models.TagModel`` so that Tagulous
 can find the fields and methods it expects.
 
-A custom tag model is a normal model in every other way, except:
-
-* It can have a `TagMeta`_ class to define default options for the class.
-* If it uses a custom manager or queryset, check compatibility with the
-  Tagulous `enhanced queryset`_ - but it'll probably be fine.
+A custom tag model is a normal model in every other way, except it can have a
+`TagMeta`_ class to define default options for the class.
 
 There is `an example <_example_custom_tag_model>`_ which illustrates both of
 these.
@@ -338,10 +348,6 @@ arguments passed to the field.
 ``TagMeta`` can be inherited, so it can be set on abstract models. Options in
 the ``TagMeta`` of a parent model can be overridden by options in the
 ``TagMeta`` of a child model.
-
-Example
-~~~~~~~
-
 
 
 
@@ -393,9 +399,9 @@ Querying using tag fields
 
 When querying a model which uses a tag field, remember that a
 ``SingleTagField`` is really a ``ForeignKey``, and a ``TagField`` is really a
-``ManyToManyField``.
+``ManyToManyField``. You can always query using these relationships.
 
-If you have not disabled the `enhanced queryset`_, you can compare a tag field
+In addition, if you have `enhancements`_ enabled, you can compare a tag field
 to a tag string in ``get``, ``filter`` and ``exclude``::
 
     qs = MyModel.objects.get(name="Bob", title="Mr", tags="red, blue, green")

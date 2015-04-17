@@ -519,6 +519,12 @@ class TagRelatedManagerMixin(BaseTagManager, BaseTagRelatedManager):
         # Don't trust the internal tag cache
         self.reload()
         
+        # Reduce tags to ones not already loaded
+        new_tags = [
+            tag for tag in new_tags
+            if tag not in self.tags
+        ]
+        
         # Enforce max_count
         if self.tag_options.max_count:
             current_count = len(self.tags)

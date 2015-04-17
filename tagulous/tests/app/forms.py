@@ -18,3 +18,8 @@ class TagFieldForm(forms.ModelForm):
 class TagFieldOptionsForm(forms.ModelForm):
     class Meta:
         model = models.TagFieldOptionsModel
+
+
+class MixedNonTagRefForm(forms.ModelForm):
+    class Meta:
+        model = models.MixedNonTagRefTest

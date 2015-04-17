@@ -224,6 +224,20 @@ class NonTagRefTest(models.Model):
         blank=True,
     )
 
+
+class MixedNonTagModel(tagulous.models.TagModel):
+    pass
+class MixedNonTagRefTest(models.Model):
+    """
+    Tag fields and conventional relationships referencing a tag model
+    """
+    name = models.CharField(max_length=10)
+    singletag = tagulous.models.SingleTagField(MixedNonTagModel, blank=True, related_name='singletags')
+    tags = tagulous.models.TagField(MixedNonTagModel, blank=True, related_name='tags')
+    fk = models.ForeignKey(MixedNonTagModel, blank=True, null=True, related_name='fk')
+    mm = models.ManyToManyField(MixedNonTagModel, blank=True, related_name='mm')
+
+
 class MixedOrderTest(models.Model):
     """
     For testing ordering of a SingleTagField and TagField when next to other

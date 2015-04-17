@@ -3,12 +3,15 @@
 Forms
 =====
 
-Because this is based on a ManyToManyField, if you call `.save(commit=False)`
-(eg your form consists of formsets), remember to call `.m2m_save()` after
-to save the tags.
+Forms can add tag fields from a model (by calling
+``MyModel.myfield.formfield()``), or they can be added directly to a form
+from ``tagulous.forms.SingleTagField`` and ``tagulous.forms.TagField``. In both
+cases, they will return strings; a single tag field will return one tag, .
 
-If you have a straight form, `.m2m_save()` will be called automatically so you
-don't need to do anything else.
+To save tag fields, just call the ``form.save()`` method as you would normally.
+However, because the ``TagField`` is based on a ManyToManyField, if you call
+`form.save(commit=False)` you will need to call `form.m2m_save()` after to save
+the tags.
 
 The JavaScript code requires jQuery 1.7 or later. For convenience there is a
 bundled copy of jQuery in the tagulous static directory. This is included in
@@ -31,20 +34,29 @@ Tagulous includes the following adaptors:
 Select2, version 3
     The default adaptor, for `Select2 <https://select2.github.io/>`_.
 
-    Autocomplete settings should be a dict, and will be passed to the Select2
-    constructor.
+    Autocomplete settings should be a dict:
+    
+    ``defer``
+        If ``True``, the tag field will not be initialised automatically; you
+        will need to call ``Tagulous.select2(el)`` on it from your own
+        javascript. This is useful for fields which are used as templates to
+        dynamically generate more.
+        
+        For example, to use this adaptor with a
+        `django-dynamic-formset <https://github.com/elo80ka/django-dynamic-formset>`_
+        which uses a ``formTemplate``, set the field to defer, then configure
+        the formset with::
+            added: function ($row) {
+                Tagulous.select2($row.find('input[data-tagulous]'));
+            }
+    
+    All other settings will be passed to the Select2 constructor.
     
     Path: ``tagulous/adaptor/select2-3.js``
 
-Selectize
-    The adaptor for `Selectize <http://brianreavis.github.io/selectize.js/>`_.
-    
-    Not yet implemented
-
-jQuery UI autocomplete
-    The adaptor for `jQuery UI autocomplete <https://jqueryui.com/autocomplete/>`_.
-    
-    Not yet implemented
+Planned for future releases:
+* `Selectize <http://brianreavis.github.io/selectize.js/>`_.
+* `jQuery UI autocomplete <https://jqueryui.com/autocomplete/>`_.
 
 
 Writing a custom adaptor

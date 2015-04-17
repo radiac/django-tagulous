@@ -99,12 +99,14 @@ class SingleTagFieldOptionsFormTest(TagTestManager, TestCase):
         # Load initial tags for all models which have them
         self.model = test_models.SingleTagFieldOptionsModel
         
-    @unittest.skip('Need to change')
     def test_form_field_output(self):
+        """
+        Test form field valid and invalid input
+        """
         # ++ Replace this with the *FieldOptionsModels
         # Check field output
         self.assertFieldOutput(
-            tag_forms.SingleTagFieldOptionsForm,
+            tag_forms.SingleTagField,
             valid={
                 'Mr': 'Mr',
                 'Mr, Mrs': 'Mr, Mrs',
@@ -115,7 +117,7 @@ class SingleTagFieldOptionsFormTest(TagTestManager, TestCase):
             empty_value=None
         )
         self.assertFieldOutput(
-            tag_forms.SingleTagFieldOptionsForm,
+            tag_forms.SingleTagField,
             field_kwargs={
                 'tag_options': tag_models.TagOptions(
                     force_lowercase=True
@@ -130,11 +132,46 @@ class SingleTagFieldOptionsFormTest(TagTestManager, TestCase):
             },
             empty_value=None
         )
-        
-# ++ Set options in model field, access in form field
-# ++ Override options in formfield()
-# ++ Set options in form field
-
+    
+    @unittest.skip('Test not implemented')
+    def test_case_sensitive_true(self):
+        # Check that the option is passed to the form field from model field
+        # Check that the option can be overridden in formfield() call
+        # Check that the option can be set directly in constructor
+        # Check that the option is passed to the widget
+        pass
+    
+    @unittest.skip('Test not implemented')
+    def test_case_sensitive_false(self):
+        pass
+    @unittest.skip('Test not implemented')
+    def test_force_lowercase_true(self):
+        # Check that the option is passed to the form field
+        # Check that the option is passed to the widget
+        # Check that input string is returned in lower case
+        pass
+    
+    @unittest.skip('Test not implemented')
+    def test_force_lowercase_false(self):
+        # Check that the option is passed to the form field
+        # Check that the option is passed to the widget
+        # Check that input string is returned in input case
+        pass
+    
+    @unittest.skip('Test not implemented')
+    def test_max_count(self):
+        # Check it isn't passed
+        pass
+    
+    @unittest.skip('Test not implemented')
+    def test_autocomplete_limit(self):
+        # Check it is passed
+        pass
+    
+    @unittest.skip('Test not implemented')
+    def test_autocomplete_settings(self):
+        # Check settings are passed
+        pass
 
 
 ###############################################################################
@@ -194,7 +231,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         
     def test_model_form_save(self):
         """
-        Test that a model form with a SingleTagField saves correctly
+        Test that a model form with a TagField saves correctly
         """
         form = test_forms.TagFieldForm(
             data={
@@ -204,8 +241,13 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         )
         self.assertTrue(form.is_valid())
         t1 = form.save()
-        self.assertTrue(t1.name, 'Test 1')
-        self.assertTrue(t1.tags, 'blue, red')
+        
+        # Check in-memory instance
+        self.assertEqual(t1.name, 'Test 1')
+        self.assertEqual(t1.tags, 'blue, red')
+        
+        # Check database
+        self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'blue': 1,
             'red': 1,
@@ -213,7 +255,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         
     def test_model_form_save_commit_false(self):
         """
-        Test that a model form with a SingleTagField saves correctly when
+        Test that a model form with a TagField saves correctly when
         commit=False
         """
         form = test_forms.TagFieldForm(
@@ -225,15 +267,126 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTrue(form.is_valid())
         t1 = form.save(commit=False)
         t1.save()
-        self.assertTrue(t1.name, 'Test 1')
-        self.assertTrue(t1.tags, '')
-        self.assertTagModel(self.tag_model, {})
         
+        # Check in-memory instance
+        self.assertEqual(t1.name, 'Test 1')
+        self.assertEqual(t1.tags, '')
+        self.assertTagModel(self.tag_model, {})
+        self.assertInstanceEqual(t1, name='Test 1', tags='')
+        
+        # Save M2M data
         form.save_m2m()
-        t1 = self.model.objects.get(pk=t1.pk)
-        self.assertTrue(t1.name, 'Test 1')
-        self.assertTrue(t1.tags, 'blue, red')
+        
+        # Check in-memory instance
+        self.assertEqual(t1.name, 'Test 1')
+        self.assertEqual(t1.tags, 'blue, red')
+        
+        # Check database
+        self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'blue': 1,
             'red': 1,
+        })
+
+
+
+###############################################################################
+####### Test mixed form
+###############################################################################
+
+class FormMixedNonTagRefTest(TagTestManager, TestCase):
+    """
+    Test form TagFields
+    """
+    manage_models = [
+        test_models.MixedNonTagRefTest,
+    ]
+    
+    def setUpExtra(self):
+        # Load initial tags for all models which have them
+        self.model = test_models.MixedNonTagRefTest
+        self.tag_model = self.model.singletag.tag_model
+        
+    def test_model_form_save(self):
+        """
+        Test that a model form with a TagField saves correctly with other
+        relationships
+        """
+        tag1 = self.tag_model.objects.create(name='blue')
+        tag2 = self.tag_model.objects.create(name='red')
+        tag3 = self.tag_model.objects.create(name='green')
+        form = test_forms.MixedNonTagRefForm(
+            data={
+                'name': 'Test 1',
+                'singletag': 'purple',
+                'tags': 'yellow, orange',
+                'fk': tag1.pk,
+                'mm': [tag2.pk, tag3.pk],
+            }
+        )
+        self.assertTrue(form.is_valid())
+        t1 = form.save()
+        
+        # Check in-memory instance
+        self.assertEqual(t1.name, 'Test 1')
+        self.assertEqual(t1.singletag, 'purple')
+        self.assertEqual(t1.tags, 'orange, yellow')
+        self.assertEqual(t1.fk, tag1)
+        self.assertEqual(list(t1.mm.all().order_by('pk')), [tag2, tag3])
+        
+        # Check database
+        self.assertInstanceEqual(
+            t1, name='Test 1', singletag='purple', tags='orange, yellow',
+            fk=tag1, mm=[tag2, tag3],
+        )
+        self.assertTagModel(self.tag_model, {
+            'blue': 0,
+            'red': 0,
+            'green': 0,
+            'purple': 1,
+            'orange': 1,
+            'yellow': 1,
+        })
+    
+    def test_model_form_save_commit_false(self):
+        """
+        Test that a model form with a TagField saves correctly when save_m2m
+        is also called
+        """
+        tag1 = self.tag_model.objects.create(name='blue')
+        tag2 = self.tag_model.objects.create(name='red')
+        tag3 = self.tag_model.objects.create(name='green')
+        form = test_forms.MixedNonTagRefForm(
+            data={
+                'name': 'Test 1',
+                'singletag': 'purple',
+                'tags': 'orange, yellow',
+                'fk': tag1.pk,
+                'mm': [tag2.pk, tag3.pk],
+            }
+        )
+        self.assertTrue(form.is_valid())
+        t1 = form.save(commit=False)
+        t1.save()
+        form.save_m2m()
+        
+        # Check in-memory instance
+        self.assertEqual(t1.name, 'Test 1')
+        self.assertEqual(t1.singletag, 'purple')
+        self.assertEqual(t1.tags, 'orange, yellow')
+        self.assertEqual(t1.fk, tag1)
+        self.assertEqual(list(t1.mm.all().order_by('pk')), [tag2, tag3])
+        
+        # Check database
+        self.assertInstanceEqual(
+            t1, name='Test 1', singletag='purple', tags='orange, yellow',
+            fk=tag1, mm=[tag2, tag3],
+        )
+        self.assertTagModel(self.tag_model, {
+            'blue': 0,
+            'red': 0,
+            'green': 0,
+            'purple': 1,
+            'orange': 1,
+            'yellow': 1,
         })

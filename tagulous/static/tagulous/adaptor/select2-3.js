@@ -119,24 +119,34 @@
         }
     }
     
-    /** Select2 initialiser
-    
-        This initialises select2 on the specified element
+    /** Apply select2 to a specified element
+        
+        Arguments:
+            el          The DOM or jQuery object to use as the tag element
+            canDefer    If true and tag-options.defer is set, this field
+                        will not be initialised.
     */
-    function select2(el) {
-        // Convert element to jQuery object
+    function apply_select2(el, canDefer) {
+        // Convert element to jQuery object (if it isn't already)
         var $el = $(el),
             thisTagField = this,
             
             // Get info from element
             isSingle = $el.data('tag-type') === "single",
             options = $el.data('tag-options') || {},
+            settings = options.autocomplete_settings || {},
             list = $el.data('tag-list'),
             url = $el.data('tag-url'),
             
             // Other values
             $blank, args, field_args
         ;
+        
+        // See if this is a deferred tag
+        if (canDefer && settings.defer) {
+            return $el;
+        }
+        delete settings.defer;
         
         // Clear out first option if it's Django's blank value
         $blank = $el
@@ -152,7 +162,7 @@
         };
         
         // Merge in any overrides
-        field_args = options.autocomplete_settings;
+        field_args = settings;
         if (field_args) {
             $.extend(args, field_args);
         }
@@ -199,7 +209,22 @@
         }
         
         // Initialise
-        $el.select2(args);
+        return $el.select2(args);
+    }
+    
+    /** Select2 initialiser
+    
+        This initialises select2 on this
+        
+        Arguments:
+            $el         The jQuery object to use as the tag selector
+            canDefer    If true and tag-options.defer is set, this field
+                        will not be initialised.
+    */
+    function select2($el, canDefer) {
+        return $el.each(function () {
+            apply_select2(this, canDefer);
+        });
     }
     
     function listToData(list) {
@@ -218,13 +243,7 @@
     
     // Finally, initialise the tags
     $(function () {
-        $('input[data-tagulous]')
-            // Initialise tag fields which exists
-            .each(function () {
-                Tagulous.select2(this);
-            })
-        ;
+        // Initialise tag fields which exists
+        return select2($('input[data-tagulous]'), true);
     });
 })(jQuery);
-
-

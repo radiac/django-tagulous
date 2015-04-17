@@ -397,7 +397,6 @@ class TagModelMergeTest(TagTestManager, TestCase):
         self.assertInstanceEqual(b3, singletag='three', tags='three')
         
         # Merge tags
-        self.assertEqual(tag_model.objects.count(), 3)
         s1 = tag_model.objects.get(name='one')
         s1.merge_tags(
             tag_model.objects.filter(name__in=['one', 'two', 'three'])
@@ -414,3 +413,32 @@ class TagModelMergeTest(TagTestManager, TestCase):
         self.assertInstanceEqual(b2, singletag='one', tags='one')
         self.assertInstanceEqual(b3, singletag='one', tags='one')
 
+    def test_merge_multiple_tags(self):
+        tag_model = test_models.MixedTestTagModel
+        
+        # Set up database
+        t1 = self.create(test_models.MixedTest, name='Test 1', tags='blue, green, red')
+        t2 = self.create(test_models.MixedTest, name='Test 2', tags='blue, green, red')
+        
+        # Confirm it's correct
+        self.assertTagModel(tag_model, {
+            'blue': 2,
+            'green': 2,
+            'red': 2,
+        })
+        self.assertInstanceEqual(t1, tags='blue, green, red')
+        self.assertInstanceEqual(t2, tags='blue, green, red')
+        
+        # Merge tags
+        s1 = tag_model.objects.get(name='blue')
+        s1.merge_tags(
+            tag_model.objects.filter(name__in=['blue', 'green', 'red'])
+        )
+        
+        # Confirm it's correct
+        self.assertTagModel(tag_model, {
+            'blue': 2,
+        })
+        self.assertInstanceEqual(t1, tags='blue')
+        self.assertInstanceEqual(t2, tags='blue')
+        
