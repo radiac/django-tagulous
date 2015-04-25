@@ -3,6 +3,7 @@ from django.db.models.query import QuerySet
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.validators import EMPTY_VALUES
 from django.utils.translation import ugettext as _
 from django.utils.html import escape
 from django.utils.encoding import force_unicode
@@ -31,6 +32,7 @@ class TagWidgetBase(forms.TextInput):
     
     # Based on django-taggit
     def render(self, name, value, attrs={}):
+        print "RENDER WIDGET", type(self.autocomplete_tags), self.autocomplete_tags
         # Try to provide a URL for the autocomplete to load tags on demand
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:
@@ -119,9 +121,13 @@ class TagField(forms.CharField):
                                 strings. Will be ignored if tag_options
                                 contains autocomplete_view
         """
+        # Initialise as normal
+        super(TagField, self).__init__(**kwargs)
+        
+        # Add tag options and autocomplete tags
+        # Will use getters and setters to mirror onto widget
         self.tag_options = tag_options or options.TagOptions()
         self.autocomplete_tags = autocomplete_tags
-        super(TagField, self).__init__(**kwargs)
         
     def prepare_value(self, value):
         """
@@ -145,13 +151,31 @@ class TagField(forms.CharField):
             tag_string = value[0]
             
         return super(TagField, self).prepare_value(tag_string)
-
+    
+    # Use setters and getters to ensure any changes to the field are mirrored
+    # in the widget, in the same way ModelChoiceField mirrors its queryset
+    def _get_tag_options(self):
+        return self._tag_options
+    def _set_tag_options(self, tag_options):
+        self._tag_options = tag_options
+        self.widget.tag_options = tag_options
+    tag_options = property(_get_tag_options, _set_tag_options)
+    
+    def _get_autocomplete_tags(self):
+        return self._autocomplete_tags
+    def _set_autocomplete_tags(self, autocomplete_tags):
+        self._autocomplete_tags = autocomplete_tags
+        self.widget.autocomplete_tags = autocomplete_tags
+    autocomplete_tags = property(_get_autocomplete_tags, _set_autocomplete_tags)
+    
     def widget_attrs(self, widget):
         """
         Given a Widget instance (*not* a Widget class), returns a dictionary of
         any HTML attributes that should be added to the Widget, based on this
         Field.
         """
+        return {}
+        print "WIDGET ATTRS", type(self.autocomplete_tags)
         # Add tag options and autocomplete to the widget
         widget.tag_options = self.tag_options
         widget.autocomplete_tags = self.autocomplete_tags
@@ -221,7 +245,9 @@ class SingleTagField(TagField):
         """
         Clean by parsing tag with quotes
         """
-        if value not in self.empty_values:
+        # From django 1.6 onwards, this is accessible on self.empty_values,
+        # but should be fine to use directly for a descendant of CharField.
+        if value not in EMPTY_VALUES:
             value = '"%s"' % value
         tags = super(SingleTagField, self).clean(value)
         if tags:

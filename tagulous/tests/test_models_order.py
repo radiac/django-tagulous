@@ -24,7 +24,12 @@ class ModelFieldOrderTest(TagTestManager, TestCase):
         # Check the ordering is as expected
         ##38# ++ Change for Django 1.8?
         opts = test_models.MixedOrderTest._meta
-        local_fields = sorted(opts.concrete_fields + opts.many_to_many)
+        # Meta concrete_fields was added in 1.6
+        if hasattr(opts, 'concrete_fields'):
+            concrete_fields = opts.concrete_fields
+        else:
+            concrete_fields = [f for f in opts.fields if f.column is not None]
+        local_fields = sorted(concrete_fields + opts.many_to_many)
         expected_fields = [
             # Auto pk 'id'
             'id',

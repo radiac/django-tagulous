@@ -592,4 +592,13 @@ class TagRelatedManagerMixin(BaseTagManager, BaseTagRelatedManager):
         self.tags = []
     _clear.alters_data = True
     
-    
+
+###############################################################################
+####### TagModel manager
+###############################################################################
+
+class TagModelManager():
+    # Adding this to BaseTagModel
+    # add queryset
+    # queryset needs filter and exclude to take initial=True or initial=False
+    pass

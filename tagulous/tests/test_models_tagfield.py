@@ -752,7 +752,7 @@ class ModelTagFieldMultipleTest(TagTestManager, TestCase):
 ####### Test TagField options
 ###############################################################################
 
-class ModelTagFieldOptionsTest(TagTestManager, TestCase):
+class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
     """
     Test tag field options
     """
@@ -937,8 +937,6 @@ class ModelTagFieldOptionsTest(TagTestManager, TestCase):
         t1 = self.create(self.test_model, name="Test 1")
         with self.assertRaises(ValueError) as cm:
             t1.max_count = 'Adam, Brian, Chris, David'
-            #t1.max_count.save()
-            
         self.assertEqual(
             str(cm.exception),
             "Cannot set more than 3 tags on this field"
