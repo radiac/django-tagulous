@@ -154,8 +154,9 @@
             .text('')
         ;
         
-        // Default constructor args which can be overridden
+        // Default constructor args, which can be overridden
         args = {
+            width: 'resolve',
             quotedTags: true,
             allowClear: !options.required,
             maximumSelectionSize: isSingle ? 1 : options.max_count || 0

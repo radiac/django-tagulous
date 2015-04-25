@@ -52,6 +52,9 @@ Select2, version 3
     
     All other settings will be passed to the Select2 constructor.
     
+    It defaults to ``width="resolve"`` for the best chance of working without
+    complication.
+    
     Path: ``tagulous/adaptor/select2-3.js``
 
 Planned for future releases:
