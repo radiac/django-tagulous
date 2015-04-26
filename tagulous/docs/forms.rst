@@ -44,22 +44,41 @@ Select2, version 3
         
         For example, to use this adaptor with a
         `django-dynamic-formset <https://github.com/elo80ka/django-dynamic-formset>`_
-        which uses a ``formTemplate``, set the field to defer, then configure
+        which uses a ``formTemplate``, set ``{'defer': True}``, then configure
         the formset with::
+        
             added: function ($row) {
                 Tagulous.select2($row.find('input[data-tagulous]'));
             }
     
-    All other settings will be passed to the Select2 constructor.
+    ``width``
+        This is the same as in Select2's documentation, but the Tagulous
+        default is ``resolve`` instead of ``off``, for the best chance of
+        working without complication.
     
-    It defaults to ``width="resolve"`` for the best chance of working without
-    complication.
+    All other settings will be passed to the Select2 constructor.
     
     Path: ``tagulous/adaptor/select2-3.js``
 
 Planned for future releases:
 * `Selectize <http://brianreavis.github.io/selectize.js/>`_.
 * `jQuery UI autocomplete <https://jqueryui.com/autocomplete/>`_.
+
+
+Filtering autocomplete tags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default the autocomplete values will list all tags. However, you will often
+only want to show the initial tags, or tags which the current user has used,
+or tags which have been used in conjunction with another field on your model.
+
+Because model tag fields are normal Django relationships, you can filter
+embedded autocomplete tags by overriding the form's ``__init__`` method. To
+filter an ajax autocomplete view, wrap ``tagulous.views.autocomplete`` in your
+own view function which filters for you.
+
+For examples of these approaches, see
+`Filtering a ModelForm's TagField by related fields`_.
 
 
 Writing a custom adaptor
@@ -99,6 +118,7 @@ for default values.
 If you write an adaptor which you think would make a good addition to this
 project, please do send it in or make a pull request on github - see
 `Contributing`_ for more information.
+
 
 
 Using form fields without models

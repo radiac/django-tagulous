@@ -66,10 +66,11 @@ Explicitly specify the tag model
     class Hobbies(tagulous.models.TagModel):
         # All custom tag models must provide a ``name`` CharField. This is what
         # the tag will be shown as and parsed using.
-        name = CharField()
+        name = CharField(max_length=100)
         
         # Custom tag fields
-        # These must all be allowed to be blank
+        # These must all be allowed to be blank - tagulous will not help you
+        # set them.
         started = DateField(blank=True)
         
         class TagMeta:
@@ -82,14 +83,74 @@ Explicitly specify the tag model
         ...
         hobbies = tagulous.models.TagField(to=Hobbies, autocomplete_view=None)
 
+See the documentation for `Tag Models`_ to see which field names tagulous
+uses internally.
+
 
 Forms
 -----
 
 # ++ Add forms
 
-
 Autocomplete Views
 ------------------
 
 # ++ Add examples
+
+
+Filtering a ModelForm's TagField by related fields
+--------------------------------------------------
+
+Using embedded tags
+~~~~~~~~~~~~~~~~~~~
+
+This is if you are embedding the tags into the response; if you are using
+autocomplete views, see `Autocomplete Views`_.
+
+Filter the ``autocomplete_tags`` queryset after the form initialises:
+
+    from django.db import models, forms
+    import tagulous
+    
+    class Pet(models.Model):
+        owner = models.ForeignKey('auth.User')
+        name = models.CharField(max_length=255)
+        skills = tagulous.models.TagField()
+    
+    class PetForm(forms.ModelForm):
+        def __init__(self, user, *args, **kwargs):
+            super(PetForm, self).__init__(*args, **kwargs)
+            
+            # Filter skills to initial skills, or ones added by this user
+            self.fields['skills'].autocomplete_tags = \
+                self.fields['labels'].autocomplete_tags.filter_or_initial(
+                    pet__owner=user
+                ).distinct()
+        class Meta:
+            model = Pet
+
+Then always call PetForm with the user as the first argument, for example:
+
+    def add_pet(self, request):
+        form = PetForm(request.user)
+        # ...
+
+For more details, see `Filtering tags by related model fields`_ and 
+`Filtering autocomplete tags`_.
+
+
+Using an autocomplete view
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add a wrapper to filter the queryset before calling the normal ``autocomplete``
+view:
+
+    @login_required
+    def autocomplete_pet_skills(request):
+        return tagulous.views.autocomplete(
+            request,
+            Pet.skills.tag_model.objects.filter_or_initial(
+                pet__owner=user
+            ).distinct()
+        )
+

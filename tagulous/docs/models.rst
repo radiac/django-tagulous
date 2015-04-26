@@ -319,14 +319,56 @@ or removed; tags can therefore be created directly on the model with the
 default count of ``0`` to be assigned later.
 
 
-Custom Tag Model
-----------------
+Tag Models
+----------
+
+Tag models subclass ``tagulous.models.TagModel``, and have the following
+fields:
+
+``name``
+    A ``CharField`` containing the name (string value) of the tag.
+
+``count``
+    An ``IntegerField`` holding the number of times this tag is in use.
+
+``protected``
+    A ``BooleanField`` indicating whether this tag should be protected from
+    deletion when the count reaches 0.
+
+It also has several methods primarily for internal use, but some may be useful:
+
+``get_related_objects()``
+    Return a list of instances of other models which refer to this tag; see
+    the API for more details
+
+``update_count()``
+    In case you're doing something weird which causes the count to get out
+    of sync, call this to update the count, and delete the tag if appropriate.
+
+``merge_tags(tags)``
+    Merge the specified tags into this tag.
+    
+Its standard manager and queryset also supports the following:
+
+``filter_or_initial(...)``
+    Calls the normal ``filter(...)`` method, but then adds on any initial tags
+    which may be missing.
+
+
+Custom Tag Models
+-----------------
 
 A custom tag model should extend ``tagulous.models.TagModel`` so that Tagulous
-can find the fields and methods it expects.
+can find the fields and methods it expects, and so it uses the appropriate tag
+model manager and queryset.
 
 A custom tag model is a normal model in every other way, except it can have a
 `TagMeta`_ class to define default options for the class.
+
+The ``tagulous.models.TagModel`` sets the following fields which should not be
+altered:
+
+
 
 There is `an example <_example_custom_tag_model>`_ which illustrates both of
 these.
@@ -411,6 +453,23 @@ an exact match - eg that it has all tags specified, but only those specified.
 If you want to do partial matches, use standard many to many queries, eg::
 
     qs = MyModel.objects.get(tags__name__in=['red', 'blue', 'green'])
+
+
+Filtering tags by related model fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Because tag fields use standard database relationships, you can easily filter
+the tags by other fields in your model.
+
+For example, if your model ``Record`` has a ``tags`` TagField and an ``owner``
+foreign key to ``auth.User``, to get a list of tags which that user has used:
+
+    myobj.tags.tag_model.objects.filter(record__owner=user)
+
+There is a ``filter_or_initial`` helper method on a ``TagModel``'s manager and
+queryset, which will add initial tags to your filtered queryset:
+
+    myobj.tags.tag_model.objects.filter_or_initial(record__owner=user)
 
 
 Database Migrations

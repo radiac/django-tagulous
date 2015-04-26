@@ -8,6 +8,31 @@ import tagulous
 
 
 ###############################################################################
+####### TagModel manager and queryset
+###############################################################################
+
+class TagModelQuerySet(models.query.QuerySet):
+    def filter_or_initial(self, *args, **kwargs):
+        """
+        Reduce the queryset to match the specified filter, but also include
+        any initial tags left in the queryset.
+        """
+        return super(TagModelQuerySet, self).filter(
+            models.Q(*args, **kwargs) |
+            models.Q(name__in=self.model.tag_options.initial)
+        )
+
+
+class TagModelManager(models.Manager):
+    def get_queryset(self):
+        return TagModelQuerySet(self.model)
+    get_query_set = get_queryset
+    
+    def filter_or_initial(self, *args, **kwargs):
+        return self.get_queryset().filter_or_initial(*args, **kwargs)
+
+
+###############################################################################
 ####### Abstract base class for all TagModel models
 ###############################################################################
 
@@ -16,6 +41,8 @@ class BaseTagModel(models.Model):
     Base tag model, without fields
     Required for South
     """
+    objects = TagModelManager()
+    
     def __unicode__(self):
         return u'%s' % self.name
         

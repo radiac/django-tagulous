@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models.query import QuerySet
 from django.http import HttpResponse
 
 # ++ Can remove this try/except when min req is Django 1.5
@@ -19,7 +20,8 @@ def autocomplete(request, tag_model):
         request
             The request object from the dispatcher
         tag_model
-            Reference to the tag model (eg myModel.tags.tag_model)
+            Reference to the tag model (eg MyModel.tags.tag_model), or a
+            queryset of the tag model (eg MyModel.tags.tag_model.objects.all())
     
     The following GET parameters can be set:
         q   The query string to filter by
@@ -30,7 +32,12 @@ def autocomplete(request, tag_model):
         more        Boolean if there is more
     }
     """
-    # Get tag options
+    # Get model, queryset and tag options
+    if isinstance(tag_model, QuerySet):
+        queryset = tag_model
+        tag_model = queryset.model
+    else:
+        queryset = tag_model.objects
     options = tag_model.tag_options
     
     # Get query string
@@ -43,11 +50,11 @@ def autocomplete(request, tag_model):
             query = query.lower()
             
         if options.case_sensitive:
-            results = tag_model.objects.filter(name__startswith=query)
+            results = queryset.filter(name__startswith=query)
         else:
-            results = tag_model.objects.filter(name__istartswith=query)
+            results = queryset.filter(name__istartswith=query)
     else:
-        results = tag_model.objects.all()
+        results = queryset.all()
     
     # Limit results
     if options.autocomplete_limit:

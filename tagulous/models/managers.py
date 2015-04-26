@@ -3,6 +3,8 @@ Tagulous model field managers
 
 These are accessed via the descriptors, and do the work of storing and loading
 the tags.
+
+For tag model manager, look in tagulous.models.models
 """
 
 from django.core import exceptions
@@ -592,13 +594,3 @@ class TagRelatedManagerMixin(BaseTagManager, BaseTagRelatedManager):
         self.tags = []
     _clear.alters_data = True
     
-
-###############################################################################
-####### TagModel manager
-###############################################################################
-
-class TagModelManager():
-    # Adding this to BaseTagModel
-    # add queryset
-    # queryset needs filter and exclude to take initial=True or initial=False
-    pass
