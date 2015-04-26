@@ -32,7 +32,6 @@ class TagWidgetBase(forms.TextInput):
     
     # Based on django-taggit
     def render(self, name, value, attrs={}):
-        print "RENDER WIDGET", type(self.autocomplete_tags), self.autocomplete_tags
         # Try to provide a URL for the autocomplete to load tags on demand
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:
@@ -174,13 +173,6 @@ class TagField(forms.CharField):
         any HTML attributes that should be added to the Widget, based on this
         Field.
         """
-        return {}
-        print "WIDGET ATTRS", type(self.autocomplete_tags)
-        # Add tag options and autocomplete to the widget
-        widget.tag_options = self.tag_options
-        widget.autocomplete_tags = self.autocomplete_tags
-        
-        # But nothing to add yet
         return {}
         
     def clean(self, value):
