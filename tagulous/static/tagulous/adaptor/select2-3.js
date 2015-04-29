@@ -231,6 +231,9 @@
     function listToData(list) {
         /** Convert a list of tags into an object with tag:tag key/vals */
         var data = [], i;
+        if (!list) {
+            return data;
+        }
         for (i=0; i<list.length; i++) {
             data.push({id:list[i], text:list[i]});
         }
