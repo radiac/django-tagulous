@@ -26,7 +26,10 @@ class TagOptions(object):
         if name == 'initial':
             # Store as a list of strings, with the tag string available on
             # initial_string for migrations
-            if isinstance(value, basestring):
+            if value is None:
+                self.__dict__['initial_string'] = ''
+                self.__dict__['initial'] = []
+            elif isinstance(value, basestring):
                 self.__dict__['initial_string'] = value
                 self.__dict__['initial'] = parse_tags(value)
             else:
@@ -43,7 +46,7 @@ class TagOptions(object):
         Get an option, or fall back to default options if it's not set
         """
         if name in PROPERTIES:
-            return self.__dict__[name]
+            return self.__dict__.get(name, None)
         elif name not in constants.OPTION_DEFAULTS:
             raise AttributeError(name)
         return self.__dict__.get(name, constants.OPTION_DEFAULTS[name])

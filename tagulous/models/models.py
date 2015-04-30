@@ -2,7 +2,12 @@
 Tagulous tag models
 """
 
-from django.db import models, router
+from django.db import models, router, IntegrityError
+try:
+    from django.utils.text import slugify
+except ImportError:
+    # Django 1.4 or earlier
+    from django.template.defaultfilters import slugify
 
 import tagulous
 
@@ -218,7 +223,7 @@ class BaseTagModel(models.Model):
             # Get the instances of the related models which refer to the tag
             # instances being merged
             objs = related.model._base_manager.using(
-                router.db_for_write(self.tag_model)
+                router.db_for_write(self.tag_model, instance=self)
             ).filter(
                 **{"%s__in" % related.field.name: tags}
             )
@@ -234,6 +239,53 @@ class BaseTagModel(models.Model):
                 for obj in objs:
                     getattr(obj, related.field.name).remove(*tags)
                     getattr(obj, related.field.name).add(self)
+    
+    def save(self, *args, **kwargs):
+        """
+        Automatically generate a unique slug, if one does not exist
+        """
+        # Based on django-taggit: don't worry about race conditions when
+        # setting names and slugs, just avoid potential slugify clashes.
+        # We could improve this if race conditions are ever a problem in the
+        # real world, but until Django provides a reliable way to determine
+        # the cause of an IntegrityError, we can never make this perfect.
+        
+        # If already in the database, or has a slug, just save as normal
+        if self.pk or self.slug:
+            return super(BaseTagModel, self).save(*args, **kwargs)
+        
+        # Set the slug
+        self.slug = slugify(self.name)
+        
+        # Make sure we're using the same db at all times
+        cls = self.__class__
+        kwargs['using'] = kwargs.get('using') or router.db_for_write(
+            cls, instance=self
+        )
+        
+        # Try saving the slug - it'll probably be fine
+        try:
+            return super(BaseTagModel, self).save(*args, **kwargs)
+        except IntegrityError:
+            pass
+        
+        # Integrity error - something is probably not unique.
+        # Assume it was the slug - make it unique by appending a number.
+        # See which numbers have been used
+        slug_base = self.slug
+        try:
+            last = cls.objects.filter(
+                slug__regex="^%s_\d+$" % slug_base
+            ).latest('slug')
+        except cls.DoesNotExist:
+            # No numbered version of the slug exists
+            number = 1
+        else:
+            slug_base, number = last.slug.rsplit('_', 1)
+            number = int(number) + 1
+        
+        self.slug = '%s_%d' % (self.slug, number)
+        return super(BaseTagModel, self).save(*args, **kwargs)
         
     class Meta:
         abstract = True
@@ -248,6 +300,7 @@ class TagModel(BaseTagModel):
     Abstract base class for tag models
     """
     name        = models.CharField(max_length=255, unique=True)
+    slug        = models.SlugField(unique=True)
     count       = models.IntegerField(
         default=0,
         help_text="Internal counter of how many times this tag is in use"
@@ -262,3 +315,4 @@ class TagModel(BaseTagModel):
     
     class Meta:
         abstract = True
+

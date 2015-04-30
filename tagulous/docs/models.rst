@@ -72,7 +72,7 @@ The following arguments can be passed to the field when adding it to the model:
     If false, will be decided by ``tag.protected`` - see `Protected tags`_.
     
     Default: ``False``
-    
+
 ``case_sensitive``
     If ``True``, tags will be case sensitive. For example, ``"django, Django"``
     would be two separate tags.
@@ -327,6 +327,12 @@ fields:
 
 ``name``
     A ``CharField`` containing the name (string value) of the tag.
+    
+    Must be unique.
+
+``slug``
+    A unique ``SlugField``, generated automatically from the name when first
+    saved.
 
 ``count``
     An ``IntegerField`` holding the number of times this tag is in use.

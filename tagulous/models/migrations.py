@@ -53,7 +53,7 @@ try:
             [],             # Positional arguments (not used)
             south_kwargs,   # Keyword arguments
         ),
-    ], ["^tagulous\.models\.TagField"])
+    ], ["^tagulous\.models\.fields\.TagField"])
     
     # No max_count for SingleTagField
     del(south_kwargs['max_count'])
@@ -63,8 +63,74 @@ try:
             [],             # Positional arguments (not used)
             south_kwargs,   # Keyword arguments
         ),
-    ], ["^tagulous\.models\.SingleTagField"])
+    ], ["^tagulous\.models\.fields\.SingleTagField"])
     
 except ImportError, e:
     # South not installed
     pass
+
+
+
+def add_unique_column(self, db, model, column, set_fn, field_type, **kwargs):
+    """
+    Helper for South migrations which add a unique field.
+    
+    This must be the last operation on this table in this migration, otherwise
+    when it tries to load data, the orm will not match the database.
+    
+    Find the field definition in your migration and replace it with a call to
+    this function:
+    
+        db.add_column(
+            'my_table', 'my_column',
+            self.gf(
+                'django.db.models.fields.CharField'
+            )(default='.', unique=True, max_length=255),
+            keep_default=False
+        )
+    
+    becomes:
+        
+        def set_new_column(obj):
+            obj.new_column = slugify(obj.name)
+        
+        tagulous.models.migrations.add_unique_column(
+            self, db, orm['myapp.MyModel'], 'new_column', set_new_column,
+            'django.db.models.fields.CharField',
+            max_length=255
+        )
+    
+    Arguments:
+        self        Migration object
+        db          db object
+        model       Model (from orm)
+        column      Name of db column to add
+        set_fn      Callback to set the field on each instance
+        field_type  String reference to Field object
+        **kwargs    Arguments for Field object, excluding unique
+    """
+    table = model._meta.db_table
+    
+    # Create the column as non-unique
+    initial = kwargs.copy()
+    initial.update({
+        'blank':    True,
+        'null':     True,
+        'unique':   False,
+    })
+    db.add_column(
+        table, column,
+        self.gf(field_type)(**initial),
+        keep_default=False
+    )
+    
+    # Set the fields
+    for obj in model.objects.all():
+        set_fn(obj)
+        obj.save()
+    
+    # Change column to unique
+    db.alter_column(
+        table, column,
+        self.gf(field_type)(unique=True, **kwargs)
+    )
