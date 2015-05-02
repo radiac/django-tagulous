@@ -63,6 +63,13 @@ class BaseTagModel(models.Model):
     def __ne__(self, obj):
         return not self == obj
     
+    def get_absolute_url(self):
+        if self.tag_options.get_absolute_url is None:
+            raise AttributeError(
+                "type object '%s' has no attribute 'get_absolute_url'" % self.__class__.__name__
+            )
+        return self.tag_options.get_absolute_url(self)
+    
     @classmethod
     def get_related_fields(cls, include_standard=False):
         """

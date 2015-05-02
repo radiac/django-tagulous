@@ -87,6 +87,32 @@ See the documentation for `Tag Models`_ to see which field names tagulous
 uses internally.
 
 
+Tag URL
+-------
+
+A simple example for defining a ``get_absolute_url`` method on a tag model
+without needing to create a custom tag model:
+
+    from django.db import models
+    from django.core.urlresolvers import reverse
+    import tagulous
+    
+    class Person(models.Model):
+        name = models.CharField(max_length=255)
+        skills = tagulous.models.TagField(
+            get_absolute_url=lambda tag: reverse(
+                'myapp.views.by_skill', kwargs={'skill_slug': tag.slug}
+            ),
+        )
+
+The ``get_absolute_url`` method can now be called as normal; for example, from
+a template:
+
+    {% for skill in person.skills.all %}
+        <a href="{{ skill.get_absolute_url }}">{{ skill.name }}</a>
+    {% endfor %}
+
+
 Forms
 -----
 

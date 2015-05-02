@@ -16,20 +16,18 @@ from tagulous import settings as tag_settings
 ########################################################### Admin registration
 ###############################################################################
 
-def register(*args, **kwargs):
-    """
-    Add tag field support to the admin class, then register with
-    django.contrib.admin.site
-    
-    This only supports one model
-    """
-    register_site(admin.site, *args, **kwargs)
 
-
-def register_site(site, model, admin_class=None, **options):
+def register(model, admin_class=None, **options):
     """
     Add tag field support to the admin class, then register with the specified
     admin site
+    
+    Arguments:
+        model       Model to register
+        admin_class Admin class for model
+        site        Admin site to register with
+                    Default: django.contrib.admin.site
+        **options   Extra options for admin class
     
     This only supports one model
     """
@@ -37,6 +35,9 @@ def register_site(site, model, admin_class=None, **options):
         raise ImproperlyConfigured(
             'Tagulous can only register a single model with admin.'
         )
+    
+    # Get site from args
+    site = options.pop('site', admin.site)
     
     #
     # Ensure we have an admin class
@@ -207,7 +208,7 @@ def tag_model(model, site=None):
         site = admin.site
     
     # Register with the default TagModelAdmin class
-    register_site(site, model, admin_class=TagModelAdmin)
+    register(model, admin_class=TagModelAdmin, site=site)
     
 
 

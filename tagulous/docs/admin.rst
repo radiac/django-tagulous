@@ -18,12 +18,11 @@ This will make a few changes to ``MyAdmin`` to add tag field support (detailed
 below), and then register it with the default admin site using the standard
 ``site.register()`` call.
 
-Alternatively you can specify a custom admin site by calling Tagulous's own
-``register_site()``:
+You can also pass a custom admin site into the `register()` function:
 
     # These two lines are equivalent:
     tagulous.admin.register(myModel, MyAdmin)
-    tagulous.admin.register_site(admin.site, myModel, MyAdmin)
+    tagulous.admin.register(myModel, MyAdmin, site=admin.site)
 
 The changes Tagulous's ``register()`` function makes to the ``ModelAdmin`` are:
 
@@ -54,16 +53,22 @@ Managing the tag model
 
 You can also register a ModelAdmin to manipulate the tag table directly:
 
-    class MyModelTagsAdmin(admin.ModelAdmin):
-        list_display = ('name', 'count', 'protected')
-        exclude = ('count',)
-    admin.site.register(MyModel.tags.tag_model, MyModelTagsAdmin)
+    tagulous.admin.tag_model(MyModel.tags.tag_model)
 
 The example is for an auto-generated tag model, but it could equally be a
-custom tag model.
+custom tag model. You can subclass the tag model `ModelAdmin` class if you want
+to extend the tag model admin for extra fields on your custom model:
 
-However, if you do this you should set ``TAGULOUS_DISABLE_ADMIN_ADD = True`` to
-disable the ``RelatedFieldWidgetWrapper`` in automatically generated admin
+    class MyModelTagsAdmin(tagulous.admin.TagModelAdmin):
+        list_display = ['name', 'count', 'protected', 'my_extra_field']
+    admin.site.register(MyModel.tags.tag_model, MyModelTagsAdmin)
+
+Unless your tag model has tag fields of its own, you can use the normal
+`admin.site.register` function to register your custom `ModelAdmin`.
+
+Note: if you use tagulous model admin enhancements, you should set
+``TAGULOUS_DISABLE_ADMIN_ADD = True`` to disable the
+``RelatedFieldWidgetWrapper`` in automatically generated admin
 forms - see documentation for this setting for more details.
 
 Remember that the relationship between your entries and tags are standard

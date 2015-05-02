@@ -13,6 +13,7 @@ OPTION_DEFAULTS = {
     'case_sensitive':   False,
     'force_lowercase':  False,
     'max_count':        0,
+    'get_absolute_url':     None,
     'autocomplete_view':    '',
     'autocomplete_limit':   100,
     'autocomplete_settings': None

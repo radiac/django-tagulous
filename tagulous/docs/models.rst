@@ -100,7 +100,22 @@ The following arguments can be passed to the field when adding it to the model:
     If you are setting it to ``1``, consider using a `SingleTagField`_ instead.
     
     Default: ``0``
+
+``get_absolute_url``
+    A shortcut for defining a ``get_absolute_url`` method on the tag model.
     
+    It is common to need to get a URL for a tag, so rather than creating a
+    custom ``TagModel`` just to implement a ``get_absolute_url`` method, you
+    can pass this argument a callback function.
+    
+    The callback function will be passed the tag object, and should return the
+    URL for the tag. See the `Tag URL`_ example for a simple lambda argument.
+    
+    If not set, the method ``get_absolute_url`` will not be available and an
+    ``AttributeError`` will be raised.
+    
+    Default: None
+
 :: _autocomplete_view:
 ``autocomplete_view``
     Specify the view to use for autocomplete queries.
