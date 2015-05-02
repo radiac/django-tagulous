@@ -42,9 +42,16 @@ try:
     # Add tag options
     for key, value in constants.OPTION_DEFAULTS.items():
         seek = key
+        
+        # Store initial as a string
         if key == 'initial':
             seek = 'initial_string'
-        south_kwargs[key] = ['tag_options.%s' % seek, {'default':value}]
+            
+        # Can't freeze callables - don't need to anyway
+        if key == 'get_absolute_url':
+            continue
+            
+        south_kwargs[key] = ['tag_options.%s' % seek, {'default': value}]
     
     # Add introspection rule for TagField
     modelsinspector.add_introspection_rules([
