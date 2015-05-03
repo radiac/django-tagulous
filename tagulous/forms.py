@@ -16,8 +16,8 @@ except ImportError:
 
 from tagulous import settings
 from tagulous.models import options
+from tagulous.models.models import BaseTagModel
 from tagulous.utils import parse_tags, render_tags
-
 
 class TagWidgetBase(forms.TextInput):
     """
@@ -195,6 +195,9 @@ class SingleTagField(TagField):
         """
         Prepare the value by stripping quotes
         """
+        # Might have been passed a Tag object via initial - convert to string
+        if isinstance(value, BaseTagModel):
+            value = value.name
         if value:
             if value.startswith('"') and value.endswith('"'):
                 tag_string = value[1:-1]
