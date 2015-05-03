@@ -123,9 +123,24 @@ class BaseTagField(object):
             self.tag_model = type(model_name, (TagModel,), model_attrs)
             
             # Give it a verbose name, for admin filters
-            verbose_name = '%s %s tag' % (cls._meta.object_name, name)
-            self.tag_model._meta.verbose_name = verbose_name
-            self.tag_model._meta.verbose_name_plural = verbose_name + 's'
+            verbose_name_singular = (
+                self.tag_options.verbose_name_singular or self.verbose_name or name
+            )
+            verbose_name_plural = self.tag_options.verbose_name_plural
+            if not verbose_name_plural:
+                verbose_name_plural = (
+                    verbose_name_singular or self.verbose_name or name
+                )
+                if not verbose_name_plural.endswith('s'):
+                    verbose_name_plural += 's'
+            
+            self.tag_model._meta.verbose_name = '%s %s' % (
+                cls._meta.object_name, verbose_name_singular,
+            )
+            self.tag_model._meta.verbose_name_plural = '%s %s' % (
+                cls._meta.object_name, verbose_name_plural,
+            )
+            
         # else: tag model already specified
         
         

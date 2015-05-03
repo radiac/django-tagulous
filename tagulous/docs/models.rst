@@ -101,21 +101,6 @@ The following arguments can be passed to the field when adding it to the model:
     
     Default: ``0``
 
-``get_absolute_url``
-    A shortcut for defining a ``get_absolute_url`` method on the tag model.
-    
-    It is common to need to get a URL for a tag, so rather than creating a
-    custom ``TagModel`` just to implement a ``get_absolute_url`` method, you
-    can pass this argument a callback function.
-    
-    The callback function will be passed the tag object, and should return the
-    URL for the tag. See the `Tag URL`_ example for a simple lambda argument.
-    
-    If not set, the method ``get_absolute_url`` will not be available and an
-    ``AttributeError`` will be raised.
-    
-    Default: None
-
 :: _autocomplete_view:
 ``autocomplete_view``
     Specify the view to use for autocomplete queries.
@@ -146,6 +131,45 @@ The following arguments can be passed to the field when adding it to the model:
     
     Default: None
 
+``get_absolute_url``
+    A shortcut for defining a ``get_absolute_url`` method on the tag model.
+    Only used when defined in tag fields which auto-generate models.
+    
+    It is common to need to get a URL for a tag, so rather than creating a
+    custom ``TagModel`` just to implement a ``get_absolute_url`` method, you
+    can pass this argument a callback function.
+    
+    The callback function will be passed the tag object, and should return the
+    URL for the tag. See the `Tag URL`_ example for a simple lambda argument.
+    
+    If not set, the method ``get_absolute_url`` will not be available and an
+    ``AttributeError`` will be raised.
+    
+    Default: None
+
+``verbose_name_singular``, ``verbose_name_plural``
+    When a tag model is auto-generated from a field, it is given a
+    ``verbose_name`` in the form ``<TaggedModel name> <TagField name>``; the
+    ``verbose_name_plural`` is the same, but with an added ``s`` at the end.
+    This is primarily used in the admin.
+    
+    However, this will sometimes not make grammatical sense; these two
+    arguments can be used to override the field name component of the model
+    name.
+    
+    The ``verbose_name_singular`` will usually be used with ``TagField``s -
+    for example, the singular name for the auto-generated model for
+    ``MyModel.tags`` will be ``My model tags``; this can be corrected by
+    setting ``verbose_name_singular="tag"`` in the field definition.
+    
+    The ``verbose_name_plural`` will usually be used with ``SingleTagField``s -
+    for example, the plural name for the auto-generated model for
+    ``MyModel.category`` will be ``My model categorys``; this can be corrected
+    by setting ``verbose_name_plural="categories"`` in the field definition.
+    
+    If one or both of these are not set, Tagulous will try to find the field
+    name from its ``verbose_name`` argument, falling back to the field name.
+    
 The ``related_name`` will default to ``<field>_set``, as is normal for
 ``ForeignKey``s and ``ManyToManyField``s. If using the same tag table on
 multiple fields, it is highly recommended that you set this to something else

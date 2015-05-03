@@ -13,10 +13,12 @@ OPTION_DEFAULTS = {
     'case_sensitive':   False,
     'force_lowercase':  False,
     'max_count':        0,
-    'get_absolute_url':     None,
     'autocomplete_view':    '',
     'autocomplete_limit':   100,
-    'autocomplete_settings': None
+    'autocomplete_settings':    None,
+    'get_absolute_url':         None,
+    'verbose_name_singular':    None,
+    'verbose_name_plural':      None,
 }
 
 # List of model TagField options which are relevant to client-side code
