@@ -19,6 +19,7 @@ from tagulous.models import options
 from tagulous.models.models import BaseTagModel
 from tagulous.utils import parse_tags, render_tags
 
+
 class TagWidgetBase(forms.TextInput):
     """
     Base class for tag widgets
