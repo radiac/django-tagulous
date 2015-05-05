@@ -21,7 +21,7 @@ from tagulous.utils import parse_tags, render_tags
 
 class TagWidgetBase(forms.TextInput):
     """
-    Base class for tags
+    Base class for tag widgets
     """
     # Attributes that subclasses must set
     autocomplete_settings = None

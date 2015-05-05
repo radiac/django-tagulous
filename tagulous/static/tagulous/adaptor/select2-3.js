@@ -35,6 +35,10 @@
         
         These replace default options with quote-aware ones
     */
+    function initSelectionSingle(element, callback) {
+        var val = element.val();
+        callback({id: val, text: val});
+    }
     function initSelectionMulti(element, callback) {
         /** Initialises selection for fields with multiple tags */
         var tags = Tagulous.parseTags(element.val()),
@@ -176,7 +180,9 @@
         });
         
         // Add in any specific to the field type
-        if (!isSingle) {
+        if (isSingle) {
+            args['initSelection'] = initSelectionSingle;
+        } else {
             args['initSelection'] = initSelectionMulti;
         }
         if (url) {
