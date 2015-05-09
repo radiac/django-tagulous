@@ -262,7 +262,7 @@ class BaseTagModel(models.Model):
             return super(BaseTagModel, self).save(*args, **kwargs)
         
         # Set the slug
-        self.slug = slugify(self.name)
+        self.slug = slugify(unicode(self.name))
         
         # Make sure we're using the same db at all times
         cls = self.__class__

@@ -132,9 +132,10 @@ def add_unique_column(self, db, model, column, set_fn, field_type, **kwargs):
     )
     
     # Set the fields
-    for obj in model.objects.all():
-        set_fn(obj)
-        obj.save()
+    if not db.dry_run:
+        for obj in model.objects.all():
+            set_fn(obj)
+            obj.save()
     
     # Change column to unique
     db.alter_column(
