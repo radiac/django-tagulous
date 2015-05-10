@@ -46,10 +46,8 @@ class TagWidgetBase(forms.TextInput):
             autocomplete_tags = self.autocomplete_tags
             # If it's a queryset, make sure it hasn't been consumed, otherwise
             # changes won't show in the list
-            print "PRE", id(autocomplete_tags)
             if isinstance(autocomplete_tags, QuerySet):
                 autocomplete_tags = autocomplete_tags.all()
-            print "POST", id(autocomplete_tags)
                 
             attrs['data-tag-list'] = escape(force_unicode(
                 json.dumps(
