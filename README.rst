@@ -28,4 +28,3 @@ Version 0.6.0
 * See `Documentation <docs/index.rst>`_ for more details
 * See `Example Usage <docs/usage.rst>`_ to see how it works in practice
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
-* See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
