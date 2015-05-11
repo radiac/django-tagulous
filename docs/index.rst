@@ -71,8 +71,8 @@ explicitly created.
 Tagulous does more
 ------------------
 
-Traditional tags are ``ManyToManyFields``, but Tagulous also supports
-``ForeignKey``s - a very similar API for managing many-to-one relationships
+Traditional tags use ``ManyToManyField``, but Tagulous also supports
+``ForeignKey`` - a very similar API for managing many-to-one relationships
 which users are allowed to add options to.
 
 Unlike django-tagging-ng and django-taggit, Tagulous also has built-in support
@@ -86,3 +86,4 @@ django-taggit.
 Tagulous also has a more robust tag string parser with better support for
 quoted tags, which is also implemented in javascript for full compatibility
 with client-side autocompletion.
+

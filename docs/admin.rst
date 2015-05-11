@@ -18,7 +18,7 @@ This will make a few changes to ``MyAdmin`` to add tag field support (detailed
 below), and then register it with the default admin site using the standard
 ``site.register()`` call.
 
-You can also pass a custom admin site into the `register()` function:
+You can also pass a custom admin site into the `register()` function::
 
     # These two lines are equivalent:
     tagulous.admin.register(myModel, MyAdmin)
@@ -31,6 +31,7 @@ The changes Tagulous's ``register()`` function makes to the ``ModelAdmin`` are:
   already exists)
 
 Note:
+
 * You can only provide the Tagulous ``register()`` function with one model.
 * The admin class will be modified; bear that in mind if registering it more
   than once (ie with multiple admin sites).
@@ -51,13 +52,13 @@ See `Settings`_ for more information
 Managing the tag model
 ----------------------
 
-You can also register a ModelAdmin to manipulate the tag table directly:
+You can also register a ModelAdmin to manipulate the tag table directly::
 
     tagulous.admin.tag_model(MyModel.tags.tag_model)
 
 The example is for an auto-generated tag model, but it could equally be a
 custom tag model. You can subclass the tag model `ModelAdmin` class if you want
-to extend the tag model admin for extra fields on your custom model:
+to extend the tag model admin for extra fields on your custom model::
 
     class MyModelTagsAdmin(tagulous.admin.TagModelAdmin):
         list_display = ['name', 'count', 'protected', 'my_extra_field']

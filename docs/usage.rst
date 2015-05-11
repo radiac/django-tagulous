@@ -7,7 +7,7 @@ Automatic models
 ----------------
 
 This simple example creates a ``SingleTagField`` (a glorified ``ForeignKey``)
-and two ``TagField``s (a typical tag field, using ``ManyToManyField``).
+and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
 
     from django.db import models
     import tagulous
@@ -26,7 +26,7 @@ These models will act like normal models, and can be managed in the database
 using standard database migration tools or ``syncdb``.
 
 Initial tags need to be loaded into the database with the 
-`management command <#Management Commands>` ``initial_tags``.
+`management command <#Management Commands>` ``initial_tags``::
 
     # Person.skills.tag_model == _Tagulous_Person_skills
     
@@ -55,12 +55,12 @@ Initial tags need to be loaded into the database with the
         return True
         
 
-:: _example_custom_tag_model:
+.. _example_custom_tag_model:
 
 Custom models
 -------------
 
-Explicitly specify the tag model
+Explicitly specify the tag model::
 
     import tagulous
     class Hobbies(tagulous.models.TagModel):
@@ -91,7 +91,7 @@ Tag URL
 -------
 
 A simple example for defining a ``get_absolute_url`` method on a tag model
-without needing to create a custom tag model:
+without needing to create a custom tag model::
 
     from django.db import models
     from django.core.urlresolvers import reverse
@@ -106,7 +106,7 @@ without needing to create a custom tag model:
         )
 
 The ``get_absolute_url`` method can now be called as normal; for example, from
-a template:
+a template::
 
     {% for skill in person.skills.all %}
         <a href="{{ skill.get_absolute_url }}">{{ skill.name }}</a>
@@ -133,7 +133,7 @@ Using embedded tags
 This is if you are embedding the tags into the response; if you are using
 autocomplete views, see `Autocomplete Views`_.
 
-Filter the ``autocomplete_tags`` queryset after the form initialises:
+Filter the ``autocomplete_tags`` queryset after the form initialises::
 
     from django.db import models, forms
     import tagulous
@@ -155,7 +155,7 @@ Filter the ``autocomplete_tags`` queryset after the form initialises:
         class Meta:
             model = Pet
 
-Then always call PetForm with the user as the first argument, for example:
+Then always call PetForm with the user as the first argument, for example::
 
     def add_pet(self, request):
         form = PetForm(request.user)
@@ -169,7 +169,7 @@ Using an autocomplete view
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Add a wrapper to filter the queryset before calling the normal ``autocomplete``
-view:
+view::
 
     @login_required
     def autocomplete_pet_skills(request):

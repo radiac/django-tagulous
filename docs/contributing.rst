@@ -17,14 +17,17 @@ Testing
 It is greatly appreciated when contributions come with unit tests.
 
 Run the python tests using django's test framework::
+
     ./manage.py test tagulous
 
 Check test coverage with ``coverage``::
+
     pip install coverage
     coverage run --source='../path/to/tagulous' manage.py test tagulous
     coverage report
 
 Run the javascript tests using Jasmine::
+
     pip install jasmine
     cd tagulous/tests
     jasmine

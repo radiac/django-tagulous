@@ -11,6 +11,7 @@ These packages are required:
 * Django => 1.3
 
 These packages are recommended:
+
 * South - to assist with migrations (if Django < 1.7)
 * django-compressor - (or similar static asset management library)
 
@@ -44,7 +45,7 @@ Installation
 
 
 You are now ready to add tagulous fields to your models - see
- `Example Usage`_, `Models`_ and `Forms`.
+`Example Usage`_, `Models`_ and `Forms`_.
 
 
 Settings
@@ -60,6 +61,7 @@ Settings
     information about using other included adaptors, or writing your own.
     
     Default::
+    
         ('tagulous/lib/jquery.js',
         'tagulous/lib/select2-3/select2.min.js',
         'tagulous/tagulous.js',
@@ -133,21 +135,25 @@ exactly the way you would expect. These patches are written to be as
 future-proof as possible, but because this isn't exactly best practice, they
 come as optional flags which you can disable using the settings below:
 
-:: _enhancements:
+.. _enhancements:
 
 ``TAGULOUS_ENHANCE_ALL``
     If ``True``, turns on all enhancements. If ``False``, individual
     enhancement settings apply.
     
-    Default: True
+    Default: ``True``
 
 ``TAGULOUS_ENHANCE_MODEL``
     Django models cannot take ``ManyToManyField`` values in their constructors.
     
-    This is the same 
+    When set to ``True, this will monkey patch ``Model.__init__`` to support
+    setting ``TagField`` values in the constructor. When ``False``, any
+    ``TagField`` values will need to be set once the constructor returns.
+    
+    This does not affect ``SingleTagField`` fields.
 
 ``TAGULOUS_ENHANCE_QUERYSET``
-    Tag fields are just sugar-coated ``ForeignKey``s and ``ManyToManyField``s,
+    Tag fields are just sugar-coated ``ForeignKey`` and ``ManyToManyField`` fields,
     so Django expects them to be tag model instances with primary keys. In most
     cases this doesn't cause a problem, but it does mean that you can't pass
     tag strings to ``QuerySet`` methods such as ``.get()``, ``.filter()`` etc.
@@ -159,8 +165,8 @@ come as optional flags which you can disable using the settings below:
     ``tagulous.models.queryset``.
 
     When set to ``False``, the ``QuerySet`` cannot be passed tag strings in
-    most cases; ``SingleTagField``s have to be passed an instance or primary
-    key like a normal ``ForeignKey``, and ``TagField``s need to be assigned
+    most cases; ``SingleTagField`` has to be passed an instance or primary
+    key like a normal ``ForeignKey``, and ``TagField`` needs to be assigned
     afterwards using ``field.add()``, like a normal ``ManyToManyField``.
     
     If set to ``False``, you can still pass custom ``QuerySet`` classes into
@@ -172,7 +178,7 @@ come as optional flags which you can disable using the settings below:
 Management Commands
 -------------------
 
-:: _initial_tags:
+.. _initial_tags:
 
 initial_tags [<app_name>[.<model_name>[.<field_name>]]]
     Add initial tagulous tags to the database as required

@@ -16,7 +16,7 @@ the tags.
 The JavaScript code requires jQuery 1.7 or later. For convenience there is a
 bundled copy of jQuery in the tagulous static directory. This is included in
 public pages by default, but can be turned off by changing the
-TAGULOUS_PUBLIC_JQUERY setting to ``False``.
+``TAGULOUS_PUBLIC_JQUERY`` setting to ``False``.
 
 
 Autocomplete Adaptors
@@ -33,6 +33,9 @@ Tagulous includes the following adaptors:
 
 Select2, version 3
     The default adaptor, for `Select2 <https://select2.github.io/>`_.
+    
+    Path:
+        ``tagulous/adaptor/select2-3.js``
 
     Autocomplete settings should be a dict:
     
@@ -58,9 +61,8 @@ Select2, version 3
     
     All other settings will be passed to the Select2 constructor.
     
-    Path: ``tagulous/adaptor/select2-3.js``
-
 Planned for future releases:
+
 * `Selectize <http://brianreavis.github.io/selectize.js/>`_.
 * `jQuery UI autocomplete <https://jqueryui.com/autocomplete/>`_.
 

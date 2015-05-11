@@ -4,6 +4,7 @@ Models
 ======
 
 Tagulous offers two new model field types:
+
 * ``TagField`` - conventional tags using a ``ManyToManyField`` relationship.
 * ``SingleTagField`` - the same UI and helper functionality as a ``TagField``,
   but for a single tag using a ``ForeignKey`` relationship.
@@ -11,7 +12,7 @@ Tagulous offers two new model field types:
 These will automatically create the models for the tags themselves, or you can
 provide a custom model to use instead with ``to`` - see `Custom Models`_.
 
-Tagulous is designed so that you can treat these as ``CharField``s, while still
+Tagulous is designed so that you can treat these as a ``CharField``, while still
 leaving the underlying relationships available. For example, not only can you
 assign a queryset or list of tag primary keys to a ``TagField``, but you can
 also assign a list of strings (one per tag), or a tag string to parse.
@@ -64,7 +65,7 @@ The following arguments can be passed to the field when adding it to the model:
     The ``protected`` state for any tags created by the `initial` argument -
     see `Protected tags`_.
     
-    Default: True
+    Default: ``True``
     
 ``protect_all``
     Whether all tags with count 0 should be protected from automatic deletion.
@@ -84,7 +85,7 @@ The following arguments can be passed to the field when adding it to the model:
     
     Default: ``False``
 
-:: _force_lowercase:
+.. _force_lowercase:
 ``force_lowercase``
     Force all tags to lower case
     
@@ -101,7 +102,7 @@ The following arguments can be passed to the field when adding it to the model:
     
     Default: ``0``
 
-:: _autocomplete_view:
+.. _autocomplete_view:
 ``autocomplete_view``
     Specify the view to use for autocomplete queries.
     
@@ -149,20 +150,20 @@ The following arguments can be passed to the field when adding it to the model:
 
 ``verbose_name_singular``, ``verbose_name_plural``
     When a tag model is auto-generated from a field, it is given a
-    ``verbose_name`` in the form ``<TaggedModel name> <TagField name>``; the
-    ``verbose_name_plural`` is the same, but with an added ``s`` at the end.
-    This is primarily used in the admin.
+    ``verbose_name`` based on the tagged model's name and the tag field's
+    name; the ``verbose_name_plural`` is the same, but with an added ``s``
+    at the end. This is primarily used in the admin.
     
     However, this will sometimes not make grammatical sense; these two
     arguments can be used to override the field name component of the model
     name.
     
-    The ``verbose_name_singular`` will usually be used with ``TagField``s -
+    The ``verbose_name_singular`` will usually be used with a ``TagField`` -
     for example, the singular name for the auto-generated model for
     ``MyModel.tags`` will be ``My model tags``; this can be corrected by
     setting ``verbose_name_singular="tag"`` in the field definition.
     
-    The ``verbose_name_plural`` will usually be used with ``SingleTagField``s -
+    The ``verbose_name_plural`` will usually be used with a ``SingleTagField`` -
     for example, the plural name for the auto-generated model for
     ``MyModel.category`` will be ``My model categorys``; this can be corrected
     by setting ``verbose_name_plural="categories"`` in the field definition.
@@ -171,12 +172,12 @@ The following arguments can be passed to the field when adding it to the model:
     name from its ``verbose_name`` argument, falling back to the field name.
     
 The ``related_name`` will default to ``<field>_set``, as is normal for
-``ForeignKey``s and ``ManyToManyField``s. If using the same tag table on
+a ``ForeignKey`` or ``ManyToManyField``. If using the same tag table on
 multiple fields, it is highly recommended that you set this to something else
 to avoid clashes.
 
 
-:: _unbound_fields:
+.. _unbound_fields:
 
 Unbound Fields
 --------------
@@ -210,7 +211,7 @@ SingleTagManager
 
 A bound ``SingleTagField`` uses this for its getter and setter methods.
 
-``set``:
+``set``
     Assigning a value to the bound field will call this method. It accepts a
     tag string, or an instance of the tag model.
     
@@ -220,7 +221,7 @@ A bound ``SingleTagField`` uses this for its getter and setter methods.
     
     Example: ``person.title = "Mr"; person.save()``
 
-``get``:
+``get``
     Evaluating the bound field will call this method. It returns an instance
     of the tag model.
     
@@ -233,7 +234,7 @@ TagRelatedManager
 A bound ``TagField`` uses this for its setter method, and returns it when
 evaluated; eg ``tag_manager = instance.tags``.
 
-``set``:
+``set``
     Assigning a value to the bound field will call this method. It accepts a
     `tag string <#Tag Strings>`_, or an iterable of strings or tag instances,
     eg a list of strings, or a queryset of Tag instances.
@@ -428,8 +429,8 @@ a custom tag model.
 Set any options listed in `Model Field Arguments`_ as class properties, except
 for ``to``.
 
-These options will be used as defaults when creating ``SingleTagField``s and
-``TagField``s which set ``to`` to the custom class, but can be overridden by
+These options will be used as defaults when creating a ``SingleTagField`` or
+``TagField`` which set ``to`` to the custom class, but can be overridden by
 arguments passed to the field.
 
 ``TagMeta`` can be inherited, so it can be set on abstract models. Options in
@@ -461,6 +462,7 @@ object, except for ``to``. It also provides two instance methods:
     defaults in ``constants.OPTION_DEFAULTS``.
 
 Example::
+
     print MyModel.tags.tag_options.initial
     if "force_lowercase" in MyModel.tags.tag_options.items():
         ...
@@ -507,12 +509,12 @@ Because tag fields use standard database relationships, you can easily filter
 the tags by other fields in your model.
 
 For example, if your model ``Record`` has a ``tags`` TagField and an ``owner``
-foreign key to ``auth.User``, to get a list of tags which that user has used:
+foreign key to ``auth.User``, to get a list of tags which that user has used::
 
     myobj.tags.tag_model.objects.filter(record__owner=user)
 
 There is a ``filter_or_initial`` helper method on a ``TagModel``'s manager and
-queryset, which will add initial tags to your filtered queryset:
+queryset, which will add initial tags to your filtered queryset::
 
     myobj.tags.tag_model.objects.filter_or_initial(record__owner=user)
 
