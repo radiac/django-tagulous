@@ -1,9 +1,9 @@
 from django import forms
-from django.db.models.query import QuerySet
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import EMPTY_VALUES
+from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 from django.utils.html import escape
 from django.utils.encoding import force_unicode
