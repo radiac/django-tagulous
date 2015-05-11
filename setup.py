@@ -6,14 +6,14 @@ def read(fname):
 
 setup(
     name = "django-tagulous",
-    version = "1.0.0",
+    version = "0.6.0",
     author = "Richard Terry",
-    author_email = "python@radiac.net",
+    author_email = "code@radiac.net",
     description = ("A flexible tagging application for Django"),
     license = "BSD",
     keywords = "django tag tagging",
     url = "http://radiac.net/projects/django-tagulous/",
-    long_description=read('README.txt'),
+    long_description=read('README.rst'),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
