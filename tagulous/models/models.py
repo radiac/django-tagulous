@@ -322,4 +322,5 @@ class TagModel(BaseTagModel):
     
     class Meta:
         abstract = True
+        ordering = ('name',)
 
