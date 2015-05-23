@@ -149,7 +149,7 @@ Filter the ``autocomplete_tags`` queryset after the form initialises::
             
             # Filter skills to initial skills, or ones added by this user
             self.fields['skills'].autocomplete_tags = \
-                self.fields['labels'].autocomplete_tags.filter_or_initial(
+                self.fields['skills'].autocomplete_tags.filter_or_initial(
                     pet__owner=user
                 ).distinct()
         class Meta:
