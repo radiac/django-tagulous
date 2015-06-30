@@ -15,7 +15,7 @@ from tagulous import constants
 from tagulous import settings
 from tagulous import forms
 from tagulous.models.options import TagOptions
-from tagulous.models.models import TagModel
+from tagulous.models.models import TagModel, TagTreeModel
 from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
 from tagulous.utils import render_tags
 
@@ -120,7 +120,10 @@ class BaseTagField(object):
             model_name = "%s_%s_%s" % (
                 constants.MODEL_PREFIX, cls._meta.object_name, name,
             )
-            self.tag_model = type(model_name, (TagModel,), model_attrs)
+            model_cls = TagModel
+            if self.tag_options.tree:
+                model_cls = TagTreeModel
+            self.tag_model = type(model_name, (model_cls,), model_attrs)
             
             # Give it a verbose name, for admin filters
             verbose_name_singular = (
@@ -140,8 +143,6 @@ class BaseTagField(object):
             self.tag_model._meta.verbose_name_plural = '%s %s' % (
                 cls._meta.object_name, verbose_name_plural,
             )
-            
-        # else: tag model already specified
         
         
         #

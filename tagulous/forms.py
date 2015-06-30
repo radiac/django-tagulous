@@ -48,12 +48,12 @@ class TagWidgetBase(forms.TextInput):
             # changes won't show in the list
             if isinstance(autocomplete_tags, QuerySet):
                 autocomplete_tags = autocomplete_tags.all()
-                
+            
             attrs['data-tag-list'] = escape(force_unicode(
                 json.dumps(
-                    [str(tag) for tag in autocomplete_tags],
+                    [tag.name for tag in autocomplete_tags],
                     cls=DjangoJSONEncoder,
-                )
+                ),
             ))
         
         # Merge default autocomplete settings into tag options

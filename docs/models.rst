@@ -102,6 +102,16 @@ The following arguments can be passed to the field when adding it to the model:
     
     Default: ``0``
 
+``tree``
+    If ``True``, slashes in tag names will be used to denote children, eg
+    ``grandparent/parent/child``, and these relationships can be traversed.
+    See `tag trees`_ for more details.
+    
+    If ``False``, slashes in tag names will have no significance, and no tree
+    properties or methods will be present on tag objects.
+    
+    Default: ``False``
+
 .. _autocomplete_view:
 ``autocomplete_view``
     Specify the view to use for autocomplete queries.
@@ -404,20 +414,19 @@ Its standard manager and queryset also supports the following:
 Custom Tag Models
 -----------------
 
-A custom tag model should extend ``tagulous.models.TagModel`` so that Tagulous
-can find the fields and methods it expects, and so it uses the appropriate tag
-model manager and queryset.
+A custom tag model should subclass ``tagulous.models.TagModel``, so that
+Tagulous can find the fields and methods it expects, and so it uses the
+appropriate tag model manager and queryset.
 
 A custom tag model is a normal model in every other way, except it can have a
 `TagMeta`_ class to define default options for the class.
 
-The ``tagulous.models.TagModel`` sets the following fields which should not be
-altered:
+There is `an example <_example_custom_tag_model>`_ which illustrates how to
+create a custom tag model.
 
-
-
-There is `an example <_example_custom_tag_model>`_ which illustrates both of
-these.
+If you want to use tag trees, you will need to subclass
+``tagulous.models.TagTreeModel`` instead. The only difference is that
+there will be extra fields on the model - see `tag trees`_ for more details.
 
 
 TagMeta
@@ -517,6 +526,111 @@ There is a ``filter_or_initial`` helper method on a ``TagModel``'s manager and
 queryset, which will add initial tags to your filtered queryset::
 
     myobj.tags.tag_model.objects.filter_or_initial(record__owner=user)
+
+
+Tag Trees
+---------
+
+Tags in tag trees denote parents using a forward slash, ``/``; for example,
+``Animal/Mammal/Cat`` is a ``Cat`` with a parent of ``Mammal`` and grandparent
+of ``Animal``.
+
+To use a slash in a tag name, escape it with a second slash; for example
+``Animal/Mammal/Cat//Kitten`` is a ``Cat/Kitten``.
+
+Tag trees use the ``TagTreeModel`` - a subclass of ``TagModel``. This means
+that in addition to the normal tag model, there are additional fields and
+properties available:
+
+``parent``
+    The parent tag. Tagulous sets this automatically when saving, creating
+    missing ancestors as needed.
+
+``children``
+    The reverse relation manager for ``parent``, eg ``mytag.children.all()``.
+
+``label``
+    The name of the tag without its ancestors.
+    
+    Example: a tag named ``Animal/Mammal/Cat`` has the label ``Cat``
+
+``slug``
+    The slug for the tag label.
+    
+    Example: a tag named ``Animal/Mammal/Cat`` has the slug ``cat``
+
+``path``
+    The path for this tag - this slug, plus all ancestor slugs, separated by
+    the ``/`` character, suitable for use in URLs. Tagulous sets this
+    automatically when saving.
+
+    Example: a tag named ``Animal/Mammal/Cat`` has the path
+    ``animal/mammal/cat``
+
+``depth``
+    The depth of this tag in the tree, starting from 1.
+
+``get_ancestors()``
+    Returns a queryset of all ancestors, ordered by depth.
+
+``get_descendants()``
+    Returns a queryset of all descendants, ordered by depth.
+
+Because tree tag names are fully qualified (include all ancestors) and unique,
+there is no difference to normal tags in how they are set or compared.
+
+
+Converting from to tree tags from normal tags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using South
++++++++++++
+
+These instructions will convert an existing ``TagModel`` to a ``TagTreeModel``.
+Look through the code snippets and change :
+
+1. Create a data migration to escape the tag names; for example::
+
+    def forwards(self, orm):
+        for tag in orm['myapp._Tagulous_MyModel_tags'].objects.all():
+            tag.name = tag.name.replace('/', '//')
+    
+   You can skip this step if you have been using slashes in normal tags and
+   want them to be converted to nested tree nodes.
+
+2. Create a schema migration to change the model fields. Because paths are not
+   allowed to be null, South will prompt you for a value; answer with ``x``.
+   
+   However, because paths are also unique, the default migration will cause
+   integrity errors. Tagulous includes a helper function to get around this -
+   change your schema migration to use it:
+
+    def forwards(self, orm):
+        from tagulous.models.migrations import add_unique_column
+        
+        # Adding field '_Tagulous_MyModel_tags.path'
+        add_unique_column(
+            self, db, orm['myapp._Tagulous_MyModel_tags'], 'path',
+            lambda obj: str(obj.pk),
+            'django.db.models.fields.TextField',
+        )
+    
+    This will temporarily set the ``path`` of each tag to the tag's pk.
+    
+3. Run the migrations
+
+4. From a python shell, rebuild the tree to set paths::
+   
+    from myapp import models
+    models._Tagulous_MyModel_tags.objects.rebuild()
+   
+   If you skipped step 1, this will also create and set parent tags as
+   necessary.
+   
+   It is best practice to do this manually after running the migrations, in
+   case you change your code in the future and the migration can no longer
+   access ``myapp.models._Tagulous_MyModel_tags``. If you are confident this
+   will not be a problem, you could do this in a second data migration.
 
 
 Database Migrations

@@ -2,6 +2,8 @@
 # Install the test app and run tests
 #
 
+import warnings
+
 from django.conf import settings
 from django.core.management import call_command
 from django.db.models import loading
@@ -17,4 +19,5 @@ from tagulous.tests.test_models_singletagfield import *
 from tagulous.tests.test_models_tagfield import *
 from tagulous.tests.test_models_order import *
 from tagulous.tests.test_models_queryset import *
+from tagulous.tests.test_models_tree import *
 from tagulous.tests.test_forms import *

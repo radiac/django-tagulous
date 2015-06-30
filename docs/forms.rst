@@ -100,7 +100,7 @@ Tagulous puts certain settings on the HTML field's ``data-`` attribute:
     Set to ``single`` when a ``SingleTagField``, otherwise not present.
 
 ``data-tag-list``
-    JSON-encoded list of tags
+    JSON-encoded list of tags.
 
 ``data-tag-url``
     URL to request tags

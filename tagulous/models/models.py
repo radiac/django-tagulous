@@ -10,6 +10,7 @@ except ImportError:
     from django.template.defaultfilters import slugify
 
 import tagulous
+from tagulous import utils
 
 
 ###############################################################################
@@ -30,7 +31,7 @@ class TagModelQuerySet(models.query.QuerySet):
 
 class TagModelManager(models.Manager):
     def get_queryset(self):
-        return TagModelQuerySet(self.model)
+        return TagModelQuerySet(self.model, using=self._db)
     get_query_set = get_queryset
     
     def filter_or_initial(self, *args, **kwargs):
@@ -48,6 +49,9 @@ class BaseTagModel(models.Model):
     """
     objects = TagModelManager()
     
+    class Meta:
+        abstract = True
+        
     def __unicode__(self):
         return u'%s' % self.name
         
@@ -158,18 +162,21 @@ class BaseTagModel(models.Model):
         self.count = len(self.get_related_objects(flat=True))
         self.save()
         self.try_delete()
+    update_count.alters_data = True
     
     def increment(self):
         """
         Increase the count by one
         """
         self._change_count(1)
+    increment.alters_data = True
     
     def decrement(self):
         """
         Decrease the count by one, then try to delete
         """
         self._change_count(-1)
+    decrement.alters_data = True
     
     def _change_count(self, amount):
         """
@@ -207,11 +214,25 @@ class BaseTagModel(models.Model):
                 # We can't delete (we'll break things)
                 # Tag is protected, for now
                 is_protected = True
-       
+        
+        # See if it has children
+        if (
+            not is_protected
+            and self.tag_options.tree
+            and self.children.count() > 0
+        ):
+            # Can't delete if it has children
+            is_protected = True
+        
         # Try to delete
         if not is_protected:
             # Tag is not in use and not protected. Delete.
             self.delete()
+            
+            # If a tree, parent node may now be empty - try to delete it
+            if self.tag_options.tree and self.parent:
+                self.parent.try_delete()
+    try_delete.alters_data = True
     
     def merge_tags(self, tags):
         """
@@ -246,7 +267,16 @@ class BaseTagModel(models.Model):
                 for obj in objs:
                     getattr(obj, related.field.name).remove(*tags)
                     getattr(obj, related.field.name).add(self)
+    merge_tags.alters_data = True
     
+    def _update_extra(self):
+        """
+        Called by .save() before super().save()
+        
+        Allows subclasses to update extra fields based on slug
+        """
+        pass
+        
     def save(self, *args, **kwargs):
         """
         Automatically generate a unique slug, if one does not exist
@@ -257,12 +287,17 @@ class BaseTagModel(models.Model):
         # real world, but until Django provides a reliable way to determine
         # the cause of an IntegrityError, we can never make this perfect.
         
-        # If already in the database, or has a slug, just save as normal
-        if self.pk or self.slug:
+        # If already in the database and has a slug set, just save as normal
+        # Set slug to None to rebuild it
+        if self.pk and self.slug:
+            self._update_extra()
             return super(BaseTagModel, self).save(*args, **kwargs)
         
-        # Set the slug
-        self.slug = slugify(unicode(self.name))
+        # Set the slug using the label if possible (for TagTreeModel), else
+        # the tag name
+        label = getattr(self, 'label', self.name)
+        self.slug = slugify(unicode(label))
+        self._update_extra()
         
         # Make sure we're using the same db at all times
         cls = self.__class__
@@ -292,12 +327,11 @@ class BaseTagModel(models.Model):
             number = int(number) + 1
         
         self.slug = '%s_%d' % (self.slug, number)
+        self._update_extra()
         return super(BaseTagModel, self).save(*args, **kwargs)
-        
-    class Meta:
-        abstract = True
-        
-        
+    save.alters_data = True
+
+
 ###############################################################################
 ####### Abstract base class for tag models
 ###############################################################################
@@ -307,7 +341,11 @@ class TagModel(BaseTagModel):
     Abstract base class for tag models
     """
     name        = models.CharField(max_length=255, unique=True)
-    slug        = models.SlugField(unique=True)
+    slug        = models.SlugField(
+        unique=False,
+        # Slug field must be unique, but manage it with Meta.unique_together
+        # so that subclasses can override
+    )
     count       = models.IntegerField(
         default=0,
         help_text="Internal counter of how many times this tag is in use"
@@ -323,4 +361,131 @@ class TagModel(BaseTagModel):
     class Meta:
         abstract = True
         ordering = ('name',)
+        unique_together = (
+            ('slug',),
+        )
 
+
+###############################################################################
+####### TagTreeModel manager and queryset
+###############################################################################
+
+
+class TagTreeModelManager(TagModelManager):
+    def rebuild(self):
+        # Now re-save each instance to update tag fields
+        for tag in self.all():
+            tag.save()
+    rebuild.alters_data = True
+
+
+
+###############################################################################
+####### Abstract base class for all TagModel models
+###############################################################################
+
+class TagTreeModel(TagModel):
+    """
+    Abstract base class for tag models with tree
+    """
+    # These fields are all generated automatically on save
+    parent      = models.ForeignKey(
+        'self', null=True, blank=True, related_name='children', db_index=True,
+    )
+    path        = models.TextField(unique=True)
+    
+    objects = TagTreeModelManager()
+    
+    class Meta:
+        abstract = True
+        ordering = ('name',)
+        unique_together = (
+            ('slug', 'parent'),
+        )
+    
+    
+    # Other derivable attributes won't be used in lookups, so don't need to be
+    # cached. If they are needed for lookups, this model can be subclassed and
+    # the properties replaced by caching fields.
+    def _get_label(self):
+        "The name of the tag, without ancestors"
+        return utils.split_tree_name(self.name)[-1]
+    label = property(_get_label, doc=_get_label.__doc__)
+    
+    def _get_depth(self):
+        "The depth of the tag in the tree"
+        return len(utils.split_tree_name(self.path))
+    depth = property(_get_depth, doc=_get_depth.__doc__)
+    
+    def __init__(self, *args, **kwargs):
+        """
+        Initialise the tag
+        """
+        super(TagTreeModel, self).__init__(*args, **kwargs)
+        # Keep track of the name
+        self._name = self.name
+    
+    def save(self, *args, **kwargs):
+        """
+        Set the parent and path cache
+        """
+        # Make sure name is valid
+        self.name = utils.clean_tree_name(self.name)
+        
+        # Find the parent, or create it if missing
+        parts = utils.split_tree_name(self.name)
+        if len(parts) > 1:
+            self.parent, created = self.__class__.objects.get_or_create(
+                name=utils.join_tree_name(parts[:-1])
+            )
+        else:
+            self.parent = None
+        
+        # Save - super .save() method will set the path using _get_path()
+        super(TagTreeModel, self).save(*args, **kwargs)
+        
+        # If name has changed, update child names
+        if self._name != self.name:
+            for child in self.children.all():
+                child.name = utils.join_tree_name(parts + [child.label])
+                child.save()
+            self._name = self.name
+    save.alters_data = True
+    
+    def _update_extra(self):
+        """
+        Updates extra fields based on slug
+        """
+        # Update the path
+        if self.parent:
+            self.path = '/'.join([self.parent.path, self.slug])
+        else:
+            self.path = self.slug
+    _update_extra.alters_data = True
+    
+    
+    def get_ancestors(self):
+        """
+        Get a queryset of ancestors for this tree node
+        """
+        cls = self.__class__
+        if not self.parent:
+            return cls.objects.none()
+        
+        # Get all ancestor paths from this path
+        parts = utils.split_tree_name(self.path)
+        paths = [
+            utils.join_tree_name(parts[:i]) # Join parts up to i (misses last)
+            for i in range(1, len(parts))   # Skip first (empty)
+        ]
+        
+        # Look up ancestors by path, already ordered by name for deepest last
+        return cls.objects.filter(path__in=paths)
+    
+    def get_descendants(self):
+        """
+        Get a queryset of descendants of this tree node
+        """
+        # Look up by path, already ordered by name for deepest last
+        cls = self.__class__
+        return cls.objects.filter(path__startswith='%s/' % self.path)

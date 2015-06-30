@@ -9,6 +9,9 @@ Changelog
 1.0.0       2015-??
             Feature:    Public release
 
+0.7.0       2015-
+            Feature:    Added tree support
+
 0.6.0       2015-05-11
             Feature:    Initial public preview
 
@@ -25,6 +28,6 @@ Roadmap
 =======
 
 Target
-0.7.0       Complete tests for 100% coverage, including Django 1.7 and 1.8
+0.8.0       Complete tests for 100% coverage, including Django 1.7 and 1.8
             Tag cloud template tag
 

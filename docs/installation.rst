@@ -12,14 +12,7 @@ These packages are required:
 
 These packages are recommended:
 
-* South - to assist with migrations (if Django < 1.7)
-* django-compressor - (or similar static asset management library)
-
-Tagulous includes the versions of third party code in its file or path names
-to make it easier to track. However, it is highly recommended that you use
-something like ``django-compressor`` to compile your scripts into a single file
-with a hashed filename, to reduce requests and allow for far-future HTTP
-caching.
+* South, to assist with migrations (if Django < 1.7)
 
 
 Installation
@@ -43,8 +36,7 @@ Installation
 
    You may also want to change some settings here (see `Settings`_ below)
 
-
-You are now ready to add tagulous fields to your models - see
+You are now ready to add Tagulous fields to your models - see
 `Example Usage`_, `Models`_ and `Forms`_.
 
 
@@ -59,6 +51,14 @@ Settings
     The default list will use the included versions of jQuery and Select2,
     with the tagulous Select2 adaptor. See `Autocomplete Adaptors`_ for
     information about using other included adaptors, or writing your own.
+    
+    The order is important: the adaptor must appear last in the list, so it is
+    loaded after its dependencies.
+    
+    Because a typical Tagulous installation will use multiple JavaScript files,
+    you may want to use something like
+    `django-compressor <http://django-compressor.readthedocs.org/en/latest/>`_
+    to combine them into a single file to optimise requests.
     
     Default::
     

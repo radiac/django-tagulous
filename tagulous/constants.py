@@ -13,6 +13,7 @@ OPTION_DEFAULTS = {
     'case_sensitive':   False,
     'force_lowercase':  False,
     'max_count':        0,
+    'tree':             False,
     'autocomplete_view':    '',
     'autocomplete_limit':   100,
     'autocomplete_settings':    None,
@@ -26,6 +27,7 @@ FIELD_OPTIONS = [
     'case_sensitive',
     'force_lowercase',
     'max_count',
+    'tree',
     'autocomplete_limit',
     'autocomplete_settings'
 ]

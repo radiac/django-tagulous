@@ -15,6 +15,7 @@ Features
   selectize and jQuery UI
 * Ability to have tag sets local to a field, or shared between them
 * Multiple independent tag fields on a single model
+* Support for trees of nested tags for categorisation
 * All the other features you'd expect a tagging library to have
 
 **Please note**: this is an alpha version. That means that although it has been
@@ -23,7 +24,7 @@ years, and there are no known bugs for those version, the test suite does not
 yet have 100% coverage, and official support for Django 1.7+ is still pending.
 
 
-Version 0.6.0
+Version 0.7.0
 
 * See `Documentation <docs/index.rst>`_ for more details
 * See `Example Usage <docs/usage.rst>`_ to see how it works in practice

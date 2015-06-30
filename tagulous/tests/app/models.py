@@ -195,7 +195,7 @@ class MixedTest(models.Model):
         MixedTestTagModel, related_name='mixed_tags',
         blank=True,
     )
-    
+
 class MixedRefTest(models.Model):
     """
     Multiple models referencing tag tables
@@ -256,3 +256,12 @@ class MixedOrderTest(models.Model):
     char6   = models.CharField(blank=True, max_length=10)
     fk2     = models.ForeignKey(MixedTest, related_name="order_fk2")
     char7   = models.CharField(blank=True, max_length=10)
+
+
+class TreeTest(models.Model):
+    """
+    For testing tag trees
+    """
+    name = models.CharField(max_length=10)
+    singletag = tagulous.models.SingleTagField(tree=True, blank=True)
+    tags = tagulous.models.TagField(tree=True, blank=True)

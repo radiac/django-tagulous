@@ -75,6 +75,9 @@ Traditional tags use ``ManyToManyField``, but Tagulous also supports
 ``ForeignKey`` - a very similar API for managing many-to-one relationships
 which users are allowed to add options to.
 
+Tagulous also has optional support for `tag trees`_ - hierarchical nested tags
+for more detailed categorisation.
+
 Unlike django-tagging-ng and django-taggit, Tagulous also has built-in support
 for autocomplete in public and admin sites, by default using Select2 (although
 this can be easily customised using `autocomplete adaptors`_).
@@ -86,4 +89,3 @@ django-taggit.
 Tagulous also has a more robust tag string parser with better support for
 quoted tags, which is also implemented in javascript for full compatibility
 with client-side autocompletion.
-

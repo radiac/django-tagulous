@@ -7,10 +7,25 @@ Modules tested:
 from tagulous.tests.lib import *
 
 
-class UtilsTest(TestCase):
+class TagNameUtilsTest(TestCase):
     """
-    Test TagOptions
+    Test name util functions:
+        parse_tags
+        render_tags
+        split_strip
     """
+    def test_split_strip_spaceless(self):
+        split = tag_utils.split_strip("adam,brian")
+        self.assertEqual(len(split), 2)
+        self.assertEqual(split[0], "adam")
+        self.assertEqual(split[1], "brian")
+    
+    def test_split_strip_spaced(self):
+        split = tag_utils.split_strip("  adam  ,  brian  ")
+        self.assertEqual(len(split), 2)
+        self.assertEqual(split[0], "adam")
+        self.assertEqual(split[1], "brian")
+    
     def test_parse_tags_commas(self):
         tags = tag_utils.parse_tags("adam,brian,chris")
         self.assertEqual(len(tags), 3)
@@ -179,4 +194,147 @@ class UtilsTest(TestCase):
         self.assertEqual(tags[1], 'ed, frank')
         self.assertEqual(tags[2], 'gary')
         self.assertEqual(tagstr, tagstr2)
+
+
+class TagTreeSplitUtilTest(TestCase):
+    """
+    Test split_tree_name
+    """
+    def test_split_tree_none(self):
+        parts = tag_utils.split_tree_name("")
+        self.assertEqual(len(parts), 0)
         
+    def test_split_tree_one(self):
+        parts = tag_utils.split_tree_name("one")
+        self.assertEqual(len(parts), 1)
+        self.assertEqual(parts[0], "one")
+    
+    def test_split_tree_three(self):
+        parts = tag_utils.split_tree_name("one/two/three")
+        self.assertEqual(len(parts), 3)
+        self.assertEqual(parts[0], "one")
+        self.assertEqual(parts[1], "two")
+        self.assertEqual(parts[2], "three")
+    
+    def test_split_tree_three_spaced(self):
+        parts = tag_utils.split_tree_name("  one  /  two  /  three  ")
+        self.assertEqual(len(parts), 3)
+        self.assertEqual(parts[0], "one")
+        self.assertEqual(parts[1], "two")
+        self.assertEqual(parts[2], "three")
+    
+    def test_split_tree_leading(self):
+        parts = tag_utils.split_tree_name("/one")
+        self.assertEqual(len(parts), 2)
+        self.assertEqual(parts[0], "")
+        self.assertEqual(parts[1], "one")
+
+    def test_split_tree_trailing(self):
+        parts = tag_utils.split_tree_name("one/")
+        self.assertEqual(len(parts), 2)
+        self.assertEqual(parts[0], "one")
+        self.assertEqual(parts[1], "")
+    
+    def test_split_tree_escape(self):
+        parts = tag_utils.split_tree_name("one/two//dos/three")
+        self.assertEqual(len(parts), 3)
+        self.assertEqual(parts[0], "one")
+        self.assertEqual(parts[1], "two/dos")
+        self.assertEqual(parts[2], "three")
+        
+    def test_split_tree_escape_odd(self):
+        parts = tag_utils.split_tree_name("one/two///three/four")
+        self.assertEqual(len(parts), 4)
+        self.assertEqual(parts[0], "one")
+        self.assertEqual(parts[1], "two/")
+        self.assertEqual(parts[2], "three")
+        self.assertEqual(parts[3], "four")
+        
+    def test_split_tree_escape_even(self):
+        parts = tag_utils.split_tree_name("one/two////dos/three")
+        self.assertEqual(len(parts), 3)
+        self.assertEqual(parts[0], "one")
+        self.assertEqual(parts[1], "two//dos")
+        self.assertEqual(parts[2], "three")
+        
+    def test_split_tree_escape_leading(self):
+        parts = tag_utils.split_tree_name("//one/two")
+        self.assertEqual(len(parts), 2)
+        self.assertEqual(parts[0], "/one")
+        self.assertEqual(parts[1], "two")
+        
+    def test_split_tree_escape_trailing(self):
+        parts = tag_utils.split_tree_name("one/two//")
+        self.assertEqual(len(parts), 2)
+        self.assertEqual(parts[0], "one")
+        self.assertEqual(parts[1], "two/")
+        
+
+class TagTreeJoinUtilTest(TestCase):
+    """
+    Test join_tree_name
+    """
+    def test_join_tree_none(self):
+        name = tag_utils.join_tree_name([])
+        self.assertEqual(name, "")
+    
+    def test_join_tree_one(self):
+        name = tag_utils.join_tree_name(["one"])
+        self.assertEqual(name, "one")
+    
+    def test_join_tree_three(self):
+        name = tag_utils.join_tree_name(["one", "two", "three"])
+        self.assertEqual(name, "one/two/three")
+    
+    def test_join_tree_escape(self):
+        name = tag_utils.join_tree_name(["one", "two/dos", "three"])
+        self.assertEqual(name, "one/two//dos/three")
+        
+    def test_join_tree_escape_odd(self):
+        name = tag_utils.join_tree_name(["one/", "two"])
+        self.assertEqual(name, "one///two")
+        
+    def test_join_tree_escape_even(self):
+        name = tag_utils.join_tree_name(["one", "two//dos", "three"])
+        self.assertEqual(name, "one/two////dos/three")
+        
+    def test_join_tree_escape_leading(self):
+        name = tag_utils.join_tree_name(["/one", "two"])
+        self.assertEqual(name, "//one/two")
+        
+    def test_join_tree_escape_trailing(self):
+        name = tag_utils.join_tree_name(["one", "two/"])
+        self.assertEqual(name, "one/two//")
+
+
+class TagTreeCleanUtilTest(TestCase):
+    """
+    Test clean_tree_name
+    """
+    def test_clean_tree_one(self):
+        name = tag_utils.clean_tree_name("one")
+        self.assertEqual(name, "one")
+    
+    def test_clean_tree_three(self):
+        name = tag_utils.clean_tree_name("one/two/three")
+        self.assertEqual(name, "one/two/three")
+    
+    def test_clean_tree_escape(self):
+        name = tag_utils.clean_tree_name("one/two//dos/three")
+        self.assertEqual(name, "one/two//dos/three")
+    
+    def test_clean_tree_strip(self):
+        name = tag_utils.clean_tree_name("  one  /  two  /  three  ")
+        self.assertEqual(name, "one/two/three")
+    
+    def test_clean_tree_leading(self):
+        name = tag_utils.clean_tree_name("/one/two/three")
+        self.assertEqual(name, "//one/two/three")
+    
+    def test_clean_tree_trailing(self):
+        name = tag_utils.clean_tree_name("one/two/three//")
+        self.assertEqual(name, "one/two/three//")
+    
+    def test_clean_tree_complex(self):
+        name = tag_utils.clean_tree_name("/// one / two/ three /")
+        self.assertEqual(name, "//// one/two/three //")

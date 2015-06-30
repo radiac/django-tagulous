@@ -10,7 +10,7 @@ from tagulous.tests.lib import *
 
 class TagModelTest(TagTestManager, TestCase):
     """
-    Test tag model
+    Test tag model basics
     """
     manage_models = [
         test_models.MixedTest,
@@ -361,6 +361,42 @@ class TagModelTest(TagTestManager, TestCase):
             'red':  0,
         })
 
+    def test_slug_set(self):
+        "Check the slug field is set correctly"
+        t1a = self.tag_model.objects.create(name='One and Two!')
+        self.assertEqual(t1a.slug, 'one-and-two')
+        
+    def test_slug_saved(self):
+        "Check the slug field is saved correctly"
+        t1a = self.tag_model.objects.create(name='One and Two!')
+        t1b = self.tag_model.objects.get(name='One and Two!')
+        self.assertEqual(t1a.slug, t1b.slug)
+        self.assertEqual(t1b.slug, 'one-and-two')
+
+    def test_slug_clash(self):
+        "Check slug field avoids clashes to remain unique"
+        t1a = self.tag_model.objects.create(name='one and two')
+        t2a = self.tag_model.objects.create(name='One and Two!')
+        t3a = self.tag_model.objects.create(name='One and Two?')
+        t4a = self.tag_model.objects.create(name='One and Two.')
+        self.assertEqual(t1a.slug, 'one-and-two')
+        self.assertEqual(t2a.slug, 'one-and-two_1')
+        self.assertEqual(t3a.slug, 'one-and-two_2')
+        self.assertEqual(t4a.slug, 'one-and-two_3')
+        
+        t1b = self.tag_model.objects.get(name='one and two')
+        t2b = self.tag_model.objects.get(name='One and Two!')
+        t3b = self.tag_model.objects.get(name='One and Two?')
+        t4b = self.tag_model.objects.get(name='One and Two.')
+        self.assertEqual(t1b.slug, 'one-and-two')
+        self.assertEqual(t2b.slug, 'one-and-two_1')
+        self.assertEqual(t3b.slug, 'one-and-two_2')
+        self.assertEqual(t4b.slug, 'one-and-two_3')
+
+
+###############################################################################
+####### Test tag merging
+###############################################################################
 
 class TagModelMergeTest(TagTestManager, TestCase):
     """
@@ -441,4 +477,3 @@ class TagModelMergeTest(TagTestManager, TestCase):
         })
         self.assertInstanceEqual(t1, tags='blue')
         self.assertInstanceEqual(t2, tags='blue')
-        

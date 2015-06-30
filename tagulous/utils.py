@@ -9,7 +9,12 @@ from django.utils.encoding import force_unicode
 COMMA = u','
 SPACE = u' '
 QUOTE = u'"'
+TREE = u'/'
 
+
+###############################################################################
+####### Tag name parse and render
+###############################################################################
 
 def parse_tags(tag_string, max_count=0):
     """
@@ -21,9 +26,11 @@ def parse_tags(tag_string, max_count=0):
         Spaces at the start and end of tags are ignored
     
     Rules with quotes
-        Quotes can be escaped by double quotes, eg ""
+        Quotes can be escaped by double quotes, ie ""
         Commas outside quotes take precedence over spaces as delimiter
         Unmatched quotes will be left in the string
+    
+    Tree tags can be further split into their parts with split_tree_name
     """
     # Empty string easiest case
     if not tag_string:
@@ -138,7 +145,7 @@ def parse_tags(tag_string, max_count=0):
                 # If it's the last character, it has closed
                 if len(chars) == 0:
                     in_quote = False
-                    break;
+                    break
                 
                 for i2, c2 in chars:
                     if c2 == SPACE:
@@ -175,9 +182,10 @@ def parse_tags(tag_string, max_count=0):
     
     # Check the count
     if max_count and len(tags) > max_count:
-        raise ValueError('This field can only have %s argument%s'
-            % (max_count, '' if max_count == 1 else 's')
-        )
+        raise ValueError('This field can only have %s argument%s' % (
+            max_count,
+            '' if max_count == 1 else 's',
+        ))
     
     return tags
     
@@ -213,4 +221,78 @@ def render_tags(tags):
         else:
             names.append(name)
     return u', '.join(sorted(names))
+
+
+###############################################################################
+####### Tree name split and join
+###############################################################################
+
+def split_tree_name(name):
+    """
+    Split a tree tag name into its parts
+    
+    A slash can be escaped by double slash, ie //
+    """
+    parts = []
+    split = False
+    start = 0
+    index = 0
+    chars = list(enumerate(name))
+    while chars:
+        index, char = chars.pop(0)
+        if char == TREE:
+            if split:
+                # Slash was escaped
+                split = False
+            else:
+                split = True
+                
+        elif split:
+            # Previous character was a valid delimiter
+            parts.append(name[start:index - 1].strip())
+            start = index
+            split = False
+    
+    if split:
+        # Trailing slash - shouldn't happen if sanitised, but handle anyway
+        parts += [name[start:index].strip(), '']
+    
+    elif start < index:
+        # If string not empty, add everything after last slash
+        parts.append(name[start:].strip())
+    
+    return [
+        part.replace(TREE + TREE, TREE) for part in parts
+    ]
+
+
+def join_tree_name(parts):
+    """
+    Join tree tag name parts into a single name string
+    
+    A slash in a part will be escaped by double slash, ie //
+    """
+    return TREE.join(
+        part.replace(TREE, TREE + TREE) for part in parts
+    )
+
+
+def clean_tree_name(name):
+    """
+    Make sure a tree name is valid
+    
+    * Escapes leading or trailing slashes
+    * Strips leading and trailing whitespace around parts
+    """
+    # Count the number of slashes, ensure it's even (all escaped)
+    left = len(name) - len(name.lstrip(TREE))
+    if left % 2 == 1:
+        name = TREE + name
+    
+    right = len(name) - len(name.rstrip(TREE))
+    if right % 2 == 1:
+        name += TREE
+    
+    # Split and join to strip whitespace
+    return join_tree_name(split_tree_name(name))
 
