@@ -375,6 +375,9 @@ class TagTreeModelManager(TagModelManager):
     def rebuild(self):
         # Now re-save each instance to update tag fields
         for tag in self.all():
+            # Replace slug in case name has changed
+            # If it hasn't, it'll just end up re-creating the same one
+            tag.slug = None
             tag.save()
     rebuild.alters_data = True
 
@@ -405,17 +408,33 @@ class TagTreeModel(TagModel):
     
     
     # Other derivable attributes won't be used in lookups, so don't need to be
-    # cached. If they are needed for lookups, this model can be subclassed and
-    # the properties replaced by caching fields.
+    # cached. If there are situations where they are needed for lookups, this
+    # model can be subclassed and the properties replaced by caching fields.
     def _get_label(self):
         "The name of the tag, without ancestors"
         return utils.split_tree_name(self.name)[-1]
     label = property(_get_label, doc=_get_label.__doc__)
     
-    def _get_depth(self):
-        "The depth of the tag in the tree"
+    def _get_level(self):
+        "The level of the tag in the tree"
         return len(utils.split_tree_name(self.path))
-    depth = property(_get_depth, doc=_get_depth.__doc__)
+    level = property(_get_level, doc=_get_level.__doc__)
+    
+    def _get_descendant_count(self):
+        "The sum of the counts of all descendants"
+        return self.get_descendants().aggregate(
+            models.Sum('count')
+        )['count__sum'] or 0
+    descendant_count = property(
+        _get_descendant_count,
+        doc=_get_descendant_count.__doc__,
+    )
+    
+    def _get_family_count(self):
+        "The count of self plus all its descendants"
+        return self.descendant_count + self.count
+    family_count = property(_get_family_count, doc=_get_family_count.__doc__)
+    
     
     def __init__(self, *args, **kwargs):
         """
@@ -462,7 +481,6 @@ class TagTreeModel(TagModel):
         else:
             self.path = self.slug
     _update_extra.alters_data = True
-    
     
     def get_ancestors(self):
         """

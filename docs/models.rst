@@ -567,14 +567,14 @@ properties available:
     Example: a tag named ``Animal/Mammal/Cat`` has the path
     ``animal/mammal/cat``
 
-``depth``
-    The depth of this tag in the tree, starting from 1.
+``level``
+    The level of this tag in the tree (starting from 1).
 
 ``get_ancestors()``
-    Returns a queryset of all ancestors, ordered by depth.
+    Returns a queryset of all ancestors, ordered by level.
 
 ``get_descendants()``
-    Returns a queryset of all descendants, ordered by depth.
+    Returns a queryset of all descendants, ordered by level.
 
 Because tree tag names are fully qualified (include all ancestors) and unique,
 there is no difference to normal tags in how they are set or compared.
@@ -603,7 +603,7 @@ Look through the code snippets and change :
    
    However, because paths are also unique, the default migration will cause
    integrity errors. Tagulous includes a helper function to get around this -
-   change your schema migration to use it:
+   change your schema migration to use it::
 
     def forwards(self, orm):
         from tagulous.models.migrations import add_unique_column
@@ -611,7 +611,7 @@ Look through the code snippets and change :
         # Adding field '_Tagulous_MyModel_tags.path'
         add_unique_column(
             self, db, orm['myapp._Tagulous_MyModel_tags'], 'path',
-            lambda obj: str(obj.pk),
+            lambda obj: setattr(obj, 'path', str(obj.pk)),
             'django.db.models.fields.TextField',
         )
     

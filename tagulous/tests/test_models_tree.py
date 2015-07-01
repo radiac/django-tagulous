@@ -13,7 +13,7 @@ class TagTreeTestManager(TagTestManager):
     """
     def assertTreeTag(
         self, tag, name=None, label=None, slug=None, path=None,
-        parent=None, count=None, protected=None, depth=None,
+        parent=None, count=None, protected=None, level=None,
     ):
         "Check tag attributes match those specified"
         if name is not None:
@@ -31,8 +31,8 @@ class TagTreeTestManager(TagTestManager):
             self.assertEqual(tag.count, count)
         if protected is not None:
             self.assertEqual(tag.protected, protected)
-        if depth is not None:
-            self.assertEqual(tag.depth, depth)
+        if level is not None:
+            self.assertEqual(tag.level, level)
             
 
 class TagTreeModelTest(TagTreeTestManager, TestCase):
@@ -69,7 +69,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         "Check level 1 node created correctly"
         t1 = self.tag_model.objects.create(name='One')
         self.assertTreeTag(
-            t1, name='One', label='One', slug='one', path='one', depth=1,
+            t1, name='One', label='One', slug='one', path='one', level=1,
         )
     
     def test_level_2_existing_l1(self):
@@ -78,7 +78,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         t2 = self.tag_model.objects.create(name='One/Two')
         self.assertTreeTag(
             t2, name='One/Two', label='Two', slug='two', path='one/two',
-            parent=t1, depth=2,
+            parent=t1, level=2,
         )
 
     def test_level_2_missing_l1(self):
@@ -86,11 +86,11 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         t2 = self.tag_model.objects.create(name='One/Two')
         t1 = self.tag_model.objects.get(name='One')
         self.assertTreeTag(
-            t1, name='One', label='One', slug='one', path='one', depth=1,
+            t1, name='One', label='One', slug='one', path='one', level=1,
         )
         self.assertTreeTag(
             t2, name='One/Two', label='Two', slug='two', path='one/two',
-            parent=t1, depth=2,
+            parent=t1, level=2,
         )
     
     def test_level_3_existing_l1_l2(self):
@@ -101,7 +101,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         self.assertTreeTag(
             t3, name='One/Two/Three', label='Three',
             slug='three', path='one/two/three',
-            parent=t2, depth=3,
+            parent=t2, level=3,
         )
         
     def test_level_3_existing_l1_missing_l2(self):
@@ -111,12 +111,12 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         t2 = self.tag_model.objects.get(name='One/Two')
         self.assertTreeTag(
             t2, name='One/Two', label='Two', slug='two', path='one/two',
-            parent=t1, depth=2,
+            parent=t1, level=2,
         )
         self.assertTreeTag(
             t3, name='One/Two/Three', label='Three',
             slug='three', path='one/two/three',
-            parent=t2, depth=3,
+            parent=t2, level=3,
         )
     
     def test_level_3_missing_l1_l2(self):
@@ -125,16 +125,16 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         t1 = self.tag_model.objects.get(name='One')
         t2 = self.tag_model.objects.get(name='One/Two')
         self.assertTreeTag(
-            t1, name='One', label='One', slug='one', path='one', depth=1,
+            t1, name='One', label='One', slug='one', path='one', level=1,
         )
         self.assertTreeTag(
             t2, name='One/Two', label='Two', slug='two', path='one/two',
-            parent=t1, depth=2,
+            parent=t1, level=2,
         )
         self.assertTreeTag(
             t3, name='One/Two/Three', label='Three',
             slug='three', path='one/two/three',
-            parent=t2, depth=3,
+            parent=t2, level=3,
         )
     
     def test_level_1_renames_l2_l3(self):
@@ -161,16 +161,16 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         t3 = self.tag_model.objects.get(name='Uno/Two/Three')
         
         self.assertTreeTag(
-            t1, name='Uno', label='Uno', slug='uno', path='uno', depth=1,
+            t1, name='Uno', label='Uno', slug='uno', path='uno', level=1,
         )
         self.assertTreeTag(
             t2, name='Uno/Two', label='Two', slug='two', path='uno/two',
-            parent=t1, depth=2,
+            parent=t1, level=2,
         )
         self.assertTreeTag(
             t3, name='Uno/Two/Three', label='Three',
             slug='three', path='uno/two/three',
-            parent=t2, depth=3,
+            parent=t2, level=3,
         )
 
 
@@ -213,8 +213,8 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
         t1 = self.tag_model.objects.get(name='Animal/Mammal/Cat')
         anc = t1.get_ancestors()
         self.assertEqual(len(anc), 2)
-        self.assertTreeTag(anc[0], name='Animal', depth=1)
-        self.assertTreeTag(anc[1], name='Animal/Mammal', depth=2)
+        self.assertTreeTag(anc[0], name='Animal', level=1)
+        self.assertTreeTag(anc[1], name='Animal/Mammal', level=2)
         
     def test_no_ancestors(self):
         "Check no ancestors found from l1"
@@ -228,30 +228,30 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
         
         # Look down from Animal
         t1 = self.tag_model.objects.get(name='Animal')
-        self.assertTreeTag(t1, name='Animal', depth=1)
+        self.assertTreeTag(t1, name='Animal', level=1)
         dec = t1.get_descendants()
         self.assertEqual(len(dec), 5)
-        self.assertTreeTag(dec[0], name='Animal/Insect', depth=2)
-        self.assertTreeTag(dec[1], name='Animal/Insect/Bee', depth=3)
-        self.assertTreeTag(dec[2], name='Animal/Mammal', depth=2)
-        self.assertTreeTag(dec[3], name='Animal/Mammal/Cat', depth=3)
-        self.assertTreeTag(dec[4], name='Animal/Mammal/Dog', depth=3)
+        self.assertTreeTag(dec[0], name='Animal/Insect', level=2)
+        self.assertTreeTag(dec[1], name='Animal/Insect/Bee', level=3)
+        self.assertTreeTag(dec[2], name='Animal/Mammal', level=2)
+        self.assertTreeTag(dec[3], name='Animal/Mammal/Cat', level=3)
+        self.assertTreeTag(dec[4], name='Animal/Mammal/Dog', level=3)
         
     def test_descendants_l2(self):
         "Check l3 descendants found from l2"
         # Look down from Animal
         t1 = self.tag_model.objects.get(name='Animal/Mammal')
-        self.assertTreeTag(t1, name='Animal/Mammal', depth=2)
+        self.assertTreeTag(t1, name='Animal/Mammal', level=2)
         dec = t1.get_descendants()
         self.assertEqual(len(dec), 2)
-        self.assertTreeTag(dec[0], name='Animal/Mammal/Cat', depth=3)
-        self.assertTreeTag(dec[1], name='Animal/Mammal/Dog', depth=3)
+        self.assertTreeTag(dec[0], name='Animal/Mammal/Cat', level=3)
+        self.assertTreeTag(dec[1], name='Animal/Mammal/Dog', level=3)
 
     def test_descendants_l2(self):
         "Check no descendants found from l3"
         # Look down from Animal
         t1 = self.tag_model.objects.get(name='Animal/Insect/Bee')
-        self.assertTreeTag(t1, name='Animal/Insect/Bee', depth=3)
+        self.assertTreeTag(t1, name='Animal/Insect/Bee', level=3)
         dec = t1.get_descendants()
         self.assertEqual(len(dec), 0)
 
@@ -284,16 +284,16 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
         t2 = self.singletag_model.objects.get(name='One/Two')
         t3 = self.singletag_model.objects.get(name='One/Two/Three')
         self.assertTreeTag(
-            t1, name='One', label='One', slug='one', path='one', depth=1,
+            t1, name='One', label='One', slug='one', path='one', level=1,
         )
         self.assertTreeTag(
             t2, name='One/Two', label='Two', slug='two', path='one/two',
-            parent=t1, depth=2,
+            parent=t1, level=2,
         )
         self.assertTreeTag(
             t3, name='One/Two/Three', label='Three',
             slug='three', path='one/two/three',
-            parent=t2, count=1, depth=3,
+            parent=t2, count=1, level=3,
         )
         
         self.assertTagModel(self.singletag_model, {
@@ -327,16 +327,16 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
         t2 = self.tag_model.objects.get(name='One/Two')
         t3 = self.tag_model.objects.get(name='One/Two/Three')
         self.assertTreeTag(
-            t1, name='One', label='One', slug='one', path='one', depth=1
+            t1, name='One', label='One', slug='one', path='one', level=1
         )
         self.assertTreeTag(
             t2, name='One/Two', label='Two', slug='two', path='one/two',
-            parent=t1, depth=2,
+            parent=t1, level=2,
         )
         self.assertTreeTag(
             t3, name='One/Two/Three', label='Three',
             slug='three', path='one/two/three',
-            parent=t2, depth=3, count=1,
+            parent=t2, level=3, count=1,
         )
 
 
