@@ -194,6 +194,10 @@ class TagModelAdmin(admin.ModelAdmin):
         })
     merge_tags.short_description = 'Merge selected tags...'
 
+class TagTreeModelAdmin(TagModelAdmin):
+    exclude = ['count', 'path']
+
+
 def tag_model(model, site=None):
     """
     Create a new ModelAdmin for the specified tag model
@@ -201,6 +205,11 @@ def tag_model(model, site=None):
     if isinstance(model, tag_models.BaseTagDescriptor):
         # It's a tag descriptor; change it for the tag model itself
         model = model.tag_model
+    
+    if issubclass(model, tag_models.TagTreeModel):
+        admin_cls = TagTreeModelAdmin
+    else:
+        admin_cls = TagModelAdmin
         
     # Default site to admin.site - but here instead of constructor, in the
     # unlikely but possible case that someone changed it during initialisation
@@ -208,7 +217,7 @@ def tag_model(model, site=None):
         site = admin.site
     
     # Register with the default TagModelAdmin class
-    register(model, admin_class=TagModelAdmin, site=site)
+    register(model, admin_class=admin_cls, site=site)
     
 
 
