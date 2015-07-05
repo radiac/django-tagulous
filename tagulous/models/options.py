@@ -18,6 +18,12 @@ class TagOptions(object):
         """
         for key, val in kwargs.items():
             setattr(self, key, val)
+    
+    def contribute_to_class(self, cls, name):
+        """
+        Add to class
+        """
+        setattr(cls, name, self)
         
     def __setattr__(self, name, value):
         """
