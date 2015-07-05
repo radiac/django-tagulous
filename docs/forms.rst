@@ -53,6 +53,8 @@ Select2, version 3
             added: function ($row) {
                 Tagulous.select2($row.find('input[data-tagulous]'));
             }
+        
+        This will need to be clear or set to ``False`` in the admin settings.
     
     ``width``
         This is the same as in Select2's documentation, but the Tagulous
