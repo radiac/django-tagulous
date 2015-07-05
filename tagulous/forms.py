@@ -31,6 +31,10 @@ class TagWidgetBase(forms.TextInput):
     tag_options = None
     autocomplete_tags = None
     
+    # Provide choices attribute for admin site, to avoid an error in the event
+    # tagulous.admin isn't used to register the admin model
+    choices = None
+    
     # Based on django-taggit
     def render(self, name, value, attrs={}):
         # Try to provide a URL for the autocomplete to load tags on demand

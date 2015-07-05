@@ -1,55 +1,56 @@
 from django import forms
 from django.contrib import admin
-from django.conf.urls import patterns, include, url
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
 from django.db.models.base import ModelBase
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 
 from tagulous import models as tag_models
 from tagulous import forms as tag_forms
-from tagulous import settings as tag_settings
 
 
 ###############################################################################
 ########################################################### Admin registration
 ###############################################################################
 
+# Give contrib.admin a default widget for tag fields
+admin.options.FORMFIELD_FOR_DBFIELD_DEFAULTS.update({
+    tag_models.SingleTagField:  {'widget': tag_forms.AdminTagWidget},
+    tag_models.TagField:        {'widget': tag_forms.AdminTagWidget},
+})
 
-def register(model, admin_class=None, **options):
+
+class TaggedModelAdmin(admin.ModelAdmin):
     """
-    Add tag field support to the admin class, then register with the specified
-    admin site
-    
-    Arguments:
-        model       Model to register
-        admin_class Admin class for model
-        site        Admin site to register with
-                    Default: django.contrib.admin.site
-        **options   Extra options for admin class
-    
-    This only supports one model
+    Tag-aware abstract base class for ModelAdmin
     """
-    if not isinstance(model, ModelBase):
-        raise ImproperlyConfigured(
-            'Tagulous can only register a single model with admin.'
-        )
-    
-    # Get site from args
-    site = options.pop('site', admin.site)
-    
-    #
-    # Ensure we have an admin class
-    # This duplicates functionality in site.register(), but is needed here
-    # so we can customise it before we validate
-    #
-    if not admin_class:
-        admin_class = admin.ModelAdmin
-    if options:
-        options['__module__'] = __name__
-        admin_class = type("%sAdmin" % model.__name__, (admin_class,), options)
-    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        formfield = super(TaggedModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        if (
+            isinstance(db_field, (tag_models.SingleTagField, tag_models.TagField))
+            and
+            isinstance(formfield.widget, admin.widgets.RelatedFieldWidgetWrapper)
+            and
+            isinstance(formfield.widget.widget, tag_forms.AdminTagWidget)
+        ):
+            formfield.widget = formfield.widget.widget
+        return formfield
+
+
+def _create_display(field):
+    """
+    ModelAdmin display function factory
+    """
+    def display(self, obj):
+        return getattr(obj, field).get_tag_string()
+    display.short_description = field.replace('_', ' ')
+    return display
+
+
+def enhance(model, admin_class):
+    """
+    Add tag support to the admin class based on the specified model
+    """
     #
     # Get a list of all tag fields
     #
@@ -77,11 +78,9 @@ def register(model, admin_class=None, **options):
     
     
     #
-    # Set up tag support
-    #
-    
     # Ensure any tag fields in list_display are rendered by functions
     #
+    
     # The admin.site.register will complain if it's a ManyToManyField, so this
     # will work around that.
     #
@@ -105,46 +104,56 @@ def register(model, admin_class=None, **options):
                     admin_class.list_display[i] = display_name
                 
                     # Add display function to admin class
-                    setattr(admin_class, display_name, create_display(field))
+                    setattr(admin_class, display_name, _create_display(field))
     
+
+def register(model, admin_class=None, **options):
+    """
+    Add tag field support to the admin class, then register with the specified
+    admin site
     
-    # Ensure every tag field uses the correct widgets
-    add_formfield_overrides(admin_class)
+    Arguments:
+        model       Model to register
+        admin_class Admin class for model
+        site        Admin site to register with
+                    Default: django.contrib.admin.site
+        **options   Extra options for admin class
     
-    # Check for inlines
-    if hasattr(admin_class, 'inlines'):
-        for inline in admin_class.inlines:
-            add_formfield_overrides(inline)
+    This only supports one model
+    """
+    if not isinstance(model, ModelBase):
+        raise ImproperlyConfigured(
+            'Tagulous can only register a single model with admin.'
+        )
+    
+    # Get site from args
+    site = options.pop('site', admin.site)
+    
+    #
+    # Ensure we have an admin class
+    # This is similar to functionality in site.register(), but it ensures that
+    # the model class is a subclass of TaggedModelAdmin.
+    #
+    if not admin_class:
+        admin_class = admin.ModelAdmin
+    
+    cls_bases = None
+    if not issubclass(admin_class, TaggedModelAdmin):
+        cls_bases = (TaggedModelAdmin, admin_class)
+    elif options:
+        cls_bases = (admin_class,)
+        
+    if cls_bases is not None:
+        options['__module__'] = __name__
+        admin_class = type("%sAdmin" % model.__name__, cls_bases, options)
+    
+    # Enhance the model class
+    enhance(model, admin_class)
     
     # Register the model
+    # Don't pass options - we've already dealt with that
     site.register(model, admin_class)
     
-    
-def add_formfield_overrides(cls):
-    """
-    Extend formfield to ensure every tag field uses the correct widgets
-    """
-    if not cls.formfield_overrides:
-        cls.formfield_overrides = {}
-        
-    if tag_models.SingleTagField not in cls.formfield_overrides:
-        cls.formfield_overrides[tag_models.SingleTagField] = {
-            'widget': tag_forms.AdminTagWidget,
-        }
-        
-    if tag_models.TagField not in cls.formfield_overrides:
-        cls.formfield_overrides[tag_models.TagField] = {
-            'widget': tag_forms.AdminTagWidget,
-        }
-    
-    
-def create_display(field):
-    def display(self, obj):
-        return getattr(obj, field).get_tag_string()
-    display.short_description = field.replace('_', ' ')
-    return display
-
-
 
 ###############################################################################
 ######################################################## Tag model admin tools
@@ -219,33 +228,3 @@ def tag_model(model, site=None):
     # Register with the default TagModelAdmin class
     register(model, admin_class=admin_cls, site=site)
     
-
-
-###############################################################################
-############################################################ Disable admin add
-###############################################################################
-
-def monkeypatch_formfield_for_dbfield():
-    """
-    This will monkey-patch BaseModelAdmin.formfield_for_dbfield to remove
-    a RelatedFieldWidgetWrapper from an AdminTagWidget created for a
-    SingleTagField or TagField
-    """
-    old = admin.options.BaseModelAdmin.formfield_for_dbfield
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        formfield = old(self, db_field, **kwargs)
-        if (
-            isinstance(db_field, (tag_models.SingleTagField, tag_models.TagField))
-            and
-            isinstance(formfield.widget, admin.widgets.RelatedFieldWidgetWrapper)
-            and
-            isinstance(formfield.widget.widget, tag_forms.AdminTagWidget)
-        ):
-            formfield.widget = formfield.widget.widget
-        return formfield
-    
-    # Monkeypatch
-    admin.options.BaseModelAdmin.formfield_for_dbfield = formfield_for_dbfield
-    
-if tag_settings.DISABLE_ADMIN_ADD:
-    monkeypatch_formfield_for_dbfield()
