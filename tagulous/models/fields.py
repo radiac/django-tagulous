@@ -365,3 +365,25 @@ class TagField(BaseTagField, models.ManyToManyField):
         """
         setattr(instance, self.attname, data)
         getattr(instance, self.attname).save()
+
+
+
+###############################################################################
+####### Field util methods
+###############################################################################
+
+def singletagfields_from_model(model):
+    """
+    Get a list of SingleTagField fields from a model class
+    """
+    return [
+        field for field in model._meta.fields
+        if isinstance(field, SingleTagField)
+    ]
+
+def tagfields_from_model(model):
+    """Get a list of TagField fields from a model class"""
+    return [
+        field for field in model._meta.many_to_many
+        if isinstance(field, TagField)
+    ]

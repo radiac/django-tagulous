@@ -43,6 +43,8 @@ You are now ready to add Tagulous fields to your models - see
 Settings
 --------
 
+Note: model and form fields settings are managed by the `TagOptions`_ class.
+
 ``TAGULOUS_AUTOCOMPLETE_JS``
     List of paths under ``STATIC_URL`` to any javascript files which are
     required for tagulous autocomplete. These will be added to the form media
@@ -120,59 +122,24 @@ Settings
     
     Default: value of setting ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
 
-Model and form fields settings are managed by the `TagOptions`_ class.
-
-
-Feature flags
-~~~~~~~~~~~~~
-
-In most situations Tagulous is able to sprinkle its syntactic sugar in a way
-which works alongside Django's darkest magical depths. However, in a few places
-Django needs a helping hand to understand the tag fields.
-
-Tagulous can therefore apply some monkey patches to make tag fields operate in
-exactly the way you would expect. These patches are written to be as
-future-proof as possible, but because this isn't exactly best practice, they
-come as optional flags which you can disable using the settings below:
-
-.. _enhancements:
-
-``TAGULOUS_ENHANCE_ALL``
-    If ``True``, turns on all enhancements. If ``False``, individual
-    enhancement settings apply.
+``TAGULOUS_ENHANCE_MODELS``
+    Feature flag to automatically enhance models, managers and querysets to
+    fully support tag fields.
+    
+    In most situations Tagulous is able to sprinkle its syntactic sugar without
+    intefering with third-party code. However, there are a few places in
+    Django's darkest magical depths of its model code that it needs a helping
+    hand to understand the tag fields. When this setting is ``True``, any
+    models which use tag fields will automatically be enhanced to make this
+    happen, along with their managers and querysets.
+    
+    If you set this to ``False``, Tagulous will still work, but certain
+    aspects may not work as you would expect - you should consider manually
+    enhancing your models, managers and querysets.
+    
+    See `Working with tagged models`_ for more information.
     
     Default: ``True``
-
-``TAGULOUS_ENHANCE_MODEL``
-    Django models cannot take ``ManyToManyField`` values in their constructors.
-    
-    When set to ``True, this will monkey patch ``Model.__init__`` to support
-    setting ``TagField`` values in the constructor. When ``False``, any
-    ``TagField`` values will need to be set once the constructor returns.
-    
-    This does not affect ``SingleTagField`` fields.
-
-``TAGULOUS_ENHANCE_QUERYSET``
-    Tag fields are just sugar-coated ``ForeignKey`` and ``ManyToManyField`` fields,
-    so Django expects them to be tag model instances with primary keys. In most
-    cases this doesn't cause a problem, but it does mean that you can't pass
-    tag strings to ``QuerySet`` methods such as ``.get()``, ``.filter()`` etc.
-    
-    When set to ``True``, this will monkey patch ``QuerySet`` to support
-    passing tag strings as values for for tag fields. It does this by wrapping
-    the original calls; for example, ``.get(title='Mr')`` is essentially
-    converted to ``.get(title__name='Mr')``. You can see the changes made in
-    ``tagulous.models.queryset``.
-
-    When set to ``False``, the ``QuerySet`` cannot be passed tag strings in
-    most cases; ``SingleTagField`` has to be passed an instance or primary
-    key like a normal ``ForeignKey``, and ``TagField`` needs to be assigned
-    afterwards using ``field.add()``, like a normal ``ManyToManyField``.
-    
-    If set to ``False``, you can still pass custom ``QuerySet`` classes into
-    ``tagulous.models.queryset.enhance_queryset()`` to just monkey-patch those.
-    
-    Default: ``False``, overridden by ``TAGULOUS_ENHANCE_ALL``
 
 
 Management Commands

@@ -65,17 +65,15 @@ def enhance(model, admin_class):
     tag_field_names = []
     
     # Check for SingleTagField related fields
-    for field in model._meta.fields:
-        if isinstance(field, tag_models.SingleTagField):
-            single_tag_fields[field.name] = field
-            tag_field_names.append(field.name)
+    for field in tag_models.singletagfields_from_model(model):
+        single_tag_fields[field.name] = field
+        tag_field_names.append(field.name)
     
     # Check for TagField m2m fields
-    for field in model._meta.many_to_many:
-        if isinstance(field, tag_models.TagField):
-            tag_fields[field.name] = field
-            tag_field_names.append(field.name)
-    
+    for field in tag_models.tagfields_from_model(model):
+        tag_fields[field.name] = field
+        tag_field_names.append(field.name)
+
     
     #
     # Ensure any tag fields in list_display are rendered by functions

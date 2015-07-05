@@ -6,6 +6,10 @@ Override these by setting new values in your global settings file
 from django.conf import settings
 
 
+#
+# Autocomplete settings
+#
+
 AUTOCOMPLETE_JS = getattr(
     settings, 'TAGULOUS_AUTOCOMPLETE_JS', (
         'tagulous/lib/jquery.js',
@@ -36,38 +40,17 @@ ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
 
 
 #
-# Monkey-patch flags
+# Feature flags
 #
 
-ENHANCE_ALL = getattr(settings, 'TAGULOUS_ENHANCE_ALL', True)
-
-# Option to enhance QuerySet methods to support text strings for
-# SingleTagFields and TagFields.
+# Option to automatically enhance Model, Manager and QuerySet classes so they
+# know how to work with SingleTagFields and TagFields.
 #
-# This will monkey-patch the base django QuerySet - see settings docs for more.
-ENHANCE_QUERYSET = getattr(settings, 'TAGULOUS_ENHANCE_QUERYSET', ENHANCE_ALL)
-
-# Option to enhance Model methods to support text strings for
-# SingleTagFields and TagFields.
+# This will automatically change models which use tag fields to subclass
+# TaggedModel, their managers to subclass TaggedManager, and their querysets to
+# subclass TaggedQuerySet
 #
-# This will monkey-patch the base django Model - see settings docs for more.
-ENHANCE_MODEL = getattr(settings, 'TAGULOUS_ENHANCE_MODEL', ENHANCE_ALL)
-
-# Option to enhance ModelForm methods to support text strings for
-# SingleTagFields and TagFields.
-#
-# This will monkey-patch the base django ModelForm - see settings docs for more.
-ENHANCE_FORM = getattr(settings, 'TAGULOUS_ENHANCE_FORM', ENHANCE_ALL)
-
-# Option to disable the add related widget in auto-generated admin fields.
-#
-# If the tag model is registered with the admin site, without this setting
-# the model admin will automatically add a "+" button next to the tag field.
-# This will not function correctly, so if you do register the tag model, you
-# should set this to True.
-#
-# This will monkey-patch BaseModelAdmin.formfield_for_dbfield to not add
-# a RelatedFieldWidgetWrapper to a TagWidget or SingleTagWidget.
-# Because monkey-patching is bad practice and cannot be predicted in future
-# it is off 
-DISABLE_ADMIN_ADD = getattr(settings, 'TAGULOUS_DISABLE_ADMIN_ADD', False)
+# If this is set to False, certain aspects of tag fields will not work as
+# expected; you should consider manually subclassing the relevant classes.
+# See settings documentation for more information.
+ENHANCE_MODELS = getattr(settings, 'TAGULOUS_ENHANCE_MODELS', True)

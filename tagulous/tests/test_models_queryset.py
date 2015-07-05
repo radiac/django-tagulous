@@ -2,7 +2,7 @@
 Tagulous test: Enhanced queryset for tagged models
 
 Modules tested:
-    tagulous.models.queryset.enhance_queryset
+    tagulous.models.tagged
 """
 from tagulous.tests.lib import *
 

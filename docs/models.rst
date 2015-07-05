@@ -21,9 +21,11 @@ Like a ``CharField``, changes made by assigning a value will not be committed
 until the model is saved, although you can still make immediate changes by
 calling the standard m2m methods ``add``, ``remove`` and ``clear``.
 
-If you have `enhancements`_ enabled you can also ``get`` and ``filter`` by
-string, or pass tag field values as strings into model constructors and
-``object.create()`` as if it was a ``CharField``.
+If ``TAGULOUS_ENHANCE_MODELS`` is ``True`` (which it is by default - see
+`Settings`_) you can also ``get`` and ``filter`` by string, or pass tag field
+values as strings into model constructors and ``object.create()`` as if it was
+a ``CharField`` (see `Working with tagged models`_ for details of how that
+works behind the scenes).
 
 
 Model Field Arguments
@@ -499,10 +501,13 @@ When querying a model which uses a tag field, remember that a
 ``SingleTagField`` is really a ``ForeignKey``, and a ``TagField`` is really a
 ``ManyToManyField``. You can always query using these relationships.
 
-In addition, if you have `enhancements`_ enabled, you can compare a tag field
-to a tag string in ``get``, ``filter`` and ``exclude``::
+In addition you can compare a tag field to a tag string in ``get``, ``filter``
+and ``exclude``::
 
     qs = MyModel.objects.get(name="Bob", title="Mr", tags="red, blue, green")
+
+(This requires the setting ``TAGULOUS_ENHANCE_MODELS`` to be ``True``, or for
+you to use the subclasses detailed in `Working with tagged models`_.)
 
 Note that when referring to a ``TagField`` in this way, the filter will expect
 an exact match - eg that it has all tags specified, but only those specified.
@@ -633,7 +638,66 @@ Look through the code snippets and change :
    will not be a problem, you could do this in a second data migration.
 
 
+Working with tagged models
+--------------------------
+
+Models which have tag fields are called tagged models (not to be confused with
+tag models, which are the models which store the tags - in the
+`Automatic Models`_ example ``Person`` is the tagged model). In most
+situations, all you need to do is add the tag field to the model and Tagulous
+will do the rest.
+
+Because Tagulous's fields work by subclassing ``ForeignKey`` and
+``ManyToManyField``, there are some places in Django's models where you would
+expect to use tag strings but cannot - constructors and filtering, for example.
+Tagulous therefore provides base classes to add this functionality to Django's
+core.
+
+If ``TAGULOUS_ENHANCE_MODELS`` is ``True`` (which it is by default - see
+`Settings`_), these base classes will be applied automatically. Tagulous does
+this by listening for the ``class_prepared`` signal, sent when a model has been
+constructed; if it contains tag fields, Tagulous will add ``TaggedModel`` to
+the base classes of the model, and add ``TaggedManager`` to the managers' base
+classes - which in turn will add ``TaggedQuerySet`` to the querysets created by
+the managers. This will all happen seamlessly behind the scenes; the only thing
+you may notice is that the names of your manager and queryset classes now have
+the prefix ``CastTagged`` to indicate that they have been automatically cast to
+their equivalents for tagged models.
+
+However, if you want to avoid this automatic subclassing, you can set
+``TAGULOUS_ENHANCE_MODELS`` to ``False`` and manage this yourself:
+
+``tagulous.models.TaggedModel``
+    The subclass for tagged models. Changes the model constructor so that
+    TagField values can be passed as keywords.
+
+``tagulous.models.TaggedManager``
+    The subclass for managers of tagged models. Only exists to ensure querysets
+    are subclasses of ``tagulous.TaggedQuerySet``.
+    
+``tagulous.models.TaggedQuerySet``
+    The subclass for querysets on tagged models. Changes filter and exclude to
+    work with string values, and create and get_or_create to work with string
+    values and ``TagField``s.
+
+These classes each have a class method ``cast_class`` which can change existing
+classes so that they become ``CastTagged`` subclasses of themselves; for
+example::
+
+    class MyModel(tagulous.TaggedModel):
+        name = models.CharField(max_length=255)
+        tags = tagulous.models.TagField()
+        objects = tagulous.models.TaggedManager.cast_class(MyModelManager)
+        other_manager = MyOtherManager
+    tagulous.models.TaggedManager.cast_class(MyModel.other_manager)
+
+This can be useful when working with other third-party libraries which insist
+on you doing things a certain way.
+
+
 Database Migrations
 -------------------
 
 Tagulous supports South and Django 1.7 migrations.
+
+
