@@ -155,9 +155,9 @@ Filter the ``autocomplete_tags`` queryset after the form initialises::
         class Meta:
             model = Pet
 
-Then always call PetForm with the user as the first argument, for example::
+Then always call ``PetForm`` with the user as the first argument, for example::
 
-    def add_pet(self, request):
+    def add_pet(request):
         form = PetForm(request.user)
         # ...
 
@@ -165,8 +165,8 @@ For more details, see `Filtering tags by related model fields`_ and
 `Filtering autocomplete tags`_.
 
 
-Using an autocomplete view
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Filtering an autocomplete view
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Add a wrapper to filter the queryset before calling the normal ``autocomplete``
 view::

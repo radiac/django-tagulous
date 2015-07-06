@@ -141,6 +141,18 @@ Note: model and form fields settings are managed by the `TagOptions`_ class.
     
     Default: ``True``
 
+``TAGULOUS_WEIGHT_MIN``
+    The default minimum value for the `weight <_queryset_weight>`_ queryset
+    method.
+    
+    Default: ``1``
+
+``TAGULOUS_WEIGHT_MAX``
+    The default maximum value for the `weight <_queryset_weight>`_ queryset
+    method.
+    
+    Default: ``6``
+
 
 Management Commands
 -------------------

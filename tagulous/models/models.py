@@ -10,6 +10,7 @@ except ImportError:
     from django.template.defaultfilters import slugify
 
 import tagulous
+from tagulous import settings
 from tagulous import utils
 
 
@@ -22,11 +23,35 @@ class TagModelQuerySet(models.query.QuerySet):
         """
         Reduce the queryset to match the specified filter, but also include
         any initial tags left in the queryset.
+        
+        An example of usage would be where tags are only visible to the user
+        who added them, but you also want them to see the initial default tags.
         """
         return super(TagModelQuerySet, self).filter(
             models.Q(*args, **kwargs) |
             models.Q(name__in=self.model.tag_options.initial)
         )
+    
+    def weight(self, min=settings.WEIGHT_MIN, max=settings.WEIGHT_MAX):
+        """
+        Add a ``weight`` integer field to objects, weighting the ``count``
+        between ``min`` and ``max``.
+        
+        Suitable for use with a tag cloud
+        """
+        # Ignoring PEP 8 intentionally regarding conflict of min/max keywords -
+        # concerns are outweighed by clarity of function argument names.
+        return self.extra(select={
+            'weight': (
+                '((count*%(upper)d)/'
+                '(SELECT MAX(count) FROM %(table)s)'
+                ')+%(lower)d'
+            ) % {
+                'upper': max-min,
+                'lower': min,
+                'table': self.model._meta.db_table,
+            }
+        })
 
 
 class TagModelManager(models.Manager):
@@ -36,6 +61,9 @@ class TagModelManager(models.Manager):
     
     def filter_or_initial(self, *args, **kwargs):
         return self.get_queryset().filter_or_initial(*args, **kwargs)
+    
+    def weight(self, *args, **kwargs):
+        return self.get_queryset().weight(*args, **kwargs)
 
 
 ###############################################################################

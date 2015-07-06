@@ -6,10 +6,10 @@ Django Tagulous Changes and Roadmap
 Changelog
 =========
 
-1.0.0       2015-??
-            Feature:    Public release
+0.8.0       2015-
+            Feature:    Tag cloud support
 
-0.7.0       2015-
+0.7.0       2015-07-01
             Feature:    Added tree support
 
 0.6.0       2015-05-11
@@ -20,7 +20,7 @@ Known issues
 ============
 
 Since       Fix due     Details
-1.0.0       -           Enhanced queryset doesn't add tag string support to
+0.6.0       -           Enhanced queryset doesn't add tag string support to
                         ``.update`` or ``.bulk_create``
 
 
@@ -29,5 +29,3 @@ Roadmap
 
 Target
 0.8.0       Complete tests for 100% coverage, including Django 1.7 and 1.8
-            Tag cloud template tag
-

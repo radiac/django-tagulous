@@ -412,6 +412,14 @@ Its standard manager and queryset also supports the following:
     Calls the normal ``filter(...)`` method, but then adds on any initial tags
     which may be missing.
 
+.. _queryset_weight:
+``weight(min=1, max=6)``
+    Annotates a ``weight`` field to the tags. This is a weighted count between
+    the specified ``min`` and ``max``, which default to ``TAGULOUS_WEIGHT_MIN``
+    and ``TAGULOUS_WEIGHT_MAX`` (see `Settings`_).
+    
+    This can be used to generate tag clouds, amongst other things.
+
 
 Custom Tag Models
 -----------------

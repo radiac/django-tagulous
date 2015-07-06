@@ -40,6 +40,14 @@ ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
 
 
 #
+# Tag weighting defaults, for tag model queryset .weight() method
+#
+
+WEIGHT_MIN = getattr(settings, 'TAGULOUS_WEIGHT_MIN', 1)
+WEIGHT_MAX = getattr(settings, 'TAGULOUS_WEIGHT_MAX', 6)
+
+
+#
 # Feature flags
 #
 
