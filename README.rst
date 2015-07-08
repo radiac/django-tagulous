@@ -11,10 +11,9 @@ Features
 ========
 
 * Easy to install - simple requirements, just drops into your site
-* Autocomplete support out of the box - uses Select2, also supports chosen,
-  selectize and jQuery UI
-* Ability to have tag sets local to a field, or shared between them
+* Autocomplete support built in - uses Select2, easy to customise
 * Multiple independent tag fields on a single model
+* Ability to share tags between tag fields
 * Support for trees of nested tags for categorisation
 * All the other features you'd expect a tagging library to have
 
