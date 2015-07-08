@@ -16,37 +16,79 @@ from tagulous import settings
 from tagulous import utils
 
 
-def split_kwargs(model, kwargs):
+def split_kwargs(model, kwargs, lookups=False, with_fields=False):
     """
     Split kwargs into fields which are safe to pass to create, and
     m2m tag fields, creating SingleTagFields as required.
+    
+    If lookups is True, TagFields with tagulous-specific lookups will also be
+    matched, and the returned tag_fields will be a dict of tuples in the
+    format::
+    
+        (field, val, lookup)
+    
+    Only tagulous-specific lookup at the moment is __exact
     
     Returns a tuple of safe_fields, singletag_fields, tag_fields
     """
     safe_fields = {}
     singletag_fields = {}
     tag_fields = {}
+    field_lookup = {}
     for field_name, val in kwargs.items():
+        # Check for lookup
+        if lookups and '__' in field_name:
+            orig_field_name = field_name
+            field_name, lookup = field_name.split('__', 1)
+        
+            # Only one known lookup
+            if lookup == 'exact':
+                try:
+                    field = model._meta.get_field(field_name)
+                except models.fields.FieldDoesNotExist:
+                    # Unknown - pass it on untouched
+                    pass
+                else:
+                    if isinstance(field, TagField):
+                        # Store for later
+                        tag_fields[field_name] = (val, lookup)
+                        field_lookup[field_name] = field
+                        continue
+            
+            # Irrelevant lookup - no need to take special actions
+            safe_fields[orig_field_name] = val
+            continue
+        
+        # No lookup            
         # Try to look up the field
         try:
             field = model._meta.get_field(field_name)
         except models.fields.FieldDoesNotExist:
-            # Assume it's something clever for get_or_create.
+            # Assume it's something clever and pass it through untouched
             # If it's invalid, an error will be raised later anyway
             safe_fields[field_name] = val
+            
+            # Next field
             continue
-        
+            
+        field_lookup[field_name] = field
         # Take special measures depending on field type
         if isinstance(field, SingleTagField):
             singletag_fields[field_name] = val
             
         elif isinstance(field, TagField):
             # Store for later
-            tag_fields[field_name] = val
-        
+            if lookups:
+                tag_fields[field_name] = (val, None)
+            else:
+                tag_fields[field_name] = val
+                
         else:
             safe_fields[field_name] = val
     
+    if with_fields:
+        return safe_fields, singletag_fields, tag_fields, field_lookup
+        
     return safe_fields, singletag_fields, tag_fields
 
 
@@ -60,13 +102,23 @@ class TaggedQuerySet(models.query.QuerySet):
     A QuerySet with support for Tagulous tag fields
     """
     def _filter_or_exclude(self, negate, *args, **kwargs):
-        safe_fields, singletag_fields, tag_fields = split_kwargs(self.model, kwargs)
+        """
+        Custom lookups for tag fields
+        """
+        # TODO: When minimum supported Django 1.7+, this can be replaced with
+        # custom lookups, which would work much better anyway.
+        safe_fields, singletag_fields, tag_fields, field_lookup = split_kwargs(
+            self.model, kwargs, lookups=True, with_fields=True
+        )
         
         # Look up string values for SingleTagFields by name
         for field_name, val in singletag_fields.items():
+            query_field_name = field_name
             if isinstance(val, basestring):
-                field_name += '__name'
-            safe_fields[field_name] = val
+                query_field_name += '__name'
+                if not field_lookup[field_name].tag_options.case_sensitive:
+                    query_field_name += '__iexact'
+            safe_fields[query_field_name] = val
         
         # Query as normal
         qs = super(TaggedQuerySet, self)._filter_or_exclude(
@@ -74,25 +126,50 @@ class TaggedQuerySet(models.query.QuerySet):
         )
         
         # Look up TagFields by string name
+        #
+        # Each of these comparisons will be done with a subquery; for
+        # A filter can chain, ie .filter(tags__name=..).filter(tags__name=..),
+        # but exclude won't work that way; has to be done with a subquery
         for field_name, val in tag_fields.items():
+            val, lookup = val
+            
             # Parse the tag string
             tags = utils.parse_tags(val)
             
-            # Filter this queryset to include (or exclude) any items with a
-            # tag count that matches the number of specified tags
-            qs = qs.annotate(
-                count=models.Count(field_name)
-            )._filter_or_exclude(
-                negate, count=len(tags)
-            )
+            # Prep the subquery
+            subqs = qs
+            if negate:
+                subqs = self.__class__(model=self.model, using=self._db)
             
-            # Now AND Q objects of the tags to filter/exclude any items which
-            # are tagged with all of these tags
+            # To get an exact match, filter this queryset to only include
+            # items with a tag count that matches the number of specified tags
+            if lookup == 'exact':
+                count_name = '_tagulous_count_%s' % field_name
+                subqs = subqs.annotate(
+                    **{count_name: models.Count(field_name)}
+                ).filter(**{count_name: len(tags)})
+            
+            # Prep the field name
+            query_field_name = field_name + '__name'
+            if not field_lookup[field_name].tag_options.case_sensitive:
+                query_field_name += '__iexact'
+            
+            # Now chain the filters for each tag
+            #
+            # Have to do it this way to create new inner joins for each tag;
+            # ANDing Q objects will do it all on a single inner join, which
+            # will match nothing
             for tag in tags:
-                qs = qs._filter_or_exclude(
-                    negate, **{field_name + '__name': tag}
-                )
-        
+                subqs = subqs.filter(**{query_field_name: tag})
+            
+            # Fold subquery back into main query
+            if negate:
+                # Exclude on matched ID
+                qs = qs.exclude(pk__in=subqs.values('pk'))
+            else:
+                # A filter op can just replace the main query
+                qs = subqs
+            
         return qs
     
     def create(self, **kwargs):

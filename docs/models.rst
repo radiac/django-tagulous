@@ -517,11 +517,31 @@ and ``exclude``::
 (This requires the setting ``TAGULOUS_ENHANCE_MODELS`` to be ``True``, or for
 you to use the subclasses detailed in `Working with tagged models`_.)
 
-Note that when referring to a ``TagField`` in this way, the filter will expect
-an exact match - eg that it has all tags specified, but only those specified.
-If you want to do partial matches, use standard many to many queries, eg::
+When querying a tag field, case sensitivity will default to whatever the tag
+field option was, ie if the ``title`` tag field above was defined with
+``case_sensitive=False``, ``.filter(title='Mr')`` will match ``Mr``, ``mr``
+etc.
 
-    qs = MyModel.objects.get(tags__name__in=['red', 'blue', 'green'])
+Note that when querying a ``TagField`` in this way, the returned queryset will
+include (or exclude) any object which contains all the specified tags - but it
+may also have other tags. To only return objects which have the specified tags
+and no others, use the ``__exact`` field lookup suffix::
+
+    # Find all MyModel objects which have the tag 'red':
+    qs = MyModel.objects.filter(tags='red')
+    # (will include those tagged 'red, blue' etc)
+    
+    # Find all MyModel objects which are only tagged 'red':
+    qs = MyModel.objects.filter(tags__exact='red')
+    # (will not include those tagged 'red, blue')
+    
+This currently does not work across database relations; you will need to use
+the ``name`` field on the tag model for those::
+    
+    # Find 
+    qs = MyRelatedModel.objects.filter(
+        foreign_model__tags__name__in=['red', 'blue', 'green'],
+    )
 
 
 Filtering tags by related model fields
