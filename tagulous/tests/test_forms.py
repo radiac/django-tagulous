@@ -2,11 +2,10 @@
 Tagulous test: Forms
 
 Modules tested:
-    tagulous.models.managers.BaseTagManager
     tagulous.models.managers.SingleTagManager
     tagulous.models.descriptors.BaseTagDescriptor
     tagulous.models.descriptors.SingleTagDescriptor
-    tagulous.models.fields.SingleTagField
+    tagulous.models.fields.BaseTagField
     tagulous.models.fields.SingleTagField
 """
 from tagulous.tests.lib import *

@@ -13,63 +13,10 @@ from tagulous.utils import parse_tags, render_tags
 
 
 ###############################################################################
-####### Base class for tag field managers
-###############################################################################
-
-class BaseTagManager(object):
-    """
-    Base class for SingleTagManager and TagRelatedManagerMixin
-    """
-    def __eq__(self, other):
-        """
-        Treat the other value as a string and compare to tags
-        """
-        other_str = u"%s" % other
-        
-        # Enforce case non-sensitivity or lowercase
-        lower = False
-        if self.tag_options.force_lowercase or not self.tag_options.case_sensitive:
-            lower = True
-            other_str = other_str.lower()
-        
-        # Parse other_str into list of tags
-        other_tags = parse_tags(other_str)
-        
-        # Get list of set tags
-        self_tags = self.get_tag_list()
-        
-        # Compare tag count
-        if len(other_tags) != len(self_tags):
-            return False
-        
-        # ++ Could optimise comparison for lots of tags by using an object
-        
-        # Compare tags
-        for tag in self_tags:
-            # If lowercase or not case sensitive, lower for comparison
-            if lower:
-                tag = tag.lower()
-            
-            # Check tag in other tags
-            if tag not in other_tags:
-                return False
-        
-        # Same number of tags, and all self tags present in other tags
-        # It's a match
-        return True
-        
-    def __ne__(self, other):
-        """
-        Compare tags, using opposite of __eq__
-        """
-        return not self.__eq__(other)
-    
-
-###############################################################################
 ####### Manager for SingleTagField
 ###############################################################################
 
-class SingleTagManager(BaseTagManager):
+class SingleTagManager(object):
     """
     Manage single tags
     
@@ -124,24 +71,6 @@ class SingleTagManager(BaseTagManager):
         Set the actual value of the instance for the FK descriptor
         """
         return self.descriptor.descriptor.__set__(self.instance, value)
-        
-    def get_tag_string(self):
-        """
-        Get the tag edit string for this instance as a string
-        """
-        if not self.instance:
-            raise AttributeError("Function get_tag_string is only accessible via an instance")
-        
-        return render_tags( self.get() )
-    
-    def get_tag_list(self):
-        """
-        Get the tag names for this instance as a list of tag names
-        """
-        if not self.instance:
-            raise AttributeError("Function get_tag_list is only accessible via an instance")
-        
-        return [tag.name for tag in self.get() ]
         
     def get(self):
         """
@@ -300,6 +229,50 @@ class BaseTagRelatedManager(object):
     def __len__(self):
         return len(self.tags)
 
+    def __eq__(self, other):
+        """
+        Treat the other value as a string and compare to tags
+        """
+        other_str = u"%s" % other
+        
+        # Enforce case non-sensitivity or lowercase
+        lower = False
+        if self.tag_options.force_lowercase or not self.tag_options.case_sensitive:
+            lower = True
+            other_str = other_str.lower()
+        
+        # Parse other_str into list of tags
+        other_tags = parse_tags(other_str)
+        
+        # Get list of set tags
+        self_tags = self.get_tag_list()
+        
+        # Compare tag count
+        if len(other_tags) != len(self_tags):
+            return False
+        
+        # ++ Could optimise comparison for lots of tags by using an object
+        
+        # Compare tags
+        for tag in self_tags:
+            # If lowercase or not case sensitive, lower for comparison
+            if lower:
+                tag = tag.lower()
+            
+            # Check tag in other tags
+            if tag not in other_tags:
+                return False
+        
+        # Same number of tags, and all self tags present in other tags
+        # It's a match
+        return True
+        
+    def __ne__(self, other):
+        """
+        Compare tags, using opposite of __eq__
+        """
+        return not self.__eq__(other)
+    
     def load_from_tagmanager(self, manager):
         """
         Copy status and cache from the specified manager
@@ -450,7 +423,7 @@ class FakeTagRelatedManager(BaseTagRelatedManager):
         raise ValueError(self._needs_db % self.instance)
 
 
-class TagRelatedManagerMixin(BaseTagManager, BaseTagRelatedManager):
+class TagRelatedManagerMixin(BaseTagRelatedManager):
     """
     Mixin for RelatedManager to add tag functions
     

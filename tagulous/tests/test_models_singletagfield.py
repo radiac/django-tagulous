@@ -2,7 +2,6 @@
 Tagulous test: Model SingleTagField
 
 Modules tested:
-    tagulous.models.managers.BaseTagManager
     tagulous.models.managers.SingleTagManager
     tagulous.models.descriptors.BaseTagDescriptor
     tagulous.models.descriptors.SingleTagDescriptor

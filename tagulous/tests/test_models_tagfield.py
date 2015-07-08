@@ -2,12 +2,11 @@
 Tagulous test: Model TagField
 
 Modules tested:
-    tagulous.models.managers.BaseTagManager
-    tagulous.models.managers.SingleTagManager
+    tagulous.models.managers.TagRelatedManager
     tagulous.models.descriptors.BaseTagDescriptor
-    tagulous.models.descriptors.SingleTagDescriptor
-    tagulous.models.fields.SingleTagField
-    tagulous.models.fields.SingleTagField
+    tagulous.models.descriptors.TagDescriptor
+    tagulous.models.fields.BaseTagField
+    tagulous.models.fields.TagField
 """
 from tagulous.tests.lib import *
 
