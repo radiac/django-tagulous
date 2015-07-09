@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tagulous test: Utils
 
@@ -6,6 +7,10 @@ Modules tested:
 """
 from tagulous.tests.lib import *
 
+
+###############################################################################
+####### Tag name parse and render
+###############################################################################
 
 class TagNameUtilsTest(TestCase):
     """
@@ -196,6 +201,10 @@ class TagNameUtilsTest(TestCase):
         self.assertEqual(tagstr, tagstr2)
 
 
+###############################################################################
+####### Tree name split and join
+###############################################################################
+
 class TagTreeSplitUtilTest(TestCase):
     """
     Test split_tree_name
@@ -338,3 +347,139 @@ class TagTreeCleanUtilTest(TestCase):
     def test_clean_tree_complex(self):
         name = tag_utils.clean_tree_name("/// one / two/ three /")
         self.assertEqual(name, "//// one/two/three //")
+
+
+###############################################################################
+####### Other string operators
+###############################################################################
+
+class UnicodeTestCase(TestCase):
+    def assertUnicodeAscii(self, raw):
+        "Assert that the string is unicode, but only contains ASCII characters"
+        self.assertIsInstance(raw, unicode)
+        for c in raw:
+            self.assertTrue(ord(c) < 128)
+
+
+class TagTreeFallbackUnicodeToAsciiTest(UnicodeTestCase):
+    """
+    Test unicode_to_ascii - forced to not use unidecode, even if available
+    """
+    def setUp(self):
+        # Disable unidecode support
+        self.unidecode_status = tag_utils.unidecode
+        tag_utils.unidecode = None
+        
+    def tearDown(self):
+        tag_utils.unidecode = self.unidecode_status
+        
+    def test_str_ascii(self):
+        "String with ASCII characters"
+        raw = 'cake'
+        self.assertIsInstance(raw, str)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, raw)
+    
+    def test_unicode_ascii(self):
+        "Unicode with ASCII characters"
+        raw = u'cake'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, raw)
+    
+    def test_unicode_extended_ascii(self):
+        "Unicode with extended ascii characters"
+        raw = u'niño, garçon'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, 'nino, garcon')
+    
+    def test_unicode_japanese(self):
+        "Unicode with Japanese characters above extended ascii"
+        raw = u'男の子'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        # Discrepancy in length of thai string is because there were Mn chars
+        self.assertEqual(safe, u'___')
+
+    def test_unicode_thai(self):
+        "Unicode with Thai characters above extended ascii"
+        raw = u'เด็กผู้ชาย'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        # Discrepancy in length of string because some chars were Mn category
+        self.assertEqual(safe, u'_______')
+
+    def test_unicode_mix(self):
+        "Unicode string with mix of characters"
+        raw = u'niño, 男の子, เด็กผู้ชาย, garçon'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, u'nino, ___, _______, garcon')
+
+
+try:
+    from unidecode import unidecode
+except ImportError:
+    unidecode = None
+
+@unittest.skipIf(unidecode is None, 'optional unidecode not installed')
+class TagTreeUnicodeToAsciiTest(UnicodeTestCase):
+    """
+    Test the unidecode part of unicode_to_ascii
+    """
+    def test_str_ascii(self):
+        "String with ASCII characters"
+        raw = 'cake'
+        self.assertIsInstance(raw, str)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, raw)
+    
+    def test_unicode_ascii(self):
+        "Unicode with ASCII characters"
+        raw = u'cake'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, raw)
+    
+    def test_unicode_extended_ascii(self):
+        "Unicode with extended ascii characters"
+        raw = u'niño, garçon'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, 'nino, garcon')
+    
+    def test_unicode_japanese(self):
+        "Unicode with Japanese characters above extended ascii"
+        raw = u'男の子'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, u'Nan noZi ')
+
+    def test_unicode_thai(self):
+        "Unicode with Thai characters above extended ascii"
+        raw = u'เด็กผู้ชาย'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        self.assertEqual(safe, u'edkphuuchaay')
+
+    def test_unicode_mix(self):
+        "Unicode string with mix of characters"
+        raw = u'niño, 男の子, เด็กผู้ชาย, garçon'
+        self.assertIsInstance(raw, unicode)
+        safe = tag_utils.unicode_to_ascii(raw)
+        self.assertUnicodeAscii(safe)
+        # Note trailing space after Japanese because unidecode can sometimes
+        # return trailing spaces. This is fine, will be handled by slugify.
+        self.assertEqual(safe, u'nino, Nan noZi , edkphuuchaay, garcon')

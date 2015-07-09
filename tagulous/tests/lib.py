@@ -32,6 +32,14 @@ class TagTestManager(object):
         
         if hasattr(self, 'setUpExtra'):
             self.setUpExtra()
+    
+    def tearDown(self):
+        """
+        Common tear down operations
+        """
+        # Only here for consistency
+        if hasattr(self, 'tearDownExtra'):
+            self.tearDownExtra()
         
     def create(self, model, **kwargs):
         ##30# ++ This can be replaced when we've got create() working properly

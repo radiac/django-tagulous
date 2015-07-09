@@ -25,6 +25,7 @@ setup(
     ],
     extras_require = {
         'dev':  ['jasmine'],
+        'i18n': ['unidecode'],
     },
     zip_safe=True,
     packages=find_packages()

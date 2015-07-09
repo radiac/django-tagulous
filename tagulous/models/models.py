@@ -322,9 +322,10 @@ class BaseTagModel(models.Model):
             return super(BaseTagModel, self).save(*args, **kwargs)
         
         # Set the slug using the label if possible (for TagTreeModel), else
-        # the tag name
+        # the tag name. Run it through unicode_to_ascii because slugify will
+        # cry if the label contains unicode characters
         label = getattr(self, 'label', self.name)
-        self.slug = slugify(unicode(label))
+        self.slug = slugify(unicode(utils.unicode_to_ascii(label)))
         self._update_extra()
         
         # Make sure we're using the same db at all times

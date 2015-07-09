@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tagulous test: Tag models
 
@@ -393,6 +394,157 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t3b.slug, 'one-and-two_2')
         self.assertEqual(t4b.slug, 'one-and-two_3')
 
+
+###############################################################################
+####### Test unicode in tag model
+###############################################################################
+
+class TagModelUnicodeTest(TagTestManager, TestCase):
+    """
+    Test unicode tags - forced to not use unidecode, even if available
+    """
+    manage_models = [
+        test_models.MixedTest,
+    ]
+    
+    def setUpExtra(self):
+        # Disable unidecode support
+        self.unidecode_status = tag_utils.unidecode
+        tag_utils.unidecode = None
+        
+        self.model = test_models.MixedTest
+        self.tag_model = test_models.MixedTestTagModel
+        self.o1 = self.create(
+            self.model, name="Test",
+            singletag=u'男の子',
+            tags=u'boy, niño, 男の子',
+        )
+    
+    def tearDownExtra(self):
+        tag_utils.unidecode = self.unidecode_status
+        
+    def test_setup(self):
+        "Check setup created tags as expected"
+        self.assertTagModel(self.tag_model, {
+            u'boy':     1,
+            u'niño':    1,
+            u'男の子':   2,
+        })
+    
+    
+    # Check lookup
+    
+    def test_get_singletag_get(self):
+        "Check unicode singletag name matches"
+        t1 = self.model.objects.get(singletag=u'男の子')
+        self.assertEqual(t1.pk, self.o1.pk)
+        
+    def test_get_tag_ascii(self):
+        "Check unicode tag name matches when ascii"
+        t1 = self.model.objects.get(tags=u'boy')
+        self.assertEqual(t1.pk, self.o1.pk)
+        
+    def test_get_tag_extended_ascii(self):
+        "Check unicode tag name matches when extended ascii"
+        t1 = self.model.objects.get(tags=u'niño')
+        self.assertEqual(t1.pk, self.o1.pk)
+        
+    def test_get_tag_japanese(self):
+        "Check unicode tag name matches when above extended ascii"
+        t1 = self.model.objects.get(tags=u'男の子')
+        self.assertEqual(t1.pk, self.o1.pk)
+    
+    
+    # Check render
+    
+    def test_singletag_render(self):
+        "Check unicode singletag name renders"
+        t1 = self.model.objects.get(name="Test")
+        self.assertEqual(unicode(t1.singletag), u'男の子')
+        
+    def test_tag_render(self):
+        "Check unicode tag name renders"
+        t1 = self.model.objects.get(name="Test")
+        tags = list(t1.tags.all())
+        self.assertEqual(unicode(tags[0]), u'boy')
+        self.assertEqual(unicode(tags[1]), u'niño')
+        self.assertEqual(unicode(tags[2]), u'男の子')
+        
+    def test_tag_string_render(self):
+        "Check unicode tags string renders"
+        t1 = self.model.objects.get(name="Test")
+        self.assertEqual(unicode(t1.tags), u'boy, niño, 男の子')
+
+
+    # Check slugs
+    
+    def test_slug_ascii(self):
+        "Check unicode tag name slugified when ascii"
+        t1 = self.tag_model.objects.get(name="boy")
+        self.assertEqual(t1.slug, 'boy')
+    
+    def test_slug_extended_ascii(self):
+        "Check unicode tag name slugified when ascii"
+        t1 = self.tag_model.objects.get(name="niño")
+        self.assertEqual(t1.slug, 'nino')
+        
+    def test_slug_japanese(self):
+        "Check unicode tag name slugified when ascii"
+        t1 = self.tag_model.objects.get(name="男の子")
+        self.assertEqual(t1.slug, '___')
+
+
+try:
+    from unidecode import unidecode
+except ImportError:
+    unidecode = None
+    
+@unittest.skipIf(unidecode is None, 'optional unidecode not installed')
+class TagModelUnicodeUnidecodeTest(TagTestManager, TestCase):
+    """
+    Test unicode tags, without using unidecode
+    
+    This only affects slugs 
+    """
+    manage_models = [
+        test_models.MixedTest,
+    ]
+    
+    def setUpExtra(self):
+        self.model = test_models.MixedTest
+        self.tag_model = test_models.MixedTestTagModel
+        self.o1 = self.create(
+            self.model, name="Test",
+            singletag=u'男の子',
+            tags=u'boy, niño, 男の子',
+        )
+    
+    def test_setup(self):
+        "Check setup created tags as expected"
+        self.assertTagModel(self.tag_model, {
+            u'boy':     1,
+            u'niño':    1,
+            u'男の子':   2,
+        })
+    
+    
+    # unidecode only affects slugs
+    
+    def test_slug_ascii(self):
+        "Check unicode tag name slugified when ascii"
+        t1 = self.tag_model.objects.get(name="boy")
+        self.assertEqual(t1.slug, 'boy')
+    
+    def test_slug_extended_ascii(self):
+        "Check unicode tag name slugified when ascii"
+        t1 = self.tag_model.objects.get(name="niño")
+        self.assertEqual(t1.slug, 'nino')
+        
+    def test_slug_japanese(self):
+        "Check unicode tag name slugified when ascii"
+        t1 = self.tag_model.objects.get(name="男の子")
+        self.assertEqual(t1.slug, 'nan-nozi')
+    
 
 ###############################################################################
 ####### Test tag merging

@@ -5,6 +5,12 @@ Loosely based on django-taggit and django-tagging
 """
 from django.utils.encoding import force_unicode
 
+import unicodedata
+try:
+    from unidecode import unidecode
+except ImportError:
+    unidecode = None
+
 # Constants to improve legibility
 COMMA = u','
 SPACE = u' '
@@ -296,3 +302,26 @@ def clean_tree_name(name):
     # Split and join to strip whitespace
     return join_tree_name(split_tree_name(name))
 
+
+###############################################################################
+####### Other string operators
+###############################################################################
+
+def unicode_to_ascii(raw):
+    """
+    Given a string which may be unicode, return something latin-1
+    
+    Tries to use optional dependency ``unidecode`` to transliterate something
+    reasonable, otherwise strips diacritics and converts other unicode
+    characters to underscore
+    
+    Returns unicode string which only contains ascii characters
+    """
+    if unidecode is not None:
+        return unicode(unidecode(unicode(raw)))
+        
+    return u''.join(
+        c if ord(c)<128 else '_'
+        for c in unicodedata.normalize('NFD', unicode(raw))
+        if unicodedata.category(c) != 'Mn'
+    )
