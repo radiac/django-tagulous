@@ -22,6 +22,17 @@ Installation
 
     pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous
 
+   There are also optional extras - sets of dependencies which you can ask pip
+   to install by adding them to the end of the package name:
+   
+   * ``i18n``, for improved unicode support (``unidecode``)::
+   
+    pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous[i18n]
+
+   * ``dev``, for testing (``jasmine``; also install extra ``[i18n]``)::
+   
+    pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous[dev][i18n]
+   
    Note: The master branch may sometimes contain minor changes made since the
    version was incremented. These changes will be listed in
    `CHANGES <../CHANGES>`_. It will always be safe to use, but versions will be

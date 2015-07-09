@@ -82,10 +82,6 @@ Unlike django-tagging-ng and django-taggit, Tagulous also has built-in support
 for autocomplete in public and admin sites, by default using Select2 (although
 this can be easily customised using `autocomplete adaptors`_).
 
-Unlike django-tagging, Tagulous also comes with autocomplete for public and
-admin sites, and has template tags without needing a third-party plugin like
-django-taggit.
-
 Tagulous also has a more robust tag string parser with better support for
 quoted tags, which is also implemented in javascript for full compatibility
 with client-side autocompletion.

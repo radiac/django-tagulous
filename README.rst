@@ -7,6 +7,7 @@ you all their normal power with a sprinkling of tagging syntactic sugar.
 
 http://radiac.net/projects/django-tagulous/
 
+
 Features
 ========
 
@@ -17,14 +18,44 @@ Features
 * Support for trees of nested tags for categorisation
 * All the other features you'd expect a tagging library to have
 
-**Please note**: this is an alpha version. That means that although it has been
-used internally and tested extensively with Django 1.4 to 1.6 over several
-years, and there are no known bugs for those version, the test suite does not
-yet have 100% coverage, and official support for Django 1.7+ is still pending.
+Version 0.7.0, requires Django 1.4 or later.
 
-
-Version 0.7.0
-
-* See `Documentation <docs/index.rst>`_ for more details
-* See `Example Usage <docs/usage.rst>`_ to see how it works in practice
+* See `Documentation <docs/index.rst>`_ for details of how it all works
+* See `Example Usage <docs/usage.rst>`_ to see examples of it in use
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
+
+
+Quickstart
+==========
+
+Install ``django-tagulous``, add ``tagulous`` to ``INSTALLED_APPS``, then start
+adding tag fields to your model:
+
+    from django.db import models
+    import tagulous
+    
+    class Person(models.Model):
+        name = models.CharField(max_length=255)
+        title = tagulous.models.SingleTagField(initial="Mr, Mrs, Miss, Ms")
+        skills = tagulous.models.TagField()
+
+You can now set and get them using strings, lists or querysets:
+    
+    myperson = Person.objects.create(name='Bob', title='Mr', skills='run, hop')
+    # myperson.skills == 'run, hop'
+    myperson.skills = ['jump', 'kung fu']
+    myperson.save()
+    # myperson.skills == 'jump, "kung fu"'
+    runners = Person.objects.filter(skills='run')
+
+Behind the scenes your tags are stored in separate models (by default), so
+because the fields are based on ``ForeignKey`` and ``ManyToManyField`` more
+complex queries are simple:
+
+    qs = MyRelatedModel.objects.filter(
+        person__skills__name__in=['run', 'jump'],
+    )
+
+As well as this you also get autocompletion in public and admin forms,
+automatic slug generation, unicode support, you can build tag clouds easily,
+and can nest tag for more complex categorisation.

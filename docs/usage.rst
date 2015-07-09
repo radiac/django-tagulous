@@ -34,7 +34,7 @@ Initial tags need to be loaded into the database with the
     instance = Person()
     instance.skills.set_tags('run, "kung fu", jump')
     
-    # Save the changes to the database
+    # They're not committed to the database until you save
     instance.save()
 
     # Get a list of all tags
