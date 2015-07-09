@@ -29,7 +29,7 @@ Quickstart
 ==========
 
 Install ``django-tagulous``, add ``tagulous`` to ``INSTALLED_APPS``, then start
-adding tag fields to your model:
+adding tag fields to your model::
 
     from django.db import models
     import tagulous
@@ -39,7 +39,7 @@ adding tag fields to your model:
         title = tagulous.models.SingleTagField(initial="Mr, Mrs, Miss, Ms")
         skills = tagulous.models.TagField()
 
-You can now set and get them using strings, lists or querysets:
+You can now set and get them using strings, lists or querysets::
     
     myperson = Person.objects.create(name='Bob', title='Mr', skills='run, hop')
     # myperson.skills == 'run, hop'
@@ -50,7 +50,7 @@ You can now set and get them using strings, lists or querysets:
 
 Behind the scenes your tags are stored in separate models (by default), so
 because the fields are based on ``ForeignKey`` and ``ManyToManyField`` more
-complex queries are simple:
+complex queries are simple::
 
     qs = MyRelatedModel.objects.filter(
         person__skills__name__in=['run', 'jump'],
