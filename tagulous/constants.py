@@ -14,6 +14,7 @@ OPTION_DEFAULTS = {
     'force_lowercase':  False,
     'max_count':        0,
     'tree':             False,
+    'autocomplete_initial': False,
     'autocomplete_view':    '',
     'autocomplete_limit':   100,
     'autocomplete_settings':    None,

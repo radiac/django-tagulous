@@ -19,6 +19,12 @@ from tagulous import utils
 ###############################################################################
 
 class TagModelQuerySet(models.query.QuerySet):
+    def initial(self):
+        """
+        Reduce the queryset to only include initial tags left in the queryset
+        """
+        return self.filter(name__in=self.model.tag_options.initial)
+        
     def filter_or_initial(self, *args, **kwargs):
         """
         Reduce the queryset to match the specified filter, but also include
@@ -27,7 +33,7 @@ class TagModelQuerySet(models.query.QuerySet):
         An example of usage would be where tags are only visible to the user
         who added them, but you also want them to see the initial default tags.
         """
-        return super(TagModelQuerySet, self).filter(
+        return self.filter(
             models.Q(*args, **kwargs) |
             models.Q(name__in=self.model.tag_options.initial)
         )
@@ -58,6 +64,9 @@ class TagModelManager(models.Manager):
     def get_queryset(self):
         return TagModelQuerySet(self.model, using=self._db)
     get_query_set = get_queryset
+    
+    def initial(self):
+        return self.get_queryset().initial()
     
     def filter_or_initial(self, *args, **kwargs):
         return self.get_queryset().filter_or_initial(*args, **kwargs)

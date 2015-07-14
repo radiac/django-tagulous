@@ -185,8 +185,11 @@ class BaseTagField(object):
         # Add in list of tags for autocomplete, if appropriate
         if 'autocomplete_tags' in kwargs:
             options['autocomplete_tags'] = kwargs['autocomplete_tags']
-        elif 'autocomplete_view' not in kwargs:
-            options['autocomplete_tags'] = self.tag_model.objects.order_by('name')
+        elif not tag_options.autocomplete_view:
+            tags = self.tag_model.objects.all()
+            if tag_options.autocomplete_initial:
+                tags = tags.initial()
+            options['autocomplete_tags'] = tags
         
         # Create the field instance
         return form_class(**options)
