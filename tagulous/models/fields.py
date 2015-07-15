@@ -166,7 +166,10 @@ class BaseTagField(object):
         # Update tag options, if necessary
         tag_options = self.tag_options
         if 'tag_options' in kwargs:
-            tag_options += kwargs.pop('tag_options')
+            new_options = kwargs.pop('tag_options')
+            if not isinstance(new_options, TagOptions):
+                new_options = TagOptions(**new_options)
+            tag_options += new_options
         
         # Start off with defaults
         options = {

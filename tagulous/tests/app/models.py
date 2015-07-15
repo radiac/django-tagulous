@@ -84,7 +84,10 @@ class SingleTagFieldOptionsModel(models.Model):
         autocomplete_view='tagulous_tests_app-SingleTagFieldOptionsModel',
     )
     autocomplete_limit = tagulous.models.SingleTagField(
-        blank=True, null=True, autocomplete_limit=3
+        blank=True, null=True,
+        autocomplete_limit=3,
+        # Limit only takes effect when there's a view
+        autocomplete_view='tagulous_tests_app-SingleTagFieldOptionsModel',
     )
     autocomplete_settings = tagulous.models.SingleTagField(
         blank=True, null=True, autocomplete_settings={
@@ -107,6 +110,19 @@ class TagFieldModel(models.Model):
     name = models.CharField(blank=True, max_length=100)
     tags = tagulous.models.TagField()
 
+class TagFieldOptionalModel(models.Model):
+    """
+    Test optional tag fields
+    """
+    name = models.CharField(blank=True, max_length=100)
+    tag = tagulous.models.TagField(blank=True, null=True)
+    
+class TagFieldRequiredModel(models.Model):
+    """
+    Test required tag fields
+    """
+    name = models.CharField(blank=True, max_length=100)
+    tag = tagulous.models.TagField(blank=False, null=False)
 
 class TagFieldMultipleModel(models.Model):
     """
@@ -116,7 +132,6 @@ class TagFieldMultipleModel(models.Model):
     tags1 = tagulous.models.TagField(blank=False, null=False)
     tags2 = tagulous.models.TagField(blank=False, null=False)
     tags3 = tagulous.models.TagField(blank=False, null=False)
-
 
 class TagFieldOptionsModel(models.Model):
     """
@@ -164,7 +179,10 @@ class TagFieldOptionsModel(models.Model):
         autocomplete_view='tagulous_tests_app-TagFieldOptionsModel',
     )
     autocomplete_limit = tagulous.models.TagField(
-        blank=True, null=True, autocomplete_limit=3
+        blank=True, null=True,
+        autocomplete_limit=3,
+        # Limit only takes effect when there's a view
+        autocomplete_view='tagulous_tests_app-TagFieldOptionsModel',
     )
     autocomplete_settings = tagulous.models.TagField(
         blank=True, null=True, autocomplete_settings={

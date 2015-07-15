@@ -19,6 +19,13 @@ class TagTestManager(object):
     """
     Test mixin to help test tag models
     """
+    # Add test app urls
+    urls = 'tagulous.tests.app.urls'
+    
+    # We have some long string comparisons when checking form field renders
+    maxDiff = 1000
+    
+    # This class can manage models
     manage_models = None
     
     def setUp(self):

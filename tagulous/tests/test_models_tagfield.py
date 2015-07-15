@@ -25,9 +25,9 @@ class ModelTagFieldTest(TagTestManager, TestCase):
     
     def test_descriptor(self):
         "Check TagDescriptor is in place"
-        self.assertTrue(isinstance(
+        self.assertIsInstance(
             self.tag_field, tag_models.TagDescriptor
-        ))
+        )
     
     def test_tag_table(self):
         "Check the tag table exists"
@@ -649,6 +649,76 @@ class ModelTagFieldCountTest(TagTestManager, TestCase):
             'green':    0,
         })
         
+
+###############################################################################
+#######  Test model field blank=True
+###############################################################################
+
+class ModelTagFieldOptionalTest(TagTestManager, TestCase):
+    """
+    Test optional TagField
+    """
+    manage_models = [
+        test_models.TagFieldOptionalModel,
+    ]
+    def test_optional_save_missing(self):
+        "Check an optional TagField isn't required for save"
+        # If it fails, it will return an exception
+        t1 = test_models.TagFieldOptionalModel(name='Test 1')
+        t1.save()
+        self.assertNotEqual(t1.pk, None)
+    
+    def test_optional_create_missing(self):
+        "Check an optional TagField isn't required for object.create"
+        # If it fails, it will return an exception
+        t1 = test_models.TagFieldOptionalModel.objects.create(name='Test 1')
+        self.assertNotEqual(t1.pk, None)
+
+
+###############################################################################
+####### Test model field blank=False
+###############################################################################
+
+class ModelTagFieldRequiredTest(TagTestManager, TestCase):
+    """
+    Test required model TagField
+    """
+    manage_models = [
+        test_models.TagFieldRequiredModel,
+    ]
+    def test_required_save(self):
+        "Check a required TagField doesn't raise an exception when saved"
+        # This isn't exactly the desired action, but as it stands we can't
+        # enforce blank=False on a M2M tagfield without rewriting chunks of
+        # django's core modelform - it can't even be monkeypatched cleanly.
+        # 
+        # Future changes to django may make it possible; at that point we can
+        # switch this test to enforce blank=False:
+        '''
+        with self.assertRaises(exceptions.ValidationError) as cm:
+            t1 = test_models.TagFieldRequiredModel(name='Test')
+            t1.save()
+        self.assertEqual(cm.exception.messages[0], u'This field cannot be null.')
+        '''
+        # but until then:
+        t1 = test_models.TagFieldRequiredModel(name='Test')
+        t1.save()
+        self.assertInstanceEqual(t1, name='Test', tag='')
+        
+    def test_required_create_raises(self):
+        "Check a required TagField raises an exception in object.create"
+        # As test_required_save, this isn't desired behaviour, but until django
+        # changes, we can't use this test:
+        '''
+        with self.assertRaises(exceptions.ValidationError) as cm:
+            t1 = test_models.TagFieldRequiredModel.objects.create(name='Test')
+            t1.full_clean()
+        self.assertEqual(cm.exception.messages[0], u'This field cannot be null.')
+        '''
+        # instead:
+        t1 = test_models.TagFieldRequiredModel.objects.create(name='Test')
+        self.assertInstanceEqual(t1, name='Test', tag='')
+    
     
 ###############################################################################
 ####### Test multiple TagFields on a model

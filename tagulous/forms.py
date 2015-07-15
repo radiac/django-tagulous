@@ -16,7 +16,7 @@ except ImportError:
 
 from tagulous import settings
 from tagulous.models import options
-from tagulous.models.models import BaseTagModel
+from tagulous.models.models import BaseTagModel, TagModelQuerySet
 from tagulous.utils import parse_tags, render_tags
 
 
@@ -41,7 +41,7 @@ class TagWidgetBase(forms.TextInput):
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:
             try:
-                attrs['data-tag-url'] = reverse(self.autocomplete_view)
+                attrs['data-tag-url'] = reverse(autocomplete_view)
             except Exception, e:
                 raise ValueError('Invalid autocomplete view: %s' % e)
         
@@ -55,7 +55,9 @@ class TagWidgetBase(forms.TextInput):
             
             attrs['data-tag-list'] = escape(force_unicode(
                 json.dumps(
-                    [tag.name for tag in autocomplete_tags],
+                    # Call __unicode__ rather than tag.name directly, in case
+                    # we've been given a list of tag strings
+                    [unicode(tag) for tag in autocomplete_tags],
                     cls=DjangoJSONEncoder,
                 ),
             ))
@@ -112,7 +114,11 @@ class AdminTagWidget(TagWidgetBase):
     choices = None
 
 
-class TagField(forms.CharField):
+class BaseTagField(forms.CharField):
+    """
+    Base class for form tag fields
+    """
+    # Use the tag widget
     widget = TagWidget
     
     def __init__(self, tag_options=None, autocomplete_tags=None, **kwargs):
@@ -126,7 +132,7 @@ class TagField(forms.CharField):
                                 contains autocomplete_view
         """
         # Initialise as normal
-        super(TagField, self).__init__(**kwargs)
+        super(BaseTagField, self).__init__(**kwargs)
         
         # Add tag options and autocomplete tags
         # Will use getters and setters to mirror onto widget
@@ -151,16 +157,19 @@ class TagField(forms.CharField):
         else:
             # Catch changes in model_to_dict which broke the trick
             if len(value) != 1:
-                raise ValueError(_("TagField could not prepare unexpected value"))
+                raise ValueError(_("Tag field could not prepare unexpected value"))
             tag_string = value[0]
             
-        return super(TagField, self).prepare_value(tag_string)
+        return super(BaseTagField, self).prepare_value(tag_string)
     
     # Use setters and getters to ensure any changes to the field are mirrored
     # in the widget, in the same way ModelChoiceField mirrors its queryset
     def _get_tag_options(self):
         return self._tag_options
+    def _prepare_tag_options(self, tag_options):
+        return tag_options
     def _set_tag_options(self, tag_options):
+        tag_options = self._prepare_tag_options(tag_options)
         self._tag_options = tag_options
         self.widget.tag_options = tag_options
     tag_options = property(_get_tag_options, _set_tag_options)
@@ -181,7 +190,7 @@ class TagField(forms.CharField):
         return {}
         
     def clean(self, value):
-        value = super(TagField, self).clean(value)
+        value = super(BaseTagField, self).clean(value)
         
         if self.tag_options.force_lowercase:
             value = value.lower()
@@ -192,9 +201,11 @@ class TagField(forms.CharField):
             raise forms.ValidationError(_('%s' % e))
         
 
-class SingleTagField(TagField):
+class SingleTagField(BaseTagField):
     """
-    A single tag field assumes the contents is in " quotes
+    Single tag field
+    
+    For parsing purposes, a single tag field wraps the contents in quotes
     """
     def prepare_value(self, value):
         """
@@ -214,7 +225,7 @@ class SingleTagField(TagField):
         else:
             tag_string = value
         
-        return super(TagField, self).prepare_value(tag_string)
+        return super(SingleTagField, self).prepare_value(tag_string)
 
     def validate(self, value):
         """
@@ -229,6 +240,14 @@ class SingleTagField(TagField):
         if '"' in value:
             raise ValidationError('This field cannot contain the " character')
       
+    def _prepare_tag_options(self, tag_options):
+        """
+        Force max_count to 1
+        """
+        return tag_options + options.TagOptions(
+            max_count=1,
+        )
+        
     def widget_attrs(self, widget):
         """
         Given a Widget instance (*not* a Widget class), returns a dictionary of
@@ -254,3 +273,25 @@ class SingleTagField(TagField):
             return tags[0]
         else:
             return None
+
+
+class TagField(BaseTagField):
+    """
+    Form tag field
+    """
+    def prepare_value(self, value):
+        """
+        Prepare the value
+        """
+        # Could receive iterable of tags from a form's initial object
+        if (
+            isinstance(value, TagModelQuerySet)
+            or (
+                hasattr(value, '__getitem__')
+                and all(isinstance(tag, BaseTagModel) for tag in value)
+            )
+        ):
+            value = render_tags(value)
+        
+        # Deal with it as normal
+        return super(TagField, self).prepare_value(value)

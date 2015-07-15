@@ -303,21 +303,23 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
 
 class ModelSingleTagFieldOptionalTest(TagTestManager, TestCase):
     """
-    Test model SingleTagField
+    Test optional model SingleTagField
     """
     manage_models = [
         test_models.SingleTagFieldOptionalModel,
     ]
-    def test_optional_saves_without_exception(self):
+    def test_optional_save_missing(self):
         "Check an optional SingleTagField isn't required for save"
-        try:
-            t1 = test_models.SingleTagFieldOptionalModel(name='Test 1')
-            t1.save()
-            t2 = test_models.SingleTagFieldOptionalModel.objects.create(name='Test 1')
-        except Exception, e:
-            self.fail(
-                'Optional SingleTagField raised exception unexpectedly: %s' % e
-            )
+        # If it fails, it will return an exception
+        t1 = test_models.SingleTagFieldOptionalModel(name='Test 1')
+        t1.save()
+        self.assertNotEqual(t1.pk, None)
+    
+    def test_optional_create_missing(self):
+        "Check an optional SingleTagField isn't required for object.create"
+        # If it fails, it will return an exception
+        t1 = test_models.SingleTagFieldOptionalModel.objects.create(name='Test 1')
+        self.assertNotEqual(t1.pk, None)
 
 
 ###############################################################################
@@ -326,19 +328,19 @@ class ModelSingleTagFieldOptionalTest(TagTestManager, TestCase):
 
 class ModelSingleTagFieldRequiredTest(TagTestManager, TestCase):
     """
-    Test model SingleTagField
+    Test required model SingleTagField
     """
     manage_models = [
         test_models.SingleTagFieldRequiredModel,
     ]
-    def test_required_raises_exception_on_save(self):
+    def test_required_save_raises(self):
         "Check a required SingleTagField raises an exception when saved"
         with self.assertRaises(exceptions.ValidationError) as cm:
             t1 = test_models.SingleTagFieldRequiredModel(name='Test')
             t1.save()
         self.assertEqual(cm.exception.messages[0], u'This field cannot be null.')
     
-    def test_required_raises_exception_in_object_create(self):
+    def test_required_create_raises(self):
         "Check a required SingleTagField raises an exception in object.create"
         with self.assertRaises(exceptions.ValidationError) as cm:
             t1 = test_models.SingleTagFieldRequiredModel.objects.create(name='Test')

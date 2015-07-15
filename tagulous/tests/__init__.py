@@ -20,4 +20,6 @@ from tagulous.tests.test_models_tagfield import *
 from tagulous.tests.test_models_order import *
 from tagulous.tests.test_models_queryset import *
 from tagulous.tests.test_models_tree import *
-from tagulous.tests.test_forms import *
+from tagulous.tests.test_forms_singletagfield import *
+from tagulous.tests.test_forms_tagfield import *
+from tagulous.tests.test_forms_mixed import *
