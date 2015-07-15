@@ -23,3 +23,4 @@ from tagulous.tests.test_models_tree import *
 from tagulous.tests.test_forms_singletagfield import *
 from tagulous.tests.test_forms_tagfield import *
 from tagulous.tests.test_forms_mixed import *
+from tagulous.tests.test_views import *

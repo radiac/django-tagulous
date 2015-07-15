@@ -111,7 +111,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
     
     def test_render_tag_url(self):
         "Check widget renders data-tag-url"
-        autocomplete_view = 'tagulous_tests_app-SingleTagFieldOptionsModel'
+        autocomplete_view = 'tagulous_tests_app-null'
         class LocalTestForm(forms.Form):
             tag = tag_forms.SingleTagField(
                 tag_options=tag_models.TagOptions(
@@ -125,7 +125,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
             'data-tag-type="single" data-tagulous="true" '
             'data-tag-url="'
-            '/tagulous_tests_app/autocomplete/SingleTagFieldOptionsModel/" '
+            '/tagulous_tests_app/views/" '
             'id="id_tag" name="tag" type="text" />'
         ))
     

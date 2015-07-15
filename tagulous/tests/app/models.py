@@ -81,13 +81,13 @@ class SingleTagFieldOptionsModel(models.Model):
     # max_count doesn't apply to SingleTagField
     autocomplete_view = tagulous.models.SingleTagField(
         blank=True, null=True,
-        autocomplete_view='tagulous_tests_app-SingleTagFieldOptionsModel',
+        autocomplete_view='tagulous_tests_app-null',
     )
     autocomplete_limit = tagulous.models.SingleTagField(
         blank=True, null=True,
         autocomplete_limit=3,
         # Limit only takes effect when there's a view
-        autocomplete_view='tagulous_tests_app-SingleTagFieldOptionsModel',
+        autocomplete_view='tagulous_tests_app-null',
     )
     autocomplete_settings = tagulous.models.SingleTagField(
         blank=True, null=True, autocomplete_settings={
@@ -176,13 +176,13 @@ class TagFieldOptionsModel(models.Model):
     )
     autocomplete_view = tagulous.models.TagField(
         blank=True, null=True,
-        autocomplete_view='tagulous_tests_app-TagFieldOptionsModel',
+        autocomplete_view='tagulous_tests_app-unlimited',
     )
     autocomplete_limit = tagulous.models.TagField(
         blank=True, null=True,
         autocomplete_limit=3,
         # Limit only takes effect when there's a view
-        autocomplete_view='tagulous_tests_app-TagFieldOptionsModel',
+        autocomplete_view='tagulous_tests_app-limited',
     )
     autocomplete_settings = tagulous.models.TagField(
         blank=True, null=True, autocomplete_settings={
@@ -197,12 +197,21 @@ class TagFieldOptionsModel(models.Model):
 ####### Models for testing a mix of fields
 ###############################################################################
 
+class SimpleMixedTest(models.Model):
+    """
+    For tests which need a SingleTagField and TagField
+    """
+    name = models.CharField(max_length=10)
+    singletag = tagulous.models.SingleTagField(blank=True)
+    tags = tagulous.models.TagField(blank=True)
+
 class MixedTestTagModel(tagulous.models.TagModel):
     pass
 
 class MixedTest(models.Model):
     """
-    For testing merging of tags
+    For tests where it's useful for the SingleTagField and TagField to share
+    a tag model
     """
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(
