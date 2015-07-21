@@ -16,20 +16,23 @@ from tagulous import settings
 from tagulous import utils
 
 
-def split_kwargs(model, kwargs, lookups=False, with_fields=False):
+def _split_kwargs(model, kwargs, lookups=False, with_fields=False):
     """
     Split kwargs into fields which are safe to pass to create, and
     m2m tag fields, creating SingleTagFields as required.
     
     If lookups is True, TagFields with tagulous-specific lookups will also be
     matched, and the returned tag_fields will be a dict of tuples in the
-    format::
+    format ``(val, lookup)``
     
-        (field, val, lookup)
+    The only tagulous-specific lookup is __exact
     
-    Only tagulous-specific lookup at the moment is __exact
+    For internal use only - likely to change significantly in future versions
     
     Returns a tuple of safe_fields, singletag_fields, tag_fields
+    
+    If with_fields is True, a fourth argument will be returned - a dict to
+    look up Field objects from their names
     """
     safe_fields = {}
     singletag_fields = {}
@@ -107,7 +110,7 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         # TODO: When minimum supported Django 1.7+, this can be replaced with
         # custom lookups, which would work much better anyway.
-        safe_fields, singletag_fields, tag_fields, field_lookup = split_kwargs(
+        safe_fields, singletag_fields, tag_fields, field_lookup = _split_kwargs(
             self.model, kwargs, lookups=True, with_fields=True
         )
         
@@ -174,7 +177,7 @@ class TaggedQuerySet(models.query.QuerySet):
     
     def create(self, **kwargs):
         # Create object as normal
-        safe_fields, singletag_fields, tag_fields = split_kwargs(self.model, kwargs)
+        safe_fields, singletag_fields, tag_fields = _split_kwargs(self.model, kwargs)
         
         # Could convert SingleTagFields to instances with
         # field.tag_model.objects.get_or_create, but model constructor will
@@ -200,7 +203,7 @@ class TaggedQuerySet(models.query.QuerySet):
     
     def get_or_create(self, **kwargs):
         # Get or create object as normal
-        safe_fields, singletag_fields, tag_fields = split_kwargs(self.model, kwargs)
+        safe_fields, singletag_fields, tag_fields = _split_kwargs(self.model, kwargs)
         
         # As in .create, SingleTagFields are ok to create
         # Existing .get will be fine for lookup
@@ -296,7 +299,7 @@ class TaggedModel(models.Model):
     An abstract model base class with support for Tagulous tag fields
     """
     def __init__(self, *args, **kwargs):
-        safe_fields, singletag_fields, tag_fields = split_kwargs(self, kwargs)
+        safe_fields, singletag_fields, tag_fields = _split_kwargs(self, kwargs)
         
         # Constructor has always been happy with ForeignKeys
         safe_fields.update(singletag_fields)
@@ -319,6 +322,7 @@ class TaggedModel(models.Model):
             model   The model to turn into a TaggedModel subclass.
                     Will only be changed if it has tag fields.
         """
+        
         # See if there are tag fields on this model
         tag_fields = singletagfields_from_model(model) + tagfields_from_model(model)
         
