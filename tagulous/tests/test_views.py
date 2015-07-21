@@ -139,8 +139,8 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             self.assertEqual(data['results'][i], 'tag%02d' % i)
         self.assertEqual(data['more'], False)
         
-    def test_unlimited_filter(self):
-        "Test unlimited autocomplete view with filter"
+    def test_unlimited_query(self):
+        "Test unlimited autocomplete view with query"
         # Add some tags
         tag_model = self.test_model.autocomplete_view.tag_model
         for i in range(100):
@@ -160,7 +160,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(data['more'], False)
 
     def test_limited(self):
-        "Test limited autocomplete view with filter"
+        "Test limited autocomplete view"
         # Add some tags
         tag_model = self.test_model.autocomplete_limit.tag_model
         for i in range(100):
@@ -208,9 +208,8 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(data['results'][0], 'tag99')
         self.assertEqual(data['more'], False)
         
-
-    def test_limited_filter(self):
-        "Test limited autocomplete view with filter"
+    def test_limited_query(self):
+        "Test limited autocomplete view with query"
         # Add some tags
         tag_model = self.test_model.autocomplete_limit.tag_model
         for i in range(100):
@@ -244,4 +243,113 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(len(data['results']), 1)
         self.assertEqual(data['results'][0], 'tag19')
         self.assertEqual(data['more'], False)
+    
+    def test_login(self):
+        "Test autocomplete_login view"
+        # Add some tags
+        tag_model = self.test_model.autocomplete_view.tag_model
+        for i in range(100):
+            tag_model.objects.create(name='tag%02d' % i)
+        self.assertEqual(tag_model.objects.count(), 100)
         
+        # Get them from view
+        user = User.objects.create_user('test', 'test@example.com', 'password')
+        client.login(username='test', password='password')
+        response = client.get(
+            reverse('tagulous_tests_app-login'),
+        )
+        client.logout()
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data['results']), 100)
+        for i in range(100):
+            self.assertEqual(data['results'][i], 'tag%02d' % i)
+        self.assertEqual(data['more'], False)
+        
+    def test_queryset(self):
+        "Test autocomplete view on a tag model queryset"
+        # Add some tags
+        tag_model = self.test_model.autocomplete_view.tag_model
+        for i in range(100):
+            tag_model.objects.create(name='tag%02d' % i)
+        self.assertEqual(tag_model.objects.count(), 100)
+        
+        # Get them from view
+        response = client.get(
+            reverse('tagulous_tests_app-queryset'),
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data['results']), 10)
+        for i in range(10):
+            self.assertEqual(data['results'][i], 'tag2%d' % i)
+        self.assertEqual(data['more'], False)
+
+    def test_force_lowercase_true(self):
+        "Test autocomplete view on a tag model with force_lowercase=True"
+        # Add some tags
+        tag_model = self.test_model.force_lowercase_true.tag_model
+        for i in range(100):
+            tag_model.objects.create(name='tag%02d' % i)
+        self.assertEqual(tag_model.objects.count(), 100)
+        
+        # Get them from view
+        response = client.get(
+            reverse('tagulous_tests_app-force_lowercase_true'),
+            {'q': 'Tag1'},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data['results']), 10)
+        for i in range(10):
+            self.assertEqual(data['results'][i], 'tag1%d' % i)
+        self.assertEqual(data['more'], False)
+
+    def test_case_sensitive_false(self):
+        "Test autocomplete view on a tag model with case_sensitive=False"
+        # Add some tags
+        tag_model = self.test_model.case_sensitive_false.tag_model
+        tag_model.objects.all().delete() # clear out initial
+        for i in range(100):
+            tag_model.objects.create(name='tag%02d' % i)
+        self.assertEqual(tag_model.objects.count(), 100)
+        
+        # Get them from view
+        response = client.get(
+            reverse('tagulous_tests_app-case_sensitive_false'),
+            {'q': 'Tag1'},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data['results']), 10)
+        for i in range(10):
+            self.assertEqual(data['results'][i], 'tag1%d' % i)
+        self.assertEqual(data['more'], False)
+
+    def test_case_sensitive_true(self):
+        "Test autocomplete view on a tag model with case_sensitive=True"
+        # Add some tags
+        tag_model = self.test_model.case_sensitive_true.tag_model
+        tag_model.objects.all().delete() # clear out initial
+        for i in range(100):
+            tag_model.objects.create(name='tag%02d' % i)
+        self.assertEqual(tag_model.objects.count(), 100)
+        
+        # Get them from view
+        response = client.get(
+            reverse('tagulous_tests_app-case_sensitive_true'),
+            {'q': 'Tag1'},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        
+        from django.db import connection
+        if connection.vendor == 'sqlite':
+            # Sqlite doesn't support case insensitive searches - expect to
+            # get back 10 matches
+            self.assertEqual(len(data['results']), 10)
+            for i in range(10):
+                self.assertEqual(data['results'][i], 'tag1%d' % i)
+        else:
+            self.assertEqual(len(data['results']), 0)
+            self.assertEqual(data['more'], False)

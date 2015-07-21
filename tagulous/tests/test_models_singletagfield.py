@@ -135,7 +135,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-
+        
     def test_assign_by_object(self):
         """
         Check a tag object can be assigned to a SingleTagfield, and that its
@@ -173,6 +173,30 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t1, name='Test 1', title=None)
         self.assertTagModel(self.tag_model, {})
     
+    def test_assign_string_quotes(self):
+        "Check that a tag can contain quotes"
+        # Check it saves ok
+        t1 = test_models.SingleTagFieldModel.objects.create(
+            name='Test 1', title='"One", Two"',
+        )
+        self.assertInstanceEqual(t1, name='Test 1', title='"One", Two"')
+        
+        # Check it loads ok
+        t2 = test_models.SingleTagFieldModel.objects.get(pk=t1.pk)
+        self.assertInstanceEqual(t2, name='Test 1', title='"One", Two"')
+    
+    def test_tag_assign_same(self):
+        "Check that setting the same tag doesn't make a change"
+        t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
+        tag = t1.title
+        self.assertEqual(tag, 'Mr')
+        
+        # Access the manager via the cache to watch changed state
+        self.assertIsInstance(t1._title_tagulous, tag_models.SingleTagManager)
+        self.assertFalse(t1._title_tagulous.changed, 'tag has changed')
+        t1.title = 'Mr'
+        self.assertFalse(t1._title_tagulous.changed, 'tag has changed')
+        
     def test_change_decreases_count(self):
         "Check a tag string changes the count"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
@@ -295,7 +319,40 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t2 = test_models.SingleTagFieldModel.objects.create(name='Test 2', title='Mrs')
         self.assertIsInstance(t1.title, self.tag_model)
         self.assertNotEqual(t1.title, t2.title)
+            
+    def test_invalid_arguments(self):
+        "Check that invalid arguments raise exception"
+        with self.assertRaises(ValueError) as cm:
+            class FailModel(models.Model):
+                to_field = tag_models.SingleTagField(to_field='fail')
+        self.assertEqual(
+            str(cm.exception),
+            "Invalid argument 'to_field' for SingleTagField"
+        )
 
+        with self.assertRaises(ValueError) as cm:
+            class FailModel(models.Model):
+                rel_class = tag_models.SingleTagField(rel_class='fail')
+        self.assertEqual(
+            str(cm.exception),
+            "Invalid argument 'rel_class' for SingleTagField"
+        )
+
+        with self.assertRaises(ValueError) as cm:
+            class FailModel(models.Model):
+                max_count = tag_models.SingleTagField(max_count='fail')
+        self.assertEqual(
+            str(cm.exception),
+            "Invalid argument 'max_count' for SingleTagField"
+        )
+    
+    def test_value_from_object_none(self):
+        "Check that value_from_object returns empty string instead of None"
+        # Called by forms, but part of model, so test it here
+        t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1')
+        field = test_models.SingleTagFieldModel._meta.get_field('title')
+        self.assertEqual(field.value_from_object(t1), '')
+        
 
 ###############################################################################
 #######  Test model field blank=True
@@ -539,12 +596,3 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
         self.assertTagModel(self.test_model.force_lowercase_false, {
             'Mr':   1,
         })
-    
-    def test_max_count_invalid(self):
-        with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
-                max_count = tag_models.SingleTagField(max_count=5)
-        self.assertEqual(
-            str(cm.exception),
-            "Invalid argument 'max_count' for SingleTagField"
-        )

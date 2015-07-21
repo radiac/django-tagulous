@@ -35,9 +35,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
                 'Mr': 'Mr',
                 'Mr, Mrs': 'Mr, Mrs',
             },
-            invalid={
-                '"': [u'This field cannot contain the " character'],
-            },
+            invalid={},
             empty_value=None
         )
     
@@ -54,9 +52,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
                 'Mr': 'mr',
                 'Mr, Mrs': 'mr, mrs',
             },
-            invalid={
-                '"': [u'This field cannot contain the " character'],
-            },
+            invalid={},
             empty_value=None
         )
     
@@ -219,6 +215,24 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         )
         self.assertEqual(field2.tag_options.case_sensitive, True)
         
+    def test_override_autocomplete_tags_formfield(self):
+        "Test list of autocomplete tags can be passed in formfield"
+        self.tag_model.objects.create(name='Mr')
+        self.tag_model.objects.create(name='Mrs')
+        
+        # Confirm default
+        field1 = self.form().fields['title']
+        self.assertItemsEqual(
+            [t.name for t in field1.autocomplete_tags],
+            [t.name for t in self.tag_model.objects.all()],
+        )
+        
+        # Change default
+        field2 = self.model.title.formfield(
+            autocomplete_tags=['Ms', 'Mx']
+        )
+        self.assertItemsEqual(field2.autocomplete_tags, ['Ms', 'Mx'])
+        
     def test_render_tag_list(self):
         "Check widget renders data-tag-list"
         self.tag_model.objects.create(name='Mr')
@@ -261,7 +275,41 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
             'id="id_singletag" name="singletag" type="text" '
             'value="Mr" />'
         ))
-
+    
+    def test_tagged_edit(self):
+        "Check edit tagged model form instance works"
+        t1 = self.model.objects.create(name='Test 1', title='Mr')
+        form = self.form(instance=t1)
+        self.assertHTMLEqual(str(form['title']), (
+            '<input autocomplete="off" '
+            'data-tag-list="[&quot;Mr&quot;]" '
+            'data-tag-options="{'
+            '&quot;required&quot;: false, &quot;max_count&quot;: 1}" '
+            'data-tag-type="single" data-tagulous="true" '
+            'id="id_title" name="title" type="text" '
+            'value="Mr" />'
+        ))
+        
+    def test_tag_with_delims(self):
+        "Check tag with delimiters"
+        t1 = self.model.objects.create(name='Test 1', title='One, Two')
+        form = self.form(instance=t1, data={'name': t1.name, 'title': t1.title})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['title'], 'One, Two')
+        t2 = form.save()
+        self.assertEqual(t2.name, 'Test 1')
+        self.assertEqual(t2.title, 'One, Two')
+        
+    def test_tag_with_quotes(self):
+        "Check tag with quotes"
+        t1 = self.model.objects.create(name='Test 1', title='"One, "Two"')
+        form = self.form(instance=t1, data={'name': t1.name, 'title': t1.title})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['title'], '"One, "Two"')
+        t2 = form.save()
+        self.assertEqual(t2.name, 'Test 1')
+        self.assertEqual(t2.title, '"One, "Two"')
+        
 
 ###############################################################################
 #######  Test SingleTagField blank
@@ -430,3 +478,28 @@ class ModelFormSingleTagFieldOptionsTest(TagTestManager, TestCase):
         self.assertEqual(field.tag_options.max_count, 1)
         self.assertEqual(field.widget.tag_options.max_count, 1)
         
+    def test_initial_without_autocomplete_initial(self):
+        "Check a field with initial but without autocomplete_initial lists all"
+        tag_model = self.model.initial_string.tag_model
+        tag_model.objects.create(name='Miss')
+        tag_model.objects.create(name='Mx')
+        
+        # Confirm default
+        field = self.form().fields['initial_string']
+        self.assertItemsEqual(
+            [t.name for t in field.autocomplete_tags],
+            [t.name for t in tag_model.objects.all()],
+        )
+        
+    def test_initial_with_autocomplete_initial(self):
+        "Check a field with initial and autocomplete_initial lists initial"
+        tag_model = self.model.initial_list.tag_model
+        tag_model.objects.create(name='Miss')
+        tag_model.objects.create(name='Mx')
+        
+        # Confirm default
+        field = self.form().fields['initial_list']
+        self.assertItemsEqual(
+            [t.name for t in field.autocomplete_tags],
+            [t.name for t in tag_model.objects.initial()],
+        )

@@ -344,7 +344,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         t1.tags.save()
         self.assertInstanceEqual(t1, name='Test 1', tags='')
         self.assertTagModel(self.tag_model, {})
-        
+    
     def test_assign_none(self):
         "Check setting None clears tags"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
@@ -371,6 +371,57 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t1, name='Test 1', tags='')
         self.assertTagModel(self.tag_model, {})
         
+    def test_assign_unknown(self):
+        "Check assigning an unknown value raises an exception"
+        t1 = self.create(test_models.TagFieldModel, name="Test 1")
+        with self.assertRaises(ValueError) as cm:
+            # Assign the descriptor to itself, because why not.
+            t1.tags = test_models.TagFieldModel.tags
+        self.assertEqual(
+            str(cm.exception), 'Unexpected value assigned to TagField'
+        )
+        
+    def test_contains(self):
+        "Check __contains__ using strings and Tag objects"
+        t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
+        
+        # String matches
+        self.assertTrue('blue' in t1.tags, 'blue not found')
+        self.assertTrue('red' in t1.tags, 'red not found')
+        
+        # Partials shouldn't match
+        self.assertFalse('green' in t1.tags, 'green incorrectly found')
+        self.assertFalse('blu' in t1.tags, 'blu incorrectly found')
+        self.assertFalse('ed' in t1.tags, 'ed incorrectly found')
+        
+        # Tag objects (will be cast to strings)
+        red = t1.tags.tag_model.objects.get(name='red')
+        blue = t1.tags.tag_model.objects.get(name='blue')
+        green = t1.tags.tag_model.objects.create(name='green')
+        self.assertTrue(red in t1.tags, 'red not found')
+        self.assertTrue(blue in t1.tags, 'red not found')
+        self.assertFalse(green in t1.tags, 'green incorrectly found')
+    
+    def test_len(self):
+        "Check __len__ returns the number of tags"
+        t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
+        self.assertEqual(len(t1.tags), 2)
+    
+    def test_eq(self):
+        "Check __eq__ correctly determines equality"
+        t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
+        self.assertEqual(t1.tags, 'blue, red')
+        self.assertEqual(t1.tags, 'red, blue')
+        self.assertEqual(t1.tags, ['red', 'blue'])
+    
+    def test_ne(self):
+        "Check __ne__ correctly determines falsity"
+        t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
+        self.assertNotEqual(t1.tags, 'red')
+        self.assertNotEqual(t1.tags, 'blue')
+        self.assertNotEqual(t1.tags, ['red', 'green'])
+        self.assertNotEqual(t1.tags, 'green')
+    
     def test_multiple_instances(self):
         "Check multiple tagged instances work without interference"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
@@ -530,7 +581,13 @@ class ModelTagFieldTest(TagTestManager, TestCase):
             'blue':     1,
             'red':      1,
         })
-    
+        
+    def test_m2m_remove_missing(self):
+        "Remove a tag which doesn't exist (and isn't set)"
+        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        t1.tags.remove('green')
+        self.assertEqual(t1.tags, 'blue, red')
+        
     def test_m2m_clear(self):
         "Clear all tags from an item with manager.clear"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
@@ -550,8 +607,119 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         })
         self.assertInstanceEqual(t1, name='Test 1', tags='')
         self.assertInstanceEqual(t2, name='Test 2', tags='blue, red')
-
+    
+    def test_fake_manager_after_delete(self):
+        "Check fake manager steps in to store tags when the item is deleted"
+        # Create the item
+        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
+        self.assertTagModel(self.tag_model, {
+            'red':      1,
+            'blue':     1,
+        })
         
+        # Now delete it
+        t1.delete()
+        
+        # It won't have a pk any more, but it will have a manager.
+        self.assertEqual(t1.pk, None)
+        
+        # TagDescriptor will now have to create a FakeTagRelatedManager and
+        # copy the tags across from the real one. Because although this is
+        # about as likely as the previous test, someone will do it eventually.
+        manager = t1.tags
+        self.assertIsInstance(
+            manager, tag_models.managers.FakeTagRelatedManager
+        )
+        self.assertEqual(manager, 'blue, red')
+        
+    def test_fake_manager(self):
+        "Check that the FakeTagRelatedManager doesn't do databases"
+        errmsg = (
+            '"<TagFieldModel: TagFieldModel object>" needs to be saved '
+            'before TagField can use the database'
+        )
+        t1 = test_models.TagFieldModel(name="Test 1", tags='blue, red')
+        
+        with self.assertRaises(ValueError) as cm:
+            t1.tags.save()
+        self.assertEqual(str(cm.exception), errmsg)
+        
+        with self.assertRaises(ValueError) as cm:
+            t1.tags.add('fail')
+        self.assertEqual(str(cm.exception), errmsg)
+        
+        with self.assertRaises(ValueError) as cm:
+            t1.tags.remove('blue')
+        self.assertEqual(str(cm.exception), errmsg)
+        
+        with self.assertRaises(ValueError) as cm:
+            t1.tags.clear()
+        self.assertEqual(str(cm.exception), errmsg)
+    
+    def test_to_model_options_fails(self):
+        "Check when a to model is specified, tag options are invalid"
+        with self.assertRaises(ValueError) as cm:
+            new_field = tag_models.TagField(
+                test_models.TagMetaUser, force_lowercase=True,
+            )
+        self.assertEqual(
+            str(cm.exception),
+            "Cannot set tag options 'force_lowercase' on explicit tag model "
+            "<class 'tagulous.tests.tagulous_tests_app.models.TagMetaUser'>"
+        )
+        
+    def test_to_model_force_options_works(self):
+        "Check when _set_tag_meta is True, options can be set after all"
+        self.assertTrue(test_models.TagMetaModel.tag_options.force_lowercase)
+        new_field = tag_models.TagField(
+            test_models.TagMetaModel, force_lowercase=False,
+            _set_tag_meta=True,
+        )
+        self.assertFalse(test_models.TagMetaModel.tag_options.force_lowercase)
+        
+        # Set force_lowercase back ready for future tests - unittest won't fix
+        test_models.TagMetaModel.tag_options.force_lowercase = True
+        self.assertTrue(test_models.TagMetaModel.tag_options.force_lowercase)
+
+    def test_contribute_only_once(self):
+        "Check that a field can't be contributed more than once"
+        field = test_models.TagFieldModel._meta.get_field('tags')
+        with self.assertRaises(AttributeError) as cm:
+            field.contribute_to_class(test_models.TagFieldModel, 'new_tags')
+        self.assertEqual(
+            str(cm.exception),
+            "The tag field <tagulous.models.fields.TagField: tags> is already "
+            "attached to a model"
+        )
+        
+    def test_invalid_arguments(self):
+        "Check that invalid arguments raise exception"
+        with self.assertRaises(ValueError) as cm:
+            class FailModel(models.Model):
+                db_table = tag_models.TagField(db_table='fail')
+        self.assertEqual(
+            str(cm.exception),
+            "Invalid argument 'db_table' for TagField"
+        )
+
+        with self.assertRaises(ValueError) as cm:
+            class FailModel(models.Model):
+                through = tag_models.TagField(through='fail')
+        self.assertEqual(
+            str(cm.exception),
+            "Invalid argument 'through' for TagField"
+        )
+
+        with self.assertRaises(ValueError) as cm:
+            class FailModel(models.Model):
+                symmetrical = tag_models.TagField(symmetrical='fail')
+        self.assertEqual(
+            str(cm.exception),
+            "Invalid argument 'symmetrical' for TagField"
+        )
+
+
 ###############################################################################
 ####### Test tag counter
 ###############################################################################
@@ -928,6 +1096,21 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         self.assertNotEqual(t1.case_sensitive_true, 'django, HTML')
         self.assertNotEqual(t1.case_sensitive_true, 'Django, html')
         
+    def test_contains_case_sensitive_true(self):
+        "Check case sensitive __contains__"
+        t1 = self.create(
+            self.test_model, name="Test 1", case_sensitive_true='Django, HTML',
+        )
+        
+        # String matches
+        self.assertTrue('Django' in t1.case_sensitive_true)
+        self.assertTrue('HTML' in t1.case_sensitive_true)
+        
+        # Partials and incorrect shouldn't be found
+        self.assertFalse('Javascript' in t1.case_sensitive_true)
+        self.assertFalse('django' in t1.case_sensitive_true)
+        self.assertFalse('Html' in t1.case_sensitive_true)
+        
     def test_cmp_case_sensitive_false(self):
         """
         Test case insensitive matches
@@ -962,6 +1145,21 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         self.assertEqual(t1.force_lowercase_true, 'Blue, RED')
         self.assertNotEqual(t1.force_lowercase_true, 'green')
 
+    def test_contains_force_lowercase_true(self):
+        "Check __contains__ when force lowercase true and case sensitive false"
+        t1 = self.create(
+            self.test_model, name="Test 1", force_lowercase_true='django, html',
+        )
+        
+        # String matches are forced to lowercase
+        self.assertTrue('Django' in t1.force_lowercase_true)
+        self.assertTrue('HTML' in t1.force_lowercase_true)
+        self.assertTrue('django' in t1.force_lowercase_true)
+        self.assertTrue('html' in t1.force_lowercase_true)
+        
+        # Incorrect shouldn't be found
+        self.assertFalse('Javascript' in t1.case_sensitive_true)
+        
     def test_cmp_case_sensitive_true_force_lowercase_true(self):
         "Test matches when case sensitive and force lowercase true"
         t1 = self.create(
@@ -1029,4 +1227,3 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
             'Chris':    0,
             'David':    0,
         })
-        

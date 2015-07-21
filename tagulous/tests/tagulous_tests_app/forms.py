@@ -1,7 +1,7 @@
 from django import forms
 
 import tagulous
-from tagulous.tests.app import models
+from tagulous.tests.tagulous_tests_app import models
 
 
 # Straight form fields

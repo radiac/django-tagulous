@@ -5,6 +5,8 @@ Tagulous test: Tag models
 Modules tested:
     tagulous.models.models.BaseTagModel
     tagulous.models.models.TagModel
+    tagulous.models.models.TagModelManager
+    tagulous.models.models.TagModelQuerySet
 """
 from tagulous.tests.lib import *
 
@@ -26,22 +28,41 @@ class TagModelTest(TagTestManager, TestCase):
         self.model_nontag = test_models.NonTagRefTest
     
     def test_tags_equal_instance(self):
+        "Test TagModel.__eq__ with instances"
         t1a = self.tag_model.objects.create(name='one')
         t1b = self.tag_model.objects.get(name='one')
         self.assertEqual(t1a, t1b)
 
     def test_tags_equal_string(self):
+        "Test TagModel.__eq__ with instance and string"
         t1 = self.tag_model.objects.create(name='one')
         self.assertEqual(t1, 'one')
 
     def test_tags_not_equal_instance(self):
+        "Test TagModel.__ne__ with instances"
         t1 = self.tag_model.objects.create(name='one')
         t2 = self.tag_model.objects.create(name='two')
         self.assertNotEqual(t1, t2)
 
     def test_tags_not_equal_string(self):
+        "Test TagModel.__eq__ with instance and string"
         t1 = self.tag_model.objects.create(name='one')
         self.assertNotEqual(t1, 'two')
+    
+    def test_get_absolute_url_defined(self):
+        "Test get_absolute_url when passed in field definition"
+        t1 = self.tag_model.objects.create(name='one')
+        self.assertEqual(t1.get_absolute_url(), 'url for one')
+    
+    def test_get_absolute_url_not_defined(self):
+        "Test get_absolute_url when passed in field definition"
+        t1 = test_models.SimpleMixedTest.tags.tag_model.objects.create(name='one')
+        with self.assertRaises(AttributeError) as cm:
+            t1.get_absolute_url()
+        self.assertEqual(
+            str(cm.exception),
+            "'_Tagulous_SimpleMixedTest_tags' has no attribute 'get_absolute_url'"
+        )
     
     def test_get_related_fields(self):
         "Check the class method returns a list of related fields"
@@ -362,6 +383,19 @@ class TagModelTest(TagTestManager, TestCase):
             'red':  0,
         })
 
+    def test_update_count(self):
+        "Purposely knock the count off and update it"
+        t1 = self.create(self.model1, name="Test 1", tags='blue')
+        tag1 = self.tag_model.objects.get(name='blue')
+        self.assertTagModel(self.tag_model, {'blue': 1})
+        tag1.count = 3
+        tag1.save()
+        self.assertTagModel(self.tag_model, {'blue': 3})
+        tag1.update_count()
+        self.assertTagModel(self.tag_model, {'blue': 1})
+        t1.delete()
+        self.assertTagModel(self.tag_model, {})
+        
     def test_slug_set(self):
         "Check the slug field is set correctly"
         t1a = self.tag_model.objects.create(name='One and Two!')
@@ -393,6 +427,49 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t2b.slug, 'one-and-two_1')
         self.assertEqual(t3b.slug, 'one-and-two_2')
         self.assertEqual(t4b.slug, 'one-and-two_3')
+
+
+###############################################################################
+####### Test TagMeta in tag model
+###############################################################################
+
+class TagMetaTest(TagTestManager, TestCase):
+    """
+    Test TagMeta class. Builds on tests in tests_options.
+    """
+    def test_sets_options(self):
+        "Check TagMeta sets the options"
+        opt = test_models.TagMetaAbstractModel.tag_options
+        
+        # Check local options
+        cls_opt = opt.items(with_defaults=False)
+        self.assertEqual(cls_opt['initial'], ['Adam', 'Brian', 'Chris'])
+        self.assertEqual(cls_opt['force_lowercase'], True)
+        self.assertEqual(cls_opt['max_count'], 5)
+        self.assertTrue('case_sensitive' not in cls_opt)
+        
+        # Check default options
+        self.assertEqual(opt.case_sensitive, False)
+    
+    def test_inheritance(self):
+        "Check TagMeta can be inherited and overridden"
+        opt_abstract = test_models.TagMetaAbstractModel.tag_options
+        opt = test_models.TagMetaModel.tag_options
+        
+        # Check they're not shared instances
+        self.assertNotEqual(id(opt_abstract), id(opt))
+        self.assertNotEqual(id(opt), id(tag_models.models.BaseTagModel.tag_options))
+        
+        # Check local options
+        cls_opt = opt.items(with_defaults=False)
+        self.assertEqual(cls_opt['case_sensitive'], True)
+        self.assertEqual(cls_opt['max_count'], 10)
+        
+        # Local options will also include inherited options
+        self.assertEqual(opt.initial, ['Adam', 'Brian', 'Chris'])
+        self.assertEqual(opt.force_lowercase, True)
+        self.assertEqual(opt.max_count, 10)
+        self.assertEqual(opt.case_sensitive, True)
 
 
 ###############################################################################
@@ -629,3 +706,154 @@ class TagModelMergeTest(TagTestManager, TestCase):
         })
         self.assertInstanceEqual(t1, tags='blue')
         self.assertInstanceEqual(t2, tags='blue')
+
+    def test_merge_by_name(self):
+        tag_model = test_models.MixedTestTagModel
+        
+        # Set up database
+        t1 = self.create(test_models.MixedTest, name='Test 1', tags='blue, green, red')
+        t2 = self.create(test_models.MixedTest, name='Test 2', tags='blue, green, red')
+        
+        # Confirm it's correct
+        self.assertTagModel(tag_model, {
+            'blue': 2,
+            'green': 2,
+            'red': 2,
+        })
+        self.assertInstanceEqual(t1, tags='blue, green, red')
+        self.assertInstanceEqual(t2, tags='blue, green, red')
+        
+        # Merge tags
+        s1 = tag_model.objects.get(name='blue')
+        s1.merge_tags(['blue', 'green', 'red'])
+        
+        # Confirm it's correct
+        self.assertTagModel(tag_model, {
+            'blue': 2,
+        })
+        self.assertInstanceEqual(t1, tags='blue')
+        self.assertInstanceEqual(t2, tags='blue')
+
+
+###############################################################################
+####### Test tag model manager and queryset
+###############################################################################
+
+class TagModelQuerySetTest(TagTestManager, TestCase):
+    """
+    Test tag model queryset and manager
+    """
+    manage_models = [
+        test_models.TagFieldOptionsModel,
+    ]
+    
+    def setUpExtra(self):
+        self.model = test_models.TagFieldOptionsModel
+        self.tag_model = self.model.initial_list.tag_model
+        self.o1 = self.model.objects.create(
+            name='Test 1',
+            initial_list='David, Eric',
+        )
+        self.o2 = self.model.objects.create(
+            name='Test 2',
+            initial_list='Eric, Frank',
+        )
+    
+    def test_setup(self):
+        self.assertTagModel(self.model.initial_list, {
+            'Adam':  0,
+            'Brian': 0,
+            'Chris': 0,
+            'David': 1,
+            'Eric':  2,
+            'Frank': 1,
+        })
+    
+    def test_initial(self):
+        initial_only = self.tag_model.objects.initial()
+        self.assertEqual(len(initial_only), 3)
+        self.assertEqual(initial_only[0], 'Adam')
+        self.assertEqual(initial_only[1], 'Brian')
+        self.assertEqual(initial_only[2], 'Chris')
+    
+    def test_filter_or_initial(self):
+        filtered = self.tag_model.objects.filter_or_initial(
+            tagfieldoptionsmodel__name='Test 1',
+        )
+        self.assertEqual(len(filtered), 5)
+        self.assertEqual(filtered[0], 'Adam')
+        self.assertEqual(filtered[1], 'Brian')
+        self.assertEqual(filtered[2], 'Chris')
+        self.assertEqual(filtered[3], 'David')
+        self.assertEqual(filtered[4], 'Eric')
+        
+    def test_weight_scale_up(self):
+        "Test weight() scales up to max"
+        # Scale them to 2+2n: 0=2, 1=4, 2=6
+        weighted = self.tag_model.objects.weight(min=2, max=6)
+        self.assertEqual(len(weighted), 6)
+        self.assertEqual(weighted[0].name, 'Adam')
+        self.assertEqual(weighted[0].weight, 2)
+        
+        self.assertEqual(weighted[1], 'Brian')
+        self.assertEqual(weighted[1].weight, 2)
+        
+        self.assertEqual(weighted[2], 'Chris')
+        self.assertEqual(weighted[2].weight, 2)
+        
+        self.assertEqual(weighted[3], 'David')
+        self.assertEqual(weighted[3].weight, 4)
+        
+        self.assertEqual(weighted[4], 'Eric')
+        self.assertEqual(weighted[4].weight, 6)
+        
+        self.assertEqual(weighted[5], 'Frank')
+        self.assertEqual(weighted[5].weight, 4)
+
+    def test_weight_scale_down(self):
+        "Test weight() scales down to max"
+        # Add some extras so we can scale them 0.5n+2
+        # Weight them so 0=2, 1=2 (rounded down), 4=4, 8=6
+        
+        # Eric will be used 8 times total - 6 more
+        for i in range(6):
+            self.model.objects.create(
+                name='Test 3.%d' % i,
+                initial_list='Eric',
+            )
+        
+        # Frank will be used 4 times total - 3 more
+        for i in range(3):
+            self.model.objects.create(
+                name='Test 4.%d' % i,
+                initial_list='Frank',
+            )
+        
+        self.assertTagModel(self.model.initial_list, {
+            'Adam':  0,
+            'Brian': 0,
+            'Chris': 0,
+            'David': 1,
+            'Eric':  8,
+            'Frank': 4,
+        })
+        
+        weighted = self.tag_model.objects.weight(min=2, max=6)
+        self.assertEqual(len(weighted), 6)
+        self.assertEqual(weighted[0].name, 'Adam')
+        self.assertEqual(weighted[0].weight, 2)
+        
+        self.assertEqual(weighted[1], 'Brian')
+        self.assertEqual(weighted[1].weight, 2)
+        
+        self.assertEqual(weighted[2], 'Chris')
+        self.assertEqual(weighted[2].weight, 2)
+        
+        self.assertEqual(weighted[3], 'David')
+        self.assertEqual(weighted[3].weight, 2)
+        
+        self.assertEqual(weighted[4], 'Eric')
+        self.assertEqual(weighted[4].weight, 6)
+        
+        self.assertEqual(weighted[5], 'Frank')
+        self.assertEqual(weighted[5].weight, 4)

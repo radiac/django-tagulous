@@ -48,6 +48,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
     ]
     
     def setUpExtra(self):
+        self.test_model = test_models.TreeTest
         self.singletag_field = test_models.TreeTest.singletag
         self.singletag_model = test_models.TreeTest.singletag.tag_model
         self.tag_field = test_models.TreeTest.tags
@@ -173,6 +174,39 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
             parent=t2, level=3,
         )
 
+    def test_rebuild(self):
+        "Check rebuild updates all slugs"
+        # Break slugs
+        t3 = self.tag_model.objects.create(name='One/Two/Three')
+        for tag in self.tag_model.objects.all():
+            tag.slug = str(tag.pk)
+            tag.save()
+        
+        # Load
+        t1 = self.tag_model.objects.get(name='One')
+        t2 = self.tag_model.objects.get(name='One/Two')
+        t3 = self.tag_model.objects.get(name='One/Two/Three')
+        self.assertTreeTag(t1, name='One', slug='1', path='1')
+        self.assertTreeTag(t2, name='One/Two', slug='2', path='1/2', parent=t1)
+        self.assertTreeTag(
+            t3, name='One/Two/Three', slug='3', path='1/2/3', parent=t2
+        )
+        
+        # Rebuild and re-test
+        self.tag_model.objects.rebuild()
+        t1 = self.tag_model.objects.get(name='One')
+        t2 = self.tag_model.objects.get(name='One/Two')
+        t3 = self.tag_model.objects.get(name='One/Two/Three')
+        self.assertTreeTag(t1, name='One', slug='one', path='one')
+        self.assertTreeTag(
+            t2, name='One/Two', slug='two', path='one/two', parent=t1,
+        )
+        self.assertTreeTag(
+            t3, name='One/Two/Three', slug='three', path='one/two/three',
+            parent=t2,
+        )
+        
+
 
 class TagTreeModelNavTest(TagTreeTestManager, TestCase):
     """
@@ -254,7 +288,7 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
         self.assertTreeTag(t1, name='Animal/Insect/Bee', level=3)
         dec = t1.get_descendants()
         self.assertEqual(len(dec), 0)
-
+    
 
 class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
     """
@@ -452,3 +486,77 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'Uno': 0,
             'Uno/Dos': 1,
         })
+
+    def test_delete_l1_used_l2(self):
+        "Check deleting a level 1 node with used level 2 leaves both"
+        obj1 = test_models.TreeTest.objects.create(
+            name='Test 1', singletag='one',
+        )
+        obj2 = test_models.TreeTest.objects.create(
+            name='Test 2', singletag='one/two',
+        )
+        
+        self.assertTagModel(self.singletag_model, {
+            'one': 1,
+            'one/two': 1,
+        })
+        obj1.singletag=''
+        obj1.save()
+        self.assertTagModel(self.singletag_model, {
+            'one': 0,
+            'one/two': 1,
+        })
+
+    def test_get_descendant_count(self):
+        "Check the count of the descendants"
+        # Make four of everything
+        for i in range(4):
+            test_models.TreeTest.objects.create(
+                name='Test 1.%d' % i, singletag='One',
+            )
+            test_models.TreeTest.objects.create(
+                name='Test 2.%d' % i, singletag='One/Two',
+            )
+            test_models.TreeTest.objects.create(
+                name='Test 3.%d' % i, singletag='One/Two/Three',
+            )
+        self.assertTagModel(self.singletag_model, {
+            'One': 4,
+            'One/Two': 4,
+            'One/Two/Three': 4,
+        })
+        
+        # Check the counts
+        t1 = self.singletag_model.objects.get(name='One')
+        t2 = self.singletag_model.objects.get(name='One/Two')
+        t3 = self.singletag_model.objects.get(name='One/Two/Three')
+        self.assertEqual(t1.descendant_count, 8)
+        self.assertEqual(t2.descendant_count, 4)
+        self.assertEqual(t3.descendant_count, 0)
+
+    def test_get_family_count(self):
+        "Check the count of the family - node plus descendants"
+        # Make four of everything
+        for i in range(4):
+            test_models.TreeTest.objects.create(
+                name='Test 1.%d' % i, singletag='One',
+            )
+            test_models.TreeTest.objects.create(
+                name='Test 2.%d' % i, singletag='One/Two',
+            )
+            test_models.TreeTest.objects.create(
+                name='Test 3.%d' % i, singletag='One/Two/Three',
+            )
+        self.assertTagModel(self.singletag_model, {
+            'One': 4,
+            'One/Two': 4,
+            'One/Two/Three': 4,
+        })
+        
+        # Check the counts
+        t1 = self.singletag_model.objects.get(name='One')
+        t2 = self.singletag_model.objects.get(name='One/Two')
+        t3 = self.singletag_model.objects.get(name='One/Two/Three')
+        self.assertEqual(t1.family_count, 12)
+        self.assertEqual(t2.family_count, 8)
+        self.assertEqual(t3.family_count, 4)

@@ -134,7 +134,68 @@ class FormTagFieldTest(TagTestManager, TestCase):
             'value="run, walk" />'
         ))
     
+    def test_render_invalid_tag_url(self):
+        "Check widget renders data-tag-url"
+        autocomplete_view = 'tagulous_tests_app-view_does_not_exist'
+        class LocalTestForm(forms.Form):
+            tag = tag_forms.TagField(
+                tag_options=tag_models.TagOptions(
+                    autocomplete_view=autocomplete_view,
+                ),
+            )
+        form = LocalTestForm()
+        with self.assertRaises(ValueError) as cm:
+            rendered = str(form['tag'])
+        self.assertEqual(str(cm.exception), (
+            "Invalid autocomplete view: Reverse for '%s' with arguments '()' "
+            "and keyword arguments '{}' not found."
+        ) % autocomplete_view)
     
+    def test_render_autocomplete_settings(self):
+        "Check widget merges autocomplete settings with defaults"
+        # Make a form with some autocomplete settings
+        class LocalTestForm(forms.Form):
+            tags = tag_forms.TagField(
+                tag_options=tag_models.TagOptions(
+                    autocomplete_settings={
+                        'cats': 'purr',
+                        'cows': 'moo',
+                    },
+                ),
+            )
+        form = LocalTestForm()
+        
+        # Set some defaults in the widget
+        self.assertEqual(
+            form['tags'].field.widget.default_autocomplete_settings, None
+        )
+        form['tags'].field.widget.default_autocomplete_settings = {
+            'bees': 'buzz',
+            'cats': 'mew',
+        }
+        
+        # Render
+        # Expecting bees:buzz, cats:purr, cows:moo
+        self.assertHTMLEqual(str(form['tags']), (
+            '<input autocomplete="off" '
+            'data-tag-options="{'
+            '&quot;autocomplete_settings&quot;: {&quot;cows&quot;: &quot;moo'
+            '&quot;, &quot;bees&quot;: &quot;buzz&quot;, &quot;cats&quot;: '
+            '&quot;purr&quot;}, &quot;required&quot;: true}" '
+            'data-tagulous="true" '
+            'id="id_tags" name="tags" type="text" />'
+        ))
+        
+    def test_invalid_prepare_value(self):
+        "Check form field raises exception when given an invalid value"
+        form = test_forms.TagFieldForm()
+        with self.assertRaises(ValueError) as cm:
+            form['tags'].field.prepare_value(['tag', 'list', 'fails'])
+        self.assertEqual(
+            str(cm.exception), "Tag field could not prepare unexpected value",
+        )
+
+
 ###############################################################################
 ####### Test ModelForm TagField
 ###############################################################################
@@ -258,6 +319,25 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         )
         self.assertEqual(field2.tag_options.case_sensitive, True)
 
+    def test_override_autocomplete_tags_formfield(self):
+        "Test list of autocomplete tags can be passed in formfield"
+        self.tag_model.objects.create(name='red')
+        self.tag_model.objects.create(name='blue')
+        self.tag_model.objects.create(name='green')
+        
+        # Confirm default
+        field1 = self.form().fields['tags']
+        self.assertItemsEqual(
+            [t.name for t in field1.autocomplete_tags],
+            [t.name for t in self.tag_model.objects.all()],
+        )
+        
+        # Change default
+        field2 = self.model.tags.formfield(
+            autocomplete_tags=['pink', 'lime']
+        )
+        self.assertItemsEqual(field2.autocomplete_tags, ['pink', 'lime'])
+        
     def test_render_tag_list(self):
         "Check widget renders data-tag-list"
         self.tag_model.objects.create(name='red')
@@ -536,4 +616,32 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         self.assertEqual(
             form.errors['max_count'][0],
             'This field can only have 1 argument',
+        )
+    
+    def test_initial_without_autocomplete_initial(self):
+        "Check a field with initial but without autocomplete_initial lists all"
+        tag_model = self.model.initial_string.tag_model
+        tag_model.objects.create(name='David')
+        tag_model.objects.create(name='Eric')
+        tag_model.objects.create(name='Frank')
+        
+        # Confirm default
+        field = self.form().fields['initial_string']
+        self.assertItemsEqual(
+            [t.name for t in field.autocomplete_tags],
+            [t.name for t in tag_model.objects.all()],
+        )
+        
+    def test_initial_with_autocomplete_initial(self):
+        "Check a field with initial and autocomplete_initial lists initial"
+        tag_model = self.model.initial_list.tag_model
+        tag_model.objects.create(name='David')
+        tag_model.objects.create(name='Eric')
+        tag_model.objects.create(name='Frank')
+        
+        # Confirm default
+        field = self.form().fields['initial_list']
+        self.assertItemsEqual(
+            [t.name for t in field.autocomplete_tags],
+            [t.name for t in tag_model.objects.initial()],
         )

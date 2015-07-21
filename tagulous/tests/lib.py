@@ -1,3 +1,5 @@
+from cStringIO import StringIO
+import sys
 import unittest
 
 from django.db import models
@@ -8,11 +10,15 @@ from django.contrib.auth.models import User
 from tagulous import constants as tag_constants
 from tagulous import models as tag_models
 from tagulous import forms as tag_forms
+from tagulous import admin as tag_admin
 from tagulous import utils as tag_utils
 from tagulous import settings as tag_settings
 
-from tagulous.tests.app import models as test_models
-from tagulous.tests.app import forms as test_forms
+from tagulous.tests.tagulous_tests_app import models as test_models
+from tagulous.tests.tagulous_tests_app import admin as test_admin
+from tagulous.tests.tagulous_tests_app import urls as test_urls
+from tagulous.tests.tagulous_tests_app import forms as test_forms
+from tagulous.tests.tagulous_tests_app2 import models as test_models2
 
 
 class TagTestManager(object):
@@ -20,10 +26,11 @@ class TagTestManager(object):
     Test mixin to help test tag models
     """
     # Add test app urls
-    urls = 'tagulous.tests.app.urls'
+    urls = 'tagulous.tests.tagulous_tests_app.urls'
     
-    # We have some long string comparisons when checking form field renders
-    maxDiff = 1000
+    # We have some very long string comparisons (eg form field renders,
+    # migrations), so set the maxDiff to 10k
+    maxDiff = 10240
     
     # This class can manage models
     manage_models = None
@@ -137,4 +144,19 @@ class TagTestManager(object):
         for tag in model.objects.all():
             print '%s: %d' % (tag.name, tag.count)
         print "-=-=-=-=-=-"
+
+
+
+# Based on http://stackoverflow.com/questions/16571150/how-to-capture-stdout-output-from-a-python-function-call
+class Capturing(list):
+    "Capture stdout and stderr to a string"
+    def __enter__(self):
+        self._stdout = sys.stdout
+        self._stderr = sys.stderr
+        sys.stdout = sys.stderr = self._stringio = StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
 

@@ -9,106 +9,133 @@ from tagulous.tests.lib import *
 
 
 ###############################################################################
-####### Tag name parse and render
+####### utils.strip_split()
 ###############################################################################
 
-class TagNameUtilsTest(TestCase):
-    """
-    Test name util functions:
-        parse_tags
-        render_tags
-        split_strip
-    """
-    def test_split_strip_spaceless(self):
+class UtilsSplitStripTest(TestCase):
+    "Test utils.split_strip"
+    def test_empty(self):
+        split = tag_utils.split_strip(None)
+        self.assertEqual(split, [])
+        split = tag_utils.split_strip('')
+        self.assertEqual(split, [])
+        
+    def test_spaceless(self):
         split = tag_utils.split_strip("adam,brian")
         self.assertEqual(len(split), 2)
         self.assertEqual(split[0], "adam")
         self.assertEqual(split[1], "brian")
     
-    def test_split_strip_spaced(self):
+    def test_spaced(self):
         split = tag_utils.split_strip("  adam  ,  brian  ")
         self.assertEqual(len(split), 2)
         self.assertEqual(split[0], "adam")
         self.assertEqual(split[1], "brian")
-    
-    def test_parse_tags_commas(self):
+
+
+###############################################################################
+####### utils.parse_tags
+###############################################################################
+
+class UtilsParseTagsTest(TestCase):
+    "Test utils.parse_tags"
+    def test_commas(self):
         tags = tag_utils.parse_tags("adam,brian,chris")
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam")
         self.assertEqual(tags[1], "brian")
         self.assertEqual(tags[2], "chris")
     
-    def test_parse_tags_spaces(self):
+    def test_spaces(self):
         tags = tag_utils.parse_tags("adam brian chris")
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam")
         self.assertEqual(tags[1], "brian")
         self.assertEqual(tags[2], "chris")
         
-    def test_parse_tags_commas_and_spaces(self):
+    def test_trailing_comma(self):
+        tags = tag_utils.parse_tags("adam,brian,")
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian")
+    
+    def test_trailing_space(self):
+        tags = tag_utils.parse_tags("adam brian ")
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian")
+    
+    def test_commas_and_spaces(self):
         tags = tag_utils.parse_tags("adam, brian chris")
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], "adam")
         self.assertEqual(tags[1], "brian chris")
         
-    def test_parse_tags_commas_over_spaces(self):
+    def test_commas_over_spaces(self):
         tags = tag_utils.parse_tags("adam brian  ,  chris")
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], "adam brian")
         self.assertEqual(tags[1], "chris")
         
-    def test_parse_tags_order(self):
+    def test_order(self):
         tags = tag_utils.parse_tags("chris, adam, brian")
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam")
         self.assertEqual(tags[1], "brian")
         self.assertEqual(tags[2], "chris")
         
-    def test_parse_tags_quotes(self):
+    def test_quotes(self):
         tags = tag_utils.parse_tags('"adam, one"')
         self.assertEqual(len(tags), 1)
         self.assertEqual(tags[0], "adam, one")
         
-    def test_parse_tags_quotes_comma_delim(self):
+    def test_quotes_comma_delim(self):
         tags = tag_utils.parse_tags('"adam, one","brian, two","chris, three"')
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam, one")
         self.assertEqual(tags[1], "brian, two")
         self.assertEqual(tags[2], "chris, three")
         
-    def test_parse_tags_quotes_space_delim(self):
+    def test_quotes_space_delim(self):
         tags = tag_utils.parse_tags('"adam one" "brian two" "chris three"')
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam one")
         self.assertEqual(tags[1], "brian two")
         self.assertEqual(tags[2], "chris three")
         
-    def test_parse_tags_quotes_comma_delim_spaces_ignored(self):
+    def test_quotes_comma_delim_spaces_ignored(self):
         tags = tag_utils.parse_tags('"adam, one"  ,  "brian, two"  ,  "chris, three"')
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam, one")
         self.assertEqual(tags[1], "brian, two")
         self.assertEqual(tags[2], "chris, three")
         
-    def test_parse_tags_quotes_comma_delim_early_wins(self):
+    def test_quotes_comma_delim_early_wins(self):
         tags = tag_utils.parse_tags('"adam one","brian two" "chris three"')
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], "adam one")
         self.assertEqual(tags[1], 'brian two" "chris three')
         
-    def test_parse_tags_quotes_comma_delim_late_wins(self):
+    def test_quotes_comma_delim_late_wins(self):
         tags = tag_utils.parse_tags('"adam one" "brian two","chris three"')
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], 'adam one" "brian two')
         self.assertEqual(tags[1], "chris three")
         
-    def test_parse_tags_quotes_dont_delimit(self):
+    def test_quotes_comma_delim_late_wins_unescaped_quotes(self):
+        "When delimiter changes, return insignificant unescaped quotes"
+        tags = tag_utils.parse_tags('adam "one", brian two')
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], 'adam "one"')
+        self.assertEqual(tags[1], 'brian two')
+        
+    def test_quotes_dont_delimit(self):
         tags = tag_utils.parse_tags('adam"brian,chris dave')
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], 'adam"brian')
         self.assertEqual(tags[1], "chris dave")
         
-    def test_parse_tags_quotes_dont_close(self):
+    def test_quotes_dont_close(self):
         tags = tag_utils.parse_tags('"adam,one","brian,two","chris, dave')
         self.assertEqual(len(tags), 3)
         # Will be sorted, " comes first
@@ -116,21 +143,21 @@ class TagNameUtilsTest(TestCase):
         self.assertEqual(tags[1], "adam,one")
         self.assertEqual(tags[2], "brian,two")
     
-    def test_parse_tags_quotes_and_unquoted(self):
+    def test_quotes_and_unquoted(self):
         tags = tag_utils.parse_tags('adam , "brian, chris" , dave')
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam")
         self.assertEqual(tags[1], "brian, chris")
         self.assertEqual(tags[2], "dave")
     
-    def test_parse_tags_quotes_order(self):
+    def test_quotes_order(self):
         tags = tag_utils.parse_tags('chris, "adam", brian')
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "adam")
         self.assertEqual(tags[1], "brian")
         self.assertEqual(tags[2], "chris")
         
-    def test_parse_tags_quotes_escaped(self):
+    def test_quotes_escaped(self):
         """
         Tests quotes when delimiter is already comma
         """
@@ -141,7 +168,7 @@ class TagNameUtilsTest(TestCase):
         self.assertEqual(tags[2], 'br"ian')
         self.assertEqual(tags[3], 'dave"')
         
-    def test_parse_tags_quotes_escaped_late(self):
+    def test_quotes_escaped_late(self):
         """
         Tests quotes when delimiter switches to comma
         """
@@ -150,33 +177,40 @@ class TagNameUtilsTest(TestCase):
         self.assertEqual(tags[0], '"adam" brian"')
         self.assertEqual(tags[1], 'chris')
         
-    def test_parse_tags_empty_tag(self):
+    def test_empty_tag(self):
         tags = tag_utils.parse_tags('"adam" , , brian , ')
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], "adam")
         self.assertEqual(tags[1], "brian")
         
-    def test_parse_tags_limit(self):
+    def test_limit(self):
         with self.assertRaises(ValueError) as cm:
             print tag_utils.parse_tags("adam,brian,chris", 1)
         e = cm.exception
         self.assertEqual(str(e), 'This field can only have 1 argument')
 
-    def test_parse_tags_limit_quotes(self):
+    def test_limit_quotes(self):
         with self.assertRaises(ValueError) as cm:
             print tag_utils.parse_tags('"adam","brian",chris', 2)
         e = cm.exception
         self.assertEqual(str(e), 'This field can only have 2 arguments')
 
-    def test_render_tags(self):
-        tagstr = tag_utils.render_tags(['adam', 'brian', 'chris']);
+
+###############################################################################
+####### utils.render_tags
+###############################################################################
+
+class UtilsRenderTagsTest(TestCase):
+    "Test utils.render_tags"
+    def test_simple(self):
+        tagstr = tag_utils.render_tags(['adam', 'brian', 'chris'])
         self.assertEqual(tagstr, 'adam, brian, chris')
     
-    def test_render_tags_escapes_quotes(self):
+    def test_escapes_quotes(self):
         tagstr = tag_utils.render_tags(['ad"am', '"brian', 'chris"', '"dave"'])
         self.assertEqual(tagstr, '""brian, ""dave"", ad""am, chris""')
     
-    def test_render_tags_quotes_commas_and_spaces(self):
+    def test_quotes_commas_and_spaces(self):
         tagstr = tag_utils.render_tags(['adam brian', 'chris, dave', 'ed'])
         self.assertEqual(tagstr, '"adam brian", "chris, dave", ed')
     

@@ -8,6 +8,29 @@ import tagulous
 
 
 ###############################################################################
+####### Models for testing TagModel
+###############################################################################
+
+class TagMetaAbstractModel(tagulous.models.TagModel):
+    class Meta:
+        abstract = True
+    class TagMeta:
+        initial = 'Adam, Brian, Chris'
+        force_lowercase = True
+        max_count = 5
+
+class TagMetaModel(TagMetaAbstractModel):
+    class TagMeta:
+        max_count = 10
+        case_sensitive = True
+
+class TagMetaUser(models.Model):
+    name = models.CharField(blank=True, max_length=100)
+    two = tagulous.models.TagField(TagMetaModel, blank=True, null=True)
+    
+
+
+###############################################################################
 ####### Models for testing SingleTagField
 ###############################################################################
 
@@ -53,6 +76,7 @@ class SingleTagFieldOptionsModel(models.Model):
     )
     initial_list = tagulous.models.SingleTagField(
         blank=True, null=True, initial=['Mr', 'Mrs', 'Ms'],
+        autocomplete_initial=True,
     )
     protect_initial_true = tagulous.models.SingleTagField(
         blank=True, null=True, protect_initial=True, initial='Mr',
@@ -143,6 +167,7 @@ class TagFieldOptionsModel(models.Model):
     )
     initial_list = tagulous.models.TagField(
         blank=True, null=True, initial=['Adam', 'Brian', 'Chris'],
+        autocomplete_initial=True,
     )
     protect_initial_true = tagulous.models.TagField(
         blank=True, null=True, protect_initial=True, initial='Adam',
@@ -206,7 +231,8 @@ class SimpleMixedTest(models.Model):
     tags = tagulous.models.TagField(blank=True)
 
 class MixedTestTagModel(tagulous.models.TagModel):
-    pass
+    class TagMeta:
+        get_absolute_url = lambda self: 'url for %s' % self
 
 class MixedTest(models.Model):
     """

@@ -4,7 +4,7 @@ Tagulous test app views
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
 
-from tagulous.tests.app import models
+from tagulous.tests.tagulous_tests_app import models
 
 
 def null(request):
