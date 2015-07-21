@@ -11,11 +11,7 @@ try:
 except ImportError:
     unidecode = None
 
-# Constants to improve legibility
-COMMA = u','
-SPACE = u' '
-QUOTE = u'"'
-TREE = u'/'
+from tagulous.constants import COMMA, SPACE, QUOTE, DOUBLE_QUOTE, TREE
 
 
 ###############################################################################
@@ -90,7 +86,7 @@ def parse_tags(tag_string, max_count=0):
                 right_quote_count = tag_len - len(tag)
                 
                 # Escape inner quotes
-                tag = tag.replace(QUOTE + QUOTE, QUOTE)
+                tag = tag.replace(DOUBLE_QUOTE, QUOTE)
                 
                 # Add back escaped start/end quotes
                 tag = (
@@ -99,11 +95,18 @@ def parse_tags(tag_string, max_count=0):
                     QUOTE * (right_quote_count / 2)
                 )
                 
-                # Add back insignificant unquoted quotes
-                if left_quote_count % 2 == 1:
-                    if right_quote_count % 2 != 1:
-                        tag = QUOTE + tag
-                elif right_quote_count % 2 == 1:
+                # Add back insignificant unescaped quotes.
+                #
+                # There are only two scenarios where there can be unescaped
+                # quotes at the start, followed by a comma later:
+                #   1. The comma is quoted - but that means in_quote is True,
+                #      in which case we won't be in this code branch
+                #   2. The comma comes after a matching closing unescaped quote
+                # 
+                # Therefore there can't be insigificant unescaped quotes on the
+                # left and unescaped quotes on the right are only insignificant
+                # if there are no unescaped quotes on the left
+                if right_quote_count % 2 == 1 and left_quote_count % 2 == 0:
                     tag += QUOTE
                 
             
@@ -113,7 +116,9 @@ def parse_tags(tag_string, max_count=0):
                 if tag:
                     tags.append(tag)
                     tag = ''
-                continue
+                # Following tested manually due to coverage bug
+                #   See https://bitbucket.org/ned/coveragepy/issues/198 
+                continue # pragma: no cover
                 
             # If tag is empty, ignore whitespace
             if not tag and char == SPACE:
@@ -162,7 +167,8 @@ def parse_tags(tag_string, max_count=0):
                         else:
                             # Spaces are insignificant during whitespace
                             # Tag may continue, keep checking chars
-                            continue
+                            # Following tested manually due to coverage bug
+                            continue # pragma: no cover
                     elif c2 == COMMA:
                         # Quotes closed; tag will end next loop
                         # Delimiter doesn't matter, comma always wins
@@ -221,7 +227,7 @@ def render_tags(tags):
         # This will catch a list of Tag objects or tag name strings
         name = u'%s' % tag
         
-        name = name.replace(QUOTE, QUOTE + QUOTE)
+        name = name.replace(QUOTE, DOUBLE_QUOTE)
         if COMMA in name or SPACE in name:
             names.append(u'"%s"' % name)
         else:

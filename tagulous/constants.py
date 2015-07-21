@@ -32,3 +32,10 @@ FIELD_OPTIONS = [
     'autocomplete_limit',
     'autocomplete_settings'
 ]
+
+# Constants to improve code legibility
+COMMA = u','
+SPACE = u' '
+QUOTE = u'"'
+DOUBLE_QUOTE = QUOTE + QUOTE
+TREE = u'/'
