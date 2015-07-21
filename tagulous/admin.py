@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.base import ModelBase
 from django.shortcuts import render
@@ -105,10 +106,18 @@ def enhance(model, admin_class):
                     setattr(admin_class, display_name, _create_display(field))
     
 
-def register(model, admin_class=None, **options):
+def register(model, admin_class=None, site=None, **options):
     """
-    Add tag field support to the admin class, then register with the specified
-    admin site
+    Provide tag support to the model when it is registered with the admin site.
+    
+    For tagged models (have one or more SingleTagField or TagField fields):
+        * Admin will support TagField in list_display
+    
+    For tag models (subclass of TagModel):
+        * Admin will provide a merge action to merge tags
+    
+    For other models:
+        * No changes made
     
     Arguments:
         model       Model to register
@@ -117,33 +126,55 @@ def register(model, admin_class=None, **options):
                     Default: django.contrib.admin.site
         **options   Extra options for admin class
     
-    This only supports one model
+    This only supports one model, but is otherwise safe to use with non-tagged
+    models.
     """
-    if not isinstance(model, ModelBase):
+    # Look at the model we've been given
+    if isinstance(model, tag_models.BaseTagDescriptor):
+        # It's a tag descriptor; change it for the tag model itself
+        model = model.tag_model
+    
+    elif not isinstance(model, ModelBase):
         raise ImproperlyConfigured(
             'Tagulous can only register a single model with admin.'
         )
     
-    # Get site from args
-    site = options.pop('site', admin.site)
+    # Ensure we have a valid admin site
+    if site is None:
+        site = admin.site
     
     #
-    # Ensure we have an admin class
-    # This is similar to functionality in site.register(), but it ensures that
-    # the model class is a subclass of TaggedModelAdmin.
+    # Determine appropriate admin class
     #
     if not admin_class:
         admin_class = admin.ModelAdmin
     
-    cls_bases = None
-    if not issubclass(admin_class, TaggedModelAdmin):
-        cls_bases = (TaggedModelAdmin, admin_class)
-    elif options:
-        cls_bases = (admin_class,)
+    # Going to make a list of base classes to inject
+    cls_bases = []
+    
+    # If it's a tag model, subclass TagModelAdmin or TagTreeModelAdmin
+    if issubclass(model, tag_models.BaseTagModel):
+        if issubclass(model, tag_models.TagTreeModel):
+            if not issubclass(admin_class, TagTreeModelAdmin):
+                cls_bases += [TagTreeModelAdmin]
+        else:
+            if not issubclass(admin_class, TagModelAdmin):
+                cls_bases += [TagModelAdmin]
+    
+    # If it's a tagged model, subclass TaggedModelAdmin
+    singletagfields = tag_models.singletagfields_from_model(model)
+    tagfields = tag_models.tagfields_from_model(model)
+    if singletagfields or tagfields:
+        if not issubclass(admin_class, TaggedModelAdmin):
+            cls_bases += [TaggedModelAdmin]
+    
+    # If options specified, or other bases, will need to subclass admin_class
+    if options or cls_bases:
+        cls_bases += [admin_class]
         
-    if cls_bases is not None:
+    if cls_bases:
         options['__module__'] = __name__
-        admin_class = type("%sAdmin" % model.__name__, cls_bases, options)
+        admin_class = type("%sAdmin" % model.__name__, tuple(cls_bases), options)
     
     # Enhance the model class
     enhance(model, admin_class)
@@ -172,7 +203,7 @@ class TagModelAdmin(admin.ModelAdmin):
         
         # Create a form
         class MergeForm(forms.Form):
-            # Keep selected items in same field
+            # Keep selected items in same field, admin.ACTION_CHECKBOX_NAME
             _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
             # Allow use to select from selected items
             merge_to = forms.ModelChoiceField(queryset)
@@ -182,12 +213,23 @@ class TagModelAdmin(admin.ModelAdmin):
             if merge_form.is_valid():
                 merge_to = merge_form.cleaned_data['merge_to']
                 merge_to.merge_tags(queryset)
-                self.message_user(request, 'Tags merged')
+                self.message_user(
+                    request, 'Tags merged', level=messages.SUCCESS,
+                )
                 return HttpResponseRedirect(request.get_full_path())
+                
         else:
+            tag_pks = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+            if len(tag_pks) < 2:
+                self.message_user(
+                    request, 'You must select at least two tags to merge',
+                    level=messages.INFO,
+                )
+                return HttpResponseRedirect(request.get_full_path())
+            
             merge_form = MergeForm(
                 initial={
-                    '_selected_action': request.POST.getlist(
+                    admin.ACTION_CHECKBOX_NAME: request.POST.getlist(
                         admin.ACTION_CHECKBOX_NAME
                     )
                 }
@@ -206,23 +248,10 @@ class TagTreeModelAdmin(TagModelAdmin):
 
 
 def tag_model(model, site=None):
-    """
-    Create a new ModelAdmin for the specified tag model
-    """
-    if isinstance(model, tag_models.BaseTagDescriptor):
-        # It's a tag descriptor; change it for the tag model itself
-        model = model.tag_model
-    
-    if issubclass(model, tag_models.TagTreeModel):
-        admin_cls = TagTreeModelAdmin
-    else:
-        admin_cls = TagModelAdmin
-        
-    # Default site to admin.site - but here instead of constructor, in the
-    # unlikely but possible case that someone changed it during initialisation
-    if site is None:
-        site = admin.site
-    
-    # Register with the default TagModelAdmin class
-    register(model, admin_class=admin_cls, site=site)
-    
+    "Deprecated - use register() instead"
+    # ++ Remove in next release
+    import warnings
+    warnings.warn(
+        'tag_model deprecated, use register instead', DeprecationWarning,
+    )
+    register(model, site=site)
