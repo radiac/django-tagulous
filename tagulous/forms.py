@@ -1,5 +1,5 @@
 from django import forms
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import EMPTY_VALUES
@@ -35,14 +35,13 @@ class TagWidgetBase(forms.TextInput):
     # tagulous.admin isn't used to register the admin model
     choices = None
     
-    # Based on django-taggit
     def render(self, name, value, attrs={}):
         # Try to provide a URL for the autocomplete to load tags on demand
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:
             try:
                 attrs['data-tag-url'] = reverse(autocomplete_view)
-            except Exception, e:
+            except NoReverseMatch, e:
                 raise ValueError('Invalid autocomplete view: %s' % e)
         
         # Otherwise embed them, if provided
@@ -64,11 +63,10 @@ class TagWidgetBase(forms.TextInput):
         
         # Merge default autocomplete settings into tag options
         tag_options = self.tag_options.field_items(with_defaults=False)
-        if (
-            'autocomplete_settings' not in tag_options
-            and self.default_autocomplete_settings is not None
-        ):
-            tag_options['autocomplete_settings'] = self.default_autocomplete_settings
+        if self.default_autocomplete_settings is not None:
+            autocomplete_settings = self.default_autocomplete_settings.copy()
+            autocomplete_settings.update(tag_options['autocomplete_settings'])
+            tag_options['autocomplete_settings'] = autocomplete_settings
         
         # Inject extra settings
         tag_options.update({
@@ -141,24 +139,19 @@ class BaseTagField(forms.CharField):
         
     def prepare_value(self, value):
         """
-        Prepare the value
+        Prepare the value - a tag string
         """
         # Catch no value (empty form for add)
         if not value:
-            tag_string = value
+            tag_string = ''
             
-        # If called by the form or as a SingleTagField, will get a string
+        # Will normally get a string
         elif isinstance(value, basestring):
             tag_string = value
         
-        # Otherwise will be given by the model's TagField.value_from_object().
-        # The value comes from django.forms.model.model_to_dict, which thinks
-        # it produced a list of pks but TagField.value_from_object tricked it
+        # Otherwise we have an invalid value
         else:
-            # Catch changes in model_to_dict which broke the trick
-            if len(value) != 1:
-                raise ValueError(_("Tag field could not prepare unexpected value"))
-            tag_string = value[0]
+            raise ValueError(_("Tag field could not prepare unexpected value"))
             
         return super(BaseTagField, self).prepare_value(tag_string)
     
@@ -167,7 +160,8 @@ class BaseTagField(forms.CharField):
     def _get_tag_options(self):
         return self._tag_options
     def _prepare_tag_options(self, tag_options):
-        return tag_options
+        "Clone tag options"
+        return tag_options + options.TagOptions()
     def _set_tag_options(self, tag_options):
         tag_options = self._prepare_tag_options(tag_options)
         self._tag_options = tag_options
@@ -189,11 +183,23 @@ class BaseTagField(forms.CharField):
         """
         return {}
         
-    def clean(self, value):
+    def clean(self, value, single=False):
+        """
+        Clean the form value
+        
+        If optional argument ``single`` is True, the returned value will be a
+        string containing the tag name.
+        
+        If ``single`` is False (default), the returned value will be a list of
+        strings containing tag names.
+        """
         value = super(BaseTagField, self).clean(value)
         
         if self.tag_options.force_lowercase:
             value = value.lower()
+        
+        if single:
+            return value
         
         try:
             return parse_tags(value, self.tag_options.max_count)
@@ -214,31 +220,8 @@ class SingleTagField(BaseTagField):
         # Might have been passed a Tag object via initial - convert to string
         if isinstance(value, BaseTagModel):
             value = value.name
-        if value:
-            if value.startswith('"') and value.endswith('"'):
-                tag_string = value[1:-1]
-            else:
-                tag_string = value
-            
-            if '"' in tag_string:
-                tag_string = tag_string.replace('"', '')
-        else:
-            tag_string = value
-        
+        tag_string = value
         return super(SingleTagField, self).prepare_value(tag_string)
-
-    def validate(self, value):
-        """
-        Validate by ensuring no quotes other than those at the start and end
-        """
-        # Validation only cares about the string itself
-        if value.startswith('"') and value.endswith('"'):
-            value = value[1:-1]
-        
-        # Validation by parent class will expect empty value to be None
-        super(SingleTagField, self).validate(value)
-        if '"' in value:
-            raise ValidationError('This field cannot contain the " character')
       
     def _prepare_tag_options(self, tag_options):
         """
@@ -264,13 +247,9 @@ class SingleTagField(BaseTagField):
         """
         Clean by parsing tag with quotes
         """
-        # From django 1.6 onwards, this is accessible on self.empty_values,
-        # but should be fine to use directly for a descendant of CharField.
-        if value not in EMPTY_VALUES:
-            value = '"%s"' % value
-        tags = super(SingleTagField, self).clean(value)
-        if tags:
-            return tags[0]
+        tag = super(SingleTagField, self).clean(value, single=True)
+        if tag:
+            return tag
         else:
             return None
 
