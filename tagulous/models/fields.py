@@ -28,40 +28,53 @@ class BaseTagField(object):
     """
     Mixin for TagField and SingleTagField
     """
-    def init_tagfield(self, to=None, **kwargs):
+    def __init__(self, to=None, **kwargs):
+        """
+        Initialise the tag options and store 
+        
+        Takes all tag options as keyword arguments, as long as there is no
+        ``to`` tag model specified.
+        
+        Undocumented keyword argument ``_set_tag_meta`` is used internally to
+        update tag model options with those specified in keyword arguments when
+        a ``to`` tag model is specified. However, this is intended for internal
+        use only (when migrating), so if you must use it, use it with care.
+        """
         # Save tag model
         self.tag_model = to
         
-        # See if this tag model is to be auto-generated
-        # If manual, collect options from TagMeta
-        tag_meta = {}
-        if self.tag_model:
-            self.auto_tag_model = False
-            
-            # Get ancestors' TagMeta options, oldest first
-            for klass in reversed(self.tag_model.mro()):
-                if 'TagMeta' in klass.__dict__:
-                    for key in constants.OPTION_DEFAULTS.keys():
-                        if key in klass.TagMeta.__dict__:
-                            tag_meta[key] = getattr(klass.TagMeta, key)
-        else:
-            self.auto_tag_model = True
-        
-        # Extract options
+        # Extract options from kwargs
         options = {}
         for key, default in constants.OPTION_DEFAULTS.items():
             # Look in kwargs, then in tag_meta
             if key in kwargs:
                 options[key] = kwargs.pop(key)
-            elif key in tag_meta:
-                options[key] = tag_meta[key]
         
-        # Create tag options
-        self.tag_options = TagOptions(**options)
+        # Detect if _set_tag_meta is set
+        set_tag_meta = kwargs.pop('_set_tag_meta', False)
         
-        # If there's a tag model, ensure tag_options are there
-        if self.tag_model and not hasattr(self.tag_model, 'tag_options'):
-            self.tag_model.tag_options = self.tag_options
+        # Decide what to do with tag options
+        if self.tag_model:
+            if options:
+                if set_tag_meta:
+                    # Tag option arguments must be used to update the tag model
+                    # (and any other tag fields which use it) - used during
+                    # migration when the tag model doesn't know its own options
+                    self.tag_model.tag_options.update(options)
+                else:
+                    raise ValueError(
+                        'Cannot set tag options %s on explicit tag model %r' % (
+                            ', '.join(repr(k) for k in options.keys()),
+                            self.tag_model,
+                        )
+                    )
+            
+            self.auto_tag_model = False
+            # Link to model options by reference in case they get updated later
+            self.tag_options = self.tag_model.tag_options
+        else:
+            self.tag_options = TagOptions(**options)
+            self.auto_tag_model = True
         
         # Note things we'll need to restore after __init__
         help_text = kwargs.pop('help_text', '')
@@ -87,7 +100,7 @@ class BaseTagField(object):
         # This attribute will let us tell South to supress undesired M2M fields
         self.south_supression = True
     
-    def contribute_tagfield(self, cls, name):
+    def contribute_to_class(self, cls, name):
         """
         Create the tag model if necessary, then initialise and contribute the
         field to the class
@@ -101,7 +114,9 @@ class BaseTagField(object):
         # the load order, which could change. Rather than risk problems later,
         # ban it outright to save developers from themselves
         if self.contributed:
-            raise AttributeError("Cannot contribute a TagField to a model more than once.")
+            raise AttributeError(
+                "The tag field %r is already attached to a model" % self
+            )
         self.contributed = True
         
         # Create a new tag model if we need to
@@ -155,7 +170,7 @@ class BaseTagField(object):
         # Contribute to class
         super(BaseTagField, self).contribute_to_class(cls, name)
     
-    def tag_formfield(self, form_class, **kwargs):
+    def formfield(self, form_class, **kwargs):
         """
         Common actions for TagField and SingleTagField to set up a formfield
         """
@@ -224,9 +239,9 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         # Forbid certain ForeignKey arguments
         for forbidden in ['to_field', 'rel_class', 'max_count']:
             if forbidden in kwargs:
-                raise ValueError("Invalid argument '%s' for SingleTagField" % forbidden)
-        
-        kwargs['max_count'] = 1
+                raise ValueError(
+                    "Invalid argument '%s' for SingleTagField" % forbidden
+                )
         
         # TagFields will need to be nulled in the database when deleting,
         # regardless of whether we want to allow them to be null or not.
@@ -236,16 +251,16 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         kwargs['null'] = True
         
         # Create the tag field
-        self.init_tagfield(*args, **kwargs)
-
+        super(SingleTagField, self).__init__(*args, **kwargs)
+        
     def contribute_to_class(self, cls, name):
         """
         Create the related tag model, initialise the ForeignKey with it,
         and set up the model to use the SingleTagDescriptor instead of the
         ReverseSingleRelatedObjectDescriptor
         """
-        # Standard contribute
-        self.contribute_tagfield(cls, name)
+        # Standard BaseTagField contribute
+        super(SingleTagField, self).contribute_to_class(cls, name)
         
         # Replace the descriptor with our own
         old_descriptor = getattr(cls, name)
@@ -254,11 +269,11 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         
     def value_from_object(self, obj):
         """
-        Returns the value of the foreign key as a tag string
+        Returns the value of the foreign key as a tag string, for a form
         """
         tag = getattr(obj, self.name)
         if tag:
-            return render_tags([tag.name])
+            return tag.name
         return ''
         
     def formfield(self, form_class=forms.SingleTagField, **kwargs):
@@ -266,7 +281,9 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         Create the form field
         For arguments see forms.TagField
         """
-        return self.tag_formfield(form_class=form_class, **kwargs)
+        return super(SingleTagField, self).formfield(
+            form_class=form_class, **kwargs
+        )
 
         
 ###############################################################################
@@ -290,17 +307,19 @@ class TagField(BaseTagField, models.ManyToManyField):
         # Forbid certain ManyToManyField arguments
         for forbidden in ['db_table', 'through', 'symmetrical']:
             if forbidden in kwargs:
-                raise ValueError("Invalid argument '%s' for TagField" % forbidden)
+                raise ValueError(
+                    "Invalid argument '%s' for TagField" % forbidden
+                )
         
-        self.init_tagfield(*args, **kwargs)
+        super(TagField, self).__init__(*args, **kwargs)
         
     def contribute_to_class(self, cls, name):
         """
         Create the related tag model, initialise the ManyToManyField with it,
         and set up the model to use the TagDescriptor
         """
-        # Standard contribute
-        self.contribute_tagfield(cls, name)
+        # Standard BaseTagField contribute
+        super(TagField, self).contribute_to_class(cls, name)
         
         # Replace the descriptor with our own
         old_descriptor = getattr(cls, name)
@@ -362,7 +381,9 @@ class TagField(BaseTagField, models.ManyToManyField):
         Create the form field
         For arguments see forms.TagField
         """
-        return self.tag_formfield(form_class=form_class, **kwargs)
+        return super(TagField, self).formfield(
+            form_class=form_class, **kwargs
+        )
 
     def save_form_data(self, instance, data):
         """

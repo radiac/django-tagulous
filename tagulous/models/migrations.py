@@ -1,8 +1,13 @@
 """
 South migration support
 """
+# No unit test coverage of this file - it would be complicated to unit test the
+# creation and application of a schema migration, and as South has been
+# deprecated it seems like wasted effort. Contributions welcome, but has been
+# tested manually instead.
 
 from tagulous import constants
+from tagulous.models.models import BaseTagModel, BaseTagTreeModel
 from tagulous.models.options import TagOptions
 from tagulous.models.fields import SingleTagField, TagField
 
@@ -10,25 +15,24 @@ from tagulous.models.fields import SingleTagField, TagField
 try:
     from south import modelsinspector
     
-    # Monkey-patch South to use TagModel as the base class for tag models
-    # This will allow Tagulous to work in data migrations
+    # Monkey-patch South to use BaseTagModel as the base class for tag models
+    # in data migrations. It has to use an abstract model without fields,
+    # because South adds the fields when it's creating the model, and fields
+    # can't be overridden in model subclasses.
     old_get_model_meta = modelsinspector.get_model_meta
     def get_model_meta(model):
         meta_def = old_get_model_meta(model)
         if isinstance(getattr(model, 'tag_options', None), TagOptions):
-            meta_def['_bases'] = ['tagulous.models.BaseTagModel']
+            if model.tag_options.tree:
+                meta_def['_bases'] = ['tagulous.models.BaseTagTreeModel']
+            else:
+                meta_def['_bases'] = ['tagulous.models.BaseTagModel']
         return meta_def
     modelsinspector.get_model_meta = get_model_meta
     
     
     # Build keyword arguments for south
     south_kwargs = {
-        # Don't want the tag model if it is generated automatically
-        #'tag_model':    ['tag_model', {'ignore_if': 'auto_tag_model'}],
-        
-        # Never want
-        #'to':           ['south_supression', {'ignore_if': 'south_supression'}],
-        
         # Never want fk
         'to_field':     ['south_supression', {'ignore_if': 'south_supression'}],
         'rel_class':    ['south_supression', {'ignore_if': 'south_supression'}],
@@ -53,6 +57,10 @@ try:
             
         south_kwargs[key] = ['tag_options.%s' % seek, {'default': value}]
     
+    # Always store _set_tag_meta=True, so migrating tag fields can set tag
+    # models' TagMeta during migrations
+    south_kwargs['_set_tag_meta'] = [True, {"is_value": True}]
+    
     # Add introspection rule for TagField
     modelsinspector.add_introspection_rules([
         (
@@ -62,20 +70,21 @@ try:
         ),
     ], ["^tagulous\.models\.fields\.TagField"])
     
-    # No max_count for SingleTagField
-    del(south_kwargs['max_count'])
+    # Create copy of south_kwargs without max_count
+    single_south_kwargs = dict(
+        (k, v) for k, v in south_kwargs.items() if k != 'max_count'
+    )
     modelsinspector.add_introspection_rules([
         (
             [SingleTagField],     # Class(es) these apply to
-            [],             # Positional arguments (not used)
-            south_kwargs,   # Keyword arguments
+            [],                   # Positional arguments (not used)
+            single_south_kwargs,  # Keyword arguments
         ),
     ], ["^tagulous\.models\.fields\.SingleTagField"])
     
 except ImportError, e:
     # South not installed
     pass
-
 
 
 def add_unique_column(self, db, model, column, set_fn, field_type, **kwargs):
@@ -133,9 +142,14 @@ def add_unique_column(self, db, model, column, set_fn, field_type, **kwargs):
     
     # Set the fields
     if not db.dry_run:
+        # Make sure tag models won't mess with data during this operation
+        is_tag_model = issubclass(model, BaseTagModel)
         for obj in model.objects.all():
             set_fn(obj)
-            obj.save()
+            if is_tag_model:
+                obj._save_direct()
+            else:   # pragma: no cover - no need, _save_direct() calls save()
+                obj.save()
     
     # Change column to unique
     db.alter_column(

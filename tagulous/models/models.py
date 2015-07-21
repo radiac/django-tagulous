@@ -10,8 +10,10 @@ except ImportError:
     from django.template.defaultfilters import slugify
 
 import tagulous
+from tagulous import constants
 from tagulous import settings
 from tagulous import utils
+from tagulous.models.options import TagOptions
 
 
 ###############################################################################
@@ -79,11 +81,54 @@ class TagModelManager(models.Manager):
 ####### Abstract base class for all TagModel models
 ###############################################################################
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#       Metaclass for tag models
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+class TagModelBase(models.base.ModelBase):
+    def __new__(cls, name, bases, attrs):
+        # Set up as normal
+        new_cls = super(TagModelBase, cls).__new__(cls, name, bases, attrs)
+        
+        # TagMeta takes priority for the model
+        new_tag_options = None
+        if 'TagMeta' in attrs:
+            tag_meta = {}
+            tag_meta = dict(
+                (key, val) for key, val in attrs['TagMeta'].__dict__.items()
+                if key in constants.OPTION_DEFAULTS
+            )
+            new_tag_options = TagOptions(**tag_meta)
+        
+        # Failing that, look for a direct tag_options setting
+        # It will probably have been passed by BaseTagField.contribute_to_class
+        elif 'tag_options' in attrs:
+            new_tag_options = attrs['tag_options']
+        
+        # Otherwise start a new one
+        else:
+            new_tag_options = TagOptions()
+        
+        # See if there's anything to inherit
+        if hasattr(new_cls, 'tag_options'):
+            new_tag_options = new_cls.tag_options + new_tag_options
+        
+        # Assign
+        new_cls.tag_options = new_tag_options
+        return new_cls
+        
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#       Empty abstract model
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 class BaseTagModel(models.Model):
     """
-    Base tag model, without fields
-    Required for South
+    Empty abstract base class for tag models
+    
+    This is used when dynamically building models, eg by South in migrations
     """
+    __metaclass__ = TagModelBase
     objects = TagModelManager()
     
     class Meta:
@@ -107,7 +152,7 @@ class BaseTagModel(models.Model):
     def get_absolute_url(self):
         if self.tag_options.get_absolute_url is None:
             raise AttributeError(
-                "type object '%s' has no attribute 'get_absolute_url'" % self.__class__.__name__
+                "'%s' has no attribute 'get_absolute_url'" % self.__class__.__name__
             )
         return self.tag_options.get_absolute_url(self)
     
@@ -170,12 +215,6 @@ class BaseTagModel(models.Model):
         """
         data = []
         for related in self.get_related_fields(include_standard=include_standard):
-            if not include_standard and not isinstance(related.field, (
-                tagulous.models.fields.SingleTagField,
-                tagulous.models.fields.TagField,
-            )):
-                continue
-            
             objs = related.model._base_manager.using(
                 router.db_for_write(self.tag_model)
             ).filter(
@@ -243,6 +282,7 @@ class BaseTagModel(models.Model):
         is_protected = self.protected or self.tag_options.protect_all
         if not is_protected:
             # Before we delete, check for any standard relationships
+            # This will catch if the tag is in a tree with children
             true_count = len(
                 self.get_related_objects(flat=True, include_standard=True)
             )
@@ -251,15 +291,6 @@ class BaseTagModel(models.Model):
                 # We can't delete (we'll break things)
                 # Tag is protected, for now
                 is_protected = True
-        
-        # See if it has children
-        if (
-            not is_protected
-            and self.tag_options.tree
-            and self.children.count() > 0
-        ):
-            # Can't delete if it has children
-            is_protected = True
         
         # Try to delete
         if not is_protected:
@@ -313,6 +344,15 @@ class BaseTagModel(models.Model):
         Allows subclasses to update extra fields based on slug
         """
         pass
+        
+    def _save_direct(self, *args, **kwargs):
+        """
+        Save without modifying data
+        
+        Used during schemamigrations
+        """
+        # We inherited from BaseTagModel, tell that to save directly too
+        return super(BaseTagModel, self).save(*args, **kwargs)
         
     def save(self, *args, **kwargs):
         """
@@ -369,10 +409,13 @@ class BaseTagModel(models.Model):
         return super(BaseTagModel, self).save(*args, **kwargs)
     save.alters_data = True
 
+    # For consistency with SingleTagField, provide .tag_model attribute
+    tag_model = property(lambda self: self.__class__)
+    
 
-###############################################################################
-####### Abstract base class for tag models
-###############################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#       Abstract model with fields
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 class TagModel(BaseTagModel):
     """
@@ -392,9 +435,6 @@ class TagModel(BaseTagModel):
         default=False,
         help_text="Will not be deleted when the count reaches 0"
     )
-    
-    # For consistency with SingleTagField, provide .tag_model attribute
-    tag_model = property(lambda self: self.__class__)
     
     class Meta:
         abstract = True
@@ -422,28 +462,23 @@ class TagTreeModelManager(TagModelManager):
 
 
 ###############################################################################
-####### Abstract base class for all TagModel models
+####### Abstract base class for all TagTreeModel models
 ###############################################################################
 
-class TagTreeModel(TagModel):
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#       Empty abstract model
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+class BaseTagTreeModel(BaseTagModel):
     """
-    Abstract base class for tag models with tree
-    """
-    # These fields are all generated automatically on save
-    parent      = models.ForeignKey(
-        'self', null=True, blank=True, related_name='children', db_index=True,
-    )
-    path        = models.TextField(unique=True)
+    Empty abstract base class for tag models with tree
     
+    This is used when dynamically building models, eg by South in migrations
+    """
     objects = TagTreeModelManager()
     
     class Meta:
         abstract = True
-        ordering = ('name',)
-        unique_together = (
-            ('slug', 'parent'),
-        )
-    
     
     # Other derivable attributes won't be used in lookups, so don't need to be
     # cached. If there are situations where they are needed for lookups, this
@@ -478,10 +513,19 @@ class TagTreeModel(TagModel):
         """
         Initialise the tag
         """
-        super(TagTreeModel, self).__init__(*args, **kwargs)
+        super(BaseTagTreeModel, self).__init__(*args, **kwargs)
         # Keep track of the name
         self._name = self.name
     
+    def _save_direct(self, *args, **kwargs):
+        """
+        Save without modifying data
+        
+        Used during schemamigrations
+        """
+        # We inherited from BaseTagModel, tell that to save directly too
+        return super(BaseTagTreeModel, self)._save_direct(*args, **kwargs)
+        
     def save(self, *args, **kwargs):
         """
         Set the parent and path cache
@@ -499,7 +543,7 @@ class TagTreeModel(TagModel):
             self.parent = None
         
         # Save - super .save() method will set the path using _get_path()
-        super(TagTreeModel, self).save(*args, **kwargs)
+        super(BaseTagTreeModel, self).save(*args, **kwargs)
         
         # If name has changed, update child names
         if self._name != self.name:
@@ -545,3 +589,25 @@ class TagTreeModel(TagModel):
         # Look up by path, already ordered by name for deepest last
         cls = self.__class__
         return cls.objects.filter(path__startswith='%s/' % self.path)
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#       Abstract model with fields
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+class TagTreeModel(BaseTagTreeModel, TagModel):
+    """
+    Abstract base class for tag models with tree
+    """
+    # These fields are all generated automatically on save
+    parent      = models.ForeignKey(
+        'self', null=True, blank=True, related_name='children', db_index=True,
+    )
+    path        = models.TextField(unique=True)
+    
+    class Meta:
+        abstract = True
+        ordering = ('name',)
+        unique_together = (
+            ('slug', 'parent'),
+        )
