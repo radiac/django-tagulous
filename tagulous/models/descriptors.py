@@ -95,9 +95,9 @@ class SingleTagDescriptor(BaseTagDescriptor):
         )
         
     def __set__(self, instance, value):
-        # Check we can do this
-        # descriptor.__set__() will do this again, but can't be avoided
-        if instance is None:
+        # Check we've actually got an instance. No practical way this could
+        # happen, but Django does it, so we will too
+        if instance is None: # pragma: no cover
             raise AttributeError("Manager must be accessed via instance")
         
         # Otherwise set on the manager
@@ -160,11 +160,20 @@ class TagDescriptor(BaseTagDescriptor):
         # We need to clear the M2M manually to update tag counts
         def pre_delete_handler(sender, instance, **kwargs):
             """
-            Safely clear the M2M tag field
+            Safely clear the M2M tag field, persisting tags on the manager
             """
             # Get the manager and tell it to clear
             manager = self.__get__(instance)
+            
+            # Get tags so we can make them available to the fake manager later
+            manager.reload()
+            tags = manager.tags
+            
+            # Clear the object
             manager.clear()
+            
+            # Put the tags back on the manager
+            manager.tags = tags
         models.signals.pre_delete.connect(
             pre_delete_handler, sender=self.field.model, weak=False
         )
@@ -215,14 +224,6 @@ class TagDescriptor(BaseTagDescriptor):
         # Set it in case it changed
         setattr(instance, attname, manager)
         return manager
-        
-        # Get existing or create new SingleTagManager
-        attname = self.descriptor.field.get_manager_name()
-        manager = getattr(instance, attname, None)
-        if not manager:
-            manager = SingleTagManager(self, instance)
-            setattr(instance, attname, manager)
-        return manager
     
     def create_manager(self, instance, instance_type):
         # Get the RelatedManager that should have been returned
@@ -231,14 +232,9 @@ class TagDescriptor(BaseTagDescriptor):
         # Add in the mixin
         manager.__class__ = type(
             'TagRelatedManager',
-            (manager.__class__, TagRelatedManagerMixin),
+            (TagRelatedManagerMixin, manager.__class__),
             {}
         )
-        
-        # Switch add, remove and clear, keeping the old versions to call later
-        manager._old_add,    manager.add    = manager.add,    manager._add
-        manager._old_remove, manager.remove = manager.remove, manager._remove
-        manager._old_clear,  manager.clear  = manager.clear,  manager._clear
         
         # Manager is already instantiated; initialise tagulous in it
         manager.init_tagulous(self)
@@ -255,9 +251,9 @@ class TagDescriptor(BaseTagDescriptor):
         return manager
         
     def __set__(self, instance, value):
-        # Check we can do this
-        # descriptor.__set__() will do this again, but can't be avoided
-        if instance is None:
+        # Check we've actually got an instance. No practical way this could
+        # happen, but Django does it, so we will too
+        if instance is None: # pragma: no cover
             raise AttributeError("Manager must be accessed via instance")
         
         # Get the manager
@@ -272,10 +268,6 @@ class TagDescriptor(BaseTagDescriptor):
             # If it's a string, it must be a tag string
             manager.set_tag_string(value)
         
-        elif isinstance(value, TagRelatedManagerMixin):
-            # A manager's tags are copied
-            manager.set_tag_list(value.get_tag_list())
-            
         elif isinstance(value, collections.Iterable):
             # An iterable goes in as a list of things that are, or can be
             # converted to, strings
