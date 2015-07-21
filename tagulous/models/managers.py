@@ -9,6 +9,7 @@ For tag model manager, look in tagulous.models.models
 
 from django.core import exceptions
 
+from tagulous.constants import QUOTE, DOUBLE_QUOTE
 from tagulous.utils import parse_tags, render_tags
 
 
@@ -105,7 +106,6 @@ class SingleTagManager(object):
         """
         Set the current tag
         """
-        # Parse a tag string
         if not value:
             tag_name = ''
             
@@ -113,9 +113,7 @@ class SingleTagManager(object):
             # Force tag to lowercase
             if self.tag_options.force_lowercase:
                 value = value.lower()
-                
-            # Remove quotes from value to ensure it's a valid tag string
-            tag_name = value.replace('"', '') or None
+            tag_name = value
             
         # Look up the tag name
         else:
@@ -224,25 +222,42 @@ class BaseTagRelatedManager(object):
         return unicode(self).encode('utf-8')
     
     def __contains__(self, item):
-        return item in [tag.name for tag in self.tags]
+        item_str = unicode(item)
+        if self.tag_options.force_lowercase:
+            item_str = item_str.lower()
+        
+        if self.tag_options.case_sensitive:
+            return item_str in [tag.name for tag in self.tags]
+        return item_str in [tag.name.lower() for tag in self.tags]
     
     def __len__(self):
         return len(self.tags)
 
     def __eq__(self, other):
         """
-        Treat the other value as a string and compare to tags
+        Compare a tag string or iterable of tags to the tags on this manager
         """
-        other_str = u"%s" % other
-        
-        # Enforce case non-sensitivity or lowercase
+        # If not case sensitive, or lowercase forced, compare on lowercase
         lower = False
         if self.tag_options.force_lowercase or not self.tag_options.case_sensitive:
             lower = True
-            other_str = other_str.lower()
-        
-        # Parse other_str into list of tags
-        other_tags = parse_tags(other_str)
+            
+        # Prep other argument we're comparing against
+        if isinstance(other, basestring):
+            other_str = unicode(other)
+            
+            # Enforce case non-sensitivity or lowercase
+            if lower:
+                other_str = other_str.lower()
+            
+            # Parse other_str into list of tags
+            other_tags = parse_tags(other_str)
+            
+        else:
+            # Assume it's an iterable
+            other_tags = other
+            if lower:
+                other_tags = [unicode(tag).lower() for tag in other]
         
         # Get list of set tags
         self_tags = self.get_tag_list()
@@ -250,8 +265,6 @@ class BaseTagRelatedManager(object):
         # Compare tag count
         if len(other_tags) != len(self_tags):
             return False
-        
-        # ++ Could optimise comparison for lots of tags by using an object
         
         # Compare tags
         for tag in self_tags:
@@ -289,28 +302,18 @@ class BaseTagRelatedManager(object):
         """
         Get the tag edit string for this instance as a string
         """
-        if not self.instance:
-            raise AttributeError("Method is only accessible via an instance")
-        
         return render_tags(self.tags)
     
     def get_tag_list(self):
         """
         Get the tag names for this instance as a list of tag names
         """
-        # ++ Better as get_tag_strings?
-        if not self.instance:
-            raise AttributeError("Method is only accessible via an instance")
-        
         return [tag.name for tag in self.tags]
         
     def set_tag_string(self, tag_string):
         """
         Sets the tags for this instance, given a tag edit string
         """
-        if not self.instance:
-            raise AttributeError("Method is only accessible via an instance")
-        
         # Get all tag names
         tag_names = parse_tags(tag_string)
         
@@ -323,9 +326,6 @@ class BaseTagRelatedManager(object):
         Sets the tags for this instance, given a list of tag names, or a list
         or queryset of tags
         """
-        if not self.instance:
-            raise AttributeError("Method is only accessible via an instance")
-        
         if self.tag_options.max_count and len(tag_names) > self.tag_options.max_count:
             raise ValueError(
                 "Cannot set more than %d tags on this field" %
@@ -413,13 +413,13 @@ class FakeTagRelatedManager(BaseTagRelatedManager):
     def save(self, force=False):
         raise ValueError(self._needs_db % self.instance)
         
-    def add(self, force=False):
+    def add(self, *args):
         raise ValueError(self._needs_db % self.instance)
         
-    def remove(self, force=False):
+    def remove(self, *args):
         raise ValueError(self._needs_db % self.instance)
         
-    def clear(self, force=False):
+    def clear(self):
         raise ValueError(self._needs_db % self.instance)
 
 
@@ -490,9 +490,8 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
     
     #
     # New add, remove and clear, to update tag counts
-    # Will be switched into place by TagDescriptor
     #
-    def _add(self, *objs):
+    def add(self, *objs):
         # Convert strings to tag objects
         new_tags = []
         for tag in objs:
@@ -521,13 +520,15 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
                 )
         
         # Add to db, add to cache, and increment
-        self._old_add(*self._ensure_tags_in_db(new_tags))
+        super(TagRelatedManagerMixin, self).add(
+            *self._ensure_tags_in_db(new_tags)
+        )
         for tag in new_tags:
             self.tags.append(tag)
             tag.increment()
-    _add.alters_data = True
+    add.alters_data = True
     
-    def _remove(self, *objs):
+    def remove(self, *objs):
         # Convert strings to tag objects - if object doesn't exist, skip
         rm_tags = []
         for tag in objs:
@@ -551,19 +552,21 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         self.tags = [tag for tag in self.tags if tag not in rm_tags]
         
         # Remove from db and decrement
-        self._old_remove(*self._ensure_tags_in_db(rm_tags))
+        super(TagRelatedManagerMixin, self).remove(
+            *self._ensure_tags_in_db(rm_tags)
+        )
         for tag in rm_tags:
             tag.decrement()
-    _remove.alters_data = True
+    remove.alters_data = True
 
-    def _clear(self):
+    def clear(self):
         # Don't trust the internal tag cache
         self.reload()
         
         # Clear db, then decrement and empty cache
-        self._old_clear()
+        super(TagRelatedManagerMixin, self).clear()
         for tag in self.tags:
             tag.decrement()
         self.tags = []
-    _clear.alters_data = True
+    clear.alters_data = True
     
