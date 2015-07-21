@@ -20,11 +20,12 @@ Run the python tests using django's test framework::
 
     ./manage.py test tagulous
 
-Check test coverage with ``coverage``::
+Check test coverage with ``coverage`` (if in a virtualenv)::
 
     pip install coverage
-    coverage run --source='../path/to/tagulous' manage.py test tagulous
-    coverage report
+    coverage run --source='../src/django-tagulous/tagulous' --omit='*/tests/*' manage.py test tagulous
+    coverage report -m
+    coverage html
 
 Run the javascript tests using Jasmine::
 

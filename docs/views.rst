@@ -22,6 +22,22 @@ views in ``views.py`` to support AJAX autocomplete requests.
     Same as ``autocomplete``, except is decorated with Django auth's
     ``login_required``.
 
+These views look for two GET parameters:
+
+``q``
+    A query string to filter results by - used to match against the start of
+    the string.
+    
+    Note: if using a sqlite database, matches on a case sensitive tag model
+    may not be case sensitive - see the `case sensitive <case_sensitive>`_
+    flag for more details.
+
+``p``
+    The page number to return, if ``autocomplete_limit`` is set on the tag
+    model.
+    
+    Default: 1
+
 For an example, see `Autocomplete Views`_.
 
 

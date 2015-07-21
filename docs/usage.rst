@@ -13,9 +13,15 @@ and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
     import tagulous
     
     class Person(models.Model):
-        title = tagulous.models.SingleTagField(initial="Mr, Mrs, Miss, Ms")
+        title = tagulous.models.SingleTagField(
+            label="Your prefered title",
+            initial="Mr, Mrs, Ms",
+        )
         name = models.CharField(max_length=255)
-        skills = tagulous.models.TagField()
+        skills = tagulous.models.TagField(
+            force_lowercase=True,
+            max_count=5,
+        )
     
 * This will create two new models at runtime to store the tags,
   ``_Tagulous_Person_title`` and ``_Tagulous_Person_skills``.
@@ -87,6 +93,12 @@ See the documentation for `Tag Models`_ to see which field names tagulous
 uses internally.
 
 
+Tag Trees
+---------
+
+# ++
+
+
 Tag URL
 -------
 
@@ -113,10 +125,105 @@ a template::
     {% endfor %}
 
 
-Forms
------
+ModelForms
+----------
 
-# ++ Add forms
+A ``ModelForm`` with tag fields needs no special treatment::
+
+    from django.db import models, forms
+    import tagulous
+    
+    class Person(models.Model):
+        name = models.CharField(max_length=255)
+        skills = tagulous.models.TagField()
+    
+    class PersonForm(forms.ModelForm):
+        class Meta:
+            model = Person
+
+
+They are used as normal forms, eg with class-based views::
+
+    from django.views.generic.edit import CreateView
+    
+    class PersonCreate(CreateView):
+        model = Person
+        fields = ['name', 'skills']
+
+
+or with view functions::
+
+    def person_create(request, template_name="my_app/person_form.html"):
+        form = PersonForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+        return render(request, template_name, {'form': form})
+
+However, note that because a ``TagField`` is based on a ``ManyToManyField``, if
+you save using ``commit=False``, you will need to call ``save_m2m`` to save the
+tags::
+
+    class Pet(models.Model):
+        owner = models.ForeignKey('auth.User')
+        name = models.CharField(max_length=255)
+        skills = tagulous.models.TagField()
+    
+    class PetForm(forms.ModelForm):
+        class Meta:
+            model = Pet
+            
+    def pet_create(request, template_name="my_app/pet_form.html"):
+        form = PetForm(request.POST or None)
+        if form.is_valid():
+            pet = form.save(commit=False)
+            pet.owner = request.user
+            
+            # Next line will save all non M2M fields (including SingleTagField)
+            pet.save()
+            
+            # Next line will save any ``TagField`` values
+            form.save_m2m()
+            
+            return redirect('home')
+        return render(request, template_name, {'form': form})
+
+As shown above, this only applies to ``TagField`` - a ``SingleTagField`` is
+based on ``ForeignKey``, so will be saved without needing ``save_m2m``.
+
+
+Forms without models
+--------------------
+
+Tagulous form fields take tag options as a single ``TagOptions`` object, rather
+than as separate arguments as a model form does::
+
+    from django import forms
+    import tagulous
+    
+    class PersonForm(forms.ModelForm):
+        title = tagulous.models.SingleTagField(
+            autocomplete_tags=['Mr', 'Mrs', 'Ms']
+        )
+        name = forms.CharField(max_length=255)
+        skills = tagulous.models.TagField(
+            tag_options=tagulous.models.TagOptions(
+                force_lowercase=True,
+            ),
+            autocomplete_tags=['running', 'jumping', 'judo']
+        )
+
+A ``SingleTagField`` will return a string, and a ``TagField`` will return a
+list of strings::
+
+    form = PersonForm(data={
+        'title':    'Mx',
+        'skills':   'Running, judo',
+    })
+    assert form.is_valid()
+    assert form.cleaned_data['title'] == 'Mx'
+    assert form.cleaned_data['skills'] == ['running', 'judo']
+
 
 Autocomplete Views
 ------------------
@@ -124,8 +231,25 @@ Autocomplete Views
 # ++ Add examples
 
 
-Filtering a ModelForm's TagField by related fields
---------------------------------------------------
+Filtering autocomplete to initial tags only
+-------------------------------------------
+
+You may want autocomplete to only list your initial tags, and not those added
+by others; Tagulous makes this easy with the ``autocomplete_initial`` field
+option::
+
+    class Person(models.Model):
+        title = tagulous.models.SingleTagField(
+            label="Your prefered title",
+            initial="Mr, Mrs, Ms",
+            autocomplete_initial=True,
+        )
+
+This will embed the initial tags in the HTML tag.
+
+
+Filtering autocomplete by related fields
+----------------------------------------
 
 Using embedded tags
 ~~~~~~~~~~~~~~~~~~~

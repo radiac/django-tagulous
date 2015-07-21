@@ -3,20 +3,36 @@
 Forms
 =====
 
-Forms can add tag fields from a model (by calling
-``MyModel.myfield.formfield()``), or they can be added directly to a form
-from ``tagulous.forms.SingleTagField`` and ``tagulous.forms.TagField``. In both
-cases, they will return strings; a single tag field will return one tag, .
+Normally tag fields will be used in a ``ModelForm``; they will automatically
+use the correct form field and widget to render tag fields with your
+selected `autocomplete adaptor <Autocomplete Adaptors>`_.
 
 To save tag fields, just call the ``form.save()`` method as you would normally.
-However, because the ``TagField`` is based on a ManyToManyField, if you call
-`form.save(commit=False)` you will need to call `form.m2m_save()` after to save
-the tags.
+However, because the ``TagField`` is based on a ``ManyToManyField``, if you
+call ``form.save(commit=False)`` you will need to call ``form.m2m_save()``
+after to save the tags.
 
-The JavaScript code requires jQuery 1.7 or later. For convenience there is a
-bundled copy of jQuery in the tagulous static directory. This is included in
-public pages by default, but can be turned off by changing the
-``TAGULOUS_PUBLIC_JQUERY`` setting to ``False``.
+See the `ModelForms`_ example for how this works in practice.
+
+
+Using tag form fields outside model forms
+-----------------------------------------
+
+You can also add tag fields to non-model forms, by using
+``tagulous.forms.SingleTagField`` and ``tagulous.forms.TagField``. Both fields
+accept two new arguments::
+
+``tag_options``
+    A `TagOptions`_ instance containing the options for this tag field
+
+``autocomplete_tags``
+    An iterable of tags to be embedded for autocomplete. This can either be
+    a queryset of tag objects, or a list of tag objects or strings.
+
+A ``SingleTagField`` will return a string containing one tag, and a TagField
+will return a list of tags as strings.
+
+See the `Forms without models`_ example for how this works in practice.
 
 
 Autocomplete Adaptors
@@ -82,7 +98,7 @@ filter an ajax autocomplete view, wrap ``tagulous.views.autocomplete`` in your
 own view function which filters for you.
 
 For examples of these approaches, see
-`Filtering a ModelForm's TagField by related fields`_.
+`Filtering autocomplete by related fields`_.
 
 
 Writing a custom adaptor

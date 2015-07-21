@@ -89,21 +89,35 @@ Managing the tag model
 ----------------------
 
 You can also register a ModelAdmin to manipulate the tag table directly.
-Tagulous has a helper function to do this for you::
+Tagulous's ``register`` function will do this for you - just pass it the tag
+field::
 
-    tagulous.admin.tag_model(MyModel.tags.tag_model)
+    tagulous.admin.register(MyModel.tags)
 
-The example is for an auto-generated tag model, but it could equally be a
-custom tag model.
+You can also specify the tag model directly::
 
-If you have a custom model and want to extend the admin class for extra fields
-on your custom model, you can subclass the ``TagModelAdmin`` class to get the
-extra tag management functionality::
+    tagulous.admin.register(MyModel.tags.tag_model)
+    tagulous.admin.register(MyCustomTagModel)
+
+If you have a custom tag model and want to extend the admin class for extra
+fields on your custom model, you can subclass the ``TagModelAdmin`` class to
+get the extra tag management functionality::
 
     class MyModelTagsAdmin(tagulous.admin.TagModelAdmin):
         list_display = ['name', 'count', 'protected', 'my_extra_field']
-    admin.site.register(MyModel.tags.tag_model, MyModelTagsAdmin)
+    admin.site.register(MyCustomTagModel, MyModelTagsAdmin)
+
+When overriding options, you should base them on the options in the default
+``TagModelAdmin``::
+
+    list_display = ['name', 'count', 'protected']
+    list_filter = ['protected']
+    exclude = ['count']
+    actions = ['merge_tags']
+
+The ``TagTreeModelAdmin`` also excludes the ``'path'`` field.
 
 Remember that the relationship between your entries and tags are standard
 ``ForeignKey`` or ``ManyToMany`` relationships, so deletion propagation will
 work as it would normally.
+

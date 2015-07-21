@@ -14,6 +14,9 @@ These packages are recommended:
 
 * South, to assist with migrations (if Django < 1.7)
 
+If you are replacing an existing tagging solution, follow the `Installation`_
+instructions, then read `Converting to Tagulous`_.
+
 
 Installation
 ------------
@@ -178,3 +181,69 @@ initial_tags [<app_name>[.<model_name>[.<field_name>]]]
     * Tags which exist will be untouched
       
 
+Converting to Tagulous
+----------------------
+
+If you're already using a tagging library which you'd like to replace with
+Tagulous, freeze the tags into a temporary column, remove the old tagging code,
+add a new tagulous TagField, then copy the tags back across.
+
+**Warning:** this hasn't been tested with your data, so back up your database
+first, just in case.
+
+1. Create a schema migration to add a ``TextField`` to your tagged
+   model, where we'll temporarily store the tags for that instance.
+   
+   Example for ``django-taggit``::
+
+    class MyModel(models.Model):
+        ...
+        tags = TaggableManager()
+        tags_store = models.TextField(blank=True)
+
+   Example for ``django-tagging``::
+   
+    class MyModel(models.Model):
+        ...
+        tags_store = models.TextField(blank=True)
+    tagging.register(MyModel)
+
+2. Create a data migration to copy the tags into the new field as a
+   string.
+   
+   Example using South for ``django-taggit``::
+
+    import tagulous
+    for obj in orm['myapp.MyModel'].objects.all():
+        obj.tags_store = tagulous.utils.render_tags(obj.tags.all())
+
+   Example using South for ``django-tagging``::
+   
+    import tagulous
+    for obj in orm['myapp.MyModel'].objects.all():
+        obj.tags_store = tagulous.utils.render_tags(obj.tags)
+
+3. Remove the old tagging code from your model, and create a schema migration
+   to clean up any unused fields or models.
+
+4. Create a schema migration to add a ``TagField`` to your tagged model::
+   
+    import tagulous
+    class MyModel(models.Model):
+        tags = tagulous.models.TagField()
+        tags_store = models.TextField(blank=True)
+
+   Be careful to set appropriate arguments, ie ``blank=True`` if some of your
+   ``tags_store`` fields may be empty.
+
+5. Create a data migration to copy the tags into the new field.
+
+   Example using South::
+
+    for obj in orm['myapp.MyModel'].objects.all():
+        obj.tags = obj.tags_store
+
+6. Create a schema migration to remove the temporary tag storage field
+   (``tag_store`` in these examples)
+
+7. Apply the migrations and start using tagulous

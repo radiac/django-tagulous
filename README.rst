@@ -11,11 +11,12 @@ http://radiac.net/projects/django-tagulous/
 Features
 ========
 
-* Easy to install - simple requirements, just drops into your site
-* Autocomplete support built in - uses Select2, easy to customise
-* Multiple independent tag fields on a single model
-* Ability to share tags between tag fields
-* Support for trees of nested tags for categorisation
+* Easy to install - simple requirements, simple syntax, lots of options
+* Based on ForeignKey and ManyToManyField, so it's easy to query
+* Autocomplete support built in, if you want it
+* Supports multiple independent tag fields on a single model
+* Can be used as a user-customisable CharField with choices
+* Supports trees of nested tags, for detailed categorisation
 * All the other features you'd expect a tagging library to have
 
 Version 0.7.0, requires Django 1.4 or later.
@@ -23,6 +24,8 @@ Version 0.7.0, requires Django 1.4 or later.
 * See `Documentation <docs/index.rst>`_ for details of how it all works
 * See `Example Usage <docs/usage.rst>`_ to see examples of it in use
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
+* See `Upgrading <docs/upgrading.rst>`_ when upgrading an existing Tagulous
+  installation
 
 
 Quickstart
@@ -58,4 +61,4 @@ complex queries are simple::
 
 As well as this you also get autocompletion in public and admin forms,
 automatic slug generation, unicode support, you can build tag clouds easily,
-and can nest tag for more complex categorisation.
+and can nest tags for more complex categorisation.
