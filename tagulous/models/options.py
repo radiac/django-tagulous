@@ -5,8 +5,6 @@ Tag options
 from tagulous import constants
 from tagulous.utils import parse_tags, render_tags
 
-PROPERTIES = ['_initial', 'initial_string']
-
 
 class TagOptions(object):
     """
@@ -16,15 +14,27 @@ class TagOptions(object):
         """
         Set up tag options using defaults, overridden by keyword arguments
         """
-        for key, val in kwargs.items():
+        self.update(kwargs)
+            
+    def update(self, options):
+        """
+        Update this TagOptions in place with options from a dict or TagOptions
+        """
+        # Ensure a dict
+        if isinstance(options, TagOptions):
+            options = options.items(with_defaults=False)
+        
+        for key, val in options.items():
             setattr(self, key, val)
+        
+        return self
     
     def contribute_to_class(self, cls, name):
         """
         Add to class
         """
         setattr(cls, name, self)
-        
+    
     def __setattr__(self, name, value):
         """
         Only allow an option to be set if it's valid
@@ -49,11 +59,16 @@ class TagOptions(object):
         
     def __getattr__(self, name):
         """
-        Get an option, or fall back to default options if it's not set
+        Fall back to default options if it's not set
+        
+        Requests for locally-defined properties will be fielded directly by
+        __dict__
         """
-        if name in PROPERTIES:
-            return self.__dict__.get(name, None)
-        elif name not in constants.OPTION_DEFAULTS:
+        if name == 'initial_string':
+            # If here, there is no initial set in the __dict__
+            # There is nothing in defaults to fall back to either
+            return ''
+        if name not in constants.OPTION_DEFAULTS:
             raise AttributeError(name)
         return self.__dict__.get(name, constants.OPTION_DEFAULTS[name])
     
