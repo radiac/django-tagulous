@@ -8,7 +8,8 @@ Modules tested:
     tagulous.models.fields.BaseTagField
     tagulous.models.fields.SingleTagField
 """
-from tagulous.tests.lib import *
+from __future__ import absolute_import
+from tests.lib import *
 
 
 class ModelSingleTagFieldTest(TagTestManager, TestCase):

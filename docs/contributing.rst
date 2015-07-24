@@ -4,11 +4,29 @@ Contributing
 ============
 
 Contributions are welcome, preferably via pull request. Check the github issues
-and project `roadmap <CHANGES>`_ to see what needs work.
+and project `roadmap <CHANGES>`_ to see what needs work. Tagulous aims to be a
+comprehensive tagging solution, but try to keep new features from having a
+significant impact on people who won't use them (eg tree support is optional).
 
 When submitting UI changes, please aim to support the latest versions of
-Chrome, Firefox and Internet Explorer through progressive enhancement - old
-browsers must still be able to access all functionality.
+Chrome, Firefox and Internet Explorer through progressive enhancement - users
+of old browsers must still be able to tag things, even if they don't get all
+the bells and whistles.
+
+
+Installing
+----------
+
+The easiest way to work on Tagulous is to fork the project on github, then
+install it to a virtualenv::
+
+    pip install -e git://github.com/radiac/django-tagulous.git#egg=django-tagulous[dev][i18n]
+
+(replacing ``radiac`` with your usename).
+
+This will install the development dependencies too, and you'll find the
+tagulous source ready for you to work on in the ``src`` folder of your
+virtualenv.
 
 
 Testing
@@ -16,26 +34,33 @@ Testing
 
 It is greatly appreciated when contributions come with unit tests.
 
-Run the python tests using django's test framework::
+Use ``setup.py`` to run the python tests on your current python environment;
+you can optionally specify which test to run::
 
-    ./manage.py test tagulous
+    python setup.py test [tests[.TestClass]]
+    
+* If you are using Django 1.4 to 1.6, the tests will look for ``south`` - if it
+  is not installed, a warning will be raised and the south tests will be
+  skipped.
 
-Check test coverage with ``coverage`` (if in a virtualenv)::
+Use ``tox`` to run them on one or more supported versions::
 
-    pip install coverage
-    coverage run --source='../src/django-tagulous/tagulous' --omit='*/tests/*' manage.py test tagulous
-    coverage report -m
-    coverage html
+    tox [-e py27-django1.4] [tests[.TestClass]]
+
+Tox will also generate a ``coverage`` HTML report.
+
+Most Tagulous python modules have corresponding test modules, with test classes
+which subclass ``tests.lib.TagTestManager``. They use test apps defined under
+the ``tests`` dir where required.
 
 Run the javascript tests using Jasmine::
 
     pip install jasmine
-    cd tagulous/tests
+    cd tests
     jasmine
     # open http://127.0.0.1:8888/ in your browser
 
-Python tests use ``tagulous.tests_app`` to define test models; javascript
-tests are defined in ``tagulous/tests/spec/javascripts/*.spec.js``.
+Javascript tests are defined in ``tests/spec/javascripts/*.spec.js``.
 
 
 Code overview
@@ -47,10 +72,17 @@ the descriptors in ``tagulous.models.descriptors`` onto the model in their
 place. These descriptors act as getters and setters, channelling data to and
 from the managers in ``tagulous.models.managers``.
 
+Models which have tag fields are called tagged models. For tags to be fully
+supported in constructors, managers and querysets, those classes need to use
+the classes defined in ``tagulous.models.tagged`` as base classes. That file
+contains a ``class_prepared`` signal listener which tries to dynamically
+change the base classes of any models which contain tag fields.
+
 Model fields take their arguments and store them in
-``tagulous.models.options.TagOptions`` instances; initial tags can be loaded
-into the database using the functions in ``tagulous.models.initial``, which
-is the same code the ``initial_tags`` management command uses.
+``tagulous.models.options.TagOptions`` instances. Any ``initial`` tags in the
+options can be loaded into the database using the functions in
+``tagulous.models.initial``, which is the same code the ``initial_tags``
+management command uses.
 
 When a ``ModelForm`` is created for a model with a tag field, the model field's
 ``formfield`` method is called. This creates a tag form field, defined in
@@ -66,4 +98,3 @@ Everything for enhancing the admin site with support for tag fields is in
 ``tagulous.admin``. It is in two sections; registration (which adds tag field
 functionality to normal ``ModelAdmin``s, and replaces the widgets with tag
 widgets) and tag model admin (for managing tag models).
-

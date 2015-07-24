@@ -1,3 +1,5 @@
 *.pyc
 django_tagulous.egg-info
-
+.tox
+.coverage*
+htmlcov

@@ -4,15 +4,20 @@ Tagulous test: migrations
 Modules tested:
     tagulous.models.migrations
 """
+from __future__ import absolute_import
+import inspect
 import os
 import sys
 import shutil
+import warnings
 
+import django
 from django.core.management import call_command
 from django.db import DatabaseError
+from django.conf import settings
 
-from tagulous.tests.lib import *
-from tagulous.tests import tagulous_tests_migration
+from tests.lib import *
+from tests import tagulous_tests_migration
 
 try:
     import south
@@ -23,9 +28,9 @@ except ImportError:
 DISPLAY_CALL_COMMAND = False
 
 app_name = 'tagulous_tests_migration'
-app_module = sys.modules['tagulous.tests.%s' % app_name]
+app_module = sys.modules['tests.%s' % app_name]
 south_migrations_name = 'migrations' # ++ this could change
-south_migrations_module = 'tagulous.tests.%s.%s' % (app_name, south_migrations_name)
+south_migrations_module = 'tests.%s.%s' % (app_name, south_migrations_name)
 south_migrations_path = None
 
 
@@ -102,13 +107,25 @@ def south_migrate_app(target=None):
     "Apply migrations"
     # Run migrate --auto
     south_clear_migrations()
-    with Capturing() as output:
-        call_command(
-            'migrate',
-            app_name,       # app to migrate
-            target=target,  # Optional target
-            verbosity=1,    # Silent
-        )
+    try:
+        with Capturing() as output:
+            with warnings.catch_warnings(record=True) as cw:
+                call_command(
+                    'migrate',
+                    app_name,       # app to migrate
+                    target=target,  # Optional target
+                    verbosity=1,    # Silent
+                )
+    except AssertionError, e:
+        print ">> Test failed:\n" + '\n'.join(output)
+        raise e
+    
+    # Ensure caught warnings are expected
+    if django.VERSION < (1, 6):
+        assert len(cw) == 0
+    else:
+        for w in cw:
+            assert issubclass(w.category, PendingDeprecationWarning)
         
     if DISPLAY_CALL_COMMAND:
         print ">> manage.py migrate %s target=%s" % (app_name, target)
@@ -128,7 +145,11 @@ def south_expected_dir():
     )
 
 
+@unittest.skipIf(django.VERSION >= (1, 7), 'South tests not run for Django 1.7+')
 @unittest.skipIf(south is None, 'South not installed')
+@unittest.skipIf(
+    'south' not in settings.INSTALLED_APPS, 'South not in INSTALLED_APPS'
+)
 class SouthTest(TagTestManager, TransactionTestCase):
     """
     Test south migrations
@@ -153,17 +174,171 @@ class SouthTest(TagTestManager, TransactionTestCase):
     
     
     #
+    # Migration file analysis
+    #
+    
+    def _import_migration(self, path, name):
+        "Import the named migration from the given file path"
+        root = os.path.dirname(__file__)
+        if not path.startswith(root):
+            return self.fail(
+                'Could not find common root between test and migration dir:\n'
+                '  %s\n  %s' % __file__, path
+            )
+            
+        module_name = '.'.join(
+            ['tests'] + path[len(root) + 1:].split(os.sep) + [name]
+        )
+        module = __import__(module_name, {}, {}, ['Migration'], -1)
+        
+        return module
+    
+    def _parse_migration_function(self, fn):
+        """
+        Parse a migration function into a dict
+        
+        Dict will have keys for each db method called, with values as dicts of
+        whatever makes them unique and the arguments.
+        
+        There will also be a 'vars' dict with variable definitions
+        """
+        import ast
+        lines, firstlineno = inspect.getsourcelines(fn.func_code)
+        
+        # De-indent and parse into an AST
+        indent = len(lines[0]) - len(lines[0].lstrip())
+        lines = [line[indent:] for line in lines]
+        root = ast.parse(''.join(lines))
+        
+        def ast_dump(*nodes):
+            "Dump ast node without unicode strings"
+            return ', '.join(
+                ast.dump(node).replace(
+                    "Str(s=u'", "Str(s='"
+                ).replace(
+                    "{u'", "{'"
+                )
+                for node in nodes
+            )
+        
+        def parse_field(field):
+            "Parse a field into a tuple of (cls_name, 'ast value')"
+            if isinstance(field.func, ast.Attribute):
+                # Call to self.gf
+                field_cls = str(field.func.value.id + '.' + field.func.attr)
+            else:
+                # Direct ref to field
+                field_cls = str(field.func.args[0].s)
+            
+            attrs = {}
+            for keyword in field.keywords:
+                attrs[keyword.arg] = ast_dump(keyword.value)
+            return (field_cls, attrs)
+        
+        # Find all db object method calls
+        data = {
+            'create_table':         {},
+            'send_create_signal':   {},
+            'create_unique':        {},
+            'add_column':           {},
+            'shorten_name':         {},
+            'delete_table':         {},
+        }
+        ast_state = {}
+        
+        # This seemed like such a good idea at the time
+        for node in root.body[0].body:
+            # db.create_table( <arguments> )
+            dbcall = node.value
+            self.assertEqual(dbcall.func.value.id, 'db')
+            method = dbcall.func.attr
+            
+            # Shift arguments node tree into dict
+            if method == 'create_table':
+                # <table>, <fields tuple>
+                if isinstance(dbcall.args[0], ast.Str):
+                    table_name = str(dbcall.args[0].s)
+                elif isinstance(dbcall.args[0], ast.Name):
+                    var_name = dbcall.args[0].id
+                    self.assertTrue(var_name in ast_state)
+                    table_name = ast_state[var_name]
+                self.assertFalse(table_name in data[method])
+                
+                fields = {}
+                for field_tuple in dbcall.args[1].elts:
+                    # <field name>, self.gf(<type>)(<args>)
+                    field_name = str(field_tuple.elts[0].s)
+                    self.assertFalse(field_name in fields)
+                    fields[field_name] = parse_field(field_tuple.elts[1])
+                data[method][table_name] = fields
+            
+            elif method == 'send_create_signal':
+                # <app name>, [<model name>]
+                model_name = str(dbcall.args[1].elts[0].s)
+                self.assertFalse(model_name in data[method])
+                data[method][model_name] = ast_dump(dbcall)
+            
+            elif method == 'create_unique':
+                # <table name>, [<field name>]
+                if isinstance(dbcall.args[0], ast.Str):
+                    table_name = str(dbcall.args[0].s)
+                elif isinstance(dbcall.args[0], ast.Name):
+                    var_name = dbcall.args[0].id
+                    self.assertTrue(var_name in ast_state)
+                    table_name = ast_state[var_name]
+                self.assertFalse(table_name in data[method])
+                data[method][table_name] = ast_dump(dbcall.args[1])
+            
+            elif method == 'add_column':
+                # <table name>, <field name>, self.gf(<type>)(<args>), keep_default=<?>
+                field_id = str(dbcall.args[0].s) + '.' + str(dbcall.args[1].s)
+                self.assertFalse(field_id in data[method])
+                data[method][field_id] = [
+                    parse_field(dbcall.args[2]),
+                    ast_dump(*dbcall.args[3:]),
+                ]
+            
+            elif method == 'shorten_name':
+                # <var> = db.shorten_name(<table name>)
+                table_name = str(dbcall.args[0].s)
+                self.assertFalse(field_id in data[method])
+                data[method][table_name] = ast_dump(node.targets[0])
+                ast_state[node.targets[0].id] = table_name
+            
+            else:
+                self.fail('Unrecognised db method: %s' % method)
+        
+        return data
+        
+        
+    #
     # Extra assertions
     #
     
-    def assertMigrationExpected(self, name):
-        "Compare two files"
-        path1 = os.path.join(south_migrations_dir(), '%s.py' % name)
-        path2 = os.path.join(south_expected_dir(), '%s.py' % name)
-        with open(path1, 'r') as file1:
-            with open(path2, 'r') as file2:
-                self.assertEqual(file1.readlines(), file2.readlines())
+    def assertValidMigration(self, module):
+        "Basic validation of an imported migration"
+        self.assertTrue('Migration' in module.__dict__)
+        self.assertTrue(issubclass(module.Migration, south.v2.SchemaMigration))
+        self.assertTrue(hasattr(module.Migration, 'forwards'))
+        self.assertTrue(hasattr(module.Migration, 'backwards'))
+        self.assertTrue(hasattr(module.Migration, 'models'))
     
+    def assertMigrationExpected(self, name):
+        "Compare two migration files"
+        # Import and validate the migrations
+        mig1 = self._import_migration(south_migrations_dir(), name)
+        self.assertValidMigration(mig1)
+        
+        mig2 = self._import_migration(south_expected_dir(), name)
+        self.assertValidMigration(mig2)
+        
+        # Compare models
+        self.assertEqual(mig1.Migration.models, mig2.Migration.models)
+        
+        data1 = self._parse_migration_function(mig1.Migration.forwards)
+        data2 = self._parse_migration_function(mig2.Migration.forwards)
+        self.assertEqual(data1, data2)
+        
     
     #
     # Tests
@@ -175,6 +350,9 @@ class SouthTest(TagTestManager, TransactionTestCase):
         schema migration. Check that the migration worked.
         """
         model_initial = tagulous_tests_migration.models.set_model_initial()
+        self.assertFalse(
+            issubclass(model_initial, tag_models.tagged.TaggedModel)
+        )
         
         # Run schemamigration --initial
         with Capturing() as output:
@@ -217,6 +395,7 @@ class SouthTest(TagTestManager, TransactionTestCase):
         
         # Now switch model
         model_tagged = tagulous_tests_migration.models.set_model_tagged()
+        self.assertTrue(issubclass(model_tagged, tag_models.tagged.TaggedModel))
         
         # Run schemamigration --auto
         with Capturing() as output:
@@ -267,6 +446,7 @@ class SouthTest(TagTestManager, TransactionTestCase):
         
         # Now switch model
         model_tree = tagulous_tests_migration.models.set_model_tree()
+        self.assertTrue(issubclass(model_tree, tag_models.tagged.TaggedModel))
         self.assertTagModel(model_tagged.tags.tag_model, {
             'one/two/three': 0,
             'uno/dos/tres':  0,
@@ -401,8 +581,7 @@ class SouthTest(TagTestManager, TransactionTestCase):
         self.assertEqual(migrations[2], '%s:0003_tree' % app_name)
         self.assertEqual(migrations[3], '%s:0004_data' % app_name)
         
-        # Check they apply correctly - the migration 0004_data contains tests
-        # which will raise an AssertionError if they do not pass.
+        # Check they apply correctly
         output = south_migrate_app()
         self.assertSequenceEqual(output, [
             'Running migrations for tagulous_tests_migration:',

@@ -4,12 +4,16 @@ Tagulous test: Admin
 Modules tested:
     tagulous.admin
 """
+from __future__ import absolute_import
+import re
+
+import django
 from django.contrib import admin
 from django.contrib import messages
 from django.contrib.messages.storage.fallback import CookieStorage
 from django.http import QueryDict
 
-from tagulous.tests.lib import *
+from tests.lib import *
 
 
 MOCK_PATH = 'mock/path'
@@ -20,10 +24,31 @@ class MockRequest(object):
         self.COOKIES = {}
         self.META = {}
         self._messages = CookieStorage(self)
+        self.resolver_match = None
         
     def get_full_path(self):
         return MOCK_PATH
 request = MockRequest()
+
+
+def _monkeypatch_modeladmin():
+    """
+    ModelAdmin changes between django versions.
+    
+    Monkeypatch it where necessary to allow tests to function, without making
+    any changes to ModelAdmin which would affect the code being tested.
+    """
+    # Ensure ModelAdmin has get_list_filter - missing in Django 1.4
+    # Only used in tests
+    # ++ Can be removed once 1.4 support is dropped
+    if not hasattr(admin.ModelAdmin, 'get_list_filter'):
+        if django.VERSION >= (1, 5):
+            raise AttributeError(
+                'Only old versions of django are supposed to be missing '
+                'ModelAdmin.get_list_filter'
+            )
+        admin.ModelAdmin.get_list_filter = lambda self, request: self.list_filter
+_monkeypatch_modeladmin()
 
 
 ###############################################################################
@@ -271,7 +296,10 @@ class TagAdminTest(TagTestManager, TestCase):
         self.cl = None
         
         # Monkeypatch urls to add in modeladmin
-        from django.conf.urls import patterns, include, url
+        try:
+            from django.conf.urls import include, patterns, url
+        except ImportError:
+            from django.conf.urls.defaults import include, patterns, url
         self.old_urls = test_urls.urlpatterns
         test_urls.urlpatterns += patterns(
             '',
@@ -293,6 +321,12 @@ class TagAdminTest(TagTestManager, TestCase):
             self.ma
         )
         return self.cl
+    
+    def get_cl_queryset(self, cl, request):
+        "Because ModelAdmin.get_query_set is deprecated in 1.6"
+        if hasattr(cl, 'get_queryset'):
+            return cl.get_queryset(request)
+        return cl.get_query_set(request)
     
     def populate(self):
         self.o1 = self.tagged_model.objects.create(
@@ -334,11 +368,10 @@ class TagAdminTest(TagTestManager, TestCase):
         "Check the merge_tags action fails when no tags selected"
         request = MockRequest(POST=QueryDict('action=merge_tags'))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, cl.get_query_set(request))
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
         
         self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0].level, messages.INFO)
         self.assertEqual(msgs[0].message, (
             'Items must be selected in order to perform actions on them. No '
             'items have been changed.'
@@ -352,11 +385,10 @@ class TagAdminTest(TagTestManager, TestCase):
             'action=merge_tags&%s=%s' % (admin.ACTION_CHECKBOX_NAME, self.red.pk)
         ))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, cl.get_query_set(request))
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
 
         self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0].level, messages.INFO)
         self.assertEqual(
             msgs[0].message, 'You must select at least two tags to merge'
         )
@@ -372,25 +404,87 @@ class TagAdminTest(TagTestManager, TestCase):
             ]
         )))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, cl.get_query_set(request))
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
         
         # Check response is appropriate
+        # ++ This would be a lot easier with assertInHTML, after 1.4 is dropped
+        # ++ For now, it's just a mess.
         self.assertEqual(len(msgs), 0)
         content = str(response)
-        self.assertContains(
-            str(response),
-            '<label for="id_merge_to">Merge to:</label>',
-            '<select id="id_merge_to" name="merge_to">',
-            '<option value="%d">%s</option>' % (self.red.pk, self.red.name),
-            '<option value="%d">%s</option>' % (self.green.pk, self.green.name),
-            '<input id="id__selected_action_0" name="_selected_action" type="hidden" value="%d" />' % self.red.pk,
-            '<input id="id__selected_action_1" name="_selected_action" type="hidden" value="%d" />' % self.green.pk,
-            '<input type="submit" name="merge" value="Merge tags">',
-            '<input class="default" type="hidden" name="action" value="merge_tags">',
+        content_form = content[
+            content.index('<form ') : content.index('</form>') + 7
+        ]
+        self.assertHTMLEqual(
+            content_form[:content_form.index('<option')],
+            (
+                '<form action="" method="POST">'
+                '<p><label for="id_merge_to">Merge to:</label>'
+                '<select id="id_merge_to" name="merge_to">'
+            )
         )
+        
+        # Can't be sure of options order
+        options_raw = content_form[
+            content_form.index('<option') : content_form.index('</select>')
+        ]
+        option1 = options_raw[:options_raw.index('<option', 1)]
+        option2 = options_raw[len(option1):options_raw.index('<option', len(option1)+1)]
+        option3 = options_raw[len(option1) + len(option2):]
+        options = [option.strip() for option in [option1, option2, option3]]
+        self.assertTrue(
+            '<option value="" selected="selected">---------</option>' in options
+        )
+        self.assertTrue(
+            '<option value="%d">%s</option>' % (self.red.pk, self.red.name) in options
+        )
+        self.assertTrue(
+            '<option value="%d">%s</option>' % (self.green.pk, self.green.name) in options
+        )
+        
+        # Check _selected_action input tags
+        inputs_raw = content_form[
+            # First input, convenient
+            content_form.index('<input') : content_form.index('<div>')
+        ]
+        input1 = inputs_raw[:inputs_raw.index('<input', 1)]
+        input2 = inputs_raw[len(input1):]
+        inputs = [
+            # Some versions of django may insert a </p> here.
+            input_tag.replace('</p>', '').strip()
+            for input_tag in [input1, input2]
+        ]
+        self.assertTrue(any('id="id__selected_action_0"' in i for i in inputs))
+        self.assertTrue(any('id="id__selected_action_1"' in i for i in inputs))
+        for input_tag in inputs:
+            input_tag = re.sub(
+                'id__selected_action_\d', 'id__selected_action_x', input_tag,
+            )
+            expected = (
+                '<input id="id__selected_action_x" type="hidden"'
+                ' name="_selected_action" value="%d" />'
+            )
+            try:
+                self.assertHTMLEqual(input_tag, expected % self.red.pk)
+            except AssertionError:
+                self.assertHTMLEqual(input_tag, expected % self.green.pk)
+        
+        # Check end of form
+        self.assertHTMLEqual(
+            content_form[
+                content_form.index('<div>') : content_form.index('</div>')
+            ], (
+                '<div>'
+                '<input type="submit" name="merge" value="Merge tags">'
+                '<input class="default" type="hidden" name="action"'
+                ' value="merge_tags">'
+                '</div>'
+            )
+        )
+        
+        # And just confirm blue wasn't there
         self.assertNotContains(
-            str(response),
+            content,
             '<option value="%d">%s</option>' % (self.blue.pk, self.blue.name),
         )
     
@@ -411,12 +505,11 @@ class TagAdminTest(TagTestManager, TestCase):
             ]
         )))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, cl.get_query_set(request))
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
         
         # Check response is appropriate
         self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0].level, messages.SUCCESS)
         self.assertEqual(
             msgs[0].message, 'Tags merged'
         )

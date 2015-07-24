@@ -3,15 +3,15 @@ Tagulous test app urls
 
 Usage:
     class MyTestCase(TestCase):
-        urls = 'tagulous.tests.tagulous_tests_app.urls'
+        urls = 'tests.tagulous_tests_app.urls'
 """
 
 try:
-    from django.conf.urls.defaults import include, patterns, url
-except ImportError:
     from django.conf.urls import include, patterns, url
+except ImportError:
+    from django.conf.urls.defaults import include, patterns, url
 
-from tagulous.tests.tagulous_tests_app import models, views
+from tests.tagulous_tests_app import models, views
 
 
 tagged_model = models.TagFieldOptionsModel

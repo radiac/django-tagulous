@@ -7,7 +7,8 @@ Modules tested:
     tagulous.forms.SingleTagField
     tagulous.forms.TagField
 """
-from tagulous.tests.lib import *
+from __future__ import absolute_import
+from tests.lib import *
 
 
 

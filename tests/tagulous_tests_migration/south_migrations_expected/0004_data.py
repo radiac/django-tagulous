@@ -22,7 +22,7 @@ class Migration(DataMigration):
     
     def assertIsSubclass(self, cls, supercls):
         if not issubclass(cls, supercls):
-            self.fail("%r is not a subclass of %r" % (cls, supercls))
+            self.fail("%r is not a subclass of %r: %s" % (cls, supercls, cls.__bases__))
     
     def assertIsInstance(self, obj, cls, msg=None):
         if not isinstance(obj, cls):

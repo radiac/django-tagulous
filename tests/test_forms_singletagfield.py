@@ -5,9 +5,10 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.forms.SingleTagField
 """
+from __future__ import absolute_import
 from django import forms
 
-from tagulous.tests.lib import *
+from tests.lib import *
 
 
 ###############################################################################
@@ -74,7 +75,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
             'data-tag-type="single" data-tagulous="true" '
             'id="id_tag" name="tag" type="text" />'
         ))
-    
+        
     def test_render_tag_optional(self):
         "Check widget renders correctly when field not required"
         class LocalTestForm(forms.Form):

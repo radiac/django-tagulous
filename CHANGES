@@ -19,8 +19,9 @@ Changelog
             Deprecated: admin.tag_model will be removed in the next version
             Bugfix:     Setting tag options twice raises exception
             Internal:   South migration support improved
-            Internal:   Many small code improvements and bug fixes
+            Internal:   Tests moved to top level, now use setup.py or tox
             Internal:   Improve test coverage to 99%
+            Internal:   Many small code improvements and bug fixes
 
 0.7.0       2015-07-01
             Feature:    Added tree support

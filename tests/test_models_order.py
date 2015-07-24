@@ -5,7 +5,8 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.models.fields.TagField
 """
-from tagulous.tests.lib import *
+from __future__ import absolute_import
+from tests.lib import *
 
 
 class ModelFieldOrderTest(TagTestManager, TestCase):

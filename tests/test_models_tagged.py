@@ -6,7 +6,8 @@ Will fail if settings.ENHANCE_MODELS is not True
 Modules tested:
     tagulous.models.tagged
 """
-from tagulous.tests.lib import *
+from __future__ import absolute_import
+from tests.lib import *
 
 from django.core.exceptions import MultipleObjectsReturned
 
@@ -168,10 +169,9 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         "Check that object.get singletag raises exception when multiple found"
         with self.assertRaises(MultipleObjectsReturned) as cm:
             t1 = self.test_model.objects.get(singletag='Mr')
-        self.assertEqual(
-            str(cm.exception),
+        self.assertTrue(str(cm.exception).startswith(
             "get() returned more than one MixedTest -- it returned 2!"
-        )
+        ))
         
     def test_object_get_by_tags(self):
         "Check that object.get tags loads the item correctly"
@@ -185,10 +185,9 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         "Check that object.get tags raises exception when multiple found"
         with self.assertRaises(MultipleObjectsReturned) as cm:
             t1 = self.test_model.objects.get(tags='red, green')
-        self.assertEqual(
-            str(cm.exception),
+        self.assertTrue(str(cm.exception).startswith(
             "get() returned more than one MixedTest -- it returned 3!"
-        )
+        ))
     
     def test_object_get_by_tags_exact(self):
         "Check that object.get tags loads the item correctly"
@@ -205,10 +204,9 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         )
         with self.assertRaises(MultipleObjectsReturned) as cm:
             t1 = self.test_model.objects.get(tags__exact='yellow, purple')
-        self.assertEqual(
-            str(cm.exception),
+        self.assertTrue(str(cm.exception).startswith(
             "get() returned more than one MixedTest -- it returned 2!"
-        )
+        ))
     
     def test_object_get_by_singletag_tags(self):
         "Check that object.get singletag and tags loads the item correctly"

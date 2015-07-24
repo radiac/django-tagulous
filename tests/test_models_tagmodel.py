@@ -8,7 +8,8 @@ Modules tested:
     tagulous.models.models.TagModelManager
     tagulous.models.models.TagModelQuerySet
 """
-from tagulous.tests.lib import *
+from __future__ import absolute_import
+from tests.lib import *
 
 
 class TagModelTest(TagTestManager, TestCase):

@@ -8,7 +8,8 @@ Modules tested:
     tagulous.models.fields.BaseTagField
     tagulous.models.fields.TagField
 """
-from tagulous.tests.lib import *
+from __future__ import absolute_import
+from tests.lib import *
 
 
 class ModelTagFieldTest(TagTestManager, TestCase):
@@ -666,7 +667,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertEqual(
             str(cm.exception),
             "Cannot set tag options 'force_lowercase' on explicit tag model "
-            "<class 'tagulous.tests.tagulous_tests_app.models.TagMetaUser'>"
+            "<class 'tests.tagulous_tests_app.models.TagMetaUser'>"
         )
         
     def test_to_model_force_options_works(self):

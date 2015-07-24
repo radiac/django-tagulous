@@ -48,7 +48,7 @@ def set_model_initial():
     clear_django()
     return type(
         "MigrationTestModel", (models.Model,), {
-            '__module__': 'tagulous.tests.tagulous_tests_migration.models',
+            '__module__': 'tests.tagulous_tests_migration.models',
             'name': models.CharField(max_length=10),
         }
     )
@@ -58,7 +58,7 @@ def set_model_tagged():
     clear_django()
     model = type(
         "MigrationTestModel", (models.Model,), {
-            '__module__': 'tagulous.tests.tagulous_tests_migration.models',
+            '__module__': 'tests.tagulous_tests_migration.models',
             'name': models.CharField(max_length=10),
             'singletag': tagulous.models.SingleTagField(blank=True, null=True),
             'tags': tagulous.models.TagField(),
@@ -74,11 +74,17 @@ def set_model_tagged():
 def set_model_tree():
     "Tagged model with tags field as tree"
     clear_django()
-    return type(
+    model = type(
         "MigrationTestModel", (models.Model,), {
-            '__module__': 'tagulous.tests.tagulous_tests_migration.models',
+            '__module__': 'tests.tagulous_tests_migration.models',
             'name': models.CharField(max_length=10),
             'singletag': tagulous.models.SingleTagField(blank=True, null=True),
             'tags': tagulous.models.TagField(tree=True),
         }
     )
+
+    # Just confirm dynamic creation worked as expected
+    assert issubclass(model, tagulous.models.tagged.TaggedModel), 'Model is not tagged'
+    assert issubclass(model.singletag.tag_model, tagulous.models.models.TagModel), 'Single tag model not TagModel'
+    assert issubclass(model.tags.tag_model, tagulous.models.models.TagModel), 'Tag model not TagModel'
+    return model

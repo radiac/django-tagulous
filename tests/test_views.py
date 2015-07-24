@@ -4,7 +4,8 @@ Tagulous test: View-related functionality
 Modules tested:
     tagulous.views
 """
-from tagulous.tests.lib import *
+from __future__ import absolute_import
+from tests.lib import *
 
 from django.test import Client
 from django.core.urlresolvers import reverse

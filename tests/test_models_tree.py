@@ -4,7 +4,8 @@ Tagulous test: Tag Trees
 Modules tested:
     tagulous.models.tree
 """
-from tagulous.tests.lib import *
+from __future__ import absolute_import
+from tests.lib import *
 
 
 class TagTreeTestManager(TagTestManager):

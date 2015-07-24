@@ -5,9 +5,10 @@ Modules tested:
     tagulous.models.fields.TagField
     tagulous.forms.TagField
 """
+from __future__ import absolute_import
 from django import forms
 
-from tagulous.tests.lib import *
+from tests.lib import *
 
 
 ###############################################################################
@@ -146,10 +147,10 @@ class FormTagFieldTest(TagTestManager, TestCase):
         form = LocalTestForm()
         with self.assertRaises(ValueError) as cm:
             rendered = str(form['tag'])
-        self.assertEqual(str(cm.exception), (
+        self.assertTrue(str(cm.exception).startswith(
             "Invalid autocomplete view: Reverse for '%s' with arguments '()' "
-            "and keyword arguments '{}' not found."
-        ) % autocomplete_view)
+            "and keyword arguments '{}' not found." % autocomplete_view
+        ))
     
     def test_render_autocomplete_settings(self):
         "Check widget merges autocomplete settings with defaults"
