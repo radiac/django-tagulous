@@ -858,3 +858,22 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
         
         self.assertEqual(weighted[5], 'Frank')
         self.assertEqual(weighted[5].weight, 4)
+    
+    def test_to_string(self):
+        "Check manager and queryset can be converted to a tag string"
+        self.assertEqual(
+            str(self.tag_model.objects),
+            'Adam, Brian, Chris, David, Eric, Frank',
+        )
+        self.assertEqual(
+            str(self.tag_model.objects.all()),
+            'Adam, Brian, Chris, David, Eric, Frank',
+        )
+        self.assertEqual(
+            str(self.tag_model.objects.initial()),
+            'Adam, Brian, Chris',
+        )
+        self.assertEqual(
+            str(self.o1.initial_list),
+            'David, Eric',
+        )

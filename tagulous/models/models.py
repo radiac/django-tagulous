@@ -70,6 +70,12 @@ class TagModelQuerySet(models.query.QuerySet):
                 'table': self.model._meta.db_table,
             }
         })
+    
+    def __unicode__(self):
+        return utils.render_tags(self)
+        
+    def __str__(self):
+        return unicode(self).encode('utf-8')
 
 
 class TagModelManager(models.Manager):
@@ -77,6 +83,12 @@ class TagModelManager(models.Manager):
         return TagModelQuerySet(self.model, using=self._db)
     get_query_set = get_queryset
     
+    def __unicode__(self):
+        return self.get_queryset().__unicode__()
+        
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+        
     def initial(self):
         return self.get_queryset().initial()
     
@@ -85,7 +97,7 @@ class TagModelManager(models.Manager):
     
     def weight(self, *args, **kwargs):
         return self.get_queryset().weight(*args, **kwargs)
-
+    
 
 ###############################################################################
 ####### Abstract base class for all TagModel models
