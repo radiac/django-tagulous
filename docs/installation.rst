@@ -8,11 +8,14 @@ Requirements
 
 These packages are required:
 
-* Django => 1.3
+* Django => 1.4
 
-These packages are recommended:
+These packages are recommended, but optional:
 
+* unidecode
 * South, to assist with migrations (if Django < 1.7)
+
+Tagulous has been tested under Python 2.7.
 
 If you are replacing an existing tagging solution, follow the `Installation`_
 instructions, then read `Converting to Tagulous`_.
@@ -26,16 +29,17 @@ Installation
     pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous
 
    There are also optional extras - sets of dependencies which you can ask pip
-   to install by adding them to the end of the package name:
+   to install by adding them to the end of the package name. They are:
    
-   * ``i18n``, for improved unicode support (``unidecode``)::
+   * ``i18n``, for improved unicode support in slugs (``unidecode``) - see
+     `slugs <_model_slug>`_ for more details.
+   * ``dev``, for testing (``tox`` and ``jasmine``) - see `Contributing`_ for
+     more details.
    
-    pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous[i18n]
+   Example of installing with extras::
+   
+    pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous[i18n][dev]
 
-   * ``dev``, for testing (``jasmine``; also install extra ``[i18n]``)::
-   
-    pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous[dev][i18n]
-   
    Note: The master branch may sometimes contain minor changes made since the
    version was incremented. These changes will be listed in
    `CHANGES <../CHANGES>`_. It will always be safe to use, but versions will be

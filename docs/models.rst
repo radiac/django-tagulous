@@ -421,9 +421,19 @@ fields:
     
     Must be unique.
 
+.. _model_slug:
 ``slug``
     A unique ``SlugField``, generated automatically from the name when first
     saved.
+    
+    If ``unidecode`` is installed, Tagulous will use it to make a best-guess
+    conversion of non-ascii characters to something similar in ascii which will
+    be safe for a slug field. If ``unidecode`` is not installed, Tagulous will
+    strip diacritical marks from extended ascii characters, but then just
+    convert any remaining non-ascii characters to underscores. In most cases
+    either option will be adequate for European languages, but if your tags
+    frequently contain non-European characters you'll have less slug clashes
+    if you use ``unidecode``.
 
 ``count``
     An ``IntegerField`` holding the number of times this tag is in use.

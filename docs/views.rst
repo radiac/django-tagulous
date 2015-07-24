@@ -13,7 +13,7 @@ views in ``views.py`` to support AJAX autocomplete requests.
     You can also pass in a QuerySet of the tag model, instead of the tag model
     itself, in order to filter the tags which will be returned.
     
-    It returns an ``HttpResponse`` with mimetype ``application/json``. The
+    It returns an ``HttpResponse`` with content type ``application/json``. The
     response content is a JSON-encoded object with one key, ``results``, which
     is a list of tags.
     
