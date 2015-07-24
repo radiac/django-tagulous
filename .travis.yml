@@ -8,5 +8,6 @@ env:
   - TOXENV=py27-django1.4
   - TOXENV=py27-django1.5
   - TOXENV=py27-django1.6
+  - TOXENV=jasmine
 
-after_success: coveralls
+after_success:coveralls

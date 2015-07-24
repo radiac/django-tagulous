@@ -253,4 +253,3 @@ class Capturing(list):
         self.extend(self._stringio.getvalue().splitlines())
         sys.stdout = self._stdout
         sys.stderr = self._stderr
-

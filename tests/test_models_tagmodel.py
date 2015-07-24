@@ -576,7 +576,7 @@ try:
     from unidecode import unidecode
 except ImportError:
     unidecode = None
-    
+
 @unittest.skipIf(unidecode is None, 'optional unidecode not installed')
 class TagModelUnicodeUnidecodeTest(TagTestManager, TestCase):
     """
