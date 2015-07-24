@@ -8,7 +8,7 @@ from django.utils.encoding import force_unicode
 import unicodedata
 try:
     from unidecode import unidecode
-except ImportError:
+except ImportError: # pragma: no cover - tests simulate this
     unidecode = None
 
 from tagulous.constants import COMMA, SPACE, QUOTE, DOUBLE_QUOTE, TREE

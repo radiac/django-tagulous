@@ -6,7 +6,7 @@ from django.http import HttpResponse
 # ++ Can remove this try/except when min req is Django 1.5
 try:
     import json
-except ImportError:
+except ImportError: # pragma: no cover
    from django.utils import simplejson as json
 
 
@@ -70,5 +70,5 @@ def autocomplete(request, tag_model):
     }
     return HttpResponse(
         json.dumps(response, cls=DjangoJSONEncoder),
-        mimetype='application/json',
+        content_type='application/json',
     )

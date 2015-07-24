@@ -322,7 +322,6 @@ class TaggedModel(models.Model):
             model   The model to turn into a TaggedModel subclass.
                     Will only be changed if it has tag fields.
         """
-        
         # See if there are tag fields on this model
         tag_fields = singletagfields_from_model(model) + tagfields_from_model(model)
         

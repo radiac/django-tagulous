@@ -2,7 +2,7 @@
 Tagulous tag models
 """
 
-from django.db import models, router, IntegrityError
+from django.db import models, router, transaction, IntegrityError
 try:
     from django.utils.text import slugify
 except ImportError:
@@ -14,6 +14,16 @@ from tagulous import constants
 from tagulous import settings
 from tagulous import utils
 from tagulous.models.options import TagOptions
+
+# Because older versions of Django don't support or need transaction.atomic for
+# what we're doing here, fake it for the ``with`` statement.
+# ++ We can drop this when we drop support for 1.5
+if hasattr(transaction, 'atomic'):
+    transaction_atomic = transaction.atomic
+else:
+    class transaction_atomic(object):
+        def __enter__(self): pass
+        def __exit__(self, type, value, traceback): pass
 
 
 ###############################################################################
@@ -385,7 +395,11 @@ class BaseTagModel(models.Model):
         
         # Try saving the slug - it'll probably be fine
         try:
-            return super(BaseTagModel, self).save(*args, **kwargs)
+            # If transaction supports atomic, we need to wrap the save call -
+            # otherwise if save throws an exception it'll cause any current
+            # queries to roll back
+            with transaction_atomic():
+                return super(BaseTagModel, self).save(*args, **kwargs)
         except IntegrityError:
             pass
         

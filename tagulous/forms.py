@@ -11,7 +11,7 @@ from django.utils.encoding import force_unicode
 # ++ Can remove this try/except when min req is Django 1.5
 try:
     import json
-except ImportError:
+except ImportError: # pragma: no cover
    from django.utils import simplejson as json
 
 from tagulous import settings

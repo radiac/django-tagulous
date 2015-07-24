@@ -9,7 +9,6 @@ For tag model manager, look in tagulous.models.models
 
 from django.core import exceptions
 
-from tagulous.constants import QUOTE, DOUBLE_QUOTE
 from tagulous.utils import parse_tags, render_tags
 
 

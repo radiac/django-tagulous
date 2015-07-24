@@ -7,13 +7,16 @@ South migration support
 # tested manually instead.
 
 from tagulous import constants
+from tagulous import settings
 from tagulous.models.models import BaseTagModel, BaseTagTreeModel
+from tagulous.models.tagged import TaggedModel
 from tagulous.models.options import TagOptions
 from tagulous.models.fields import SingleTagField, TagField
 
 
 try:
     from south import modelsinspector
+    from south import orm
     
     # Monkey-patch South to use BaseTagModel as the base class for tag models
     # in data migrations. It has to use an abstract model without fields,
@@ -30,6 +33,20 @@ try:
         return meta_def
     modelsinspector.get_model_meta = get_model_meta
     
+    # Monkey-patch South to make sure tagged models subclass TaggedModel.
+    # It should happen automatically, and will most of the time - but because
+    # South doesn't guarantee order fields are created, it can fail to create
+    # ForeignKey and ManyToManyField fields the first time. When that happens
+    # it goes back and adds them later - but by then the class_prepared signal
+    # will have fired, and we may have missed the tag fields. Therefore we have
+    # to re-examine all modules South creates after it has fixed failed fields.
+    if settings.ENHANCE_MODELS:
+        old_retry_failed_fields = orm._FakeORM.retry_failed_fields
+        def retry_failed_fields(self):
+            old_retry_failed_fields(self)
+            for modelkey, model in self.models.items():
+                TaggedModel.cast_class(model)
+        orm._FakeORM.retry_failed_fields = retry_failed_fields
     
     # Build keyword arguments for south
     south_kwargs = {

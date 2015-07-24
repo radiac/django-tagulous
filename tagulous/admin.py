@@ -213,17 +213,16 @@ class TagModelAdmin(admin.ModelAdmin):
             if merge_form.is_valid():
                 merge_to = merge_form.cleaned_data['merge_to']
                 merge_to.merge_tags(queryset)
-                self.message_user(
-                    request, 'Tags merged', level=messages.SUCCESS,
-                )
+                # ++ Can add level=messages.SUCCESS when django 1.4 is dropped
+                self.message_user(request, 'Tags merged')
                 return HttpResponseRedirect(request.get_full_path())
                 
         else:
             tag_pks = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
             if len(tag_pks) < 2:
+                # ++ Can add level=messages.INFO when django 1.4 is dropped
                 self.message_user(
                     request, 'You must select at least two tags to merge',
-                    level=messages.INFO,
                 )
                 return HttpResponseRedirect(request.get_full_path())
             
