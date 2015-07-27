@@ -10,6 +10,7 @@ http://radiac.net/projects/django-tagulous/
 .. image:: https://travis-ci.org/radiac/django-tagulous.svg?branch=master
     :target: https://travis-ci.org/radiac/django-tagulous
 
+.. image:: https://coveralls.io/repos/radiac/django-tagulous/badge.svg?branch=master&service=github :target: https://coveralls.io/github/radiac/django-tagulous?branch=master 
 
 Features
 ========
