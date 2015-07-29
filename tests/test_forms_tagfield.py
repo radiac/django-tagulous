@@ -394,6 +394,34 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'id="id_tags" name="tags" type="text" value="blue, red" />'
         ))
 
+    def test_tagmeta_without_autocomplete_settings(self):
+        """
+        Check that a tag widget copes with a tag field which takes its options
+        from a TagModel with a TagMeta, but where the TagMeta is missing
+        autocomplete_settings, and the widget has default_autocomplete_settings.
+        """
+        class TagMetaUserForm(forms.ModelForm):
+            class Meta:
+                model = test_models.TagMetaUser
+                exclude = []
+        form = TagMetaUserForm()
+        form['two'].field.widget.default_autocomplete_settings = {
+            'bees': 'buzz',
+        }
+
+        self.assertHTMLEqual(str(form['two']), (
+            '<input autocomplete="off" '
+            'data-tag-list="[]" '
+            'data-tag-options="{&quot;autocomplete_settings&quot;: '
+            '{&quot;bees&quot;: &quot;buzz&quot;}, '
+            '&quot;case_sensitive&quot;: true, '
+            '&quot;force_lowercase&quot;: true, &quot;max_count&quot;: 10, '
+            '&quot;required&quot;: false}" '
+            'data-tagulous="true" '
+            'id="id_two" name="two" type="text" />'
+        ))
+
+
 ###############################################################################
 #######  Test TagField blank
 ###############################################################################

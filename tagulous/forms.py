@@ -65,7 +65,9 @@ class TagWidgetBase(forms.TextInput):
         tag_options = self.tag_options.field_items(with_defaults=False)
         if self.default_autocomplete_settings is not None:
             autocomplete_settings = self.default_autocomplete_settings.copy()
-            autocomplete_settings.update(tag_options['autocomplete_settings'])
+            autocomplete_settings.update(
+                tag_options.get('autocomplete_settings', {})
+            )
             tag_options['autocomplete_settings'] = autocomplete_settings
         
         # Inject extra settings
