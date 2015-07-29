@@ -82,6 +82,13 @@ class SingleTagDescriptor(BaseTagDescriptor):
         def post_save_handler(sender, instance, **kwargs):
             manager = self.get_manager(instance)
             manager.post_save_handler()
+            
+            # If raw is set, data is being injected into the system, most
+            # likely from a deserialization operation. If the tag model has
+            # just been deserialized too, the tag counts will probably be off.
+            if kwargs.get('raw', False):
+                manager.get().update_count()
+            
         models.signals.post_save.connect(
             post_save_handler, sender=self.field.model, weak=False
         )
@@ -150,6 +157,14 @@ class TagDescriptor(BaseTagDescriptor):
             """
             manager = self.__get__(instance)
             manager.save()
+            
+            # If raw is set, data is being injected into the system, most
+            # likely from a deserialization operation. If the tag model has
+            # just been deserialized too, the tag counts will probably be off.
+            if kwargs.get('raw', False):
+                for tag in manager.tags:
+                    tag.update_count()
+                
         models.signals.post_save.connect(
             post_save_handler, sender=self.field.model, weak=False
         )

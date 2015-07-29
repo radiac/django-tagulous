@@ -285,7 +285,7 @@ class SingleTagField(BaseTagField, models.ForeignKey):
             form_class=form_class, **kwargs
         )
 
-        
+
 ###############################################################################
 ####### Tag field
 ###############################################################################
@@ -392,7 +392,6 @@ class TagField(BaseTagField, models.ManyToManyField):
         """
         setattr(instance, self.attname, data)
         getattr(instance, self.attname).save()
-
 
 
 ###############################################################################

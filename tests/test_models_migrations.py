@@ -40,6 +40,10 @@ south_migrations_path = None
 ###############################################################################
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#       Util functions
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 def south_clear_migrations():
     "Clear cached mentions of south migrations to force a reload"
     from south.migration import Migrations
@@ -144,6 +148,10 @@ def south_expected_dir():
         ),
     )
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#       Tests
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 @unittest.skipIf(django.VERSION >= (1, 7), 'South tests not run for Django 1.7+')
 @unittest.skipIf(south is None, 'South not installed')

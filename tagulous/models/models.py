@@ -82,7 +82,7 @@ class TagModelManager(models.Manager):
     def get_queryset(self):
         return TagModelQuerySet(self.model, using=self._db)
     get_query_set = get_queryset
-    
+
     def __unicode__(self):
         return self.get_queryset().__unicode__()
         
@@ -138,7 +138,7 @@ class TagModelBase(models.base.ModelBase):
         # Assign
         new_cls.tag_options = new_tag_options
         return new_cls
-        
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Empty abstract model

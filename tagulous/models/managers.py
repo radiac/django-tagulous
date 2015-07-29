@@ -495,7 +495,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         new_tags = []
         for tag in objs:
             if isinstance(tag, basestring):
-                new_tags.append(self.tag_model.objects.create(name=tag))
+                new_tags.append(self.tag_model(name=tag))
             else:
                 new_tags.append(tag)
         
@@ -518,10 +518,11 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
                     )
                 )
         
+        # Ensure tags exist
+        new_tags = self._ensure_tags_in_db(new_tags)
+        
         # Add to db, add to cache, and increment
-        super(TagRelatedManagerMixin, self).add(
-            *self._ensure_tags_in_db(new_tags)
-        )
+        super(TagRelatedManagerMixin, self).add(*new_tags)
         for tag in new_tags:
             self.tags.append(tag)
             tag.increment()

@@ -1,0 +1,30 @@
+- fields: {count: 1, name: single1, protected: false, slug: single1}
+  model: tagulous_tests_app._tagulous_simplemixedtest_singletag
+  pk: 1
+- fields: {count: 1, name: single2, protected: false, slug: single2}
+  model: tagulous_tests_app._tagulous_simplemixedtest_singletag
+  pk: 2
+- fields: {count: 1, name: tag1, protected: false, slug: tag1}
+  model: tagulous_tests_app._tagulous_simplemixedtest_tags
+  pk: 1
+- fields: {count: 1, name: tag2, protected: false, slug: tag2}
+  model: tagulous_tests_app._tagulous_simplemixedtest_tags
+  pk: 2
+- fields: {count: 1, name: tag4, protected: false, slug: tag4}
+  model: tagulous_tests_app._tagulous_simplemixedtest_tags
+  pk: 3
+- fields: {count: 1, name: tag3, protected: false, slug: tag3}
+  model: tagulous_tests_app._tagulous_simplemixedtest_tags
+  pk: 4
+- fields:
+    name: Test 1
+    singletag: single1
+    tags: [tag1, tag2]
+  model: tagulous_tests_app.simplemixedtest
+  pk: 1
+- fields:
+    name: Test 2
+    singletag: single2
+    tags: [tag3, tag4]
+  model: tagulous_tests_app.simplemixedtest
+  pk: 2

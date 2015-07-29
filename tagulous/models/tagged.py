@@ -5,11 +5,13 @@ These are all applied automatically when the TAGULOUS_ENHANCE_MODELS setting
 is enabled.
 """
 
+import copy
+
 from django.db import models
 from django.db import transaction
 
 from tagulous.models.fields import (
-    SingleTagField, TagField,
+    BaseTagField, SingleTagField, TagField,
     singletagfields_from_model, tagfields_from_model,
 )
 from tagulous import settings
@@ -341,6 +343,58 @@ class TaggedModel(models.Model):
         
         return model
     
+    @classmethod
+    def _detag_to_serializable(cls):
+        """
+        Clone a fake version of this model, replacing tag fields with TextField
+        objects. Used by serializers.
+        """
+        # Get fields on this model
+        if hasattr(cls._meta, 'get_fields'):
+            # Django 1.8
+            fields = cls._meta.get_fields()
+        else:
+            fields = [
+                cls._meta.get_field(field_name)
+                for field_name in cls._meta.get_all_field_names()
+            ]
+        
+        # Create a fake model
+        class FakeTaggedModel(models.Model):
+            def _retag_to_original(self):
+                """
+                Convert this instance into an instance of the proper class it
+                should have been, before _detag_to_serializable converted it.
+                """
+                # cls and fields from closure's scope
+                data = {}
+                for field in fields:
+                    if not (
+                        not isinstance(field, TagField)
+                        and field.rel
+                        and isinstance(field.rel, models.ManyToManyRel)
+                    ):
+                        # A field which is either a TagField, or isn't a M2M -
+                        # ie Deserializer will have put the data on the object
+                        data[field.name] = getattr(self, field.name)
+                return cls(**data)
+            
+            class Meta:
+                abstract = True
+        
+        # Add fields to fake model
+        for field in fields:
+            if isinstance(field, BaseTagField):
+                clone_field = models.TextField(
+                    blank=field.blank, null=field.null
+                )
+            else:
+                clone_field = copy.deepcopy(field)
+            clone_field.contribute_to_class(FakeTaggedModel, field.name)
+        
+        FakeTaggedModel._tagulous_original_cls = cls
+        return FakeTaggedModel
+        
     class Meta:
         abstract = True
 

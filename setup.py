@@ -50,6 +50,12 @@ def runtests(args):
                 'django.contrib.messages.middleware.MessageMiddleware',
             ],
             ROOT_URLCONF='tests.tagulous_tests_app.urls',
+            SERIALIZATION_MODULES={
+                'xml': 'tagulous.serializers.xml_serializer',
+                'json': 'tagulous.serializers.json',
+                'python': 'tagulous.serializers.python',
+                'yaml': 'tagulous.serializers.pyyaml',
+            }
         )
     
     execute_from_command_line(args[:1] + ['test'] + (args[2:] or ['tests']))

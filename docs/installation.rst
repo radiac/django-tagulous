@@ -45,14 +45,25 @@ Installation
    `CHANGES <../CHANGES>`_. It will always be safe to use, but versions will be
    tagged if you only want to follow releases.
 
-2. Add Tagulous to ``INSTALLED_APPS``::
+2. In your site settings, add Tagulous to ``INSTALLED_APPS``::
 
     INSTALLED_APPS = (
         ...
         'tagulous',
     )
+   
+   In the same file, tell Django to use the Tagulous serialization modules, so
+   that Django can serialize tag fields (for fixtures etc):
+   
+    SERIALIZATION_MODULES = {
+        'xml':    'tagulous.serializers.xml_serializer',
+        'json':   'tagulous.serializers.json',
+        'python': 'tagulous.serializers.python',
+        'yaml':   'tagulous.serializers.pyyaml',
+    }
 
-   You may also want to change some settings here (see `Settings`_ below)
+   You may also want to change some Tagulous settings here - see `Settings`_
+   below.
 
 You are now ready to add Tagulous fields to your models - see
 `Example Usage`_, `Models`_ and `Forms`_.

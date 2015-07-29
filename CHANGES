@@ -16,6 +16,7 @@ Changelog
 0.8.0                   See upgrade instructions
             Feature:    Tag cloud support
             Feature:    Improved admin.register
+            Feature:    Added tag-aware serializers
             Deprecated: admin.tag_model will be removed in the next version
             Bugfix:     Setting tag options twice raises exception
             Internal:   South migration support improved

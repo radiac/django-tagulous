@@ -489,6 +489,23 @@ class ModelTagFieldTest(TagTestManager, TestCase):
             'green':    1,
         })
     
+    def test_m2m_add_by_string_existing(self):
+        "Add a tag directly using M2M .add(str) when the tag already exists"
+        test_models.TagFieldModel.tags.tag_model.objects.create(name='green')
+        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue')
+        self.assertInstanceEqual(t1, name='Test 1', tags='blue')
+        self.assertTagModel(self.tag_model, {
+            'blue':     1,
+            'green':    0,
+        })
+        t1.tags.add('green')
+        self.assertEqual(t1.tags, 'blue, green')
+        self.assertInstanceEqual(t1, name='Test 1', tags='blue, green')
+        self.assertTagModel(self.tag_model, {
+            'blue':     1,
+            'green':    1,
+        })
+    
     def test_change_string_remove(self):
         "Remove a tag by changing tag string"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, green')
@@ -1221,10 +1238,8 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
             "Cannot set more than 3 tags on this field; it already has 2"
         )
         self.assertInstanceEqual(t1, name="Test 1", max_count='Adam, Brian')
-        # They'll have been created, but not added
+        # They won't have been created
         self.assertTagModel(self.test_model.max_count, {
             'Adam':     1,
             'Brian':    1,
-            'Chris':    0,
-            'David':    0,
         })
