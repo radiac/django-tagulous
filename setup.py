@@ -22,6 +22,18 @@ def runtests(args):
             'tests',
         ]
         
+        SERIALIZATION_MODULES = {
+            'xml': 'tagulous.serializers.xml_serializer',
+            'json': 'tagulous.serializers.json',
+            'python': 'tagulous.serializers.python',
+        }
+        try:
+            import yaml
+        except ImportError:
+            pass
+        else:
+            SERIALIZATION_MODULES['yaml'] = 'tagulous.serializers.pyyaml'
+        
         if django.VERSION < (1, 7):
             try:
                 import south
@@ -50,12 +62,7 @@ def runtests(args):
                 'django.contrib.messages.middleware.MessageMiddleware',
             ],
             ROOT_URLCONF='tests.tagulous_tests_app.urls',
-            SERIALIZATION_MODULES={
-                'xml': 'tagulous.serializers.xml_serializer',
-                'json': 'tagulous.serializers.json',
-                'python': 'tagulous.serializers.python',
-                'yaml': 'tagulous.serializers.pyyaml',
-            }
+            SERIALIZATION_MODULES=SERIALIZATION_MODULES,
         )
     
     execute_from_command_line(args[:1] + ['test'] + (args[2:] or ['tests']))
