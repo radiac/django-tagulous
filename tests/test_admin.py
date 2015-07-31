@@ -116,10 +116,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
         self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
-        self.assertItemsEqual(
-            ma.get_list_display(request),
-            ['name'],
-        )
+        self.assertItemsEqual(ma.get_list_display(request), ['name'])
 
     def test_register_tag_descriptor(self):
         "Check register tag descriptor creates correct admin class"
@@ -136,6 +133,27 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(self.model_singletag in self.site._registry)
         ma = self.site._registry[self.model_singletag]
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
+    
+    def test_register_tag_model_class_properties(self):
+        """
+        Check list_display, list_filter, exclude and actions can be set in a
+        tag modeladmin which doesn't explicitly subclass TagModelAdmin
+        """
+        # register class SimpleMixedTestTagsAdmin(admin.ModelAdmin):
+        # against self.model
+        self.assertFalse(self.model.singletag.tag_model in self.site._registry)
+        tag_admin.register(
+            self.model.singletag.tag_model,
+            test_admin.SimpleMixedTestTagsAdmin,
+            site=self.site,
+        )
+        self.assertTrue(self.model.singletag.tag_model in self.site._registry)
+        ma = self.site._registry[self.model.singletag.tag_model]
+        self.assertIsInstance(ma, tag_admin.TagModelAdmin)
+        self.assertEqual(ma.list_display, ['name'])
+        self.assertEqual(ma.list_filter, ['count'])
+        self.assertEqual(ma.exclude, ['name'])
+        self.assertEqual(ma.actions, [])
     
     def test_register_tag_tree_model(self):
         "Check register tag tree model creates correct admin class"

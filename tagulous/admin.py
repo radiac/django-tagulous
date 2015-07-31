@@ -171,12 +171,18 @@ def register(model, admin_class=None, site=None, **options):
     # If options specified, or other bases, will need to subclass admin_class
     if options or cls_bases:
         cls_bases += [admin_class]
-        
-    if cls_bases:
+        # Update options with anything the new subclasses could have overidden
+        # in a custom ModelAdmin - unless they're already overridden in options
         options['__module__'] = __name__
+        if admin_class != admin.ModelAdmin:
+            options.update(dict(
+                (k, v) for k, v in admin_class.__dict__.items()
+                if k in ['list_display', 'list_filter', 'exclude', 'actions']
+                and k not in options
+            ))
         admin_class = type("%sAdmin" % model.__name__, tuple(cls_bases), options)
     
-    # Enhance the model class
+    # Enhance the model admin class
     enhance(model, admin_class)
     
     # Register the model

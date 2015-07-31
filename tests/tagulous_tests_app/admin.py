@@ -10,3 +10,9 @@ class SimpleMixedTestAdmin(admin.ModelAdmin):
     # Docs say this will work when set to None, but unclear which version of
     # django started supporting it. Certainly after 1.5.
     list_display_links = ['none']
+
+class SimpleMixedTestTagsAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    list_filter = ['count']
+    exclude = ['name']
+    actions = []
