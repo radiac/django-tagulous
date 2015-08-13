@@ -149,16 +149,18 @@ class TagTestManager(object):
         # Extract json from this element
         for i, attr in enumerate(dom.attributes):
             attr_name, attr_val = attr
+            if not attr_name.startswith('data-'):
+                continue
+            
             if (
-                attr_name.startswith('data-')
-                and attr_val[0] == '{'
-                and attr_val[-1] == '}'
+                (attr_val[0] == '{' and attr_val[-1] == '}')
+                or (attr_val[0] == '[' and attr_val[-1] == ']')
             ):
                 if el_name not in jsons:
                     jsons[el_name] = {}
                 jsons[el_name][attr_name] = attr_val
-                dom.attributes[i] = (attr_name, '{/*json*/}')
-        
+                dom.attributes[i] = (attr_name, '/*json*/')
+            
         # Look at children
         for child in dom.children:
             new_child, new_jsons = self._extract_json(child, el_name)

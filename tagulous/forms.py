@@ -151,10 +151,16 @@ class BaseTagField(forms.CharField):
         elif isinstance(value, basestring):
             tag_string = value
         
-        # Otherwise we have an invalid value
+        # Otherwise will be given by the model's TagField.value_from_object().
+        # The value comes from django.forms.model.model_to_dict, which thinks
+        # it produced a list of pks - but TagField.value_from_object tricked it
+        # by returning a list with a single item, the tag string.
         else:
-            raise ValueError(_("Tag field could not prepare unexpected value"))
-            
+            # Catch changes in model_to_dict which broke the trick
+            if len(value) != 1:
+                raise ValueError(_("Tag field could not prepare unexpected value"))
+            tag_string = value[0]
+        
         return super(BaseTagField, self).prepare_value(tag_string)
     
     # Use setters and getters to ensure any changes to the field are mirrored

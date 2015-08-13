@@ -393,7 +393,19 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'id="id_tags" name="tags" type="text" value="blue, red" />'
         ))
-
+    
+    def test_tagged_edit(self):
+        "Check edit tagged model form instance works"
+        t1 = self.model.objects.create(name='Test 1', tags='blue, red')
+        form = self.form(instance=t1)
+        self.assertHTMLEqual(str(form['tags']), (
+            '<input autocomplete="off" '
+            'data-tag-list="[&quot;blue&quot;, &quot;red&quot;]" '
+            'data-tag-options="{&quot;required&quot;: true}" '
+            'data-tagulous="true" '
+            'id="id_tags" name="tags" type="text" value="blue, red" />'
+        ))
+        
     def test_tagmeta_without_autocomplete_settings(self):
         """
         Check that a tag widget copes with a tag field which takes its options

@@ -339,10 +339,8 @@ class TagField(BaseTagField, models.ManyToManyField):
         there's no model context by that stage to do the pk lookup.
         
         We therefore return a fake queryset containing a single fake item,
-        where the pk attribute is the tag string.
-        
-        It's a bit of a hack to avoid monkey-patching django, but this may
-        leave it vulnerable to changes in future versions of Django.
+        where the pk attribute is the tag string - a bit of a hack, but avoids
+        monkey-patching Django.
         """
         class FakeObject(object):
             """
