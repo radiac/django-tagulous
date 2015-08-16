@@ -310,6 +310,13 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         qs1 = self.test_model.objects.filter(tags__exact='red, blue')
         self.assertEqual(qs1.count(), 0)
     
+    def test_object_tags_filter_none(self):
+        "Check that object.filter returns objects with no tags"
+        o4 = self.test_model.objects.create(name='Test 4', tags='')
+        qs1 = self.test_model.objects.filter(tags=None)
+        self.assertEqual(qs1.count(), 1)
+        self.assertEqual(qs1[0].pk, o4.pk)
+    
     
     #
     # .exclude()
@@ -357,7 +364,16 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         self.assertEqual(qs1[0].pk, self.o1.pk)
         self.assertEqual(qs1[1].pk, self.o2.pk)
         self.assertEqual(qs1[2].pk, self.o3.pk)
-    
+        
+    def test_object_tags_exclude_none(self):
+        "Check that object.exclude returns objects with tags"
+        o4 = self.test_model.objects.create(name='Test 4', tags='')
+        qs1 = self.test_model.objects.exclude(tags=None)
+        self.assertEqual(qs1.count(), 3)
+        self.assertEqual(qs1[0].pk, self.o1.pk)
+        self.assertEqual(qs1[1].pk, self.o2.pk)
+        self.assertEqual(qs1[2].pk, self.o3.pk)
+
     
 class ModelTaggedQuerysetOptionsSingleTest(TagTestManager, TestCase):
     """

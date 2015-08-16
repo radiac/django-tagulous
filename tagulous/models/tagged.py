@@ -64,7 +64,7 @@ def _split_kwargs(model, kwargs, lookups=False, with_fields=False):
             safe_fields[orig_field_name] = val
             continue
         
-        # No lookup            
+        # No lookup
         # Try to look up the field
         try:
             field = model._meta.get_field(field_name)
@@ -138,6 +138,13 @@ class TaggedQuerySet(models.query.QuerySet):
         for field_name, val in tag_fields.items():
             val, lookup = val
             
+            # Only perform custom lookup if value is a string
+            if not isinstance(val, basestring):
+                qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                    negate, **{field_name: val}
+                )
+                continue
+            
             # Parse the tag string
             tags = utils.parse_tags(val)
             
@@ -174,7 +181,7 @@ class TaggedQuerySet(models.query.QuerySet):
             else:
                 # A filter op can just replace the main query
                 qs = subqs
-            
+        
         return qs
     
     def create(self, **kwargs):
