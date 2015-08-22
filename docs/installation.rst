@@ -15,7 +15,7 @@ These packages are recommended, but optional:
 * unidecode
 * South, to assist with migrations (if Django < 1.7)
 
-Tagulous has been tested under Python 2.7.
+Tagulous has been tested under Python 2.7, with South 1.0.2.
 
 If you are replacing an existing tagging solution, follow the `Installation`_
 instructions, then read `Converting to Tagulous`_.
