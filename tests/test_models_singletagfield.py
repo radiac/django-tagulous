@@ -260,10 +260,12 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t1.delete()
         
         # Check the original tag 'Mr' was decremented (and deleted)
-        self.assertEqual(str(t1.title.name), 'Mrs')
         self.assertTagModel(self.tag_model, {
             'Mrs': 1,
         })
+        
+        # But check that tagulous still thinks the tag is 'Mrs'
+        self.assertEqual(str(t1.title.name), 'Mrs')
     
     def test_save_deleted_tag(self):
         "Check that a deleted tag in memory can be re-saved"
