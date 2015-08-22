@@ -24,7 +24,7 @@ Features
 * Supports trees of nested tags, for detailed categorisation
 * All the other features you'd expect a tagging library to have
 
-Version 0.7.0; requires Django 1.4 or later.
+Version 0.8.0; requires Django 1.4 or later.
 
 * See `Documentation <docs/index.rst>`_ for details of how it all works
 * See `Example Usage <docs/usage.rst>`_ to see examples of it in use

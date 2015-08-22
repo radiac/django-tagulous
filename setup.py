@@ -74,7 +74,7 @@ if len(sys.argv) > 1 and sys.argv[1] == 'test':
 
 setup(
     name = "django-tagulous",
-    version = "0.7.0",
+    version = "0.8.0",
     author = "Richard Terry",
     author_email = "code@radiac.net",
     description = ("A flexible tagging application for Django"),

@@ -13,7 +13,7 @@ changes are available by installing the master branch from github.
 Changelog
 =========
 
-0.8.0                   See upgrade instructions
+0.8.0       2015-08-22  See upgrade instructions
             Feature:    Tag cloud support
             Feature:    Improved admin.register
             Feature:    Added tag-aware serializers
