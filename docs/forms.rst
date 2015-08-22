@@ -174,3 +174,38 @@ their corresponding model fields:
     When called on an instance, will return a sorted list of unique tags, or an
     empty list if there are no tags.
 
+
+Creating an inline formset of tagged models for a tag
+-----------------------------------------------------
+
+In most cases Tagulous works with Django's default inline model formsets.
+However, there is a specific case where it doesn't: when you create an inline
+formset using tagged models with a tag as the parent model (eg when you edit
+a tag and its corresponding instances of the tagged model).
+
+In this specific case, you must use the formset class
+``tagulous.forms.TaggedInlineFormSet``. For example:
+
+    class Person(models.Model):
+        name = models.CharField(max_length=255)
+        title = tagulous.models.SingleTagField(initial='Mr, Mrs')
+
+    PersonInline = forms.models.inlineformset_factory(
+        Person.title.tag_model,
+        Person,
+        formset=tagulous.forms.TaggedInlineFormSet,
+    )
+
+This would allow you to generate a formset for all ``Person``s using a specific
+``title`` tag.
+
+Tagulous will automatically apply this fix in the admin site, as long as the
+tag admin class is registered using ``tagulous.admin.register``.
+
+Without the ``TaggedInlineFormSet`` class in this situation, the tag count will
+be incorrect when adding tagged model instances, and editing will fail because
+the default formset will try to use the tag name as a primary key.
+
+The ``TaggedInlineFormSet`` class will only perform actions under this specific
+relationship, so is safe to use in other situations.
+

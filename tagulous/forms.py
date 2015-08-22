@@ -282,3 +282,45 @@ class TagField(BaseTagField):
         
         # Deal with it as normal
         return super(TagField, self).prepare_value(value)
+
+
+###############################################################################
+####### Inline tagged formset
+###############################################################################
+
+class TaggedInlineFormSet(forms.models.BaseInlineFormSet):
+    """
+    An inline formset base class which works when the model is a tagged model
+    using a SingleTagField, and the parent model is a tag model. Only affects
+    this usage, otherwise operates as a normal InlineFormSet.
+    
+    When adding an inline instance, Django's BaseInlineFormSet sets the parent
+    model instance by fk id instead of fk value. This normally makes sense, but
+    it means Tagulous doesn't detect the change of tag, and can't update the
+    count. This formset updates the count after saving.
+    
+    When editing an inline instance, Django's BaseInlineFormSet switches the
+    fk form field from SingleTagField to InlineForeignKeyField, which expects
+    the fk's pk - but when constructing the initial form data, it gets it from
+    the original field's value_from_object, in this case will be the tag name.
+    This formset corrects this back to use the fk's pk.
+    """
+    def save(self, *args, **kwargs):
+        """Saves and updates the tag count, if parent model is a tag model"""
+        obj = super(TaggedInlineFormSet, self).save(*args, **kwargs)
+        if isinstance(self.instance, BaseTagModel):
+            self.instance.update_count()
+        return obj
+    
+    def _construct_form(self, i, **kwargs):
+        # Construct as normal
+        form = super(TaggedInlineFormSet, self)._construct_form(i, **kwargs)
+        
+        # SingleTagField will have broken the pk - fix it by clearing and
+        # letting BoundField.value() use the field's initial value
+        if (
+            isinstance(self.instance, BaseTagModel)
+            and self.fk.name in form.initial
+        ):
+            del form.initial[self.fk.name]
+        return form

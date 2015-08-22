@@ -19,6 +19,7 @@ Changelog
             Feature:    Added tag-aware serializers
             Deprecated: admin.tag_model will be removed in the next version
             Bugfix:     Setting tag options twice raises exception
+            Bugfix:     Tagged inline formsets work correctly
             Internal:   South migration support improved
             Internal:   Tests moved to top level, tox support added
             Internal:   Improve test coverage to 99%
@@ -43,5 +44,5 @@ Roadmap
 =======
 
 Target
-0.8.0       Complete 100% test coverage of all code relevant to Django <=1.6
-0.9.0       Add support for Django 1.7 and 1.8
+0.9.0       Support for Django 1.7 and 1.8
+0.10.0      Support python 3

@@ -25,7 +25,6 @@ class FormMixedNonTagRefTest(TagTestManager, TestCase):
     ]
     
     def setUpExtra(self):
-        # Load initial tags for all models which have them
         self.model = test_models.MixedNonTagRefTest
         self.tag_model = self.model.singletag.tag_model
         
@@ -112,3 +111,103 @@ class FormMixedNonTagRefTest(TagTestManager, TestCase):
             'orange': 1,
             'yellow': 1,
         })
+
+
+###############################################################################
+####### Test inline formsets
+###############################################################################
+
+class SingleInlineFormsetTest(TagTestManager, TestCase):
+    """
+    Test inline formset for SingleTagField relationships
+    """
+    manage_models = [
+        test_models.SimpleMixedTest,
+    ]
+    
+    def setUpExtra(self):
+        self.model = test_models.SimpleMixedTest
+        self.tag_model = self.model.singletag.tag_model
+        self.formset = test_forms.SimpleMixedSingleInline
+    
+    def test_add(self):
+        tag1 = self.tag_model.objects.create(name='Mr')
+        self.assertTagModel(self.tag_model, {'Mr': 0})
+        self.assertEqual(self.model.objects.count(), 0)
+        
+        formset = self.formset(
+            data={
+                'formset-TOTAL_FORMS': '3',
+                'formset-INITIAL_FORMS': '0',
+                'formset-MAX_NUM_FORMS': '1000',
+                
+                'formset-0-name': 'Test 1',
+                'formset-0-DELETE': '',
+                
+                'formset-1-name': 'Test 2',
+                'formset-1-DELETE': '',
+            },
+            instance=tag1,
+            prefix='formset'
+        )
+        self.assertTrue(formset.is_valid())
+        formset.save()
+        
+        self.assertEqual(self.model.objects.count(), 2)
+        obj1 = self.model.objects.get(name='Test 1')
+        obj2 = self.model.objects.get(name='Test 2')
+        self.assertEqual(obj1.singletag, tag1)
+        self.assertEqual(obj2.singletag, tag1)
+        self.assertTagModel(self.tag_model, {'Mr': 2})
+    
+    def test_edit_pk(self):
+        "Check that edit formset forms refer to the tag pk, not its name"
+        obj1 = self.model.objects.create(name='Test 1', singletag='Mr')
+        obj2 = self.model.objects.create(name='Test 2', singletag='Mr')
+        tag1 = obj1.singletag
+        self.assertTagModel(self.tag_model, {'Mr': 2})
+        self.assertEqual(self.model.objects.count(), 2)
+        
+        formset = self.formset(prefix='formset', instance=tag1)
+        self.assertHTMLEqual(str(formset.forms[0]['singletag']), (
+            '<input type="hidden" name="formset-0-singletag" '
+            'value="%d" id="id_formset-0-singletag" />'
+        ) % tag1.pk)
+        
+    
+    def test_edit(self):
+        obj1 = self.model.objects.create(name='Test 1', singletag='Mr')
+        obj2 = self.model.objects.create(name='Test 2', singletag='Mr')
+        tag1 = obj1.singletag
+        self.assertTagModel(self.tag_model, {'Mr': 2})
+        self.assertEqual(self.model.objects.count(), 2)
+        
+        formset = self.formset(
+            data={
+                'formset-TOTAL_FORMS': '5',
+                'formset-INITIAL_FORMS': '2',
+                'formset-MAX_NUM_FORMS': '1000',
+                
+                'formset-0-name': 'Test 1e',
+                'formset-0-id': '%d' % obj1.pk,
+                'formset-0-singletag': '%d' % tag1.pk,
+                'formset-0-DELETE': '',
+                
+                'formset-1-name': 'Test 2e',
+                'formset-1-id': '%d' % obj2.pk,
+                'formset-1-singletag': '%d' % tag1.pk,
+                'formset-1-DELETE': '',
+            },
+            instance=tag1,
+            prefix='formset'
+        )
+        formset.is_valid()
+        self.assertTrue(formset.is_valid())
+        formset.save()
+        
+        self.assertEqual(self.model.objects.count(), 2)
+        obj1 = self.model.objects.get(name='Test 1e')
+        obj2 = self.model.objects.get(name='Test 2e')
+        self.assertEqual(obj1.singletag, tag1)
+        self.assertEqual(obj2.singletag, tag1)
+        self.assertTagModel(self.tag_model, {'Mr': 2})

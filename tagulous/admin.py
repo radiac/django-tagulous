@@ -105,6 +105,27 @@ def enhance(model, admin_class):
                     # Add display function to admin class
                     setattr(admin_class, display_name, _create_display(field))
     
+    #
+    # If admin is for a tag model, ensure any inlines for tagged models are
+    # subclasses of TaggedInlineFormSet.
+    #
+    if (
+        issubclass(model, tag_models.BaseTagModel)
+        and hasattr(admin_class, 'inlines')
+    ):
+        for inline_cls in admin_class.inlines:
+            if (
+                issubclass(inline_cls.model, tag_models.TaggedModel)
+                and not
+                issubclass(inline_cls.formset, tag_forms.TaggedInlineFormSet)
+            ):
+                orig_cls = inline_cls.formset
+                inline_cls.formset = type(
+                    'Tagged%s' % orig_cls.__name__,
+                    (tag_forms.TaggedInlineFormSet, orig_cls),
+                    {},
+                )
+
 
 def register(model, admin_class=None, site=None, **options):
     """

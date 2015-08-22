@@ -65,3 +65,14 @@ class MixedNonTagRefModelForm(forms.ModelForm):
     class Meta:
         model = models.MixedNonTagRefTest
         exclude = ()
+
+
+# Formsets
+
+SimpleMixedSingleInline = forms.models.inlineformset_factory(
+    models.SimpleMixedTest.singletag.tag_model,
+    models.SimpleMixedTest,
+    formset=tagulous.forms.TaggedInlineFormSet,
+    fields=('name',),
+)
+

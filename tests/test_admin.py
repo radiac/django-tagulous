@@ -6,10 +6,14 @@ Modules tested:
 """
 from __future__ import absolute_import
 import re
+import copy
 
 import django
+from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 from django.contrib import admin
 from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
 from django.http import QueryDict
 
@@ -319,7 +323,7 @@ class TagAdminTest(TagTestManager, TestCase):
         except ImportError:
             from django.conf.urls.defaults import include, patterns, url
         self.old_urls = test_urls.urlpatterns
-        test_urls.urlpatterns += patterns(
+        test_urls.urlpatterns = copy.copy(test_urls.urlpatterns) + patterns(
             '',
             url(r'^tagulous_tests_app/admin/', include(self.site.urls)),
         )
@@ -532,3 +536,179 @@ class TagAdminTest(TagTestManager, TestCase):
             msgs[0].message, 'Tags merged'
         )
         self.assertTrue('Location: %s' % MOCK_PATH in str(response))
+
+
+###############################################################################
+####### Tagged inlines on tag ModelAdmin
+###############################################################################
+
+class TaggedInlineSingleAdminTest(TagTestManager, TestCase):
+    """
+    Test inlines of tagged models on tag modeladmins
+    """
+    admin_cls       = test_admin.SimpleMixedTestSingletagAdmin
+    tagged_model    = test_models.SimpleMixedTest
+    model           = test_models.SimpleMixedTest.singletag.tag_model
+    
+    def setUpExtra(self):
+        self.site = admin.AdminSite(name='tagulous_admin')
+        tag_admin.register(self.model, admin_class=self.admin_cls, site=self.site)
+        self.ma = self.site._registry[self.model]
+        self.cl = None
+        
+        # Monkeypatch urls to add in modeladmin
+        try:
+            from django.conf.urls import include, patterns, url
+        except ImportError:
+            from django.conf.urls.defaults import include, patterns, url
+        self.old_urls = test_urls.urlpatterns
+        test_urls.urlpatterns = copy.copy(test_urls.urlpatterns) + patterns(
+            '',
+            url(r'^tagulous_tests_app/admin/', include(self.site.urls)),
+        )
+        
+        # Set up client
+        User.objects.create_superuser('test', 'test@example.com', 'user')
+        result = self.client.login(username='test', password='user')
+        self.assertEqual(result, True)
+        
+    def tearDownExtra(self):
+        test_urls.urlpatterns = self.old_urls
+        self.client.logout()
+    
+    def get_url(self, name, *args, **kwargs):
+        content_type = ContentType.objects.get_for_model(self.model)
+        return reverse(
+            'admin:%s_%s_%s' % (content_type.app_label, content_type.model, name),
+            args=args, kwargs=kwargs
+        )
+    
+    
+    #
+    # Tests
+    #
+    
+    def test_add_renders(self):
+        "Check inline add renders without error"
+        response = self.client.get(self.get_url('add'))
+        self.assertContains(response, '<h2>Simple mixed tests</h2>')
+        # assertHTMLEquals isn't going to be particularly helpful here
+        # Just check that a few attributes exist, to indicate all is well
+        # Real test will be done in next test
+        self.assertContains(response, 'id="id_simplemixedtest_set-TOTAL_FORMS')
+        self.assertContains(response, 'id="id_simplemixedtest_set-0-singletag"')
+        self.assertContains(response, 'id="id_simplemixedtest_set-0-name"')
+        self.assertContains(response, 'id="id_simplemixedtest_set-0-tags"')
+        # There should be 3 empty fields, zero-indexed
+        self.assertContains(response, 'id="id_simplemixedtest_set-2-singletag"')
+        self.assertNotContains(response, 'id="id_simplemixedtest_set-3-singletag"')
+    
+    def test_add_submits(self):
+        "Check inline add saves without error, and increments tag model"
+        data = {
+            'simplemixedtest_set-TOTAL_FORMS': 3,
+            'simplemixedtest_set-INITIAL_FORMS': 0,
+            'simplemixedtest_set-MAX_NUM_FORMS': 1000,
+            '_save': u'Save',
+            'name': 'Mr',
+            'slug': 'mr',
+            'simplemixedtest_set-0-name': 'Test 1',
+            'simplemixedtest_set-0-tags': 'tag1, tag2',
+        }
+        response = self.client.post(self.get_url('add'), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.tagged_model.objects.count(), 1)
+        
+        t1 = self.tagged_model.objects.get(name='Test 1')
+        self.assertInstanceEqual(t1, name='Test 1', singletag='Mr', tags=['tag1', 'tag2'])
+        self.assertTagModel(self.model, {'Mr': 1})
+        self.assertTagModel(self.tagged_model.tags.tag_model, {
+            'tag1': 1,
+            'tag2': 1,
+        })
+    
+    def test_edit_renders(self):
+        "Check inline edit renders without error"
+        obj1 = self.tagged_model.objects.create(
+            name='Test 1', singletag='Mr', tags=['tag1', 'tag2'],
+        )
+                
+        response = self.client.get(self.get_url('change', obj1.singletag.pk))
+        self.assertContains(response, '<h2>Simple mixed tests</h2>')
+        self.assertContains(response, 'id="id_simplemixedtest_set-TOTAL_FORMS')
+        self.assertContains(response, 'id="id_simplemixedtest_set-0-singletag"')
+        self.assertContains(response, 'id="id_simplemixedtest_set-0-name"')
+        self.assertContains(response, 'id="id_simplemixedtest_set-0-tags"')
+        # There should be 1 full field and 3 empty fields, zero-indexed
+        self.assertContains(response, 'id="id_simplemixedtest_set-3-singletag"')
+        self.assertNotContains(response, 'id="id_simplemixedtest_set-4-singletag"')
+        
+        # Check the fk is an id, to confirm it's using TaggedInlineFormSet
+        html = response.content
+        i_name = html.index('name="simplemixedtest_set-0-singletag"')
+        i_open = html.rindex('<', 0, i_name)
+        i_close = html.index('>', i_name)
+        self.assertHTMLEqual(html[i_open : i_close + 1], (
+            '<input type="hidden" name="simplemixedtest_set-0-singletag" '
+            'value="1" id="id_simplemixedtest_set-0-singletag" />'
+        ))
+        
+    
+    def test_edit_saves(self):
+        """
+        Check inline edit saves without error
+        
+        Also check changing tag fields in inlines
+        """
+        # Create and confirm
+        obj1 = self.tagged_model.objects.create(
+            name='Test 1', singletag='Mr', tags=['tag1', 'tag2'],
+        )
+        obj2 = self.tagged_model.objects.create(
+            name='Test 2', singletag='Mr', tags=['tag3', 'tag4'],
+        )
+        tag1 = obj1.singletag
+        self.assertEqual(self.tagged_model.objects.count(), 2)
+        self.assertTagModel(self.model, {'Mr': 2})
+        self.assertTagModel(self.tagged_model.tags.tag_model, {
+            'tag1': 1, 'tag2': 1, 'tag3': 1, 'tag4': 1,
+        })
+        
+        data = {
+            'simplemixedtest_set-TOTAL_FORMS': 5,
+            'simplemixedtest_set-INITIAL_FORMS': 2,
+            'simplemixedtest_set-MAX_NUM_FORMS': 1000,
+            '_save': u'Save',
+            'name': 'Mr',
+            'slug': 'mr',
+            
+            'simplemixedtest_set-0-name':   'Test 1e',
+            'simplemixedtest_set-0-tags':   'tag1, tag2e',
+            'simplemixedtest_set-0-id':     '%d' % obj1.pk,
+            'simplemixedtest_set-0-singletag': '%d' % tag1.pk,
+            'simplemixedtest_set-0-DELETE': '',
+            
+            'simplemixedtest_set-1-name':   'Test 2e',
+            'simplemixedtest_set-1-tags':   'tag3, tag4e',
+            'simplemixedtest_set-1-id':     '%d' % obj2.pk,
+            'simplemixedtest_set-1-singletag': '%d' % tag1.pk,
+            'simplemixedtest_set-1-DELETE': '',
+        }
+        response = self.client.post(
+            self.get_url('change', tag1.pk), data,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.tagged_model.objects.count(), 2)
+        
+        self.assertInstanceEqual(
+            obj1, name='Test 1e', singletag='Mr', tags=['tag1', 'tag2e'],
+        )
+        self.assertInstanceEqual(
+            obj2, name='Test 2e', singletag='Mr', tags=['tag3', 'tag4e'],
+        )
+        
+        self.assertTagModel(self.model, {'Mr': 2})
+        self.assertTagModel(self.tagged_model.tags.tag_model, {
+            'tag1': 1, 'tag2e': 1, 'tag3': 1, 'tag4e': 1,
+        })
+
