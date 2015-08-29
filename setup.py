@@ -20,6 +20,9 @@ def runtests(args):
             'django.contrib.messages',
             'tagulous',
             'tests',
+            'tests.tagulous_tests_app',
+            'tests.tagulous_tests_app2',
+            'tests.tagulous_tests_migration',
         ]
         
         SERIALIZATION_MODULES = {
