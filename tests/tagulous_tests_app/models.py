@@ -120,7 +120,10 @@ class SingleTagFieldOptionsModel(models.Model):
             'setting3': 'example',
         }
     )
-
+    class Meta:
+        # Must set a short verbose name - tagulous auto-generated model
+        # verbose names will be too long otherwise
+        verbose_name = 'STFOM'
 
 
 ###############################################################################
@@ -195,6 +198,7 @@ class TagFieldOptionsModel(models.Model):
     )
     case_sensitive_true_force_lowercase_true = tagulous.models.TagField(
         blank=True, null=True, case_sensitive=False, force_lowercase=True,
+        verbose_name_singular='case sensitive test'
     )
     max_count = tagulous.models.TagField(
         blank=True, null=True, max_count=3,
@@ -216,6 +220,9 @@ class TagFieldOptionsModel(models.Model):
             'setting3': 'example',
         }
     )
+    class Meta:
+        # Set a short verbose name for tagulous auto-generated verbose name
+        verbose_name = 'TFOM'
 
 
 ###############################################################################

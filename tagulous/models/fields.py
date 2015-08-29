@@ -152,13 +152,20 @@ class BaseTagField(object):
                 if not verbose_name_plural.endswith('s'):
                     verbose_name_plural += 's'
             
+            # Get object verbose name
+            object_name = cls._meta.verbose_name
             self.tag_model._meta.verbose_name = '%s %s' % (
-                cls._meta.object_name, verbose_name_singular,
+                object_name, verbose_name_singular,
             )
             self.tag_model._meta.verbose_name_plural = '%s %s' % (
-                cls._meta.object_name, verbose_name_plural,
+                object_name, verbose_name_plural,
             )
-        
+            
+            # Make no attempt to enforce max length of verbose_name - no good
+            # automatic solution, and the limit may change, see
+            #   https://code.djangoproject.com/ticket/17763
+            # If it's a problem, contrib.auth with raise a ValidationError
+            
         
         #
         # Build the tag field
@@ -356,6 +363,7 @@ class TagField(BaseTagField, models.ManyToManyField):
             """
             def __init__(self, obj):
                 self.obj = obj
+                self._result_cache = None
                 
             def __iter__(self):
                 """

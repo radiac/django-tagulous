@@ -15,25 +15,24 @@ from django.contrib import admin
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
-from django.http import QueryDict
+from django.http import HttpRequest, QueryDict
 
 from tests.lib import *
 
 
 MOCK_PATH = 'mock/path'
-class MockRequest(object):
-    def __init__(self, GET=None, POST=None):
-        self.GET = GET or QueryDict('')
-        self.POST = POST or QueryDict('')
-        self.COOKIES = {}
-        self.META = {}
-        self._messages = CookieStorage(self)
-        self.resolver_match = None
-        
-    def get_full_path(self):
-        return MOCK_PATH
+def MockRequest(GET=None, POST=None):
+    """
+    Create a fake Request object based on the GET and POST kwargs
+    """
+    r = HttpRequest()
+    r.path = MOCK_PATH
+    r.method = 'POST' if POST is not None else 'GET'
+    r.GET = GET or QueryDict('')
+    r.POST = POST or QueryDict('')
+    r._messages = CookieStorage(r)
+    return r
 request = MockRequest()
-
 
 def _monkeypatch_modeladmin():
     """
@@ -48,7 +47,7 @@ def _monkeypatch_modeladmin():
     if not hasattr(admin.ModelAdmin, 'get_list_filter'):
         if django.VERSION >= (1, 5):
             raise AttributeError(
-                'Only old versions of django are supposed to be missing '
+                'Only old versions of django are expected to be missing '
                 'ModelAdmin.get_list_filter'
             )
         admin.ModelAdmin.get_list_filter = lambda self, request: self.list_filter
@@ -249,9 +248,15 @@ class TaggedAdminTest(TagTestManager, TestCase):
             list(items_for_result(self.cl, result, None))
             for result in results
         ][0]
+        
+        # Before comparing, strip class attrs
+        row = [
+            re.sub(r' class=".+?"', '', r)
+            for r in row
+        ]
         self.assertItemsEqual(row, [
             u'<td>Test 1</td>',
-            u'<td class="nowrap">Mr</td>',
+            u'<td>Mr</td>',
             u'<td>blue, red</td>',
         ])
     

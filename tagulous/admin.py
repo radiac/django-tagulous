@@ -1,3 +1,4 @@
+import django
 from django import forms
 from django.contrib import admin
 from django.contrib import messages
@@ -266,6 +267,8 @@ class TagModelAdmin(admin.ModelAdmin):
             'opts': self.model._meta,
             'merge_form': merge_form,
             'tags': queryset,
+            #dj14# ++ Django 1.4 needs {% load url from future %}
+            'load_url_from_future': django.VERSION < (1, 5)
         })
     merge_tags.short_description = 'Merge selected tags...'
 

@@ -8,15 +8,6 @@ import warnings
 import django
 from django.conf import settings
 from django.core.management import call_command
-from django.db.models import loading
-
-settings.INSTALLED_APPS += (
-    'tests.tagulous_tests_app',
-    'tests.tagulous_tests_app2',
-    'tests.tagulous_tests_migration',
-)
-loading.cache.loaded = False
-
 
 # Load all tests, if necessary
 if django.VERSION < (1, 6):
