@@ -361,11 +361,8 @@ class TaggedModel(models.Model):
             # Django 1.8
             fields = cls._meta.get_fields()
         else:
-            fields = [
-                cls._meta.get_field(field_name)
-                for field_name in cls._meta.get_all_field_names()
-            ]
-        
+            fields = cls._meta.local_fields + cls._meta.local_many_to_many
+            
         # Create a fake model
         class FakeTaggedModel(models.Model):
             def _retag_to_original(self):
