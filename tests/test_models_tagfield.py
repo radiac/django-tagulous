@@ -677,13 +677,14 @@ class ModelTagFieldTest(TagTestManager, TestCase):
     
     def test_to_model_options_fails(self):
         "Check when a to model is specified, tag options are invalid"
+        new_field = tag_models.TagField(
+            test_models.TagMetaUser, force_lowercase=True,
+        )
         with self.assertRaises(ValueError) as cm:
-            new_field = tag_models.TagField(
-                test_models.TagMetaUser, force_lowercase=True,
-            )
+            new_field._process_deferred_options()
         self.assertEqual(
             str(cm.exception),
-            "Cannot set tag options 'force_lowercase' on explicit tag model "
+            "Cannot set tag options on explicit tag model "
             "<class 'tests.tagulous_tests_app.models.TagMetaUser'>"
         )
         
@@ -694,6 +695,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
             test_models.TagMetaModel, force_lowercase=False,
             _set_tag_meta=True,
         )
+        new_field._process_deferred_options()
         self.assertFalse(test_models.TagMetaModel.tag_options.force_lowercase)
         
         # Set force_lowercase back ready for future tests - unittest won't fix
@@ -1001,6 +1003,83 @@ class ModelTagFieldMultipleTest(TagTestManager, TestCase):
             tags3='eowyn, frodo',
         )
 
+
+
+###############################################################################
+####### Test TagField with string references to tag model
+###############################################################################
+
+class ModelTagFieldStringTest(TagTestManager, TransactionTestCase):
+    """
+    Test tag field which refers to its tag model with a string
+    """
+    manage_models = [
+        test_models.MixedStringTo,
+    ]
+    
+    def setUpExtra(self):
+        self.test_model = test_models.MixedStringTo
+        self.tag_field = self.test_model.tags
+        self.tag_model = test_models.MixedStringTagModel
+    
+    def test_to_model(self):
+        "Check related model is correct"
+        self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
+        self.assertEqual(self.tag_field.field.rel.to, self.tag_model)
+        self.assertEqual(self.tag_field.tag_model, self.tag_model)
+    
+    def test_tag_options(self):
+        "Check tag options are available correctly"
+        self.assertEqual(
+            self.tag_field.tag_options, self.tag_model.tag_options
+        )
+        
+    def test_use(self):
+        "Test basic use of tag field"
+        self.assertTagModel(self.tag_model, {})
+        t1 = self.test_model.objects.create(name='Test 1', tags='one, two')
+        self.assertTagModel(self.tag_model, {
+            'one':  1,
+            'two':  1,
+        })
+        self.assertInstanceEqual(t1, name='Test 1', tags='one, two')
+        
+
+class ModelTagFieldSelfTest(TagTestManager, TransactionTestCase):
+    """
+    Test tag field which refers to itself
+    """
+    manage_models = [
+        test_models.MixedSelfTo,
+    ]
+    
+    def setUpExtra(self):
+        self.test_model = test_models.MixedSelfTo
+        self.tag_field = self.test_model.related
+    
+    def test_to_model(self):
+        "Check related model is correct"
+        self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
+        self.assertEqual(self.tag_field.field.rel.to, self.test_model)
+        self.assertEqual(self.tag_field.tag_model, self.test_model)
+    
+    def test_tag_options(self):
+        "Check tag options are available correctly"
+        self.assertEqual(
+            self.tag_field.tag_options, self.test_model.tag_options
+        )
+        
+    def test_use(self):
+        "Test basic use of tag field"
+        self.assertTagModel(self.test_model, {})
+        t1 = self.test_model.objects.create(name='Test 1', related='one, two')
+        self.assertTagModel(self.test_model, {
+            'one':  1,
+            'two':  1,
+            'Test 1': 0,
+        })
+        self.assertInstanceEqual(t1, name='Test 1', related='one, two')
+        
 
 
 ###############################################################################

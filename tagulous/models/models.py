@@ -132,11 +132,29 @@ class TagModelBase(models.base.ModelBase):
             new_tag_options = TagOptions()
         
         # See if there's anything to inherit
+        # This also means that tag_options will be available on abstract models
         if hasattr(new_cls, 'tag_options'):
-            new_tag_options = new_cls.tag_options + new_tag_options
+            # Inherit by setting missing values in place
+            new_tag_options.set_missing(new_cls.tag_options)
         
         # Assign
         new_cls.tag_options = new_tag_options
+        
+        # Check for self-referential tag fields on this model
+        if hasattr(new_cls._meta, 'get_fields'):
+            fields = new_cls._meta.get_fields()
+        else:
+            fields = new_cls._meta.fields + new_cls._meta.many_to_many
+        
+        for field in fields:
+            # Can't test for subclass of field here - would be circular import
+            if hasattr(field, 'tag_model') and field.tag_model == new_cls:
+                # This method is being called after the tag field's
+                # contribute_to_class and _process_deferred_options. This means
+                # that the field is using tag_options from the inherited model.
+                # Change it to use this one
+                field.tag_options = new_tag_options
+        
         return new_cls
 
 

@@ -15,7 +15,7 @@ class TagOptions(object):
         Set up tag options using defaults, overridden by keyword arguments
         """
         self.update(kwargs)
-            
+    
     def update(self, options):
         """
         Update this TagOptions in place with options from a dict or TagOptions
@@ -29,6 +29,25 @@ class TagOptions(object):
         
         return self
     
+    def set_missing(self, options):
+        """
+        Update this TagOptions in place with options from a dict or TagOptions,
+        but only where the keys are not already set on this TagOptions
+        
+        Similar to opt1 = opt2 + op1, only changes in place
+        """
+        # Ensure a dict
+        if isinstance(options, TagOptions):
+            options = options.items(with_defaults=False)
+        
+        # Get currently set keys
+        items = self.items(with_defaults=False)
+        for key, val in options.items():
+            if key not in items:
+                setattr(self, key, val)
+            
+        return self
+        
     def contribute_to_class(self, cls, name):
         """
         Add to class

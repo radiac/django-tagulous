@@ -15,7 +15,7 @@ from tagulous import constants
 from tagulous import settings
 from tagulous import forms
 from tagulous.models.options import TagOptions
-from tagulous.models.models import TagModel, TagTreeModel
+from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
 from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
 from tagulous.utils import render_tags
 
@@ -28,6 +28,9 @@ class BaseTagField(object):
     """
     Mixin for TagField and SingleTagField
     """
+    # List of fields which are forbidden from __init__
+    forbidden_fields = ()
+    
     def __init__(self, to=None, **kwargs):
         """
         Initialise the tag options and store 
@@ -53,28 +56,18 @@ class BaseTagField(object):
         # Detect if _set_tag_meta is set
         set_tag_meta = kwargs.pop('_set_tag_meta', False)
         
-        # Decide what to do with tag options
+        # Detect whether we need to automatically generate a tag model
         if self.tag_model:
-            if options:
-                if set_tag_meta:
-                    # Tag option arguments must be used to update the tag model
-                    # (and any other tag fields which use it) - used during
-                    # migration when the tag model doesn't know its own options
-                    self.tag_model.tag_options.update(options)
-                else:
-                    raise ValueError(
-                        'Cannot set tag options %s on explicit tag model %r' % (
-                            ', '.join(repr(k) for k in options.keys()),
-                            self.tag_model,
-                        )
-                    )
-            
             self.auto_tag_model = False
-            # Link to model options by reference in case they get updated later
-            self.tag_options = self.tag_model.tag_options
+            
+            # Tag model might be a string - set options later
+            self.tag_options = None
+            self._deferred_options = [set_tag_meta, options]
+            
         else:
-            self.tag_options = TagOptions(**options)
             self.auto_tag_model = True
+            self.tag_options = TagOptions(**options)
+            self._deferred_options = None
         
         # Note things we'll need to restore after __init__
         help_text = kwargs.pop('help_text', '')
@@ -100,6 +93,56 @@ class BaseTagField(object):
         # This attribute will let us tell South to supress undesired M2M fields
         self.south_supression = True
     
+    def do_related_class(self, other, cls):
+        """
+        Process tag model now it has been resolved if it was a string
+        """
+        # Set up relation as normal 
+        super(BaseTagField, self).do_related_class(other, cls)
+        
+        # Make sure tag model is the related model, in case it was a string
+        self.tag_model = self.related.parent_model
+        
+        # Check class type of tag model
+        #django1.6# ++ South migrations need BaseTagModel; once support dropped
+        #           ++ change to check against TagModel
+        if not issubclass(self.tag_model, BaseTagModel):
+            raise ValueError('Tag model must be a subclass of TagModel')
+        
+        # Process the deferred options
+        self._process_deferred_options(is_to_self=self.tag_model == cls)
+        
+    def _process_deferred_options(self, is_to_self=False):
+        """
+        Process tag options once we have the related model
+        
+        If the field is explicitly referring to itself, is_to_self will be True
+        """
+        # See if tag options were deferred
+        if self._deferred_options is None:
+            return
+        
+        # Get deferred options
+        set_tag_meta, options = self._deferred_options
+        self._deferred_options = None
+        
+        # Set options
+        if options:
+            if set_tag_meta:
+                # Tag option arguments must be used to update the tag model
+                # (and any other tag fields which use it) - used during
+                # migration when the tag model doesn't know its own options
+                self.tag_model.tag_options.update(options)
+            else:
+                raise ValueError(
+                    'Cannot set tag options on explicit tag model %r' % (
+                        self.tag_model,
+                    )
+                )
+        
+        # Link to model options by reference in case they get updated later
+        self.tag_options = self.tag_model.tag_options
+        
     def contribute_to_class(self, cls, name):
         """
         Create the tag model if necessary, then initialise and contribute the
@@ -164,7 +207,7 @@ class BaseTagField(object):
             # Make no attempt to enforce max length of verbose_name - no good
             # automatic solution, and the limit may change, see
             #   https://code.djangoproject.com/ticket/17763
-            # If it's a problem, contrib.auth with raise a ValidationError
+            # If it's a problem, contrib.auth will raise a ValidationError
             
         
         #
@@ -237,6 +280,9 @@ class SingleTagField(BaseTagField, models.ForeignKey):
     """
     description = 'A single tag field'
     
+    # List of fields which are forbidden from __init__
+    forbidden_fields = ('to_field', 'rel_class', 'max_count')
+    
     def __init__(self, *args, **kwargs):
         """
         Create a single tag field - a tag field which can only take one tag
@@ -244,7 +290,7 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         See docs/models.rst for a list of arguments
         """
         # Forbid certain ForeignKey arguments
-        for forbidden in ['to_field', 'rel_class', 'max_count']:
+        for forbidden in self.forbidden_fields:
             if forbidden in kwargs:
                 raise ValueError(
                     "Invalid argument '%s' for SingleTagField" % forbidden
@@ -271,7 +317,7 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         
         # Replace the descriptor with our own
         old_descriptor = getattr(cls, name)
-        new_descriptor = SingleTagDescriptor(old_descriptor, self.tag_options)
+        new_descriptor = SingleTagDescriptor(old_descriptor)
         setattr(cls, name, new_descriptor)
         
     def value_from_object(self, obj):
@@ -305,6 +351,9 @@ class TagField(BaseTagField, models.ManyToManyField):
     """
     description = 'A tag field'
     
+    # List of fields which are forbidden from __init__
+    forbidden_fields = ('db_table', 'through', 'symmetrical')
+    
     def __init__(self, *args, **kwargs):
         """
         Create a Tag field
@@ -312,7 +361,7 @@ class TagField(BaseTagField, models.ManyToManyField):
         See docs/models.rst for a list of arguments
         """
         # Forbid certain ManyToManyField arguments
-        for forbidden in ['db_table', 'through', 'symmetrical']:
+        for forbidden in self.forbidden_fields:
             if forbidden in kwargs:
                 raise ValueError(
                     "Invalid argument '%s' for TagField" % forbidden
@@ -330,7 +379,7 @@ class TagField(BaseTagField, models.ManyToManyField):
         
         # Replace the descriptor with our own
         old_descriptor = getattr(cls, name)
-        new_descriptor = TagDescriptor(old_descriptor, self.tag_options)
+        new_descriptor = TagDescriptor(old_descriptor)
         setattr(cls, name, new_descriptor)
         
     def value_from_object(self, obj):

@@ -485,6 +485,79 @@ class ModelSingleTagFieldMultipleTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t3, name="Test 3", tag1='Ms', tag2='red', tag3='chris')
 
 
+###############################################################################
+####### Test SingleTagField with string references to tag model
+###############################################################################
+
+class ModelSingleTagFieldStringTest(TagTestManager, TransactionTestCase):
+    """
+    Test SingleTagField which refers to its tag model with a string
+    """
+    manage_models = [
+        test_models.MixedStringTo,
+    ]
+    
+    def setUpExtra(self):
+        self.test_model = test_models.MixedStringTo
+        self.tag_field = self.test_model.singletag
+        self.tag_model = test_models.MixedStringTagModel
+    
+    def test_to_model(self):
+        "Check related model is correct"
+        self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
+        self.assertEqual(self.tag_field.field.rel.to, self.tag_model)
+        self.assertEqual(self.tag_field.tag_model, self.tag_model)
+    
+    def test_tag_options(self):
+        "Check tag options are available correctly"
+        self.assertEqual(
+            self.tag_field.tag_options, self.tag_model.tag_options
+        )
+        
+    def test_use(self):
+        "Test basic use of tag field"
+        self.assertTagModel(self.tag_model, {})
+        t1 = self.test_model.objects.create(name='Test 1', singletag='Mr')
+        self.assertTagModel(self.tag_model, {
+            'Mr':  1,
+        })
+        self.assertInstanceEqual(t1, name='Test 1', singletag='Mr')
+        
+
+class ModelSingleTagFieldSelfTest(TagTestManager, TransactionTestCase):
+    """
+    Test SingleTagField which refers to itself
+    """
+    manage_models = [
+        test_models.MixedSelfTo,
+    ]
+    
+    def setUpExtra(self):
+        self.test_model = test_models.MixedSelfTo
+        self.tag_field = self.test_model.alternate
+    
+    def test_to_model(self):
+        "Check related model is correct"
+        self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
+        self.assertEqual(self.tag_field.field.rel.to, self.test_model)
+        self.assertEqual(self.tag_field.tag_model, self.test_model)
+    
+    def test_tag_options(self):
+        "Check tag options are available correctly"
+        self.assertEqual(
+            self.tag_field.tag_options, self.test_model.tag_options
+        )
+        
+    def test_use(self):
+        "Test basic use of tag field"
+        self.assertTagModel(self.test_model, {})
+        t1 = self.test_model.objects.create(name='Test 1', alternate='mr')
+        self.assertTagModel(self.test_model, {
+            'mr':  1,
+            'Test 1': 0,
+        })
+        self.assertInstanceEqual(t1, name='Test 1', alternate='mr')
+        
 
 ###############################################################################
 ####### Test SingleTagField options

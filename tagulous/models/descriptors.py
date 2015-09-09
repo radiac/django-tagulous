@@ -25,18 +25,20 @@ class BaseTagDescriptor(object):
     """
     Base TagDescriptor class
     """
-    def __init__(self, descriptor, tag_options):
+    def __init__(self, descriptor):
         # Store original FK/M2M descriptor and tag options
         self.descriptor = descriptor
-        self.tag_options = tag_options
         
         # Copy descriptor attributes
         for key, val in descriptor.__dict__.items():
             setattr(self, key, val)
-            
-        # Add a convenient reference to the tag model
-        self.tag_model = self.field.rel.to
-        
+    
+    # If the field was created using a string, the field's tag model and
+    # tag options will not be available when the descriptor is created, so
+    # cannot store them directly here
+    tag_model = property(lambda self: self.field.rel.to)
+    tag_options = property(lambda self: self.field.tag_options)
+    
     def load_initial(self):
         """
         Load initial tags
@@ -65,8 +67,8 @@ class SingleTagDescriptor(BaseTagDescriptor):
     Wraps the ReverseSingleRelatedObjectDescriptor and passes set and get
     requests through to the SingleTagManager
     """
-    def __init__(self, descriptor, tag_options):
-        super(SingleTagDescriptor, self).__init__(descriptor, tag_options)
+    def __init__(self, descriptor):
+        super(SingleTagDescriptor, self).__init__(descriptor)
         
         # The manager needs to know when the model is about to be saved
         # so that it can ensure the tag exists and assign its pk to field_id
@@ -147,8 +149,8 @@ class TagDescriptor(BaseTagDescriptor):
     This will use a RelatedManager which we cannot customise
     This will intercept calls for the RelatedManager, and add the tag functions
     """
-    def __init__(self, descriptor, tag_options):
-        super(TagDescriptor, self).__init__(descriptor, tag_options)
+    def __init__(self, descriptor):
+        super(TagDescriptor, self).__init__(descriptor)
         
         # After an instance is saved, save any tag changes
         def post_save_handler(sender, instance, **kwargs):
