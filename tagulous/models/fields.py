@@ -152,18 +152,20 @@ class BaseTagField(object):
         # Get or create the tag model
         #
         
-        # Make sure a TagField is only contributed once
-        # Otherwise the name of the model (and therefore db) would depend on
-        # the load order, which could change. Rather than risk problems later,
-        # ban it outright to save developers from themselves
-        if self.contributed:
-            raise AttributeError(
-                "The tag field %r is already attached to a model" % self
-            )
-        self.contributed = True
-        
         # Create a new tag model if we need to
         if self.auto_tag_model:
+            # Make sure a TagField is only contributed once if the model is
+            # not explicitly set. This isn't normal for model fields, but in
+            # this case the name of the model (and therefore db) would depend
+            # on the load order, which could change. Rather than risk problems
+            # later, ban it outright to save developers from themselves.
+            # If it causes problems for anyone, they can explicitly set a tag
+            # model and avoid this being a problem.
+            if self.contributed:
+                raise AttributeError(
+                    "The tag field %r is already attached to a model" % self
+                )
+            
             # Generate a list of attributes for the new tag model
             model_attrs = {
                 # Module should be the same as the main model
@@ -219,6 +221,7 @@ class BaseTagField(object):
         
         # Contribute to class
         super(BaseTagField, self).contribute_to_class(cls, name)
+        self.contributed = True
     
     def formfield(self, form_class, **kwargs):
         """
@@ -267,6 +270,53 @@ class BaseTagField(object):
         Get the field name for the Manager
         """
         return "_%s_tagulous" % self.name
+    
+    def deconstruct(self):
+        """
+        Deconstruct field options to a dict for __init__
+        """
+        name, path, args, kwargs = super(BaseTagField, self).deconstruct()
+        
+        # Find tag model options
+        if isinstance(self.tag_options, TagOptions):
+            # When deconstruct is called on a real field on a real model,
+            # we will have a concrete tag model, so use its tag options
+            items = self.tag_options.items(with_defaults=False)
+            
+            # Freeze initial as a string, not array
+            if 'initial' in items:
+                items['initial'] = self.tag_options.initial_string
+            
+        elif self._deferred_options is not None:
+            # When deconstruct is called on a ModelState field, the options
+            # will have been deferred
+            set_tag_meta, options = self._deferred_options
+            items = options
+            
+        else:
+            # Really have no idea what happened here
+            raise ValueError('Unexpected state')
+        
+        # Add tag model options to kwargs
+        kwargs.update(items)
+        
+        # Can't freeze lambdas. It should work if it's a function at the top
+        # level of a module, but there's no easy way to differentiate. For
+        # safety and consistency, strip callable arguments and mention in
+        # documentation.
+        if 'get_absolute_url' in kwargs:
+            del kwargs['get_absolute_url']
+        
+        # Remove forbidden fields
+        for forbidden in self.forbidden_fields:
+            if forbidden in kwargs:
+                del kwargs[forbidden]
+            
+        # Always store _set_tag_meta=True, so migrating tag fields can set tag
+        # models' TagMeta
+        kwargs['_set_tag_meta'] = True
+        
+        return name, path, args, kwargs
 
 
 ###############################################################################

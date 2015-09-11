@@ -19,7 +19,8 @@ if django.VERSION < (1, 6):
     from tests.test_models_order import *
     from tests.test_models_tagged import *
     from tests.test_models_tree import *
-    from tests.test_models_migrations import *
+    from tests.test_migrations_south import *
+    from tests.test_migrations_django import *
     from tests.test_serializers import *
     from tests.test_forms_singletagfield import *
     from tests.test_forms_tagfield import *

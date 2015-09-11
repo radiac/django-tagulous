@@ -12,6 +12,9 @@ import tagulous
 ###############################################################################
 
 class TagMetaAbstractModel(tagulous.models.TagModel):
+    """
+    An abstract tag model with TagMeta definition
+    """
     class Meta:
         abstract = True
     class TagMeta:
@@ -20,16 +23,22 @@ class TagMetaAbstractModel(tagulous.models.TagModel):
         max_count = 5
 
 class TagMetaModel(TagMetaAbstractModel):
+    """
+    A tag model which inherits from TagMetaAbstractModel, with new and changed
+    TagMeta values
+    """
     class TagMeta:
         max_count = 10
         case_sensitive = True
 
 class TagMetaUser(models.Model):
+    """
+    A tagged model which uses the TagMetaModel
+    """
     name = models.CharField(blank=True, max_length=100)
     two = tagulous.models.TagField(TagMetaModel, blank=True, null=True)
     
-
-
+    
 ###############################################################################
 ####### Models for testing SingleTagField
 ###############################################################################
@@ -316,6 +325,34 @@ class MixedOrderTest(models.Model):
     char6   = models.CharField(blank=True, max_length=10)
     fk2     = models.ForeignKey(MixedTest, related_name="order_fk2")
     char7   = models.CharField(blank=True, max_length=10)
+
+
+class MixedStringTagModel(tagulous.models.TagModel):
+    pass
+class MixedStringTo(models.Model):
+    """
+    A tagged model with fields which refers to a tag model by string, rather
+    than by class
+    """
+    name = models.CharField(max_length=10)
+    singletag = tagulous.models.SingleTagField(
+        'MixedStringTagModel', related_name='tag_meta_string_singletag',
+        blank=True,
+    )
+    tags = tagulous.models.TagField(
+        'MixedStringTagModel', related_name='tag_meta_string_tags',
+        blank=True,
+    )
+
+class MixedSelfTo(tagulous.models.TagModel):
+    """
+    A tagged tag model, with tag fields which refers itself using 'self'
+    """
+    alternate = tagulous.models.SingleTagField('self', blank=True)
+    related = tagulous.models.TagField('self', blank=True)
+    class TagMeta:
+        force_lowercase = True
+
 
 
 class TreeTest(models.Model):
