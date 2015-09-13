@@ -8,3 +8,4 @@ env:
   - TOXENV=py27-django1.5
   - TOXENV=py27-django1.6
   - TOXENV=py27-django1.7
+  - TOXENV=py27-django1.8

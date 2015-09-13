@@ -39,6 +39,9 @@ class SingleTagManager(object):
         
         # The descriptor stores an unsaved tag string
         # Load the actual value into the cache, if it exists
+        # If there is a problem with the actual value, get_actual will fall
+        # back to our cache, so make sure it exists first
+        self.tag_cache = None
         self.tag_cache = self.get_actual()
         
         # Start off the local tag name with the actual tag name
@@ -47,11 +50,12 @@ class SingleTagManager(object):
         # Pre/post save will need to keep track of an old tag
         self.removed_tag = None
         
-    def flush_actual(self):
+    def flush_cache(self):
         """
         Clear the FK descriptor's cache
+        
+        Must be called after all 
         """
-        # Flush the cache of actual
         cache_name = self.field.get_cache_name()
         if hasattr(self.instance, cache_name):
             delattr(self.instance, cache_name)
@@ -60,17 +64,41 @@ class SingleTagManager(object):
         """
         Get the actual value of the instance according to the FK descriptor
         """
+        # Flush the cache in case there has been a change somewhere
+        #self.flush_cache()
+        
         # A ForeignKey would be on the .attname (field_id), but only
         # if it has been set, otherwise the attribute will not exist
         if hasattr(self.instance, self.field.attname):
-            return self.descriptor.descriptor.__get__(self.instance)
+            try:
+                value = self.descriptor.descriptor.__get__(self.instance)
+            except self.tag_model.DoesNotExist:
+                # If the tag is deleted but nobody tells this instance; because
+                # the real cache is kept empty, this will fail. Try our cache,
+                # and if it's set clear the pk.
+                self.changed = True
+                if self.tag_cache:
+                    self.tag_cache.pk = None
+                return self.tag_cache
+            
+            # The descriptor will have populated the cache, but Django 1.8
+            # introduces a check of the cache before allowing save() to start.
+            # We can't guarantee that the tag object will have a pk until the
+            # pre-save handler has fired - which happens after the cache check.
+            # We therefore have to keep the cache clean at all times - we don't
+            # lose anything since we keep our own cache, and pre-save will fill
+            # it out in time anyway.
+            self.flush_cache()
+            return value
         return None
     
     def set_actual(self, value):
         """
         Set the actual value of the instance for the FK descriptor
         """
-        return self.descriptor.descriptor.__set__(self.instance, value)
+        self.descriptor.descriptor.__set__(self.instance, value)
+        # Django 1.8 cache check fix (see comment in get_actual)
+        self.flush_cache()
         
     def get(self):
         """
@@ -143,7 +171,6 @@ class SingleTagManager(object):
             return
         
         # Store the old tag so we know to decrement it in post_save
-        self.flush_actual()
         self.removed_tag = self.get_actual()
         
         # Create or increment the tag object
@@ -173,7 +200,6 @@ class SingleTagManager(object):
         When the model has been deleted, decrement the actual tag
         """
         # Decrement the actual tag
-        self.flush_actual()
         old_tag = self.get_actual()
         if old_tag:
             old_tag.decrement()

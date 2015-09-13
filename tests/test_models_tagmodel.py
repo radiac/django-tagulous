@@ -9,8 +9,8 @@ Modules tested:
     tagulous.models.models.TagModelQuerySet
 """
 from __future__ import absolute_import
+import django
 from tests.lib import *
-
 
 class TagModelTest(TagTestManager, TestCase):
     """
@@ -65,58 +65,49 @@ class TagModelTest(TagTestManager, TestCase):
             "'_Tagulous_SimpleMixedTest_tags' has no attribute 'get_absolute_url'"
         )
     
+    def assertRelatedExists(self, related_fields, match_model, field_name):
+        """
+        Look through the related fields and find the field which refers to the
+        specified model; fail if it does not exist
+        """
+        match_field = match_model._meta.get_field(field_name)
+        for related in related_fields:
+            if django.VERSION < (1, 8):
+                rel_model = related.model
+            else:
+                rel_model = related.related_model
+            
+            if rel_model == match_model and related.field == match_field:
+                return related
+        self.fail('Expected related field not found')
+    
     def test_get_related_fields(self):
         "Check the class method returns a list of related fields"
         related_fields = self.tag_model.get_related_fields()
         self.assertEqual(len(related_fields), 4)
         
         # FK comes before M2M, so first two will be the SingleTagFields
-        # Should be safe to assume order of models
-        self.assertEqual(related_fields[0].model, self.model1)
-        self.assertEqual(related_fields[1].model, self.model2)
-        self.assertEqual(
-            related_fields[0].field,
-            test_models.MixedTest._meta.get_field('singletag')
-        )
-        self.assertEqual(
-            related_fields[1].field,
-            test_models.MixedRefTest._meta.get_field('singletag')
-        )
+        self.assertRelatedExists(related_fields, self.model1, 'singletag')
+        self.assertRelatedExists(related_fields, self.model2, 'singletag')
         
         # Now the TagFields
-        self.assertEqual(related_fields[2].model, self.model1)
-        self.assertEqual(related_fields[3].model, self.model2)
-        self.assertEqual(
-            related_fields[2].field,
-            test_models.MixedTest._meta.get_field('tags')
-        )
-        self.assertEqual(
-            related_fields[3].field,
-            test_models.MixedRefTest._meta.get_field('tags')
-        )
-        
+        self.assertRelatedExists(related_fields, self.model1, 'tags')
+        self.assertRelatedExists(related_fields, self.model2, 'tags')
+    
     def test_get_related_fields_standard(self):
         "Check the class method can also find standard relationships"
         related_fields = self.tag_model.get_related_fields(include_standard=True)
         self.assertEqual(len(related_fields), 6)
         
-        # SingleTagFields/FKs - don't bother re-testing singletagfields
-        self.assertEqual(related_fields[0].model, self.model1)
-        self.assertEqual(related_fields[1].model, self.model2)
-        self.assertEqual(related_fields[2].model, self.model_nontag)
-        self.assertEqual(
-            related_fields[2].field,
-            self.model_nontag._meta.get_field('fk')
-        )
+        # SingleTagFields/FKs
+        self.assertRelatedExists(related_fields, self.model1, 'singletag')
+        self.assertRelatedExists(related_fields, self.model2, 'singletag')
+        self.assertRelatedExists(related_fields, self.model_nontag, 'fk')
         
-        # TagFields/M2Ms - don't bother re-testing tagfields
-        self.assertEqual(related_fields[3].model, self.model1)
-        self.assertEqual(related_fields[4].model, self.model2)
-        self.assertEqual(related_fields[5].model, self.model_nontag)
-        self.assertEqual(
-            related_fields[5].field,
-            self.model_nontag._meta.get_field('mm')
-        )
+        # TagFields/M2Ms
+        self.assertRelatedExists(related_fields, self.model1, 'tags')
+        self.assertRelatedExists(related_fields, self.model2, 'tags')
+        self.assertRelatedExists(related_fields, self.model_nontag, 'mm')
         
     def test_get_related_objects(self):
         """

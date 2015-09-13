@@ -54,6 +54,49 @@ def _monkeypatch_modeladmin():
 _monkeypatch_modeladmin()
 
 
+class AdminTestManager(object):
+    """
+    Add per-test site urls to global urlpatterns
+    """
+    def setUp(self):
+        super(AdminTestManager, self).setUp()
+        
+        if not hasattr(self, 'site'):
+            return
+        
+        # Try to clear the resolver cache
+        try:
+            # Django 1.4 - 1.6
+            from django.core.urlresolvers import _resolver_cache
+        except ImportError:
+            # Django 1.7+
+            from django.core.urlresolvers import get_resolver
+            if hasattr(get_resolver, 'cache_clear'):
+                get_resolver.cache_clear()
+        else:
+            _resolver_cache.clear()
+        
+        # Store the old urls and make a copy
+        self.old_urls = test_urls.urlpatterns
+        test_urls.urlpatterns = copy.copy(
+            test_urls.urlpatterns
+        )
+        
+        # Add the site to the copy
+        from django.conf.urls import include, url
+        test_urls.urlpatterns += test_urls.mk_urlpatterns(
+            url(r'^tagulous_tests_app/admin/', include(self.site.urls))
+        )
+        
+    def tearDown(self):
+        super(AdminTestManager, self).tearDown()
+        if not hasattr(self, 'old_urls'):
+            return
+        
+        # Restore the original urls
+        test_urls.urlpatterns = self.old_urls
+
+
 ###############################################################################
 ####### Admin registration
 ###############################################################################
@@ -193,7 +236,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
 ####### Tagged ModelAdmin
 ###############################################################################
 
-class TaggedAdminTest(TagTestManager, TestCase):
+class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
     """
     Test ModelAdmin enhancements
     """
@@ -310,7 +353,7 @@ class TaggedAdminTest(TagTestManager, TestCase):
 ####### Tag ModelAdmin
 ###############################################################################
 
-class TagAdminTest(TagTestManager, TestCase):
+class TagAdminTest(AdminTestManager, TagTestManager, TestCase):
     """
     Test Admin registration of a tag model
     """
@@ -322,20 +365,6 @@ class TagAdminTest(TagTestManager, TestCase):
         self.ma = self.site._registry[self.model]
         self.cl = None
         
-        # Monkeypatch urls to add in modeladmin
-        try:
-            from django.conf.urls import include, patterns, url
-        except ImportError:
-            from django.conf.urls.defaults import include, patterns, url
-        self.old_urls = test_urls.urlpatterns
-        test_urls.urlpatterns = copy.copy(test_urls.urlpatterns) + patterns(
-            '',
-            url(r'^tagulous_tests_app/admin/', include(self.site.urls)),
-        )
-        
-    def tearDownExtra(self):
-        test_urls.urlpatterns = self.old_urls
-    
     def get_changelist(self, req=request):
         list_display = self.ma.get_list_display(req)
         list_display_links = self.ma.get_list_display_links(req, list_display)
@@ -547,7 +576,7 @@ class TagAdminTest(TagTestManager, TestCase):
 ####### Tagged inlines on tag ModelAdmin
 ###############################################################################
 
-class TaggedInlineSingleAdminTest(TagTestManager, TestCase):
+class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
     """
     Test inlines of tagged models on tag modeladmins
     """
@@ -560,17 +589,6 @@ class TaggedInlineSingleAdminTest(TagTestManager, TestCase):
         tag_admin.register(self.model, admin_class=self.admin_cls, site=self.site)
         self.ma = self.site._registry[self.model]
         self.cl = None
-        
-        # Monkeypatch urls to add in modeladmin
-        try:
-            from django.conf.urls import include, patterns, url
-        except ImportError:
-            from django.conf.urls.defaults import include, patterns, url
-        self.old_urls = test_urls.urlpatterns
-        test_urls.urlpatterns = copy.copy(test_urls.urlpatterns) + patterns(
-            '',
-            url(r'^tagulous_tests_app/admin/', include(self.site.urls)),
-        )
         
         # Set up client
         User.objects.create_superuser('test', 'test@example.com', 'user')

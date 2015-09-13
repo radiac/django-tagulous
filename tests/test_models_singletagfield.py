@@ -267,8 +267,11 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         # But check that tagulous still thinks the tag is 'Mrs'
         self.assertEqual(str(t1.title.name), 'Mrs')
     
-    def test_save_deleted_tag(self):
-        "Check that a deleted tag in memory can be re-saved"
+    def test_save_deleted_instance(self):
+        """
+        Check that a deleted tag in memory can be re-saved when the instance it
+        is set on is deleted
+        """
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
@@ -280,6 +283,32 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mr': 1,
         })
     
+    def test_save_deleted_tag(self):
+        """
+        Check that a delete tag in memory can be read and re-saved when it is
+        deleted without the instance knowing about it
+        """
+        t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
+        self.assertTagModel(self.tag_model, {
+            'Mr': 1,
+        })
+        self.tag_model.objects.all().delete()
+        self.assertTagModel(self.tag_model, {})
+        
+        # Flush the cache and check the tag field is still usable
+        #manager = test_models.SingleTagFieldModel.title.get_manager(t1)
+        #manager.flush_cache()
+        
+        # Check it's still usable
+        self.assertIsInstance(t1.title, tag_models.BaseTagModel)
+        self.assertEqual(t1.title, 'Mr')
+        
+        # Check it can be re-saved
+        t1.save()
+        self.assertTagModel(self.tag_model, {
+            'Mr': 1,
+        })
+        
     def test_multiple_unsaved(self):
         "Check that there's no leak between unsaved objects"
         t1 = test_models.SingleTagFieldModel(name='Test 1', title='Mr')
@@ -303,6 +332,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         "Check that SingleTagField is loaded correctly"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
         t2 = test_models.SingleTagFieldModel.objects.get(pk=t1.pk)
+        self.assertIsInstance(t2.title, tag_models.BaseTagModel)
         self.assertEqual(t1.title, t2.title)
         self.assertTagModel(self.tag_model, {
             'Mr': 1,

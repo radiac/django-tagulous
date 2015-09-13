@@ -2,6 +2,7 @@
 Tagulous tag models
 """
 
+import django
 from django.db import models, router, transaction, IntegrityError
 try:
     from django.utils.text import slugify
@@ -141,10 +142,10 @@ class TagModelBase(models.base.ModelBase):
         new_cls.tag_options = new_tag_options
         
         # Check for self-referential tag fields on this model
-        if hasattr(new_cls._meta, 'get_fields'):
-            fields = new_cls._meta.get_fields()
-        else:
-            fields = new_cls._meta.fields + new_cls._meta.many_to_many
+        #if hasattr(new_cls._meta, 'get_fields'):
+        #    fields = new_cls._meta.get_fields()
+        #else:
+        fields = new_cls._meta.fields + new_cls._meta.many_to_many
         
         for field in fields:
             # Can't test for subclass of field here - would be circular import
@@ -212,7 +213,11 @@ class BaseTagModel(models.Model):
         if hasattr(meta, 'get_fields'):
             ##38# ++ Django 1.8
             # ++ Looks like this won't work - not list of RelatedObjects
-            related_fields = meta.get_fields(include_hidden=True)
+            related_fields = [
+                f for f in meta.get_fields()
+                if (f.many_to_many or f.one_to_many or f.one_to_one)
+                and f.auto_created
+            ]
         else:
             related_fields = meta.get_all_related_objects()
             related_fields += meta.get_all_related_many_to_many_objects()
@@ -255,7 +260,12 @@ class BaseTagModel(models.Model):
         """
         data = []
         for related in self.get_related_fields(include_standard=include_standard):
-            objs = related.model._base_manager.using(
+            if django.VERSION < (1, 8):
+                related_model = related.model
+            else:
+                related_model = related.related_model
+            
+            objs = related_model._base_manager.using(
                 router.db_for_write(self.tag_model)
             ).filter(
                 **{"%s" % related.field.name: self}
@@ -265,7 +275,7 @@ class BaseTagModel(models.Model):
             if flat:
                 data.extend(objs)
             else:
-                data.append([related.model, related.field, objs])
+                data.append([related_model, related.field, objs])
         if flat and distinct:
             data = list(set(data))
         return data
@@ -358,7 +368,12 @@ class BaseTagModel(models.Model):
         for related in related_fields:
             # Get the instances of the related models which refer to the tag
             # instances being merged
-            objs = related.model._base_manager.using(
+            if django.VERSION < (1, 8):
+                related_model = related.model
+            else:
+                related_model = related.related_model
+                
+            objs = related_model._base_manager.using(
                 router.db_for_write(self.tag_model, instance=self)
             ).filter(
                 **{"%s__in" % related.field.name: tags}

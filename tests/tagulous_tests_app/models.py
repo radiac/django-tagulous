@@ -49,7 +49,7 @@ class SingleTagFieldModel(models.Model):
     """
     name = models.CharField(blank=True, max_length=100)
     title = tagulous.models.SingleTagField(blank=True, null=True)
-
+    
 class SingleTagFieldOptionalModel(models.Model):
     """
     Test optional single tag fields

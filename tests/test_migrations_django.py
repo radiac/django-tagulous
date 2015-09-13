@@ -28,6 +28,11 @@ migrations_name = 'migrations'
 migrations_module = 'tests.%s.%s' % (app_name, migrations_name)
 migrations_path = None
 
+# Django 1.8 has extra lines
+RENDERING_MODEL_STATES = [] if django.VERSION < (1, 8) else [
+    '  Rendering model states... DONE'
+]
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Util functions
@@ -290,6 +295,7 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
             'Operations to perform:',
             '  Apply all migrations: tagulous_tests_migration',
             'Running migrations:',
+            ] + RENDERING_MODEL_STATES + [
             '  Applying tagulous_tests_migration.0001_initial... OK',
         ])
         
@@ -323,6 +329,7 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
             'Operations to perform:',
             '  Apply all migrations: tagulous_tests_migration',
             'Running migrations:',
+            ] + RENDERING_MODEL_STATES + [
             '  Applying tagulous_tests_migration.0002_tagged... OK',
         ])
         
@@ -358,26 +365,7 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
         # answer anyway, because we'd replace the AddField operation with a
         # tagulous.models.mgiration.AddUniqueField operation. We'll therefore
         # use one we prepared earlier, 0003_tree.py
-        #
-        # But first, confirm schemamigration would have correctly detected the
-        # tag model base has changed to a BaseTagTreeModel:
-        '''
-        frozen_singletag = south.creator.freezer.prep_for_freeze(
-            model_tree.singletag.tag_model
-        )
-        self.assertItemsEqual(
-            frozen_singletag['Meta']['_bases'],
-            ['tagulous.models.BaseTagModel'],
-        )
         
-        frozen_tags = south.creator.freezer.prep_for_freeze(
-            model_tree.tags.tag_model
-        )
-        self.assertItemsEqual(
-            frozen_tags['Meta']['_bases'],
-            ['tagulous.models.BaseTagTreeModel'],
-        )
-        '''
         # Add in the prepared schemamigration for the tree
         migrations_dir = get_migrations_dir()
         expected_dir = get_expected_dir()
@@ -397,6 +385,7 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
             'Operations to perform:',
             '  Apply all migrations: tagulous_tests_migration',
             'Running migrations:',
+            ] + RENDERING_MODEL_STATES + [
             '  Applying tagulous_tests_migration.0003_tree... OK',
         ])
         
@@ -482,6 +471,7 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
             'Operations to perform:',
             '  Apply all migrations: tagulous_tests_migration',
             'Running migrations:',
+            ] + RENDERING_MODEL_STATES + [
             '  Applying tagulous_tests_migration.0004_data... OK',
         ])
         

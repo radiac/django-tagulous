@@ -28,7 +28,7 @@ class TagTestManager(object):
     Test mixin to help test tag models
     """
     # Add test app urls
-    urls = 'tests.tagulous_tests_app.urls'
+    #urls = 'tests.tagulous_tests_app.urls'
     
     # We have some very long string comparisons (eg form field renders,
     # migrations), so set the maxDiff to 10k

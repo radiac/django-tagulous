@@ -8,6 +8,7 @@ necessary tag models, and add the descriptors back onto the model.
 They are also responsible for preparing form fields.
 """
 
+import django
 from django.db import models
 from django.utils.text import capfirst
 
@@ -101,11 +102,14 @@ class BaseTagField(object):
         super(BaseTagField, self).do_related_class(other, cls)
         
         # Make sure tag model is the related model, in case it was a string
-        self.tag_model = self.related.parent_model
+        if django.VERSION < (1, 8):
+            # Django 1.7 or earlier
+            self.tag_model = self.related.parent_model
+        else:
+            # Django 1.8 or later
+            self.tag_model = self.rel.model
         
         # Check class type of tag model
-        #django1.6# ++ South migrations need BaseTagModel; once support dropped
-        #           ++ change to check against TagModel
         if not issubclass(self.tag_model, BaseTagModel):
             raise ValueError('Tag model must be a subclass of TagModel')
         

@@ -66,6 +66,10 @@ def runtests(args):
             ],
             ROOT_URLCONF='tests.tagulous_tests_app.urls',
             SERIALIZATION_MODULES=SERIALIZATION_MODULES,
+            TEMPLATES=[{
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'APP_DIRS': True,
+            }],
         )
     
     execute_from_command_line(args[:1] + ['test'] + (args[2:] or ['tests']))
