@@ -209,28 +209,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(tag_model in self.site._registry)
         ma = self.site._registry[tag_model]
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
-    
-    def test_tag_model_deprecated(self):
-        "Check tag_model still works, but raises warning"
-        self.assertFalse(self.model_singletag in self.site._registry)
-        
-        # Assert it raises a warning
-        import warnings
-        with warnings.catch_warnings(record=True) as cw:
-            warnings.simplefilter("always")
-            tag_admin.tag_model(self.model_singletag, site=self.site)
-            self.assertEqual(len(cw), 1)
-            self.assertTrue(issubclass(cw[-1].category, DeprecationWarning))
-            self.assertEqual(
-                str(cw[-1].message),
-                'tag_model deprecated, use register instead',
-            )
-        
-        # But it should still work
-        self.assertTrue(self.model_singletag in self.site._registry)
-        ma = self.site._registry[self.model_singletag]
-        self.assertIsInstance(ma, tag_admin.TagModelAdmin)
-        
+
 
 ###############################################################################
 ####### Tagged ModelAdmin
