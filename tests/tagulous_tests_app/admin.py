@@ -13,9 +13,8 @@ class SimpleMixedTestAdmin(admin.ModelAdmin):
     fields = ('name', 'singletag', 'tags')
     
     # No links for changelist, to simplify tests
-    # ++ TODO: Change to None when supported by all Django versions
-    # Docs say this will work when set to None, but unclear which version of
-    # django started supporting it. Certainly after 1.5.
+    # Django 1.7 supports this being set to None, but Django 1.4 - 1.6 don't
+    # Therefore just set to invalid value for now
     list_display_links = ['none']
 
 
