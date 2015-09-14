@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 from django.utils.html import escape
 from django.utils.encoding import force_unicode
 
-# ++ Can remove this try/except when min req is Django 1.5
+# Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:
     import json
 except ImportError: # pragma: no cover

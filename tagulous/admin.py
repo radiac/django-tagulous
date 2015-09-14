@@ -241,14 +241,14 @@ class TagModelAdmin(admin.ModelAdmin):
             if merge_form.is_valid():
                 merge_to = merge_form.cleaned_data['merge_to']
                 merge_to.merge_tags(queryset)
-                # ++ Can add level=messages.SUCCESS when django 1.4 is dropped
+                # Django 1.4 doesn't support level=messages.SUCCESS
                 self.message_user(request, 'Tags merged')
                 return HttpResponseRedirect(request.get_full_path())
                 
         else:
             tag_pks = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
             if len(tag_pks) < 2:
-                # ++ Can add level=messages.INFO when django 1.4 is dropped
+                # Django 1.4 doesn't support level=messages.SUCCESS
                 self.message_user(
                     request, 'You must select at least two tags to merge',
                 )
@@ -267,8 +267,6 @@ class TagModelAdmin(admin.ModelAdmin):
             'opts': self.model._meta,
             'merge_form': merge_form,
             'tags': queryset,
-            #dj14# ++ Django 1.4 needs {% load url from future %}
-            'load_url_from_future': django.VERSION < (1, 5)
         })
     merge_tags.short_description = 'Merge selected tags...'
 

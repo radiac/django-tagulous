@@ -61,7 +61,8 @@ class TagTestManager(object):
             self.tearDownExtra()
         
     def create(self, model, **kwargs):
-        ##30# ++ This can be replaced when we've got create() working properly
+        # This could be replaced with the Tagulous create() method, but do it
+        # manually to avoid complicating tests
         normal = {}
         tagfield = {}
         mmfield = {}
@@ -201,8 +202,8 @@ class TagTestManager(object):
                 )
             )
             for attr_name in json1[dom_path].keys():
-                # ++ Can use assertJSONEqual after dropping 1.4 support
-                # For now, just have a copy of it
+                # Django 1.4 doesn't support assertJSONEqual
+                # For now, just have a copy of it from 1.5
                 try:
                     json1_val = json.loads(json1[dom_path][attr_name])
                 except ValueError:

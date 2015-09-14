@@ -16,9 +16,8 @@ from tagulous import settings
 from tagulous import utils
 from tagulous.models.options import TagOptions
 
-# Because older versions of Django don't support or need transaction.atomic for
-# what we're doing here, fake it for the ``with`` statement.
-# ++ We can drop this when we drop support for 1.5
+# Django 1.4 and 1.5 don't support transaction.atomic, but don't need it for
+# what we're doing here; fake it for the ``with`` statement.
 if hasattr(transaction, 'atomic'):
     transaction_atomic = transaction.atomic
 else:
@@ -211,8 +210,7 @@ class BaseTagModel(models.Model):
         """
         meta = cls._meta
         if hasattr(meta, 'get_fields'):
-            ##38# ++ Django 1.8
-            # ++ Looks like this won't work - not list of RelatedObjects
+            # Django 1.8 uses new meta API
             related_fields = [
                 f for f in meta.get_fields()
                 if (f.many_to_many or f.one_to_many or f.one_to_one)

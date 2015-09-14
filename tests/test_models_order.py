@@ -23,9 +23,10 @@ class ModelFieldOrderTest(TagTestManager, TestCase):
         This is to check that Django internals haven't changed significantly
         """
         # Check the ordering is as expected
-        ##38# ++ Change for Django 1.8?
         opts = test_models.MixedOrderTest._meta
-        # Meta concrete_fields was added in 1.6
+        # Django 1.4 and 1.5 don't have concrete_fields in meta Options.
+        # Django 1.8 states that it's an internal function and shouldn't be
+        # used directly, but using it anyway to keep code simple.
         if hasattr(opts, 'concrete_fields'):
             concrete_fields = opts.concrete_fields
         else:

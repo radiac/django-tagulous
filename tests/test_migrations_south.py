@@ -29,7 +29,7 @@ DISPLAY_CALL_COMMAND = False
 
 app_name = 'tagulous_tests_migration'
 app_module = sys.modules['tests.%s' % app_name]
-migrations_name = 'migrations' # ++ this could change
+migrations_name = 'migrations'
 migrations_module = 'tests.%s.%s' % (app_name, migrations_name)
 migrations_path = None
 

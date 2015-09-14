@@ -36,7 +36,7 @@ def model_initialise_tags(model, report=False):
         report      Passed to field_initialise_tags
     """
     if hasattr(model._meta, 'get_fields'):
-        ##38# ++ Django 1.8
+        # Django 1.8 uses new meta API
         fields = model._meta.get_fields()
     else:
         fields = model._meta.fields + model._meta.many_to_many

@@ -10,7 +10,7 @@ from tests.lib import *
 from django.test import Client
 from django.core.urlresolvers import reverse
 
-# ++ Can remove this try/except when min req is Django 1.5
+# Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:
     import json
 except ImportError:

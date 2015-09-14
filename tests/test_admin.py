@@ -41,9 +41,8 @@ def _monkeypatch_modeladmin():
     Monkeypatch it where necessary to allow tests to function, without making
     any changes to ModelAdmin which would affect the code being tested.
     """
-    # Ensure ModelAdmin has get_list_filter - missing in Django 1.4
-    # Only used in tests
-    # ++ Can be removed once 1.4 support is dropped
+    # Django 1.4 ModelAdmin doesn't have get_list_filter
+    # Monkeypatch in; only used to simplify tests
     if not hasattr(admin.ModelAdmin, 'get_list_filter'):
         if django.VERSION >= (1, 5):
             raise AttributeError(
@@ -443,8 +442,7 @@ class TagAdminTest(AdminTestManager, TagTestManager, TestCase):
         msgs = list(messages.get_messages(request))
         
         # Check response is appropriate
-        # ++ This would be a lot easier with assertInHTML, after 1.4 is dropped
-        # ++ For now, it's just a mess.
+        # Django 1.4 doesn't support assertInHTML, so have to do it manually
         self.assertEqual(len(msgs), 0)
         content = str(response)
         content_form = content[

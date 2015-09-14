@@ -64,9 +64,6 @@ class SingleTagManager(object):
         """
         Get the actual value of the instance according to the FK descriptor
         """
-        # Flush the cache in case there has been a change somewhere
-        #self.flush_cache()
-        
         # A ForeignKey would be on the .attname (field_id), but only
         # if it has been set, otherwise the attribute will not exist
         if hasattr(self.instance, self.field.attname):
@@ -97,6 +94,7 @@ class SingleTagManager(object):
         Set the actual value of the instance for the FK descriptor
         """
         self.descriptor.descriptor.__set__(self.instance, value)
+        
         # Django 1.8 cache check fix (see comment in get_actual)
         self.flush_cache()
         
