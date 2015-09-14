@@ -69,3 +69,58 @@ class TagOptionsTest(TestCase):
         with self.assertRaises(AttributeError) as cm:
             opt.invalid
         self.assertEqual(str(cm.exception), "invalid")
+
+    def test_update_dict(self):
+        opt = tag_models.TagOptions(initial='Adam, Brian')
+        self.assertEqual(opt.initial_string, 'Adam, Brian')
+        
+        opt.update({'initial': 'Brian, Chris'})
+        self.assertEqual(opt.initial_string, 'Brian, Chris')
+        
+    def test_update_object(self):
+        opt1 = tag_models.TagOptions(initial='Adam, Brian')
+        opt2 = tag_models.TagOptions(initial='Brian, Chris')
+        self.assertEqual(opt1.initial_string, 'Adam, Brian')
+        self.assertEqual(opt2.initial_string, 'Brian, Chris')
+        
+        opt1.update(opt2)
+        self.assertEqual(opt1.initial_string, 'Brian, Chris')
+    
+    def test_set_missing_dict(self):
+        opt = tag_models.TagOptions(initial='Adam, Brian')
+        self.assertEqual(opt.initial_string, 'Adam, Brian')
+        self.assertEqual(opt.force_lowercase, False)
+        
+        opt.set_missing({
+            'initial':  'Brian, Chris',
+            'force_lowercase': True,
+        })
+        self.assertEqual(opt.initial_string, 'Adam, Brian')
+        self.assertEqual(opt.force_lowercase, True)
+    
+    def test_set_missing_object(self):
+        opt1 = tag_models.TagOptions(initial='Adam, Brian')
+        opt2 = tag_models.TagOptions(initial='Brian, Chris', force_lowercase=True)
+        self.assertEqual(opt1.initial_string, 'Adam, Brian')
+        self.assertEqual(opt1.force_lowercase, False)
+        self.assertEqual(opt2.initial_string, 'Brian, Chris')
+        self.assertEqual(opt2.force_lowercase, True)
+        
+        opt1.set_missing(opt2)
+        self.assertEqual(opt1.initial_string, 'Adam, Brian')
+        self.assertEqual(opt1.force_lowercase, True)
+    
+    def test_add(self):
+        opt1 = tag_models.TagOptions(initial='Adam, Brian')
+        opt2 = tag_models.TagOptions(force_lowercase=True)
+        self.assertEqual(opt1.initial_string, 'Adam, Brian')
+        self.assertEqual(opt1.force_lowercase, False)
+        self.assertEqual(opt2.initial_string, '')
+        self.assertEqual(opt2.force_lowercase, True)
+        
+        opt3 = opt1 + opt2
+        self.assertEqual(opt3.initial_string, 'Adam, Brian')
+        self.assertEqual(opt3.force_lowercase, True)
+        self.assertNotEqual(id(opt1), id(opt2))
+        self.assertNotEqual(id(opt2), id(opt3))
+        self.assertNotEqual(id(opt3), id(opt1))

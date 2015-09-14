@@ -126,7 +126,7 @@ def add_unique_field(model_name, name, field, preserve_default, set_fn):
         preserve_default    As django defines
         set_fn      Callback to set the field on each instance
     """
-    if django_migrations is None:
+    if django_migrations is None: # pragma: no cover
         raise ValueError('Cannot use add_unique_column without Django migrations')
     
     # Clone the field so it's not unique and can be null
@@ -328,7 +328,7 @@ def add_unique_column(self, db, model, column, set_fn, field_type, **kwargs):
         field_type  String reference to Field object
         **kwargs    Arguments for Field object, excluding unique
     """
-    if south is None:
+    if south is None: # pragma: no cover
         raise ValueError('Cannot use add_unique_column without south')
     
     table = model._meta.db_table

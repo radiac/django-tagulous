@@ -712,9 +712,19 @@ class ModelTagFieldTest(TagTestManager, TestCase):
             "The tag field <tagulous.models.fields.TagField: tags> is already "
             "attached to a model"
         )
+    
+    def test_invalid_to_model(self):
+        "Check that the to model has to be a TagModel subclass"
+        with self.assertRaises(ValueError) as cm:
+            class FailModel(models.Model):
+                to_model = tag_models.TagField(test_models.TagFieldModel)
+        self.assertEqual(
+            str(cm.exception),
+            "Tag model must be a subclass of TagModel"
+        )
         
-    def test_invalid_arguments(self):
-        "Check that invalid arguments raise exception"
+    def test_forbidden_db_table(self):
+        "Check that db_table argument raises exception"
         with self.assertRaises(ValueError) as cm:
             class FailModel(models.Model):
                 db_table = tag_models.TagField(db_table='fail')
@@ -723,6 +733,8 @@ class ModelTagFieldTest(TagTestManager, TestCase):
             "Invalid argument 'db_table' for TagField"
         )
 
+    def test_forbidden_through(self):
+        "Check that through argument raises exception"
         with self.assertRaises(ValueError) as cm:
             class FailModel(models.Model):
                 through = tag_models.TagField(through='fail')
@@ -731,6 +743,8 @@ class ModelTagFieldTest(TagTestManager, TestCase):
             "Invalid argument 'through' for TagField"
         )
 
+    def test_forbidden_symmetrical(self):
+        "Check that symmetrical argument raises exception"
         with self.assertRaises(ValueError) as cm:
             class FailModel(models.Model):
                 symmetrical = tag_models.TagField(symmetrical='fail')

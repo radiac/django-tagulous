@@ -295,10 +295,6 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.tag_model.objects.all().delete()
         self.assertTagModel(self.tag_model, {})
         
-        # Flush the cache and check the tag field is still usable
-        #manager = test_models.SingleTagFieldModel.title.get_manager(t1)
-        #manager.flush_cache()
-        
         # Check it's still usable
         self.assertIsInstance(t1.title, tag_models.BaseTagModel)
         self.assertEqual(t1.title, 'Mr')
@@ -353,8 +349,18 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertIsInstance(t1.title, self.tag_model)
         self.assertNotEqual(t1.title, t2.title)
             
-    def test_invalid_arguments(self):
-        "Check that invalid arguments raise exception"
+    def test_invalid_to_model(self):
+        "Check that the to model has to be a TagModel subclass"
+        with self.assertRaises(ValueError) as cm:
+            class FailModel(models.Model):
+                to_model = tag_models.SingleTagField(test_models.SingleTagFieldModel)
+        self.assertEqual(
+            str(cm.exception),
+            "Tag model must be a subclass of TagModel"
+        )
+    
+    def test_forbidden_to_field(self):
+        "Check that to_field argument raises exception"
         with self.assertRaises(ValueError) as cm:
             class FailModel(models.Model):
                 to_field = tag_models.SingleTagField(to_field='fail')
@@ -363,6 +369,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             "Invalid argument 'to_field' for SingleTagField"
         )
 
+    def test_forbidden_rel_class(self):
+        "Check that rel_class argument raises exception"
         with self.assertRaises(ValueError) as cm:
             class FailModel(models.Model):
                 rel_class = tag_models.SingleTagField(rel_class='fail')
@@ -371,6 +379,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             "Invalid argument 'rel_class' for SingleTagField"
         )
 
+    def test_forbidden_max_count(self):
+        "Check that max_count argument raises exception"
         with self.assertRaises(ValueError) as cm:
             class FailModel(models.Model):
                 max_count = tag_models.SingleTagField(max_count='fail')

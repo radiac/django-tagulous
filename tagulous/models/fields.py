@@ -297,8 +297,8 @@ class BaseTagField(object):
             set_tag_meta, options = self._deferred_options
             items = options
             
-        else:
-            # Really have no idea what happened here
+        else: # pragma: no cover
+            # It should never get here - raise an exception so we can debug
             raise ValueError('Unexpected state')
         
         # Add tag model options to kwargs
@@ -312,7 +312,8 @@ class BaseTagField(object):
             del kwargs['get_absolute_url']
         
         # Remove forbidden fields
-        for forbidden in self.forbidden_fields:
+        # This shouldn't be needed, but strip them just in case
+        for forbidden in self.forbidden_fields: # pragma: no cover
             if forbidden in kwargs:
                 del kwargs[forbidden]
             
