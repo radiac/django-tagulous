@@ -190,6 +190,10 @@ The tag model options are:
     If not set, the method ``get_absolute_url`` will not be available and an
     ``AttributeError`` will be raised.
     
+    Note: Due to the way Django migrations freeze model fields, this attribute
+    is not available during data migrations. See
+    `Limitations of Django migrations`_ for more information.
+    
     Default: None
 
 ``verbose_name_singular``, ``verbose_name_plural``
@@ -671,6 +675,10 @@ there is no difference to normal tags in how they are set or compared.
 Converting from to tree tags from normal tags
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+When converting from a normal tag model to a tag tree model, you will need to
+add extra fields. One of those (``path``) is a unique field, which means extra
+steps are needed to build the migration.
+
 These instructions will convert an existing ``TagModel`` to a ``TagTreeModel``.
 Look through the code snippets and change the app and model names as
 required:
@@ -715,7 +723,7 @@ required:
       Change the new migration to use the Tagulous helper to add the ``path``
       field.
       
-   b. When using Django migrations (transactional databases only)::
+   b. When using Django migrations::
       
         import tagulous.models.migrations
         ...
@@ -732,7 +740,7 @@ required:
             ...
         ]
       
-      With South (transactional databases only)::
+      With South::
 
         def forwards(self, orm):
             ...
@@ -750,6 +758,9 @@ required:
                 lambda obj: setattr(obj, 'path', str(obj.pk)),
                 'django.db.models.fields.TextField',
             )
+            
+    Although ``add_unique_column`` does work with non-transactional databases,
+    it is not without risk. See `Database Migrations`_ for more details.
 
 3. Skip this step if you are using South.
 
@@ -795,7 +806,11 @@ required:
    If you skipped step 1, this will also create and set parent tags as
    necessary.
 
-4. Run the migrations
+5. Run the migrations
+
+You can see a working example of steps 2 and 3 in the
+``tests/tagulous_tests_migrations`` app, in the migration ``0003_tree.py`` for
+both Django and South migrations.
 
 
 Working with tagged models
@@ -866,6 +881,26 @@ Tagged models will be subclasses of ``TaggedModel`` as normal (as long as
 The only difference is that tag models will be instances of ``BaseTagModel``
 and ``BaseTagTreeModel`` rather than their normal non-base versions - but this
 is just how migrations work, and it will makes no practical difference.
+
+
+Adding unique columns
+~~~~~~~~~~~~~~~~~~~~~
+
+Migrating a model to a ``TagModel`` or ``TagTreeModel`` involves adding unique
+fields (``slug`` and ``path`` for example), which normally requires 3 separate
+migrations. To simplify this process, Tagulous provides two helper methods,
+``add_unique_column`` for South and ``add_unique_field`` for Django migrations
+to add them in a single migration - see step 2 in
+`Converting from to tree tags from normal tags`_ for examples of their use.
+
+However, use these with care - should part of the function fail for some reason
+when using a non-transactional database, it won't be able to roll back and may
+be left in an unmigrateable state. It is therefore recommended that you either
+make a backup of your database before using this function, or that you follow
+the steps in the
+`official Django documentation <https://docs.djangoproject.com/en/1.8/howto/writing-migrations/#migrations-that-add-unique-fields>`
+to perform the action in 3 separate migrations.
+
 
 Limitations of Django migrations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

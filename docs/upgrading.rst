@@ -21,6 +21,18 @@ Upgrading Django Tagulous
    don't need to follow those steps.
 
 
+Upgrading from 0.8.0
+--------------------
+
+1. Since 0.9.0, ``SingleTagField`` and ``TagField`` raise an exception if the
+   tag model isn't a subclass of TagModel.
+
+2. The documentation for ``tagulous.models.migrations.add_unique_column`` has
+   been clarified to illustrate the risk of using it with a non-transactional
+   database. If you use this in your migrations, read the documentation to be
+   sure you understand the problem involved.
+
+
 Upgrading from 0.7.0 or earlier
 -------------------------------
 

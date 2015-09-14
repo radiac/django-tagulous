@@ -70,15 +70,6 @@ Explicitly specify the tag model::
 
     import tagulous
     class Hobbies(tagulous.models.TagModel):
-        # All custom tag models must provide a ``name`` CharField. This is what
-        # the tag will be shown as and parsed using.
-        name = CharField(max_length=100)
-        
-        # Custom tag fields
-        # These must all be allowed to be blank - tagulous will not help you
-        # set them.
-        started = DateField(blank=True)
-        
         class TagMeta:
             # Options as passed to TagField
             initial = "eating, coding, gaming"
@@ -86,8 +77,11 @@ Explicitly specify the tag model::
             autocomplete_view = 'myapp.views.hobbies_autocomplete'
     
     class Person(models.Model):
-        ...
-        hobbies = tagulous.models.TagField(to=Hobbies, autocomplete_view=None)
+        name = models.CharField(max_length=255)
+        hobbies = tagulous.models.TagField(to=Hobbies)
+
+Options for an explicit tag model must be set in ``TagMeta`` - you cannot pass
+them as arguments in tag fields.
 
 See the documentation for `Tag Models`_ to see which field names tagulous
 uses internally.
@@ -96,7 +90,49 @@ uses internally.
 Tag Trees
 ---------
 
-# ++
+A tag field can specify ``tree=True`` to use slashes in tag names to denote
+children::
+
+    import tagulous
+    class Person(models.Model):
+        name = models.CharField(max_length=255)
+        skills = tagulous.models.TagField(
+            force_lowercase=True,
+            max_count=5,
+            tree=True,
+        )
+
+ This can also be set in the tag model's ``TagMeta`` object::
+
+    import tagulous
+    class Hobbies(tagulous.models.TagTreeModel):
+        class TagMeta:
+            initial = "food/eating, food/cooking, gaming/football"
+            tree = True
+            force_lowercase = True
+            autocomplete_view = 'myapp.views.hobbies_autocomplete'
+    
+    class Person(models.Model):
+        name = models.CharField(max_length=255)
+        hobbies = tagulous.models.TagField(to=Hobbies)
+
+You can add tags as normal, and then query using tree relationships::
+
+    person.hobbies = "food/eating/mexican, sport/football"
+    person.save()
+    
+    # Get all root nodes: "food", "gaming" and "sport"
+    root_nodes = Hobbies.objects.filter(parent=None)
+    
+    # Get the direct children of food: "food/eating", "food/cooking"
+    food_children = Hobbies.objects.get(name="food").children.all()
+    
+    # Get all descendants of food:
+    #   "food/eating", "food/eating/mexican", "food/cooking"
+    food_children = Hobbies.objects.get(name="food").get_descendants()
+
+See the documentation for `Tag Trees`_ to see a full list of available tree
+properties.
 
 
 Tag URL
@@ -123,6 +159,15 @@ a template::
     {% for skill in person.skills.all %}
         <a href="{{ skill.get_absolute_url }}">{{ skill.name }}</a>
     {% endfor %}
+
+If you are using a tree, you will want to use the path instead::
+
+    skills = tagulous.models.TagField(
+        tree=True,
+        get_absolute_url=lambda tag: reverse(
+            'myapp.views.by_skill', kwargs={'skill_path': tag.path}
+        ),
+    )
 
 
 ModelForms
@@ -228,7 +273,29 @@ list of strings::
 Autocomplete Views
 ------------------
 
-# ++ Add examples
+To use AJAX to populate your autocomplete using JavaScript, set the tag option
+``autocomplete_view`` in your models to a value for ``reverse()``::
+
+    class Person(models.Model):
+        name = models.CharField(max_length=255)
+        skills = tagulous.models.TagField(
+            autocomplete_view='person_skills_autocomplete'
+        )
+
+You can then use the default autocomplete views directly in your urls::
+
+    import tagulous
+    from myapp.models import Person
+    urlpatterns = [
+        url(
+            r'^person/skills/autocomplete/',
+            tagulous.views.autocomplete,
+            {'tag_model': Person},
+            name='person_skills_autocomplete',
+        ),
+    ]
+
+See the documentation for `Views`_ for more details.
 
 
 Filtering autocomplete to initial tags only
