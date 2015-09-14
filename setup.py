@@ -2,6 +2,8 @@ import os
 import sys
 from setuptools import setup, find_packages
 
+VERSION = "0.9.0"
+
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
@@ -81,7 +83,7 @@ if len(sys.argv) > 1 and sys.argv[1] == 'test':
 
 setup(
     name = "django-tagulous",
-    version = "0.8.0",
+    version = VERSION,
     author = "Richard Terry",
     author_email = "code@radiac.net",
     description = ("A flexible tagging application for Django"),
@@ -102,6 +104,8 @@ setup(
         'Framework :: Django :: 1.4',
         'Framework :: Django :: 1.5',
         'Framework :: Django :: 1.6',
+        'Framework :: Django :: 1.7',
+        'Framework :: Django :: 1.8',
     ],
     extras_require = {
         'dev':  ['tox', 'jasmine'],
