@@ -274,13 +274,3 @@ class TagModelAdmin(admin.ModelAdmin):
 
 class TagTreeModelAdmin(TagModelAdmin):
     exclude = ['count', 'path']
-
-
-def tag_model(model, site=None):
-    "Deprecated - use register() instead"
-    # ++ Remove in next release
-    import warnings
-    warnings.warn(
-        'tag_model deprecated, use register instead', DeprecationWarning,
-    )
-    register(model, site=site)
