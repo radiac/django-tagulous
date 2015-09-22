@@ -1,11 +1,10 @@
-.. _contributing:
-
+============
 Contributing
 ============
 
 Contributions are welcome, preferably via pull request. Check the github issues
-and project `roadmap <CHANGES>`_ to see what needs work. Tagulous aims to be a
-comprehensive tagging solution, but try to keep new features from having a
+and project :ref:`roadmap <roadmap>` to see what needs work. Tagulous aims to
+be a comprehensive tagging solution, but try to keep new features from having a
 significant impact on people who won't use them (eg tree support is optional).
 
 When submitting UI changes, please aim to support the latest versions of
@@ -15,7 +14,7 @@ the bells and whistles.
 
 
 Installing
-----------
+==========
 
 The easiest way to work on Tagulous is to fork the project on github, then
 install it to a virtualenv::
@@ -30,7 +29,7 @@ virtualenv.
 
 
 Testing
--------
+=======
 
 It is greatly appreciated when contributions come with unit tests.
 
@@ -45,7 +44,7 @@ you can optionally specify which test to run::
 
 Use ``tox`` to run them on one or more supported versions::
 
-    tox [-e py27-django1.4] [tests[.TestClass]]
+    tox [-e py27-django1.4] [tests[.test_module.TestClass]]
 
 Tox will also generate a ``coverage`` HTML report.
 
@@ -64,37 +63,58 @@ Javascript tests are defined in ``tests/spec/javascripts/*.spec.js``.
 
 
 Code overview
--------------
+=============
 
-Tag model fields start in ``tagulous.models.fields``; when they are added to
-models, the models call the field's ``contribute_to_class`` method, which adds
-the descriptors in ``tagulous.models.descriptors`` onto the model in their
-place. These descriptors act as getters and setters, channelling data to and
-from the managers in ``tagulous.models.managers``.
+Tag model fields start in :source:`tagulous/models/fields.py`; when they are
+added to models, the models call the field's ``contribute_to_class`` method,
+which adds the descriptors in :source:`tagulous/models/descriptors.py` onto
+the model in their place. These descriptors act as getters and setters,
+channelling data to and from the managers in
+:source:`tagulous/models/managers.py`.
 
 Models which have tag fields are called tagged models. For tags to be fully
 supported in constructors, managers and querysets, those classes need to use
-the classes defined in ``tagulous.models.tagged`` as base classes. That file
-contains a ``class_prepared`` signal listener which tries to dynamically
-change the base classes of any models which contain tag fields.
+the classes defined in :source:`tagulous/models/tagged.py` as base classes.
+That file contains a ``class_prepared`` signal listener which tries to
+dynamically change the base classes of any models which contain tag fields.
 
-Model fields take their arguments and store them in
-``tagulous.models.options.TagOptions`` instances. Any ``initial`` tags in the
+Model fields take their arguments and store them in a ``TagOptions`` instance,
+defined in :source:`tagulous/models/options.py`. Any ``initial`` tags in the
 options can be loaded into the database using the functions in
-``tagulous.models.initial``, which is the same code the ``initial_tags``
-management command uses.
+:source:`tagulous/models/initial.py`, which is the same code the
+``initial_tags`` management command uses.
 
 When a ``ModelForm`` is created for a model with a tag field, the model field's
 ``formfield`` method is called. This creates a tag form field, defined in
-``tagulous.forms``, which is passed the ``TagOptions`` from the model. A
-tag form field can also be created directly on a plain form. Tag form fields
-in turn uses tag widgets (also in ``tagulous.forms``) to render the field to
-HTML with the data from ``TagOptions``.
+:source:`tagulous/forms.py`, which is passed the ``TagOptions`` from the model.
+A tag form field can also be created directly on a plain form. Tag form fields
+in turn uses tag widgets (also in :source:`tagulous/forms.py`) to render the
+field to HTML with the data from ``TagOptions``.
 
 Tag strings are parsed and rendered (tags joined back to a tag string) by the
-functions in ``tagulous.utils``.
+functions in :source:`tagulous/utils.py`.
 
 Everything for enhancing the admin site with support for tag fields is in
-``tagulous.admin``. It is in two sections; registration (which adds tag field
-functionality to normal ``ModelAdmin``s, and replaces the widgets with tag
-widgets) and tag model admin (for managing tag models).
+:source:`tagulous/admin.py`. It is in two sections; registration (which adds
+tag field functionality to a normal ``ModelAdmin``, and replaces the widgets
+with tag widgets) and tag model admin (for managing tag models).
+
+
+.. _roadmap:
+
+Roadmap
+=======
+
+0.10
+* Changes to tag tree model:
+  * Properties moved to cached fields
+  * ``parent`` field changed to ``SingleTagField``
+  * New manager and queryset with tree tools
+* Better admin tools for manipulating tag trees
+* Rename TagOptions.field_items
+* Option to disable space separators
+
+0.11
+* Support python 3
+
+

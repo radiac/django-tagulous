@@ -1,10 +1,14 @@
-.. _views:
+===================
+Views and Templates
+===================
 
-Views
-=====
+.. _autocomplete_views:
+
+Autocomplete views
+==================
 
 Although Tagulous doesn't need any views by default, it does provide generic
-views in ``views.py`` to support AJAX autocomplete requests.
+views in :source:`tagulous/views.py`` to support AJAX autocomplete requests.
 
 ``response = autocomplete(request, tag_model)``
     This takes the request object from the dispatcher, and a reference to the
@@ -29,26 +33,27 @@ These views look for two GET parameters:
     the string.
     
     Note: if using a sqlite database, matches on a case sensitive tag model
-    may not be case sensitive - see the `case sensitive <case_sensitive>`_
-    flag for more details.
+    may not be case sensitive - see the
+    :ref:`option_case_sensitive` option for more details.
 
 ``p``
-    The page number to return, if ``autocomplete_limit`` is set on the tag
-    model.
+    The page number to return, if :ref:`option_autocomplete_limit` is set on
+    the tag model.
     
-    Default: 1
+    Default: ``1``
 
-For an example, see `Autocomplete Views`_.
+For an example, see the :ref:`example_autocomplete_views` example.
 
+
+.. _tag_clouds:
 
 Tag clouds
-----------
+==========
 
 Tag clouds are a common way to display tags. Rather than have a template tag
 with templates and options for every eventuality, Tagulous simply offers a
-``weight(..)`` method on tag querysets (see
-`queryset documentation <_queryset_weight>`_), which adds a ``weight``
-annotation to tag objects::
+:ref:`weight() <queryset_weight>` method on tag querysets, which adds a
+``weight`` annotation to tag objects::
 
     # myapp/view.py
     def tag_cloud(request):
@@ -56,9 +61,9 @@ annotation to tag objects::
         tags = MyModel.tags.tag_model.objects.weight()
         ...
 
-The weight field will be a number between ``TAGULOUS_WEIGHT_MIN`` and
-``TAGULOUS_WEIGHT_MAX`` (see `Settings`_), although these can be overridden by
-passing arguments to it for new min and max values, eg::
+The ``weight`` value will be a number between ``TAGULOUS_WEIGHT_MIN`` and
+``TAGULOUS_WEIGHT_MAX`` (see :ref:`settings`), although these can be overridden
+by passing arguments to ``weight()`` for new min and/or max values, eg::
 
     tags = TagModel.objects.weight(min=2, max=4)
 

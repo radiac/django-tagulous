@@ -22,15 +22,22 @@ Features
 * Supports multiple independent tag fields on a single model
 * Can be used as a user-customisable CharField with choices
 * Supports trees of nested tags, for detailed categorisation
-* All the other features you'd expect a tagging library to have
+* Admin support for managing tags and tagged models
 
-Version 0.9.0; supports Django 1.4 to 1.8.
+Version 0.9.0; supports Django 1.4 to 1.8, on Python 2.7.
 
-* See `Documentation <docs/index.rst>`_ for details of how it all works
-* See `Example Usage <docs/usage.rst>`_ to see examples of it in use
-* See `CHANGES <CHANGES>`_ for full changelog and roadmap
-* See `Upgrading <docs/upgrading.rst>`_ when upgrading an existing Tagulous
-  installation
+See the `Documentation <http://radiac.net/projects/django-tagulous/documentation/>`_
+for details of Tagulous works; in particular:
+
+* `Installation <http://radiac.net/projects/django-tagulous/documentation/installation/>`_
+  - how to install Tagulous
+* `Example Usage <http://radiac.net/projects/django-tagulous/documentation/usage/>`_ 
+  - see examples of Tagulous in use
+* `Upgrading <http://radiac.net/projects/django-tagulous/documentation/upgrading/>`_  - how to upgrade Tagulous, and see what has changed in the
+  `changelog <http://radiac.net/projects/django-tagulous/documentation/upgrading/#changelog>`_.
+* `Contributing <http://radiac.net/projects/django-tagulous/documentation/contributing/>`_
+  - for how to contribute to Tagulous, and the planned
+  `roadmap <http://radiac.net/projects/django-tagulous/contributing/#roadmap>`_.
 
 
 Quickstart

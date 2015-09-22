@@ -1,28 +1,30 @@
-.. _installation:
-
+============
 Installation
 ============
 
 Requirements
-------------
+============
 
 These packages are required:
 
-* Django => 1.4
+* `Django <https://www.djangoproject.com/>`_ 1.4 to 1.8, on Python 2.7
 
 These packages are recommended, but optional:
 
-* unidecode
-* South, to assist with migrations (if Django < 1.7)
+* `unidecode <https://pypi.python.org/pypi/Unidecode>`_
+* `django-compressor <https://github.com/django-compressor/django-compressor>`_
+  or similar, to optimise static files
+* `South <https://pypi.python.org/pypi/South>`_ 1.0.2 or later, to manage
+  database migrations (if using Django 1.6 or earlier)
 
-Tagulous has been tested under Python 2.7, with South 1.0.2.
-
-If you are replacing an existing tagging solution, follow the `Installation`_
-instructions, then read `Converting to Tagulous`_.
+If you are replacing an existing tagging solution, follow the
+:ref:`installation_instructions`, then read :ref:`converting_to_tagulous`.
 
 
-Installation
-------------
+.. _installation_instructions:
+
+Instructions
+============
 
 1. Install ``django-tagulous`` (currently only on github)::
 
@@ -32,18 +34,20 @@ Installation
    to install by adding them to the end of the package name. They are:
    
    * ``i18n``, for improved unicode support in slugs (``unidecode``) - see
-     `slugs <_model_slug>`_ for more details.
-   * ``dev``, for testing (``tox`` and ``jasmine``) - see `Contributing`_ for
-     more details.
+     :ref:`model_slug` for more details.
+   * ``dev``, for testing (``tox`` and ``jasmine``) - see :doc:`contributing`
+     for more details.
    
    Example of installing with extras::
    
     pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous[i18n][dev]
 
-   Note: The master branch may sometimes contain minor changes made since the
-   version was incremented. These changes will be listed in
-   `CHANGES <../CHANGES>`_. It will always be safe to use, but versions will be
-   tagged if you only want to follow releases.
+   .. note::
+   
+       The master branch may sometimes contain changes made since the last
+       version was released. These will be listed in the :ref:`changelog`; it will
+       always be safe to use, but versions will be tagged if you only want to
+       follow releases.
 
 2. In your site settings, add Tagulous to ``INSTALLED_APPS``::
 
@@ -53,7 +57,7 @@ Installation
     )
    
    In the same file, tell Django to use the Tagulous serialization modules, so
-   that Django can serialize tag fields (for fixtures etc):
+   that Django can serialize tag fields (for fixtures etc)::
    
     SERIALIZATION_MODULES = {
         'xml':    'tagulous.serializers.xml_serializer',
@@ -62,29 +66,32 @@ Installation
         'yaml':   'tagulous.serializers.pyyaml',
     }
 
-   You may also want to change some Tagulous settings here - see `Settings`_
-   below.
+   You may also want to change some Tagulous settings here - see
+   :ref:`settings` for details.
 
 You are now ready to add Tagulous fields to your models - see
-`Example Usage`_, `Models`_ and `Forms`_.
+:doc:`models/index`, :doc:`forms` and :doc:`usage`.
 
+
+.. _settings:
 
 Settings
---------
+========
 
-Note: model and form fields settings are managed by the `TagOptions`_ class.
+.. note::
+    Model and form field options are managed separately by :doc:`tag_options`.
 
 ``TAGULOUS_AUTOCOMPLETE_JS``
-    List of paths under ``STATIC_URL`` to any javascript files which are
-    required for tagulous autocomplete. These will be added to the form media
-    when a tagulous form field is used.
+    List of paths under ``STATIC_URL`` for any JavaScript files which are
+    required for Tagulous autocomplete. These will be added to the form media
+    when a Tagulous form field is used.
     
     The default list will use the included versions of jQuery and Select2,
-    with the tagulous Select2 adaptor. See `Autocomplete Adaptors`_ for
-    information about using other included adaptors, or writing your own.
+    with the tagulous Select2 adaptor. See :ref:`autocomplete_adaptors` for
+    information about using other adaptors, or writing your own.
     
-    The order is important: the adaptor must appear last in the list, so it is
-    loaded after its dependencies.
+    The order is important: the adaptor must appear last in the list, so that
+    it is loaded after its dependencies.
     
     Because a typical Tagulous installation will use multiple JavaScript files,
     you may want to use something like
@@ -93,10 +100,12 @@ Note: model and form fields settings are managed by the `TagOptions`_ class.
     
     Default::
     
-        ('tagulous/lib/jquery.js',
-        'tagulous/lib/select2-3/select2.min.js',
-        'tagulous/tagulous.js',
-        'tagulous/adaptor/select2.js')
+        TAGULOUS_AUTOCOMPLETE_JS = (
+            'tagulous/lib/jquery.js',
+            'tagulous/lib/select2-3/select2.min.js',
+            'tagulous/tagulous.js',
+            'tagulous/adaptor/select2.js',
+        )
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``
     List of paths under ``STATIC_URL`` to any CSS files which are required for
@@ -105,15 +114,17 @@ Note: model and form fields settings are managed by the `TagOptions`_ class.
     
     The default list will use the included version of Select2.
     
-    Default: ``{'all':  ['tagulous/lib/select2-3/select2.css']}``
+    Default::
+    
+        TAGULOUS_AUTOCOMPLETE_CSS = {
+            'all': ['tagulous/lib/select2-3/select2.css']
+        }
 
 ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
     Any settings which you want to override in the default adaptor. These will
     be converted to a JSON value and embedded in the HTML field's
     ``data-tag-options`` attribute. They can be overridden by a field's
-    ``autocomplete_settings`` option.
-    
-    See `Autocomplete Adaptors`_ for accepted values for this setting.
+    :ref:`autocomplete_settings <option_autocomplete_settings>` option.
     
     If set to ``None``, no settings will be added to the HTML field.
     
@@ -166,35 +177,25 @@ Note: model and form fields settings are managed by the `TagOptions`_ class.
     aspects may not work as you would expect - you should consider manually
     enhancing your models, managers and querysets.
     
-    See `Working with tagged models`_ for more information.
+    See :doc:`models/tagged_models` for more information.
     
     Default: ``True``
 
 ``TAGULOUS_WEIGHT_MIN``
-    The default minimum value for the `weight <_queryset_weight>`_ queryset
+    The default minimum value for the :ref:`weight <queryset_weight>` queryset
     method.
     
     Default: ``1``
 
 ``TAGULOUS_WEIGHT_MAX``
-    The default maximum value for the `weight <_queryset_weight>`_ queryset
+    The default maximum value for the :ref:`weight <queryset_weight>` queryset
     method.
     
     Default: ``6``
 
 
-Management Commands
--------------------
 
-.. _initial_tags:
-
-initial_tags [<app_name>[.<model_name>[.<field_name>]]]
-    Add initial tagulous tags to the database as required
-    
-    * Tags which are new will be created
-    * Tags which have been deleted will be recreated
-    * Tags which exist will be untouched
-      
+.. _converting_to_tagulous:
 
 Converting to Tagulous
 ----------------------
@@ -203,50 +204,62 @@ If you're already using a tagging library which you'd like to replace with
 Tagulous, freeze the tags into a temporary column, remove the old tagging code,
 add a new tagulous TagField, then copy the tags back across.
 
-**Warning:** this hasn't been tested with your data, so back up your database
-first, just in case.
+.. warning::
+    This hasn't been tested with your data, so back up your database first,
+    just in case.
 
 1. Create a schema migration to add a ``TextField`` to your tagged
    model, where we'll temporarily store the tags for that instance.
    
-   Example for ``django-taggit``::
+   ``django-taggit`` example::
 
-    class MyModel(models.Model):
-        ...
-        tags = TaggableManager()
-        tags_store = models.TextField(blank=True)
+        class MyModel(models.Model):
+            ...
+            tags = TaggableManager()
+            tags_store = models.TextField(blank=True)
 
-   Example for ``django-tagging``::
+   ``django-tagging`` example::
    
-    class MyModel(models.Model):
-        ...
-        tags_store = models.TextField(blank=True)
-    tagging.register(MyModel)
+        class MyModel(models.Model):
+            ...
+            tags_store = models.TextField(blank=True)
+        tagging.register(MyModel)
 
 2. Create a data migration to copy the tags into the new field as a
    string.
    
-   Example using South for ``django-taggit``::
+   ``django-taggit`` example using South::
 
-    import tagulous
-    for obj in orm['myapp.MyModel'].objects.all():
-        obj.tags_store = tagulous.utils.render_tags(obj.tags.all())
+        def forwards(self, orm):
+            import tagulous
+            for obj in orm['myapp.MyModel'].objects.all():
+                obj.tags_store = tagulous.utils.render_tags(obj.tags.all())
 
-   Example using South for ``django-tagging``::
+   ``django-taggit`` example using Django migrations::
    
-    import tagulous
-    for obj in orm['myapp.MyModel'].objects.all():
-        obj.tags_store = tagulous.utils.render_tags(obj.tags)
-
+        def store_tags(apps, schema_editor):
+            import tagulous
+            model = apps.get_model('myapp', 'MyModel')
+            for obj in model.objects.all():
+                obj.tags_store = tagulous.utils.render_tags(obj.tags.all())
+        
+        class Migration(migrations.Migration):
+            operations = [
+                migrations.RunPython(store_tags)
+            ]
+       
+   The example for ``django-tagging`` would be the same, only replace
+   ``obj.tags.all()`` with ``obj.tags``.
+   
 3. Remove the old tagging code from your model, and create a schema migration
    to clean up any unused fields or models.
 
-4. Create a schema migration to add a ``TagField`` to your tagged model::
+4. Add a ``TagField`` to your tagged model and create a schema migration::
    
-    import tagulous
-    class MyModel(models.Model):
-        tags = tagulous.models.TagField()
-        tags_store = models.TextField(blank=True)
+        import tagulous
+        class MyModel(models.Model):
+            tags = tagulous.models.TagField()
+            tags_store = models.TextField(blank=True)
 
    Be careful to set appropriate arguments, ie ``blank=True`` if some of your
    ``tags_store`` fields may be empty.
@@ -255,8 +268,23 @@ first, just in case.
 
    Example using South::
 
-    for obj in orm['myapp.MyModel'].objects.all():
-        obj.tags = obj.tags_store
+        def forwards(self, orm):
+            for obj in orm['myapp.MyModel'].objects.all():
+                obj.tags = obj.tags_store
+                obj.tags.save()
+
+   Example using Django migrations::
+   
+        def load_tags(apps, schema_editor):
+            model = apps.get_model('myapp', 'MyModel')
+            for obj in model.objects.all():
+                obj.tags = obj.tags_store
+                obj.tags.save()
+        
+        class Migration(migrations.Migration):
+            operations = [
+                migrations.RunPython(load_tags)
+            ]
 
 6. Create a schema migration to remove the temporary tag storage field
    (``tag_store`` in these examples)

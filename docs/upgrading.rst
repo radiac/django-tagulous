@@ -1,7 +1,9 @@
-.. _upgrading:
+=========
+Upgrading
+=========
 
-Upgrading Django Tagulous
-=========================
+Instructions
+============
 
 1. Check which version of Tagulous you are upgrading from::
 
@@ -21,6 +23,8 @@ Upgrading Django Tagulous
    don't need to follow those steps.
 
 
+.. _upgrade_0-8-0:
+
 Upgrading from 0.8.0
 --------------------
 
@@ -33,11 +37,13 @@ Upgrading from 0.8.0
    sure you understand the problem involved.
 
 
+.. _upgrade_0-7-0:
+
 Upgrading from 0.7.0 or earlier
 -------------------------------
 
-1. Since 0.8.0, ``tagulous.admin.tag_model`` is deprecated; use
-   ``tagulous.admin.register`` instead::
+1. ``tagulous.admin.tag_model`` was deprecated in 0.8.0 and removed in 0.9.0;
+   use ``tagulous.admin.register`` instead::
 
     tagulous.admin.tag_model(MyModel.tags)
     tagulous.admin.tag_model(MyModel.tags, my_admin_site)
@@ -55,19 +61,76 @@ Upgrading from 0.7.0 or earlier
    Where an auto-generated tag model is shared with another tag field, the
    first tag field must set all tag options.
 
-   South migrations
-   ~~~~~~~~~~~~~~~~
 
-   Any existing South migrations with ``SingleTagField`` or ``TagField``
+3. Any existing South migrations with ``SingleTagField`` or ``TagField``
    definitions which automatically generate their tag models will need to be
    manually modified in the ``Migration.models`` definition to have the
    attribute ``'_set_tag_meta': 'True'``. For example, the line::
 
     'labels': ('tagulous.models.fields.TagField', [], {'force_lowercase': 'True', 'to': u"orm['myapp._Tagulous_MyModel_labels']", 'blank': 'True'}),
 
-   becomes:
+   becomes::
 
     'labels': ('tagulous.models.fields.TagField', [], {'force_lowercase': 'True', 'to': u"orm['myapp._Tagulous_MyModel_labels']", 'blank': 'True', '_set_tag_meta': 'True'}),
 
    This will use the keyword tag options to update the tag model's objects,
    rather than raising the new ``ValueError``.
+
+
+.. _changelog:
+
+Changelog
+=========
+
+Releases which require special steps when upgrading to them will be marked.
+Changes for upcoming releases will be listed without a release date - these
+are available by installing the master branch from github.
+
+
+0.9.0, 2015-09-14
+-----------------
+
+Internal:
+* Add support for Django 1.7 and 1.8
+
+Removed:
+* ``tagulous.admin.tag_model`` has been removed
+
+Bugfix:
+* Using a tag field with a non-tag model raises exception
+
+
+0.8.0, 2015-08-22
+-----------------
+See :ref:`upgrade instructions <upgrade_0-7-0>`
+
+Feature:
+* Tag cloud support
+* Improved admin.register
+* Added tag-aware serializers
+    
+Deprecated:
+* ``tagulous.admin.tag_model`` will be removed in the next version
+
+Bugfix:
+* Setting tag options twice raises exception
+* Tagged inline formsets work correctly
+
+Internal:
+* South migration support improved
+* Tests moved to top level, tox support added
+* Many small code improvements and bug fixes
+
+
+0.7.0, 2015-07-01
+-----------------
+
+Feature:
+* Added tree support
+
+
+0.6.0, 2015-05-11
+-----------------
+
+Feature:
+* Initial public preview

@@ -1,13 +1,12 @@
-.. _admin:
-
+=====
 Admin
 =====
 
 Tag fields in ModelAdmin
-------------------------
+========================
 
 To support TagField and SingleTagField fields in the admin, you need to
-register the Model and ModelAdmin using Tagulous's `register()` function,
+register the Model and ModelAdmin using Tagulous's ``register()`` function,
 instead of the standard one::
 
     import tagulous
@@ -35,6 +34,7 @@ The changes Tagulous's ``register()`` function makes to the ``ModelAdmin`` are:
 * Checks ``list_display`` for any tag fields, and adds functions to the
   ``ModelAdmin`` to display the tag string (unless an attribute with that name
   already exists)
+* Switches an inline class to a ``TaggedInlineFormSet`` when necessary
 
 Note:
 
@@ -45,7 +45,7 @@ Note:
 
 
 Manually enhancing your ModelAdmin
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+==================================
 
 The ``tagulous.admin.register`` function is the short way to enhance your admin
 classes. If for some reason you can't use it (eg another library which has its
@@ -60,7 +60,7 @@ site), you can do what it does manually:
 2. Call ``tagulous.admin.enhance(model_class, admin_class)``.
    
    This finds the tag fields on the model class, and adds support for them to
-  ``list_display``.
+   ``list_display``.
 
 3. Register the admin class as normal
 
@@ -74,7 +74,7 @@ For example::
 
 
 Autocomplete settings
----------------------
+=====================
 
 The admin site can use different autocomplete settings to the public site by
 changing the settings ``TAGULOUS_ADMIN_AUTOCOMPLETE_JS`` and
@@ -82,11 +82,11 @@ changing the settings ``TAGULOUS_ADMIN_AUTOCOMPLETE_JS`` and
 being loaded more than once, for example - assuming the version in Django's
 admin site is compatible with the autocomplete library of your choice.
 
-See `Settings`_ for more information
+See :ref:`settings` for more information.
 
 
 Managing the tag model
-----------------------
+======================
 
 You can also register a ModelAdmin to manipulate the tag table directly.
 Tagulous's ``register`` function will do this for you - just pass it the tag
@@ -115,7 +115,7 @@ When overriding options, you should base them on the options in the default
     exclude = ['count']
     actions = ['merge_tags']
 
-The ``TagTreeModelAdmin`` also excludes the ``'path'`` field.
+The ``TagTreeModelAdmin`` also excludes the ``path`` field.
 
 Remember that the relationship between your entries and tags are standard
 ``ForeignKey`` or ``ManyToMany`` relationships, so deletion propagation will

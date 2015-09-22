@@ -1,10 +1,12 @@
-.. _usage:
-
+=============
 Example Usage
 =============
 
-Automatic models
-----------------
+
+.. _example_auto_tagmodel:
+
+Automatic tag models
+====================
 
 This simple example creates a ``SingleTagField`` (a glorified ``ForeignKey``)
 and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
@@ -25,20 +27,23 @@ and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
     
 * This will create two new models at runtime to store the tags,
   ``_Tagulous_Person_title`` and ``_Tagulous_Person_skills``.
-* ``Person.title`` will now act as a ForeignKey to _Tagulous_Person_title
-* ``Person.skills`` will now act as a ManyToManyField to _Tagulous_Person_skills
+* These models will act like normal models, and can be managed in the database
+  using South or Django migrations (or ``syncdb`` before Django 1.7).
+* ``Person.title`` will now act as a ``ForeignKey`` to
+  ``_Tagulous_Person_title``
+* ``Person.skills`` will now act as a ``ManyToManyField`` to
+  ``_Tagulous_Person_skills``
 
-These models will act like normal models, and can be managed in the database
-using standard database migration tools or ``syncdb``.
+Initial tags need to be loaded into the database with the
+:ref:`command_initial_tags` management command.
 
-Initial tags need to be loaded into the database with the 
-`management command <#Management Commands>` ``initial_tags``::
+You can use the fields to assign and query values::
 
     # Person.skills.tag_model == _Tagulous_Person_skills
     
-    # Set tags on an instance
+    # Set tags on an instance with a string
     instance = Person()
-    instance.skills.set_tags('run, "kung fu", jump')
+    instance.skills = 'run, "kung fu", jump'
     
     # They're not committed to the database until you save
     instance.save()
@@ -46,10 +51,10 @@ Initial tags need to be loaded into the database with the
     # Get a list of all tags
     tags = Person.skills.tag_model.objects.all()
     
-    # Set tags in different ways
-    instance.skills = 'run jump'
-    print u'%s' % instance.skills   # prints 'run jump'
+    # Assign a list of tags
     instance.skills = ['jump', 'kung fu']
+    # Tags are readable before saving
+    # str(instance.skills) == 'jump, "kung fu"'
     instance.save()
     
     # Step through the list of instances in the tag model
@@ -64,14 +69,14 @@ Initial tags need to be loaded into the database with the
 .. _example_custom_tag_model:
 
 Custom models
--------------
+=============
 
-Explicitly specify the tag model::
+You can create a tag model manually, and specify it in one or more tag fields::
 
     import tagulous
     class Hobbies(tagulous.models.TagModel):
         class TagMeta:
-            # Options as passed to TagField
+            # Tag options
             initial = "eating, coding, gaming"
             force_lowercase = True
             autocomplete_view = 'myapp.views.hobbies_autocomplete'
@@ -80,15 +85,16 @@ Explicitly specify the tag model::
         name = models.CharField(max_length=255)
         hobbies = tagulous.models.TagField(to=Hobbies)
 
-Options for an explicit tag model must be set in ``TagMeta`` - you cannot pass
-them as arguments in tag fields.
+Options for a custom tag model must be set in :ref:`tagmeta` - you cannot
+pass them as arguments in tag fields.
 
-See the documentation for `Tag Models`_ to see which field names tagulous
-uses internally.
+See :doc:`models/tag_models` to see which field names Tagulous uses internally.
 
+
+.. _example_tag_trees:
 
 Tag Trees
----------
+=========
 
 A tag field can specify ``tree=True`` to use slashes in tag names to denote
 children::
@@ -102,7 +108,7 @@ children::
             tree=True,
         )
 
- This can also be set in the tag model's ``TagMeta`` object::
+This can also be set in the tag model's ``TagMeta`` object::
 
     import tagulous
     class Hobbies(tagulous.models.TagTreeModel):
@@ -131,15 +137,17 @@ You can add tags as normal, and then query using tree relationships::
     #   "food/eating", "food/eating/mexican", "food/cooking"
     food_children = Hobbies.objects.get(name="food").get_descendants()
 
-See the documentation for `Tag Trees`_ to see a full list of available tree
+See :doc:`models/tag_trees` to see a full list of available tree methods and
 properties.
 
 
-Tag URL
--------
+.. _example_tag_url:
 
-A simple example for defining a ``get_absolute_url`` method on a tag model
-without needing to create a custom tag model::
+Tag URL
+=======
+
+You can set the ``get_absolute_url`` tag option to a callable to give tag
+objects absolute URLs without needing to create a custom tag model::
 
     from django.db import models
     from django.core.urlresolvers import reverse
@@ -169,9 +177,13 @@ If you are using a tree, you will want to use the path instead::
         ),
     )
 
+See the :ref:`option_get_absolute_url` option for more details.
+
+
+.. _example_modelform:
 
 ModelForms
-----------
+==========
 
 A ``ModelForm`` with tag fields needs no special treatment::
 
@@ -187,7 +199,8 @@ A ``ModelForm`` with tag fields needs no special treatment::
             model = Person
 
 
-They are used as normal forms, eg with class-based views::
+They are normal forms so can be used in normal ways; for example, with
+class-based views::
 
     from django.views.generic.edit import CreateView
     
@@ -205,9 +218,9 @@ or with view functions::
             return redirect('home')
         return render(request, template_name, {'form': form})
 
-However, note that because a ``TagField`` is based on a ``ManyToManyField``, if
-you save using ``commit=False``, you will need to call ``save_m2m`` to save the
-tags::
+However, because a ``TagField`` is based on a ``ManyToManyField``, if you save
+your form using ``commit=False``, you will need to call ``save_m2m`` to save
+the tags::
 
     class Pet(models.Model):
         owner = models.ForeignKey('auth.User')
@@ -236,9 +249,13 @@ tags::
 As shown above, this only applies to ``TagField`` - a ``SingleTagField`` is
 based on ``ForeignKey``, so will be saved without needing ``save_m2m``.
 
+See :doc:`forms` for how to use tag fields in forms.
+
+
+.. _example_form:
 
 Forms without models
---------------------
+====================
 
 Tagulous form fields take tag options as a single ``TagOptions`` object, rather
 than as separate arguments as a model form does::
@@ -247,11 +264,11 @@ than as separate arguments as a model form does::
     import tagulous
     
     class PersonForm(forms.ModelForm):
-        title = tagulous.models.SingleTagField(
+        title = tagulous.forms.SingleTagField(
             autocomplete_tags=['Mr', 'Mrs', 'Ms']
         )
         name = forms.CharField(max_length=255)
-        skills = tagulous.models.TagField(
+        skills = tagulous.forms.TagField(
             tag_options=tagulous.models.TagOptions(
                 force_lowercase=True,
             ),
@@ -269,41 +286,20 @@ list of strings::
     assert form.cleaned_data['title'] == 'Mx'
     assert form.cleaned_data['skills'] == ['running', 'judo']
 
+See :doc:`forms` for how to use tag fields in forms.
 
-Autocomplete Views
-------------------
 
-To use AJAX to populate your autocomplete using JavaScript, set the tag option
-``autocomplete_view`` in your models to a value for ``reverse()``::
+.. _example_filter_embedded:
 
-    class Person(models.Model):
-        name = models.CharField(max_length=255)
-        skills = tagulous.models.TagField(
-            autocomplete_view='person_skills_autocomplete'
-        )
-
-You can then use the default autocomplete views directly in your urls::
-
-    import tagulous
-    from myapp.models import Person
-    urlpatterns = [
-        url(
-            r'^person/skills/autocomplete/',
-            tagulous.views.autocomplete,
-            {'tag_model': Person},
-            name='person_skills_autocomplete',
-        ),
-    ]
-
-See the documentation for `Views`_ for more details.
-
+Filtering embedded autocomplete
+===============================
 
 Filtering autocomplete to initial tags only
 -------------------------------------------
 
-You may want autocomplete to only list your initial tags, and not those added
-by others; Tagulous makes this easy with the ``autocomplete_initial`` field
-option::
+If it often useful for autocomplete to only list your initial tags, and not
+those added by others; Tagulous makes this easy with the
+``autocomplete_initial`` field option::
 
     class Person(models.Model):
         title = tagulous.models.SingleTagField(
@@ -312,17 +308,19 @@ option::
             autocomplete_initial=True,
         )
 
-This will embed the initial tags in the HTML tag.
+Even if users add new tags, only the initial tags will ever be shown as
+autocomplete options.
 
+See :ref:`option_autocomplete_initial` for more details.
+
+
+.. _example_filter_related:
 
 Filtering autocomplete by related fields
 ----------------------------------------
 
-Using embedded tags
-~~~~~~~~~~~~~~~~~~~
-
-This is if you are embedding the tags into the response; if you are using
-autocomplete views, see `Autocomplete Views`_.
+This example will embed the tags into the HTML of the response; if you are
+using autocomplete views, see :ref:`example_filter_autocomplete_view` instead.
 
 Filter the ``autocomplete_tags`` queryset after the form initialises::
 
@@ -346,21 +344,53 @@ Filter the ``autocomplete_tags`` queryset after the form initialises::
         class Meta:
             model = Pet
 
-Then always call ``PetForm`` with the user as the first argument, for example::
+Then call ``PetForm`` with the user as the first argument, for example::
 
     def add_pet(request):
         form = PetForm(request.user)
         # ...
 
-For more details, see `Filtering tags by related model fields`_ and 
-`Filtering autocomplete tags`_.
+For more details, see :ref:`filter_by_related` and :ref:`filter_autocomplete`.
 
+
+
+.. _example_autocomplete_views:
+
+Autocomplete AJAX Views
+=======================
+
+To use AJAX to populate your autocomplete using JavaScript, set the tag option
+``autocomplete_view`` in your models to a value for ``reverse()``::
+
+    class Person(models.Model):
+        name = models.CharField(max_length=255)
+        skills = tagulous.models.TagField(
+            autocomplete_view='person_skills_autocomplete'
+        )
+
+You can then use the default autocomplete views directly in your urls::
+
+    import tagulous
+    from myapp.models import Person
+    urlpatterns = [
+        url(
+            r'^person/skills/autocomplete/',
+            tagulous.views.autocomplete,
+            {'tag_model': Person},
+            name='person_skills_autocomplete',
+        ),
+    ]
+
+See :doc:`views` for more details.
+
+
+.. _example_filter_autocomplete_view:
 
 Filtering an autocomplete view
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 
-Add a wrapper to filter the queryset before calling the normal ``autocomplete``
-view::
+Add a wrapper function which filters the queryset before it calls the normal
+``autocomplete`` view::
 
     @login_required
     def autocomplete_pet_skills(request):
