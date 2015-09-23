@@ -38,7 +38,7 @@ for details of Tagulous works; in particular:
   `changelog <http://radiac.net/projects/django-tagulous/documentation/upgrading/#changelog>`_.
 * `Contributing <http://radiac.net/projects/django-tagulous/documentation/contributing/>`_
   - for how to contribute to Tagulous, and the planned
-  `roadmap <http://radiac.net/projects/django-tagulous/contributing/#roadmap>`_.
+  `roadmap <http://radiac.net/projects/django-tagulous/documentation/contributing/#roadmap>`_.
 
 
 Quickstart
