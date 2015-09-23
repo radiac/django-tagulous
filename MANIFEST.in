@@ -1,0 +1,7 @@
+include LICENSE tox.ini .travis.yml docs/conf.py docs/Makefile
+recursive-include tagulous/static *
+recursive-include tagulous/templates *
+recursive-include tests *
+recursive-exclude tests *.pyc
+recursive-include docs *.rst
+prune docs/_build

@@ -112,5 +112,6 @@ setup(
         'i18n': ['unidecode'],
     },
     zip_safe=True,
-    packages=find_packages(exclude=('tests*',))
+    packages=find_packages(exclude=('docs', 'tests*',)),
+    include_package_data=True,
 )

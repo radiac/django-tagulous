@@ -26,29 +26,28 @@ If you are replacing an existing tagging solution, follow the
 Instructions
 ============
 
-1. Install ``django-tagulous`` (currently only on github)::
+1. Install ``django-tagulous``::
 
-    pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous
-
-   There are also optional extras - sets of dependencies which you can ask pip
-   to install by adding them to the end of the package name. They are:
-   
-   * ``i18n``, for improved unicode support in slugs (``unidecode``) - see
-     :ref:`model_slug` for more details.
-   * ``dev``, for testing (``tox`` and ``jasmine``) - see :doc:`contributing`
-     for more details.
-   
-   Example of installing with extras::
-   
-    pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous[i18n][dev]
+    pip install django-tagulous
+    
+   or to install with improved unicode support in slugs (installs ``unidecode``
+   - see :ref:`model_slug` for more details)::
+    
+    pip install django-tagulous[i18n]
 
    .. note::
-   
-       The master branch may sometimes contain changes made since the last
-       version was released. These will be listed in the :ref:`changelog`; it will
-       always be safe to use, but versions will be tagged if you only want to
-       follow releases.
+        If you prefer, you can also install the development version direct from
+        github::
+       
+            pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous
+        
+        This may contain changes made since the last version was released -
+        these will be listed in the :ref:`changelog`.
 
+        If you are planning to contribute to Tagulous, you may want to install
+        with the ``dev`` extra requirements - see :doc:`contributing` for more
+        details.
+   
 2. In your site settings, add Tagulous to ``INSTALLED_APPS``::
 
     INSTALLED_APPS = (
@@ -71,6 +70,9 @@ Instructions
 
 You are now ready to add Tagulous fields to your models - see
 :doc:`models/index`, :doc:`forms` and :doc:`usage`.
+
+When you want to upgrade your Tagulous installation in the future, check
+:doc:`upgrading` to see if there are any special actions that you need to take.
 
 
 .. _settings:

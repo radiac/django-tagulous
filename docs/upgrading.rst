@@ -8,7 +8,7 @@ Instructions
 1. Check which version of Tagulous you are upgrading from::
 
     python
-    >>> import yarr
+    >>> import tagulous
     >>> tagulous.__version__
 
 2. Upgrade the Tagulous package::

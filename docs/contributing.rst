@@ -19,9 +19,9 @@ Installing
 The easiest way to work on Tagulous is to fork the project on github, then
 install it to a virtualenv::
 
-    pip install -e git://github.com/radiac/django-tagulous.git#egg=django-tagulous[dev][i18n]
+    pip install -e git://github.com/my_username/django-tagulous.git#egg=django-tagulous[dev][i18n]
 
-(replacing ``radiac`` with your usename).
+(replacing ``my_username`` with your usename).
 
 This will install the development dependencies too, and you'll find the
 tagulous source ready for you to work on in the ``src`` folder of your

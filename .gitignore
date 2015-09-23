@@ -4,3 +4,5 @@ django_tagulous.egg-info
 .coverage*
 htmlcov
 docs/_*
+build
+dist

@@ -5,7 +5,8 @@ Django Tagulous - Fabulous Tags
 A tagging library for Django built on ForeignKey and ManyToManyField, giving
 you all their normal power with a sprinkling of tagging syntactic sugar.
 
-http://radiac.net/projects/django-tagulous/
+* Project site: http://radiac.net/projects/django-tagulous/
+* Source code: https://github.com/radiac/django-tagulous
 
 .. image:: https://travis-ci.org/radiac/django-tagulous.svg?branch=master
     :target: https://travis-ci.org/radiac/django-tagulous
@@ -43,8 +44,8 @@ for details of Tagulous works; in particular:
 Quickstart
 ==========
 
-Install ``django-tagulous``, add ``tagulous`` to ``INSTALLED_APPS``, then start
-adding tag fields to your model::
+Install with ``pip install django-tagulous``, add ``tagulous`` to Django's
+``INSTALLED_APPS``, then start adding tag fields to your model::
 
     from django.db import models
     import tagulous
