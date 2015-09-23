@@ -506,16 +506,63 @@ class TagModel(BaseTagModel):
 ###############################################################################
 
 
+class TagTreeModelQuerySet(TagModelQuerySet):
+    def _clean(self):
+        """
+        Return a clean copy of this class
+        """
+        kwargs = {
+            'model':    self.model,
+            'using':    self._db,
+        }
+        if hasattr(self, '_hints'):
+            kwargs['hints'] = self._hints
+        return self.__class__(**kwargs)
+        
+    def with_ancestors(self):
+        """
+        Add selected tags' ancestors to current queryset
+        """
+        # Build list of all paths of all ancestors (and self)
+        paths = []
+        for path in self.values_list('path', flat=True):
+            parts = utils.split_tree_name(path)
+            paths += [path] + [
+                utils.join_tree_name(parts[:i]) # Join parts up to i (misses last)
+                for i in range(1, len(parts))   # Skip first (empty)
+            ]
+        return self._clean().filter(path__in=set(paths))
+    
+    def with_descendants(self):
+        """
+        Add selected tags' descendants to current queryset
+        """
+        # Build query of all matching paths, and all their sub-paths
+        query = models.Q()
+        for path in self.values_list('path', flat=True):
+            query = query | models.Q(
+                path=path,
+            ) | models.Q(
+                path__startswith='%s/' % path
+            )
+        return self._clean().filter(query)
+        
+
 class TagTreeModelManager(TagModelManager):
+    def get_queryset(self):
+        return TagTreeModelQuerySet(self.model, using=self._db)
+    get_query_set = get_queryset
+    
     def rebuild(self):
-        # Now re-save each instance to update tag fields
+        """
+        Re-save each instance to update tag fields
+        """
         for tag in self.all():
             # Replace slug in case name has changed
             # If it hasn't, it'll just end up re-creating the same one
             tag.slug = None
             tag.save()
     rebuild.alters_data = True
-
 
 
 ###############################################################################
@@ -539,17 +586,8 @@ class BaseTagTreeModel(BaseTagModel):
     
     # Other derivable attributes won't be used in lookups, so don't need to be
     # cached. If there are situations where they are needed for lookups, this
-    # model can be subclassed and the properties replaced by caching fields.
-    def _get_label(self):
-        "The name of the tag, without ancestors"
-        return utils.split_tree_name(self.name)[-1]
-    label = property(_get_label, doc=_get_label.__doc__)
-    
-    def _get_level(self):
-        "The level of the tag in the tree"
-        return len(utils.split_tree_name(self.path))
-    level = property(_get_level, doc=_get_level.__doc__)
-    
+    # model can be subclassed (or better yet, use a reusable mixin) and the
+    # properties replaced by caching fields.
     def _get_descendant_count(self):
         "The sum of the counts of all descendants"
         return self.get_descendants().aggregate(
@@ -598,6 +636,10 @@ class BaseTagTreeModel(BaseTagModel):
             )
         else:
             self.parent = None
+        
+        # Update other cache fields
+        self.label = parts[-1]
+        self.level = len(parts)
         
         # Save - super .save() method will set the path using _get_path()
         super(BaseTagTreeModel, self).save(*args, **kwargs)
@@ -661,6 +703,12 @@ class TagTreeModel(BaseTagTreeModel, TagModel):
         'self', null=True, blank=True, related_name='children', db_index=True,
     )
     path        = models.TextField(unique=True)
+    label       = models.CharField(
+        max_length=255, help_text='The name of the tag, without ancestors',
+    )
+    level       = models.IntegerField(
+        default=1, help_text='The level of the tag in the tree',
+    )
     
     class Meta:
         abstract = True

@@ -73,6 +73,8 @@ class Migration(DataMigration):
             'Meta': {'ordering': "('name',)", 'unique_together': "(('slug', 'parent'),)", 'object_name': '_Tagulous_MigrationTestModel_tags', '_bases': ['tagulous.models.BaseTagTreeModel']},
             'count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'label': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'level': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': u"orm['tagulous_tests_migration._Tagulous_MigrationTestModel_tags']"}),
             'path': ('django.db.models.fields.TextField', [], {'unique': 'True'}),

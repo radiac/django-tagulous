@@ -18,6 +18,18 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(to='tagulous_tests_migration._Tagulous_MigrationTestModel_tags', related_name='children', blank=True, null=True),
             preserve_default=True,
         ),
+        migrations.AddField(
+            model_name='_tagulous_migrationtestmodel_tags',
+            name='label',
+            field=models.CharField(default='-', max_length=255, help_text=b'The name of the tag, without ancestors'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='_tagulous_migrationtestmodel_tags',
+            name='level',
+            field=models.IntegerField(default=1, help_text=b'The level of the tag in the tree'),
+            preserve_default=True,
+        ),
     ] + tagulous.models.migrations.add_unique_field(
         model_name='_tagulous_migrationtestmodel_tags',
         name='path',

@@ -290,6 +290,123 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
         dec = t1.get_descendants()
         self.assertEqual(len(dec), 0)
     
+    
+class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
+    """
+    Test navigation using TagTreeModelQuerySet
+    """
+    manage_models = [
+        test_models.TreeTest,
+    ]
+    
+    def setUpExtra(self):
+        self.tag_field = test_models.TreeTest.tags
+        self.tag_model = test_models.TreeTest.tags.tag_model
+        
+        self.cat = self.tag_model.objects.create(name='Animal/Mammal/Cat')
+        self.dog = self.tag_model.objects.create(name='Animal/Mammal/Dog')
+        self.bee = self.tag_model.objects.create(name='Animal/Insect/Bee')
+        self.vegetable = self.tag_model.objects.create(name='Vegetable')
+        
+    def test_setup(self):
+        "Check test setup is correct"
+        # There should be 6 tags
+        self.assertTagModel(self.tag_model, {
+            'Animal': 0,
+            'Animal/Insect': 0,
+            'Animal/Insect/Bee': 0,
+            'Animal/Mammal': 0,
+            'Animal/Mammal/Cat': 0,
+            'Animal/Mammal/Dog': 0,
+            'Vegetable': 0,
+        })
+    
+    def test_ancestors_l1(self):
+        qs = self.tag_model.objects.filter(level=1)
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Animal', u'Vegetable',
+        ])
+        
+        qs = qs.with_ancestors()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal', u'Vegetable',
+        ])
+
+    def test_ancestors_l2(self):
+        qs = self.tag_model.objects.filter(level=2)
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Insect', u'Mammal',
+        ])
+        
+        qs = qs.with_ancestors()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal',
+            u'Animal/Insect',
+            u'Animal/Mammal',
+        ])
+        
+    def test_ancestors_l3(self):
+        qs = self.tag_model.objects.filter(level=3)
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Bee', u'Cat', u'Dog',
+        ])
+        
+        qs = qs.with_ancestors()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal',
+            u'Animal/Insect',
+            u'Animal/Insect/Bee',
+            u'Animal/Mammal',
+            u'Animal/Mammal/Cat',
+            u'Animal/Mammal/Dog',
+        ])
+    
+    def test_descendants_l1(self):
+        qs = self.tag_model.objects.filter(level=1)
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Animal', u'Vegetable',
+        ])
+        
+        qs = qs.with_descendants()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal',
+            u'Animal/Insect',
+            u'Animal/Insect/Bee',
+            u'Animal/Mammal',
+            u'Animal/Mammal/Cat',
+            u'Animal/Mammal/Dog',
+            u'Vegetable',
+        ])
+    
+    def test_descendants_l2(self):
+        qs = self.tag_model.objects.filter(level=2)
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Insect', u'Mammal',
+        ])
+        
+        qs = qs.with_descendants()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal/Insect',
+            u'Animal/Insect/Bee',
+            u'Animal/Mammal',
+            u'Animal/Mammal/Cat',
+            u'Animal/Mammal/Dog',
+        ])
+    
+    def test_descendants_l3(self):
+        qs = self.tag_model.objects.filter(level=3)
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Bee', u'Cat', u'Dog',
+        ])
+        
+        qs = qs.with_descendants()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal/Insect/Bee',
+            u'Animal/Mammal/Cat',
+            u'Animal/Mammal/Dog',
+        ])
+
+        
 
 class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
     """
