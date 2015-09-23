@@ -122,8 +122,8 @@ and ``tagged`` manager in one.
 Both libraries store tags in a single tag model, which means there can only be
 one set of tags for the site - different models cannot use different sets of
 tags, and a model can only ever have one tag field. In contrast, Tagulous
-assumes the tags for each field should be kept separate, and lets you explicity
-state which fields should share tags.
+assumes the tags for each field should be kept separate, and lets you
+explicitly state which fields should share tags.
 
 They also store the relationship between tags and tagged items using a
 ``GenericForeignKey``, but generic relations tend to be second-class citizens

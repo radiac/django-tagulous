@@ -277,7 +277,7 @@ object, except for ``to``. It also provides two instance methods:
     If with_defaults is true, any missing settings will be taken from the
     defaults in ``constants.OPTION_DEFAULTS``.
 
-``field_items(with_defaults=True)``
+``form_items(with_defaults=True)``
     Get a dict of just the options for a form field.
     
     If with_defaults is true, any missing settings will be taken from the

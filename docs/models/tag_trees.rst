@@ -118,7 +118,7 @@ required:
 2. Create a schema migration to change the model fields. Because paths are not
    allowed to be null, you need to add the ``path`` field as a non-unique
    field, set some unique data on it (such as the object's ``pk``), and then
-   change the field to add back the unique contraint.
+   change the field to add back the unique constraint.
    
    To do this reliably on all database types, see
    `Migrations that add unique fields <https://docs.djangoproject.com/en/1.8/howto/writing-migrations/#migrations-that-add-unique-fields>`_
@@ -128,7 +128,8 @@ required:
    use a tagulous helper to add the unique field:
    
    1. When you create the migration, Django or South will prompt you for a
-      default value for the unique ``path`` field; answer with ``'x'``.
+      default value for the unique ``path`` field; answer with ``'x'`` (do the
+      same for the ``label`` field when asked).
    
       Change the new migration to use the Tagulous helper to add the ``path``
       field.
@@ -137,18 +138,21 @@ required:
       
         import tagulous.models.migrations
         ...
-        operations = [
-            ...
-            # Leave other operations as they are, just replace AddField:
-        ] + tagulous.models.migration.add_unique_field(
-            model_name='_tagulous_mymodel_tags',
-            name='path',
-            field=models.TextField(unique=True),
-            preserve_default=False,
-            set_fn=lambda obj: setattr(obj, 'path', str(obj.pk)),
-        ) + [
-            ...
-        ]
+        
+        class Migration(migrations.Migration):
+            # ... rest of Migration as generated
+            operations = [
+                ...
+                # Leave other operations as they are, just replace AddField:
+            ] + tagulous.models.migration.add_unique_field(
+                model_name='_tagulous_mymodel_tags',
+                name='path',
+                field=models.TextField(unique=True),
+                preserve_default=False,
+                set_fn=lambda obj: setattr(obj, 'path', str(obj.pk)),
+            ) + [
+                ...
+            ]
       
       With South::
 
@@ -187,14 +191,16 @@ required:
    operation::
 
         import tagulous.models.migrations
-        ...
-        operations = [
-            ...
-            tagulous.models.migrations.ChangeModelBases(
-                name='_tagulous_mymodel_tags',
-                bases=(tagulous.models.models.BaseTagTreeModel, models.Model),
-            )
-        ]
+        
+        class Migration(migrations.Migration):
+            # ... rest of Migration as generated
+            operations = [
+                # ... rest of operations
+                tagulous.models.migrations.ChangeModelBases(
+                    name='_tagulous_mymodel_tags',
+                    bases=(tagulous.models.models.BaseTagTreeModel, models.Model),
+                )
+            ]
 
 4. Create another data migration to rebuild the tag model and set the paths.
 

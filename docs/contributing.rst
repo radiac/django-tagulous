@@ -21,7 +21,7 @@ install it to a virtualenv::
 
     pip install -e git://github.com/my_username/django-tagulous.git#egg=django-tagulous[dev][i18n]
 
-(replacing ``my_username`` with your usename).
+(replacing ``my_username`` with your username).
 
 This will install the development dependencies too, and you'll find the
 tagulous source ready for you to work on in the ``src`` folder of your
@@ -69,7 +69,7 @@ Tag model fields start in :source:`tagulous/models/fields.py`; when they are
 added to models, the models call the field's ``contribute_to_class`` method,
 which adds the descriptors in :source:`tagulous/models/descriptors.py` onto
 the model in their place. These descriptors act as getters and setters,
-channelling data to and from the managers in
+channeling data to and from the managers in
 :source:`tagulous/models/managers.py`.
 
 Models which have tag fields are called tagged models. For tags to be fully
@@ -105,16 +105,5 @@ with tag widgets) and tag model admin (for managing tag models).
 Roadmap
 =======
 
-0.10
-* Changes to tag tree model:
-  * Properties moved to cached fields
-  * ``parent`` field changed to ``SingleTagField``
-  * New manager and queryset with tree tools
-* Better admin tools for manipulating tag trees
-* Rename TagOptions.field_items
-* Option to disable space separators
-
 0.11
 * Support python 3
-
-

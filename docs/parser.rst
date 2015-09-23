@@ -89,7 +89,7 @@ In JavaScript
 The JavaScript parser will normally be automatically added to the page by tag
 fields, as one of the scripts in ``TAGULOUS_AUTOCOMPLETE_JS``
 (see :ref:`settings`). However, if for some reason you want to use it without a
-tag field,you can add it to your page manually with::
+tag field, you can add it to your page manually with::
 
     <script src="{% static "tagulous/tagulous.js %}"></script>
 

@@ -16,7 +16,7 @@ and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
     
     class Person(models.Model):
         title = tagulous.models.SingleTagField(
-            label="Your prefered title",
+            label="Your preferred title",
             initial="Mr, Mrs, Ms",
         )
         name = models.CharField(max_length=255)
@@ -303,7 +303,7 @@ those added by others; Tagulous makes this easy with the
 
     class Person(models.Model):
         title = tagulous.models.SingleTagField(
-            label="Your prefered title",
+            label="Your preferred title",
             initial="Mr, Mrs, Ms",
             autocomplete_initial=True,
         )
