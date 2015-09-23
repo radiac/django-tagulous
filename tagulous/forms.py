@@ -62,7 +62,7 @@ class TagWidgetBase(forms.TextInput):
             ))
         
         # Merge default autocomplete settings into tag options
-        tag_options = self.tag_options.field_items(with_defaults=False)
+        tag_options = self.tag_options.form_items(with_defaults=False)
         if self.default_autocomplete_settings is not None:
             autocomplete_settings = self.default_autocomplete_settings.copy()
             autocomplete_settings.update(

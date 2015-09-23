@@ -115,15 +115,15 @@ class TagOptions(object):
         """
         return self._get_items(with_defaults, constants.OPTION_DEFAULTS)
         
-    def field_items(self, with_defaults=True):
+    def form_items(self, with_defaults=True):
         """
-        Get a dict of all options in FIELD_OPTIONS, suitable for rendering
+        Get a dict of all options in FORM_OPTIONS, suitable for rendering
         into the data-tag-options attribute of the field HTML.
         
         If with_defaults is True, any missing options will be set to their
         defaults; if False, missing options will be omitted.
         """
-        return self._get_items(with_defaults, constants.FIELD_OPTIONS)
+        return self._get_items(with_defaults, constants.FORM_OPTIONS)
         
     def __add__(self, options):
         """

@@ -23,8 +23,8 @@ OPTION_DEFAULTS = {
     'verbose_name_plural':      None,
 }
 
-# List of model TagField options which are relevant to client-side code
-FIELD_OPTIONS = [
+# List of model TagField options which are relevant to form fields
+FORM_OPTIONS = [
     'case_sensitive',
     'force_lowercase',
     'max_count',
