@@ -2,6 +2,9 @@
 Upgrading
 =========
 
+For an overview of what has changed between versions, see the :ref:`changelog`.
+
+
 Instructions
 ============
 
@@ -156,9 +159,12 @@ Upgrading from 0.7.0 or earlier
 Changelog
 =========
 
-Releases which require special steps when upgrading to them will be marked.
+Releases which require special steps when upgrading to them will be marked with
+links to the instructions above.
+
 Changes for upcoming releases will be listed without a release date - these
-are available by installing the master branch from github.
+are available by installing the master branch from github (see
+:ref:`installation_instructions` for details).
 
 
 0.10.0, in development
@@ -169,8 +175,14 @@ Feature:
 * Add fields ``level`` and ``label`` to ``TagTreeModel`` (were properties)
 * Add ``TagTreeModel.get_siblings()``
 * Add ``TagTreeQuerySet`` methods ``with_ancestors()``, ``with_descendants()``,
-  and ``.with_siblings()``
+  and ``with_siblings()``
 * Tagulous available from pypi as ``django-tagulous``
+
+Internal:
+* ``TagTreeModel.tag_options.tree`` will now always be ``True``
+
+Bugfix:
+* ``TagRelatedManager`` instances can be compared to each other
 
 
 0.9.0, 2015-09-14

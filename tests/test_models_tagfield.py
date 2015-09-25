@@ -414,6 +414,14 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertEqual(t1.tags, 'blue, red')
         self.assertEqual(t1.tags, 'red, blue')
         self.assertEqual(t1.tags, ['red', 'blue'])
+        
+        # Test queryset
+        tags = t1.tags.tag_model.objects.all()
+        self.assertEqual(t1.tags, tags)
+        
+        # Test another TagRelatedManager
+        t2 = self.create(test_models.TagFieldModel, name="2", tags='blue, red')
+        self.assertEqual(t1.tags, t2.tags)
     
     def test_ne(self):
         "Check __ne__ correctly determines falsity"
@@ -422,7 +430,16 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertNotEqual(t1.tags, 'blue')
         self.assertNotEqual(t1.tags, ['red', 'green'])
         self.assertNotEqual(t1.tags, 'green')
-    
+        
+        # Test another TagRelatedManager
+        t2 = self.create(test_models.TagFieldModel, name="2", tags='red, green')
+        self.assertNotEqual(t1.tags, t2.tags)
+        
+        # Test queryset
+        tags = t1.tags.tag_model.objects.all()
+        self.assertNotEqual(t1.tags, tags)
+        
+        
     def test_multiple_instances(self):
         "Check multiple tagged instances work without interference"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')

@@ -266,6 +266,8 @@ class BaseTagRelatedManager(object):
             lower = True
             
         # Prep other argument we're comparing against
+        if isinstance(other, BaseTagRelatedManager):
+            other = other.tags
         if isinstance(other, basestring):
             other_str = unicode(other)
             
