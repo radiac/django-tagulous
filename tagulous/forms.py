@@ -210,7 +210,10 @@ class BaseTagField(forms.CharField):
             return value
         
         try:
-            return parse_tags(value, self.tag_options.max_count)
+            return parse_tags(
+                value, self.tag_options.max_count,
+                self.tag_options.space_delimiter,
+            )
         except ValueError, e:
             raise forms.ValidationError(_('%s' % e))
         

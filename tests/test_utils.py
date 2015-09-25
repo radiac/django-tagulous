@@ -196,6 +196,24 @@ class UtilsParseTagsTest(TestCase):
         e = cm.exception
         self.assertEqual(str(e), 'This field can only have 2 arguments')
 
+    def test_spaces_false_commas(self):
+        tags = tag_utils.parse_tags("adam,brian,chris", space_delimiter=False)
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian")
+        self.assertEqual(tags[2], "chris")
+    
+    def test_spaces_false_spaces(self):
+        tags = tag_utils.parse_tags("adam brian chris", space_delimiter=False)
+        self.assertEqual(len(tags), 1)
+        self.assertEqual(tags[0], "adam brian chris")
+        
+    def test_spaces_false_mixed(self):
+        tags = tag_utils.parse_tags("adam,brian chris", space_delimiter=False)
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian chris")
+
 
 ###############################################################################
 ####### utils.render_tags

@@ -19,10 +19,14 @@ var Tagulous = (function () {
     }
         
     
-    function parseTags(str, withRaw) {
+    function parseTags(str, spaceDelimiter, withRaw) {
         /** Parse a tag string
         
             Returns a sorted list of unique tags
+            
+            If spaceDelimiter is false, only commas will be used as the tag
+            name delimiter. If it is unset, it will default to true; when true,
+            spaces are used as well as commas.
             
             If withRaw == true, returns a tuple of two lists:
                 tags    List of tags, unsorted and not unique
@@ -55,6 +59,11 @@ var Tagulous = (function () {
             strLast = strLen - 1,
             index, inQuote, chr, tagLen, leftCount, rightCount
         ;
+        
+        // Disable spaces
+        if (spaceDelimiter === false) {
+            delimiter = COMMA;
+        }
         
         // Loop through chars
         for (index=0; index<strLen; index++) {

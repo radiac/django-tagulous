@@ -143,9 +143,39 @@ describe("Tagulous.parseTags", function () {
     // Limit tests don't apply to javascript port
 });
 
-describe("Tagulous.parseTags withRaw=true", function () {
+
+describe("Tagulous.parseTags spaceDelimiter=false", function () {
+    var spaceDelimiter = false;
     it("parses tags with commas", function () {
-        var results = Tagulous.parseTags('chris,adam,brian', true),
+        var tags = Tagulous.parseTags('adam,brian,chris', spaceDelimiter);
+        expect(tags.length).toBe(3);
+        expect(tags[0]).toBe('adam');
+        expect(tags[1]).toBe('brian');
+        expect(tags[2]).toBe('chris');
+    });
+    
+    it("parses tags with spaces", function () {
+        var tags = Tagulous.parseTags('adam brian chris', spaceDelimiter);
+        expect(tags.length).toBe(1);
+        expect(tags[0]).toBe('adam brian chris');
+    });
+    
+    it("parses of tags with mix of commas and spaces", function () {
+        var tags = Tagulous.parseTags('adam,brian chris', spaceDelimiter);
+        expect(tags.length).toBe(2);
+        expect(tags[0]).toBe('adam');
+        expect(tags[1]).toBe('brian chris');
+    });
+});
+
+
+describe("Tagulous.parseTags withRaw=true", function () {
+    var spaceDelimiter = null,
+        withRaw = true
+    ;
+    
+    it("parses tags with commas", function () {
+        var results = Tagulous.parseTags('chris,adam,brian', spaceDelimiter, withRaw),
             tags = results[0],
             raw = results[1]
         ;
@@ -160,7 +190,7 @@ describe("Tagulous.parseTags withRaw=true", function () {
         expect(raw[2]).toBe(null);
     });
     it("parses tags with quotes which don't close", function () {
-        var results = Tagulous.parseTags('"adam,one","brian,two","chris, dave', true),
+        var results = Tagulous.parseTags('"adam,one","brian,two","chris, dave', spaceDelimiter, withRaw),
             tags = results[0],
             raw = results[1]
         ;

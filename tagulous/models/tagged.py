@@ -137,6 +137,7 @@ class TaggedQuerySet(models.query.QuerySet):
         # but exclude won't work that way; has to be done with a subquery
         for field_name, val in tag_fields.items():
             val, lookup = val
+            tag_options = field_lookup[field_name].tag_options
             
             # Only perform custom lookup if value is a string
             if not isinstance(val, basestring):
@@ -146,7 +147,9 @@ class TaggedQuerySet(models.query.QuerySet):
                 continue
             
             # Parse the tag string
-            tags = utils.parse_tags(val)
+            tags = utils.parse_tags(
+                val, space_delimiter=tag_options.space_delimiter,
+            )
             
             # Prep the subquery
             subqs = qs
@@ -163,7 +166,7 @@ class TaggedQuerySet(models.query.QuerySet):
             
             # Prep the field name
             query_field_name = field_name + '__name'
-            if not field_lookup[field_name].tag_options.case_sensitive:
+            if not tag_options.case_sensitive:
                 query_field_name += '__iexact'
             
             # Now chain the filters for each tag

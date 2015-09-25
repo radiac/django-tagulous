@@ -276,7 +276,9 @@ class BaseTagRelatedManager(object):
                 other_str = other_str.lower()
             
             # Parse other_str into list of tags
-            other_tags = parse_tags(other_str)
+            other_tags = parse_tags(
+                other_str, space_delimiter=self.tag_options.space_delimiter,
+            )
             
         else:
             # Assume it's an iterable
@@ -340,7 +342,9 @@ class BaseTagRelatedManager(object):
         Sets the tags for this instance, given a tag edit string
         """
         # Get all tag names
-        tag_names = parse_tags(tag_string)
+        tag_names = parse_tags(
+            tag_string, space_delimiter=self.tag_options.space_delimiter,
+        )
         
         # Pass on to set_tag_list
         return self.set_tag_list(tag_names)

@@ -19,7 +19,9 @@
         if (this.select || !this.opts.quotedTags) {
             return oldGetVal.call(this);
         }
-        return Tagulous.parseTags(this.opts.element.val());
+        return Tagulous.parseTags(
+            this.opts.element.val(), this.opts.spaceDelimiter
+        );
     };
     MultiSelect2.prototype.setVal = function (val) {
         /** Join tags into a string */
@@ -39,16 +41,19 @@
         var val = element.val();
         callback({id: val, text: val});
     }
-    function initSelectionMulti(element, callback) {
-        /** Initialises selection for fields with multiple tags */
-        var tags = Tagulous.parseTags(element.val()),
-            data = [],
-            i
-        ;
-        for (i=0; i<tags.length; i++) {
-            data.push({id: tags[i], text: tags[i]});
-        }
-        callback(data);
+    function initSelectionMulti_factory(opts) {
+        /** initSelection has no way to get options, so need to use closure */
+        return function (element, callback) {
+            /** Initialises selection for fields with multiple tags */
+            var tags = Tagulous.parseTags(element.val(), opts.spaceDelimiter),
+                data = [],
+                i
+            ;
+            for (i=0; i<tags.length; i++) {
+                data.push({id: tags[i], text: tags[i]});
+            }
+            callback(data);
+        };
     }
     
     function tokenizer(input, selection, selectCallback, opts) {
@@ -63,7 +68,7 @@
         if (!opts.createSearchChoice) return undefined;
         
         // Parse with raw
-        var parsed = Tagulous.parseTags(input, true),
+        var parsed = Tagulous.parseTags(input, opts.spaceDelimiter, true),
             tags = parsed[0],
             raws = parsed[1],
             lastRaw = raws.slice(-1)[0],
@@ -109,7 +114,7 @@
         */
         // Thanks to https://github.com/select2/select2/issues/521
         if (this.opts.multiple && this.opts.quotedTags) {
-            var tags = Tagulous.parseTags(term);
+            var tags = Tagulous.parseTags(term, this.opts.spaceDelimiter);
             if (tags.length == 1) {
                 term = tags[0];
             }
@@ -160,10 +165,7 @@
         
         // Default constructor args, which can be overridden
         args = {
-            width: 'resolve',
-            quotedTags: true,
-            allowClear: !options.required,
-            maximumSelectionSize: isSingle ? 1 : options.max_count || 0
+            width: 'resolve'
         };
         
         // Merge in any overrides
@@ -174,16 +176,23 @@
         
         // Merge in common compulsory settings
         $.extend(args, {
-            multiple: !isSingle,
+            // Our overriden methods
             tokenizer: tokenizer,
-            createSearchChoice: createSearchChoice
+            createSearchChoice: createSearchChoice,
+            
+            // Things defined by field/tag options, which can't be overridden
+            multiple: !isSingle,
+            quotedTags: true,
+            allowClear: !options.required,
+            maximumSelectionSize: isSingle ? 1 : options.max_count || 0,
+            spaceDelimiter: options.space_delimiter !== false
         });
         
         // Add in any specific to the field type
         if (isSingle) {
             args['initSelection'] = initSelectionSingle;
         } else {
-            args['initSelection'] = initSelectionMulti;
+            args['initSelection'] = initSelectionMulti_factory(args);
         }
         if (url) {
             args['ajax'] = {

@@ -99,6 +99,10 @@ Upgrading from 0.9.0
    ``constants.FORM_OPTIONS``. These were internal, so should not affect your
    code.
 
+4. The tag parsers now accept a new argument to control whether space is used
+   as a delimiter or not. These are internal, so should not affect your code,
+   unless you have written a custom adaptor.
+
 
 .. _upgrade_0-8-0:
 
@@ -172,14 +176,16 @@ are available by installing the master branch from github (see
 See :ref:`upgrade instructions <upgrade_0-9-0>`
 
 Feature:
-* Add fields ``level`` and ``label`` to ``TagTreeModel`` (were properties)
+* Add fields ``level`` and ``label`` to :ref:`tagtreemodel` (were properties)
 * Add ``TagTreeModel.get_siblings()``
-* Add ``TagTreeQuerySet`` methods ``with_ancestors()``, ``with_descendants()``,
-  and ``with_siblings()``
+* Add :ref:`tagtreemodel_queryset`` methods ``with_ancestors()``,
+  ``with_descendants()`` and ``with_siblings()``
+* Add :ref:`option_space_delimiter` tag option to disable space as a delimiter
 * Tagulous available from pypi as ``django-tagulous``
 
 Internal:
 * ``TagTreeModel.tag_options.tree`` will now always be ``True``
+* JavaScript ``parseTags`` arguments have changed
 
 Bugfix:
 * ``TagRelatedManager`` instances can be compared to each other

@@ -37,6 +37,9 @@ path, which is split on the ``/`` character into a path of tag nodes; the tag
 label is the final part of the path. The parser ignores a single slash if it
 is escaped with another, ie ``slash//escaped``.
 
+If the tag field has :ref:`option_space_delimiter` set to ``False`` then only
+commas will be used to separate tags.
+
 The parser is implemented in both Python and JavaScript for consistency.
 
 For more examples and how the parser treats odd edge cases, see the examples
@@ -60,15 +63,21 @@ In Python
 
 The python parser can be found in ``tagulous.utils``:
 
-``tag_names = tagulous.utils.parse_tags(tag_string, max_count=0)``
+``tag_names = tagulous.utils.parse_tags(tag_string, max_count=0, space_delimiter=True)``
     Given a tag string, returns a sorted list of unique tag names.
     
     The parser does not attempt to enforce :ref:`option_force_lowercase` or
     :ref:`option_case_sensitive` options - these should be applied before and
     after parsing, respectively.
     
-    If ``max_count`` is not ``0`` and more tags are returned than specified,
-    the parser will raise a ``ValueError``.
+    The optional ``max_count`` argument defaults to ``0``, which means no
+    limit. For any other value, if more tags are returned than specified, the
+    parser will raise a ``ValueError``.
+    
+    The optional ``space_delimiter`` argument defaults to ``True``, to allow
+    either spaces or commas to be used as deliminaters to separate the tags,
+    with priority for commas. If ``False``, only commas will be used as the
+    delimiter.
 
 ``tag_string = tagulous.utils.render_tags(tag_names)``
     Given a list of tags or tag names, generate a tag string.
@@ -95,8 +104,11 @@ tag field, you can add it to your page manually with::
 
 The parser adds the global variable ``Tagulous``:
 
-``tagNames = Tagulous.parseTags(tagString, withRaw=false)``
+``tagNames = Tagulous.parseTags(tagString, spaceDelimiter=true, withRaw=false)``
     Given a tag string, returns a sorted list of unique tag names
+    
+    If ``spaceDelimiter=false``, only commas will be used to separate tag
+    names. If it is unset or true, spaces are used as well as commas.
     
     The option ``withRaw=true`` is intended for use when parsing live input;
     the function will instead return ``[tags, raws]``,  where ``tags`` is a
@@ -104,7 +116,7 @@ The parser adds the global variable ``Tagulous``:
     raw strings which were left after the corresponding entry in ``tags`` was
     parsed. For example::
     
-        var result = Tagulous.parseTags('one,two,three', true),
+        var result = Tagulous.parseTags('one,two,three', true, true),
             tags = result[0],
             raws = parsed[1];
         tags === ['one', 'two', three'];

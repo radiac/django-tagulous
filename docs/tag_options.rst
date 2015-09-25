@@ -45,6 +45,10 @@ You should not find that you need to update ``initial`` regularly; if you
 do, it would be better to use the Tagulous :doc:`admin tools <admin>` to
 add tags to the model directly.
 
+.. note::
+    If provided as a tag string, it will be parsed using spaces and commas,
+    regardless of the :ref:`option_space_delimiter` option.
+
 Default: ``''``
 
 
@@ -112,6 +116,18 @@ Set to ``0`` to have no limit.
 If you are setting it to ``1``, consider using a ``SingleTagField`` instead.
 
 Default: ``0``
+
+
+.. _option_space_delimiter:
+
+``space_delimiter``
+-------------------
+``TagField`` only - this is not supported by ``SingleTagField``.
+
+If ``True``, both commas and spaces can be used to separate tags. If ``False``,
+only commas can be used to separate tags.
+
+Default: ``True``
 
 
 .. _option_tree:

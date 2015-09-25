@@ -18,7 +18,7 @@ from tagulous.constants import COMMA, SPACE, QUOTE, DOUBLE_QUOTE, TREE
 ####### Tag name parse and render
 ###############################################################################
 
-def parse_tags(tag_string, max_count=0):
+def parse_tags(tag_string, max_count=0, space_delimiter=True):
     """
     Tag parser
     
@@ -31,6 +31,8 @@ def parse_tags(tag_string, max_count=0):
         Quotes can be escaped by double quotes, ie ""
         Commas outside quotes take precedence over spaces as delimiter
         Unmatched quotes will be left in the string
+    
+    If space_delimiter is False, space will never be used as a delimiter.
     
     Tree tags can be further split into their parts with split_tree_name
     """
@@ -47,13 +49,19 @@ def parse_tags(tag_string, max_count=0):
     in_quote = None
     chars = False
     
-    # Bypass main parser for efficiency if no quotes - simple split and strip
+    # Disable spaces
+    if not space_delimiter:
+        delimiter = COMMA
+    
+    # Bypass main parser for efficiency if no quotes
     if QUOTE not in tag_string:
+        # No quotes - simple split and strip
+        
         # Normally split on commas
         delimiter = COMMA
         
         # But if no commas, split on spaces
-        if COMMA not in tag_string:
+        if COMMA not in tag_string and space_delimiter:
             delimiter = SPACE
         
         # Split and strip tags
