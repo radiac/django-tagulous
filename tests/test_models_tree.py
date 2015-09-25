@@ -36,6 +36,10 @@ class TagTreeTestManager(TagTestManager):
             self.assertEqual(tag.level, level)
             
 
+###############################################################################
+####### TagTreeModel basics
+###############################################################################
+
 class TagTreeModelTest(TagTreeTestManager, TestCase):
     """
     Test TagTreeModel basics - that the models are created correctly, and tag
@@ -209,9 +213,13 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         
 
 
+###############################################################################
+####### TagTreeModel tree navigation methods
+###############################################################################
+
 class TagTreeModelNavTest(TagTreeTestManager, TestCase):
     """
-    Test navigation through TagTreeModel - get_ancestors and get_descendants
+    Test navigation through TagTreeModel - get_ancestors etc
     """
     manage_models = [
         test_models.TreeTest,
@@ -290,7 +298,30 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
         dec = t1.get_descendants()
         self.assertEqual(len(dec), 0)
     
+    def test_siblings_l1(self):
+        "Find level 1 siblings"
+        # Add another level 1 tag to find
+        l1_2 = self.tag_model.objects.create(name='Vegetable')
+        
+        t1 = self.tag_model.objects.get(name='Animal')
+        sibs = t1.get_siblings()
+        self.assertEqual(len(sibs), 2)
+        self.assertTreeTag(sibs[0], name='Animal', level=1)
+        self.assertTreeTag(sibs[1], name='Vegetable', level=1)
+        
+    def test_siblings_l2(self):
+        "Find level 2 siblings"
+        t1 = self.tag_model.objects.get(name='Animal/Insect')
+        sibs = t1.get_siblings()
+        self.assertEqual(len(sibs), 2)
+        self.assertTreeTag(sibs[0], name='Animal/Insect', level=2)
+        self.assertTreeTag(sibs[1], name='Animal/Mammal', level=2)
     
+    
+###############################################################################
+####### TagTreeQuerySet
+###############################################################################
+
 class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
     """
     Test navigation using TagTreeModelQuerySet
@@ -405,8 +436,53 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
             u'Animal/Mammal/Cat',
             u'Animal/Mammal/Dog',
         ])
-
+    
+    def test_siblings_l1(self):
+        qs = self.tag_model.objects.filter(name='Animal')
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Animal',
+        ])
         
+        qs = qs.with_siblings()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal', u'Vegetable',
+        ])
+
+    def test_siblings_l2(self):
+        # Throw in something else to ensure l2 stays within subtree
+        f1 = self.tag_model.objects.create(name='Vegetable/Horrible')
+        
+        qs = self.tag_model.objects.filter(name='Animal/Insect')
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Insect',
+        ])
+        
+        qs = qs.with_siblings()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal/Insect',
+            u'Animal/Mammal',
+        ])
+        
+    def test_siblings_l3(self):
+        # Throw in something else to ensure l3 stays within subtree
+        f1 = self.tag_model.objects.create(name='Vegetable/Horrible/Mushroom')
+        
+        qs = self.tag_model.objects.filter(name='Animal/Mammal/Cat')
+        self.assertSequenceEqual(qs.values_list('label', flat=True), [
+            u'Cat',
+        ])
+        
+        qs = qs.with_siblings()
+        self.assertSequenceEqual(qs.values_list('name', flat=True), [
+            u'Animal/Mammal/Cat',
+            u'Animal/Mammal/Dog',
+        ])
+        
+
+
+###############################################################################
+####### TagTreeModel access via fields
+###############################################################################
 
 class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
     """

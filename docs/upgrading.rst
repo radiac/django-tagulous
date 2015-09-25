@@ -166,7 +166,10 @@ are available by installing the master branch from github.
 See :ref:`upgrade instructions <upgrade_0-9-0>`
 
 Feature:
-* Add fields ``level`` and ``label`` to ``TagTreeModel``
+* Add fields ``level`` and ``label`` to ``TagTreeModel`` (were properties)
+* Add ``TagTreeModel.get_siblings()``
+* Add ``TagTreeQuerySet`` methods ``with_ancestors()``, ``with_descendants()``,
+  and ``.with_siblings()``
 * Tagulous available from pypi as ``django-tagulous``
 
 

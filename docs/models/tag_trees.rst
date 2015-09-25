@@ -30,6 +30,10 @@ there is no difference to normal tags in how they are set or compared.
 A ``TagTreeModel`` subclasses :ref:`tagmodel`; it inherits all the normal
 fields and methods, and adds the following:
 
+.. note::
+    Field values are computed and set automatically in the ``save()`` method -
+    so don't try to use them until the tag has been saved.
+
 
 ``parent``
 ~~~~~~~~~~
@@ -44,7 +48,7 @@ The reverse relation manager for ``parent``, eg ``mytag.children.all()``.
 
 ``label``
 ~~~~~~~~~
-A read-only property which returns the name of the tag without its ancestors.
+A ``CharField`` containing the name of the tag without its ancestors.
     
 Example: a tag named ``Animal/Mammal/Cat`` has the label ``Cat``
 
@@ -67,8 +71,8 @@ Example: a tag named ``Animal/Mammal/Cat`` has the path ``animal/mammal/cat``
 
 ``level``
 ~~~~~~~~~
-A read-only property which returns the level of this tag in the tree (starting
-from 1).
+An ``IntegerField`` containing the level of this tag in the tree (starting from
+1).
 
 
 ``get_ancestors()``
@@ -78,6 +82,54 @@ Returns a queryset of all ancestors, ordered by level.
 ``get_descendants()``
 ~~~~~~~~~~~~~~~~~~~~~
 Returns a queryset of all descendants, ordered by level.
+
+``get_siblings()``
+~~~~~~~~~~~~~~~~~~~~~
+Returns a queryset of all siblings, ordered by name.
+
+This includes the node itself; if you don't want it in the results, exclude it
+afterwards, eg::
+
+    siblings = node.get_siblings().exclude(pk=node.pk)
+
+
+.. _tagtreemodel_manager:
+
+``tagulous.models.TagTreeModelManager``
+---------------------------------------
+
+A ``TagTreeModelManager`` is the standard manager for a :ref:`tagtreemodel`; it
+is a subclass of :ref:`tagmodel_manager` so provides those methods, but its
+queries return a :ref:`tagtreemodel_queryset` instead.
+
+
+.. _tagtreemodel_queryset:
+
+``tagulous.models.TagTreeModelQuerySet``
+----------------------------------------
+
+This is returned by the :ref:`tagtreemodel_manager`; it is a subclass of
+:ref:`tagmodel_queryset` so provides those methods, but also:
+
+``with_ancestors()``
+~~~~~~~~~~~~~~~~~~~~
+
+Returns a new queryset containing the nodes from the calling queryset, plus
+their ancestor nodes.
+
+``with_descendants()``
+~~~~~~~~~~~~~~~~~~~~~~
+
+Returns a new queryset containing the nodes from the calling queryset, plus
+their descendant nodes.
+
+``with_siblings()``
+~~~~~~~~~~~~~~~~~~~
+
+Returns a new queryset containing the nodes from the calling queryset, plus
+theirm sibling nodes.
+
+
 
 
 .. _converting_tag_trees:

@@ -546,6 +546,23 @@ class TagTreeModelQuerySet(TagModelQuerySet):
                 path__startswith='%s/' % path
             )
         return self._clean().filter(query)
+    
+    def with_siblings(self):
+        """
+        Add selected tags' siblings to current queryset
+        """
+        # Get all unique parent pks, except None
+        parent_ids = set(self.values_list('parent_id', flat=True))
+        has_none = None in parent_ids
+        if has_none:
+            parent_ids.remove(None)
+        
+        # If None is there, we need to test with isnull
+        query = models.Q(parent_id__in=list(parent_ids))
+        if has_none:
+            query = query | models.Q(parent_id__isnull=True)
+        
+        return self._clean().filter(query)
         
 
 class TagTreeModelManager(TagModelManager):
@@ -688,6 +705,18 @@ class BaseTagTreeModel(BaseTagModel):
         # Look up by path, already ordered by name for deepest last
         cls = self.__class__
         return cls.objects.filter(path__startswith='%s/' % self.path)
+        
+    def get_siblings(self):
+        """
+        Get a queryset of siblings of this tree node, including this node.
+        
+        If you don't want this node in the results, exclude it afterwards, eg:
+        
+            node.get_siblings().exclude(pk=node.pk)
+        """
+        if self.parent:
+            return self.parent.children.all()
+        return self.__class__.objects.filter(level=1)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
