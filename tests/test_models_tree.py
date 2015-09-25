@@ -214,6 +214,38 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
 
 
 ###############################################################################
+####### Custom TagTreeModel basics
+###############################################################################
+
+class TagTreeModelCustomTest(TagTreeTestManager, TestCase):
+    """
+    Test TagTreeModel basics when using a custom model
+    """
+    manage_models = [
+        test_models.CustomTreeTest,
+    ]
+    
+    def setUpExtra(self):
+        self.test_model = test_models.CustomTreeTest
+        self.tag_model = test_models.CustomTagTree
+        self.singletag_field = test_models.CustomTreeTest.singletag
+        self.tag_field = test_models.CustomTreeTest.tags
+    
+    def test_tag_model(self):
+        "Check tag tree model is used as a base"
+        self.assertTrue(issubclass(
+            self.tag_model, tag_models.TagTreeModel
+        ))
+        
+    def test_tree_option(self):
+        "Check tag tree model forces tree=True"
+        self.assertTrue(self.tag_model.tag_options.tree)
+        self.assertTrue(self.singletag_field.tag_options.tree)
+        self.assertTrue(self.tag_field.tag_options.tree)
+        
+
+
+###############################################################################
 ####### TagTreeModel tree navigation methods
 ###############################################################################
 

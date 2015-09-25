@@ -587,6 +587,21 @@ class TagTreeModelManager(TagModelManager):
 ###############################################################################
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#       Metaclass for tag tree models
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+class TagTreeModelBase(TagModelBase):
+    def __new__(cls, name, bases, attrs):
+        # Set up as normal
+        new_cls = super(TagTreeModelBase, cls).__new__(cls, name, bases, attrs)
+        
+        # Force tree tag_options to True
+        new_cls.tag_options.tree = True
+        
+        return new_cls
+
+        
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Empty abstract model
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -596,6 +611,7 @@ class BaseTagTreeModel(BaseTagModel):
     
     This is used when dynamically building models, eg by South in migrations
     """
+    __metaclass__ = TagTreeModelBase
     objects = TagTreeModelManager()
     
     class Meta:

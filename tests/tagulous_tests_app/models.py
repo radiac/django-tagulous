@@ -362,3 +362,21 @@ class TreeTest(models.Model):
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(tree=True, blank=True)
     tags = tagulous.models.TagField(tree=True, blank=True)
+
+class CustomTagTree(tagulous.models.TagTreeModel):
+    """
+    Custom tag tree model
+    """
+    pass
+
+class CustomTreeTest(models.Model):
+    """
+    For testing custom tag trees
+    """
+    name = models.CharField(max_length=10)
+    singletag = tagulous.models.SingleTagField(
+        'CustomTagTree', blank=True, related_name='custom_singletag',
+    )
+    tags = tagulous.models.TagField(
+        'CustomTagTree', blank=True, related_name='custom_tags',
+    )
