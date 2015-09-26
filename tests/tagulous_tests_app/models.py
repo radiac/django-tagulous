@@ -286,7 +286,7 @@ class NonTagRefTest(models.Model):
     name = models.CharField(max_length=10)
     fk = models.ForeignKey(
         MixedTest.singletag.tag_model, related_name='non_tag_fk',
-        blank=True,
+        blank=True, on_delete=models.CASCADE,
     )
     mm = models.ManyToManyField(
         MixedTest.tags.tag_model, related_name='non_tag_mm',
@@ -303,7 +303,7 @@ class MixedNonTagRefTest(models.Model):
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(MixedNonTagModel, blank=True, related_name='singletags')
     tags = tagulous.models.TagField(MixedNonTagModel, blank=True, related_name='tags')
-    fk = models.ForeignKey(MixedNonTagModel, blank=True, null=True, related_name='fk')
+    fk = models.ForeignKey(MixedNonTagModel, blank=True, null=True, related_name='fk', on_delete=models.CASCADE)
     mm = models.ManyToManyField(MixedNonTagModel, blank=True, related_name='mm')
 
 
@@ -313,7 +313,7 @@ class MixedOrderTest(models.Model):
     M2M and non-M2M fields
     """
     char1   = models.CharField(blank=True, max_length=10)
-    fk1     = models.ForeignKey(MixedTest, related_name="order_fk1")
+    fk1     = models.ForeignKey(MixedTest, related_name="order_fk1", on_delete=models.CASCADE)
     char2   = models.CharField(blank=True, max_length=10)
     single1 = tagulous.models.SingleTagField()
     char3   = models.CharField(blank=True, max_length=10)
@@ -323,7 +323,7 @@ class MixedOrderTest(models.Model):
     char5   = models.CharField(blank=True, max_length=10)
     m2m2    = models.ManyToManyField(MixedTest, related_name="order_m2m2")
     char6   = models.CharField(blank=True, max_length=10)
-    fk2     = models.ForeignKey(MixedTest, related_name="order_fk2")
+    fk2     = models.ForeignKey(MixedTest, related_name="order_fk2", on_delete=models.CASCADE)
     char7   = models.CharField(blank=True, max_length=10)
 
 

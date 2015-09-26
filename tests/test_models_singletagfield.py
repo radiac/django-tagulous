@@ -11,7 +11,6 @@ Modules tested:
 from __future__ import absolute_import
 from tests.lib import *
 
-
 class ModelSingleTagFieldTest(TagTestManager, TestCase):
     """
     Test model SingleTagField
@@ -41,7 +40,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t1 = self.create(test_models.SingleTagFieldModel, name="Test")
         self.assertInstanceEqual(t1, name="Test", title=None)
         self.assertTagModel(self.tag_model, {})
-    
+
     def test_tag_assign_in_constructor(self):
         "Check a tag string can be set in the constructor"
         t1 = test_models.SingleTagFieldModel(name="Test", title='Mr')
@@ -348,7 +347,22 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t2 = test_models.SingleTagFieldModel.objects.create(name='Test 2', title='Mrs')
         self.assertIsInstance(t1.title, self.tag_model)
         self.assertNotEqual(t1.title, t2.title)
-            
+     
+
+###############################################################################
+#######  Test invalid fields
+###############################################################################
+
+class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
+    """
+    Test invalid model SingleTagField
+    
+    Use a TransactionTestCase so the apps will be reset
+    """
+    manage_models = [
+        test_models.SingleTagFieldModel,
+    ]
+    
     def test_invalid_to_model(self):
         "Check that the to model has to be a TagModel subclass"
         with self.assertRaises(ValueError) as cm:
@@ -597,7 +611,7 @@ class ModelSingleTagFieldSelfTest(TagTestManager, TransactionTestCase):
             'Test 1': 0,
         })
         self.assertInstanceEqual(t1, name='Test 1', alternate='mr')
-        
+
 
 ###############################################################################
 ####### Test SingleTagField options

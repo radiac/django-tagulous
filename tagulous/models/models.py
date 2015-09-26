@@ -745,7 +745,8 @@ class TagTreeModel(BaseTagTreeModel, TagModel):
     """
     # These fields are all generated automatically on save
     parent      = models.ForeignKey(
-        'self', null=True, blank=True, related_name='children', db_index=True,
+        'self', null=True, blank=True, related_name='children',
+        on_delete=models.CASCADE, db_index=True,
     )
     path        = models.TextField(unique=True)
     label       = models.CharField(

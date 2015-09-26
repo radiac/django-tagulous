@@ -7,10 +7,3 @@ __license__ = "BSD"
 __author__ = "Richard Terry"
 __credits__ = [
 ]
-
-import tagulous.constants
-import tagulous.settings
-import tagulous.models
-import tagulous.forms
-import tagulous.admin
-import tagulous.views

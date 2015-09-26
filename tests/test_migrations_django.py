@@ -164,7 +164,9 @@ def migrate_app(target=None):
             with warnings.catch_warnings(record=True) as cw:
                 call_command('migrate', *args, **kwargs)
     except Exception, e:
-        print ">> migration failed:"
+        print ">> migration failed: %s" % e
+        if not DISPLAY_CALL_COMMAND:
+            print ">> manage.py migrate %s target=%s" % (app_name, target)
         print "\n".join(output)
         print "<<<<<<<<<<"
         raise e

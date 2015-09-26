@@ -454,7 +454,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
             'blue':     2,
             'green':    2,
         })
-        
+    
     def test_change_string_add(self):
         "Add a tag by changing tag string"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue')
@@ -474,6 +474,25 @@ class ModelTagFieldTest(TagTestManager, TestCase):
             'green':    1,
         })
     
+    def test_m2m_set_by_string(self):
+        "Set a tag directly using M2M .set(string)"
+        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
+        self.assertTagModel(self.tag_model, {
+            'blue':     1,
+            'red':      1,
+        })
+        t1.tags.set('green', 'pink')
+        self.assertEqual(t1.tags, 'green, pink')
+        self.assertInstanceEqual(t1, name='Test 1', tags='green, pink')
+        self.assertTagModel(self.tag_model, {
+            'green':    1,
+            'pink':     1,
+        })
+        
+        # No need to test further arguments, it passes through to add() which
+        # is tested thoroughly below
+
     def test_m2m_add_by_obj(self):
         "Add a tag directly using M2M .add(obj)"
         t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue')
@@ -681,6 +700,10 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertEqual(str(cm.exception), errmsg)
         
         with self.assertRaises(ValueError) as cm:
+            t1.tags.set('fail')
+        self.assertEqual(str(cm.exception), errmsg)
+        
+        with self.assertRaises(ValueError) as cm:
             t1.tags.add('fail')
         self.assertEqual(str(cm.exception), errmsg)
         
@@ -691,6 +714,21 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         with self.assertRaises(ValueError) as cm:
             t1.tags.clear()
         self.assertEqual(str(cm.exception), errmsg)
+
+
+###############################################################################
+#######  Test invalid fields
+###############################################################################
+
+class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
+    """
+    Test invalid model TagField
+    
+    Use a TransactionTestCase so the apps will be reset
+    """
+    manage_models = [
+        test_models.SingleTagFieldModel,
+    ]
     
     def test_to_model_options_fails(self):
         "Check when a to model is specified, tag options are invalid"

@@ -441,6 +441,9 @@ class FakeTagRelatedManager(BaseTagRelatedManager):
         
     def save(self, force=False):
         raise ValueError(self._needs_db % self.instance)
+    
+    def set(self, *args):
+        raise ValueError(self._needs_db % self.instance)
         
     def add(self, *args):
         raise ValueError(self._needs_db % self.instance)
@@ -518,8 +521,12 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         return db_tags
     
     #
-    # New add, remove and clear, to update tag counts
+    # New set, add, remove and clear, to update tag counts
     #
+    def set(self, *objs):
+        self.clear()
+        self.add(*objs)
+    
     def add(self, *objs):
         # Convert strings to tag objects
         new_tags = []

@@ -221,7 +221,12 @@ class BaseTagField(object):
         #
         
         # Update the rel on the field
-        self.rel.to = self.tag_model
+        if django.VERSION < (1, 9):
+            # Django 1.8 or earlier
+            self.rel.to = self.tag_model
+        else:
+            # Django 1.9 and later
+            self.rel.model = self.tag_model
         
         # Contribute to class
         super(BaseTagField, self).contribute_to_class(cls, name)
@@ -357,6 +362,10 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         self.required = not kwargs.pop('blank', False)
         kwargs['blank'] = True
         kwargs['null'] = True
+        
+        # Set default on_delete
+        if 'on_delete' not in kwargs:
+            kwargs['on_delete'] = models.CASCADE
         
         # Create the tag field
         super(SingleTagField, self).__init__(*args, **kwargs)

@@ -83,8 +83,13 @@ class AdminTestManager(object):
         
         # Add the site to the copy
         from django.conf.urls import include, url
+        def safe_include(urls):
+            if django.VERSION < (1, 9):
+                return include(urls)
+            return urls
+        
         test_urls.urlpatterns += test_urls.mk_urlpatterns(
-            url(r'^tagulous_tests_app/admin/', include(self.site.urls))
+            url(r'^tagulous_tests_app/admin/', safe_include(self.site.urls))
         )
         
     def tearDown(self):
@@ -448,6 +453,11 @@ class TagAdminTest(AdminTestManager, TagTestManager, TestCase):
         content_form = content[
             content.index('<form ') : content.index('</form>') + 7
         ]
+        content_form = re.sub(
+            r'''<input [^>]*name=["']csrfmiddlewaretoken["'][^>]*>''',
+            '',
+            content_form,
+        )
         self.assertHTMLEqual(
             content_form[:content_form.index('<option')],
             (

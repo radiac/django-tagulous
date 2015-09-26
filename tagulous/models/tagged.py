@@ -356,8 +356,12 @@ class TaggedModel(models.Model):
     @classmethod
     def _detag_to_serializable(cls):
         """
-        Clone a fake version of this model, replacing tag fields with TextField
-        objects. Used by serializers.
+        Clone a fake version of this model, replacing tag fields with Field
+        objects, because their to_python method will not modify arguments.
+        
+        Used by serializers to pass list values for tag fields through the
+        python serializer, to be loaded back into the real tagged model when
+        safe.
         """
         # Get fields on this model
         if hasattr(cls._meta, 'get_fields'):
@@ -365,7 +369,7 @@ class TaggedModel(models.Model):
             fields = cls._meta.get_fields()
         else:
             fields = cls._meta.local_fields + cls._meta.local_many_to_many
-            
+        
         # Create a fake model
         class FakeTaggedModel(models.Model):
             def _retag_to_original(self):
@@ -392,7 +396,7 @@ class TaggedModel(models.Model):
         # Add fields to fake model
         for field in fields:
             if isinstance(field, BaseTagField):
-                clone_field = models.TextField(
+                clone_field = models.Field(
                     blank=field.blank, null=field.null
                 )
             else:

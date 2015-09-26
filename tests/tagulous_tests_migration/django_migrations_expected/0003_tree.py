@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='_tagulous_migrationtestmodel_tags',
             name='parent',
-            field=models.ForeignKey(to='tagulous_tests_migration._Tagulous_MigrationTestModel_tags', related_name='children', blank=True, null=True),
+            field=models.ForeignKey(to='tagulous_tests_migration._Tagulous_MigrationTestModel_tags', related_name='children', blank=True, null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
