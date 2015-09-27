@@ -670,6 +670,7 @@ class TagModelMergeTest(TagTestManager, TestCase):
         self.assertInstanceEqual(b3, singletag='one', tags='one')
 
     def test_merge_multiple_tags(self):
+        "Test merging a queryset of multiple tags"
         tag_model = test_models.MixedTestTagModel
         
         # Set up database
@@ -699,6 +700,7 @@ class TagModelMergeTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t2, tags='blue')
 
     def test_merge_by_name(self):
+        "Test merging a list of tag names, including tags which don't exist"
         tag_model = test_models.MixedTestTagModel
         
         # Set up database
@@ -716,7 +718,41 @@ class TagModelMergeTest(TagTestManager, TestCase):
         
         # Merge tags
         s1 = tag_model.objects.get(name='blue')
-        s1.merge_tags(['blue', 'green', 'red'])
+        s1.merge_tags(['blue', 'green', 'red', 'pink'])
+        
+        # Confirm it's correct
+        self.assertTagModel(tag_model, {
+            'blue': 2,
+        })
+        self.assertInstanceEqual(t1, tags='blue')
+        self.assertInstanceEqual(t2, tags='blue')
+
+    def test_merge_by_obj_list(self):
+        "Test merging a list of tag objects"
+        tag_model = test_models.MixedTestTagModel
+        t1 = self.create(test_models.MixedTest, name='Test 1', tags='blue, green, red')
+        t2 = self.create(test_models.MixedTest, name='Test 2', tags='blue, green, red')
+        
+        # Merge tags
+        s1 = tag_model.objects.get(name='blue')
+        s1.merge_tags(list(tag_model.objects.all()))
+        
+        # Confirm it's correct
+        self.assertTagModel(tag_model, {
+            'blue': 2,
+        })
+        self.assertInstanceEqual(t1, tags='blue')
+        self.assertInstanceEqual(t2, tags='blue')
+
+    def test_merge_by_tag_string(self):
+        "Test merging a tag string, including tags which don't exist"
+        tag_model = test_models.MixedTestTagModel
+        t1 = self.create(test_models.MixedTest, name='Test 1', tags='blue, green, red')
+        t2 = self.create(test_models.MixedTest, name='Test 2', tags='blue, green, red')
+        
+        # Merge tags
+        s1 = tag_model.objects.get(name='blue')
+        s1.merge_tags('blue, green, red, pink')
         
         # Confirm it's correct
         self.assertTagModel(tag_model, {

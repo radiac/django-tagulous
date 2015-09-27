@@ -69,9 +69,13 @@ the API for more details
 In case you're doing something weird which causes the count to get out
 of sync, call this to update the count, and delete the tag if appropriate.
 
+.. _tagmodel_merge_tags:
+
 ``merge_tags(tags)``
 ~~~~~~~~~~~~~~~~~~~~
 Merge the specified tags into this tag.
+
+``tags`` can be a queryset, list of tags or tag names, or a tag string.
 
 
 .. _tagmodel_manager:

@@ -75,6 +75,25 @@ An ``IntegerField`` containing the level of this tag in the tree (starting from
 1).
 
 
+.. _tagtreemodel_merge_tags:
+
+``merge_tags(tags, children=False)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Merge the specified tags into this tag.
+
+``tags`` can be a queryset, list of tags or tag names, or a tag string.
+
+If ``children=False``, only the specified tags will be merged; tagged items
+will be reassigned to this tag, but if there are child tags they will not be
+touched. If child tags do exist, although the merged tags' counts will be 0,
+they will not be cleared.
+
+If ``children=True``, child tags will be merged into children of this tag,
+retaining structure; eg merging ``Pet`` into ``Animal`` will merge
+``Pet/Mammal`` into ``Animal/Mammal``, ``Pet/Mammal/Cat`` into
+``Animal/Mammal/Cat`` etc. Tags will be created if they don't exist.
+
+
 ``get_ancestors()``
 ~~~~~~~~~~~~~~~~~~~
 Returns a queryset of all ancestors, ordered by level.

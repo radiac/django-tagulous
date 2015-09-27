@@ -182,6 +182,9 @@ Feature:
   ``with_descendants()`` and ``with_siblings()``
 * Add :ref:`option_space_delimiter` tag option to disable space as a delimiter
 * Tagulous available from pypi as ``django-tagulous``
+* :ref:`TagModel.merge_tags <tagmodel_merge_tags>` can now accept a tag string
+* :ref:`TagTreeModel.merge_tags <tagtreemodel_merge_tags>` can now merge
+  recursively with new argument ``children=True``
 
 Internal:
 * Add support for Django 1.9a1

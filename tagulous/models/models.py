@@ -350,18 +350,28 @@ class BaseTagModel(models.Model):
                 self.parent.try_delete()
     try_delete.alters_data = True
     
+    def _prep_merge_tags(self, tags):
+        """
+        Ensure tags argument for merge_tags is an iterable of tag objects,
+        excluding self
+        """
+        # Ensure tags is a list of tag instances
+        if isinstance(tags, basestring):
+            tags = utils.parse_tags(
+                tags, space_delimiter=self.tag_options.space_delimiter,
+            )
+        if not isinstance(tags, models.query.QuerySet):
+            tags = self.tag_model.objects.filter(name__in=tags)
+        
+        # Make sure self isn't in tags
+        return tags.exclude(pk=self.pk)
+        
     def merge_tags(self, tags):
         """
         Merge the specified tags into this tag
         """
         related_fields = self.tag_model.get_related_fields()
-        
-        # Ensure tags is a list of tag instances
-        if not isinstance(tags, models.query.QuerySet):
-            tags = self.tag_model.objects.filter(name__in=tags)
-            
-        # Make sure self isn't in tags
-        tags = tags.exclude(pk=self.pk)
+        tags = self._prep_merge_tags(tags)
         
         for related in related_fields:
             # Get the instances of the related models which refer to the tag
@@ -663,6 +673,7 @@ class BaseTagTreeModel(BaseTagModel):
         
         # Find the parent, or create it if missing
         parts = utils.split_tree_name(self.name)
+        old_parent = self.parent
         if len(parts) > 1:
             self.parent, created = self.__class__.objects.get_or_create(
                 name=utils.join_tree_name(parts[:-1])
@@ -677,12 +688,17 @@ class BaseTagTreeModel(BaseTagModel):
         # Save - super .save() method will set the path using _get_path()
         super(BaseTagTreeModel, self).save(*args, **kwargs)
         
-        # If name has changed, update child names
+        # If name has changed...
         if self._name != self.name:
+            # Update child names
             for child in self.children.all():
                 child.name = utils.join_tree_name(parts + [child.label])
                 child.save()
             self._name = self.name
+            
+            # Notify parent that it may now be empty
+            if old_parent:
+                old_parent.update_count()
     save.alters_data = True
     
     def _update_extra(self):
@@ -696,6 +712,39 @@ class BaseTagTreeModel(BaseTagModel):
             self.path = self.slug
     _update_extra.alters_data = True
     
+    def merge_tags(self, tags, children=False):
+        """
+        Merge the specified tags into this tag
+        
+        If children is True, child tags will also be merged into children of
+        this tag (retaining structure)
+        """
+        tags = self._prep_merge_tags(tags)
+        
+        # Merge children first
+        if children:
+            cls = self.__class__
+            for tag in tags:
+                for child in tag.children.all():
+                    # Find merge target on this tree
+                    new_child_name = '/'.join([self.name, child.label])
+                    try:
+                        my_child = cls.objects.get(name=new_child_name)
+                    except cls.DoesNotExist:
+                        my_child = None
+                    
+                    if my_child:
+                        # It exists - merge recursively
+                        my_child.merge_tags([child], children=True)
+                    else:
+                        # It doesn't exist - rename recursively
+                        child.name = new_child_name
+                        child.save()
+        
+        # Merge self
+        super(BaseTagTreeModel, self).merge_tags(tags)
+    merge_tags.alters_data = True
+        
     def get_ancestors(self):
         """
         Get a queryset of ancestors for this tree node

@@ -212,6 +212,190 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         )
         
 
+###############################################################################
+####### TagTreeModel tree merging
+###############################################################################
+
+class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
+    """
+    Test merging TagTreeModel nodes
+    """
+    manage_models = [
+        test_models.TreeTest,
+    ]
+    
+    def setUpExtra(self):
+        self.test_model = test_models.TreeTest
+        self.tag_field = test_models.TreeTest.tags
+        self.tag_model = test_models.TreeTest.tags.tag_model
+        
+        # Normal Animal leaf nodes
+        self.test_model.objects.create(name='cat1', tags='Animal/Mammal/Cat')
+        self.test_model.objects.create(name='dog1', tags='Animal/Mammal/Dog')
+        self.test_model.objects.create(name='bee1', tags='Animal/Insect/Bee')
+        
+        # Pet tree has Cat leaf and extra L2 not in Animal
+        self.test_model.objects.create(name='cat2', tags='Pet/Mammal/Cat')
+        self.test_model.objects.create(name='robin1', tags='Pet/Bird/Robin')
+        
+        # Food tree has Cat leaf and extra L3 not in Animal
+        self.test_model.objects.create(name='cat3', tags='Food/Mammal/Cat')
+        self.test_model.objects.create(name='pig1', tags='Food/Mammal/Pig')
+    
+    def test_setup(self):
+        "Check test setup is correct"
+        # There should be 6 tags
+        self.assertTagModel(self.tag_model, {
+            'Animal':               0,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        0,
+            'Animal/Mammal/Cat':    1,
+            'Animal/Mammal/Dog':    1,
+            'Pet':                  0,
+            'Pet/Mammal':           0,
+            'Pet/Mammal/Cat':       1,
+            'Pet/Bird':             0,
+            'Pet/Bird/Robin':       1,
+            'Food':                 0,
+            'Food/Mammal':          0,
+            'Food/Mammal/Cat':      1,
+            'Food/Mammal/Pig':      1,
+        })
+    
+    def test_merge_l1(self):
+        """
+        Test that merging an l1 without merging children reassigns tagged
+        items, but leaves self and children
+        """
+        # Tag something with 'Pet'
+        t1 = self.test_model.objects.create(name='pet1', tags='Pet')
+        self.assertEqual(
+            self.tag_model.objects.get(name='Pet').count, 1,
+        )
+        
+        # Now merge
+        self.tag_model.objects.get(name='Animal').merge_tags(
+            'Pet, Food', children=False,
+        )
+        self.assertTagModel(self.tag_model, {
+            'Animal':               1,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        0,
+            'Animal/Mammal/Cat':    1,
+            'Animal/Mammal/Dog':    1,
+            'Pet':                  0,
+            'Pet/Mammal':           0,
+            'Pet/Mammal/Cat':       1,
+            'Pet/Bird':             0,
+            'Pet/Bird/Robin':       1,
+            'Food':                 0,
+            'Food/Mammal':          0,
+            'Food/Mammal/Cat':      1,
+            'Food/Mammal/Pig':      1,
+        })
+        self.assertInstanceEqual(t1, name='pet1', tags='Animal')
+        
+    def test_merge_l1_with_children(self):
+        """
+        Test that merging an l1 and its children merges the full subtrees and
+        cleans empty parents
+        """
+        # Now merge
+        self.tag_model.objects.get(name='Animal').merge_tags(
+            'Pet, Food', children=True,
+        )
+        self.assertTagModel(self.tag_model, {
+            'Animal':               0,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        0,
+            'Animal/Mammal/Cat':    3,
+            'Animal/Mammal/Dog':    1,
+            'Animal/Mammal/Pig':    1,
+            'Animal/Bird':          0,
+            'Animal/Bird/Robin':    1,
+        })
+    
+    def test_merge_l2(self):
+        """
+        Test that merging an l2 without merging children reassigns tagged
+        items, but leaves self and children
+        """
+        # Tag something with 'Pet/Mammal'
+        t1 = self.test_model.objects.create(name='mammal1', tags='Pet/Mammal')
+        self.assertEqual(
+            self.tag_model.objects.get(name='Pet/Mammal').count, 1,
+        )
+        
+        # Now merge
+        self.tag_model.objects.get(name='Animal/Mammal').merge_tags(
+            'Pet/Mammal, Food/Mammal', children=False,
+        )
+        self.assertTagModel(self.tag_model, {
+            'Animal':               0,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        1,
+            'Animal/Mammal/Cat':    1,
+            'Animal/Mammal/Dog':    1,
+            'Pet':                  0,
+            'Pet/Mammal':           0,
+            'Pet/Mammal/Cat':       1,
+            'Pet/Bird':             0,
+            'Pet/Bird/Robin':       1,
+            'Food':                 0,
+            'Food/Mammal':          0,
+            'Food/Mammal/Cat':      1,
+            'Food/Mammal/Pig':      1,
+        })
+        self.assertInstanceEqual(t1, name='mammal1', tags='Animal/Mammal')
+    
+    def test_merge_l2_with_children(self):
+        """
+        Test that merging an l2 and its children merges the full subtrees and
+        cleans empty parents
+        """
+        # Now merge
+        self.tag_model.objects.get(name='Animal/Mammal').merge_tags(
+            'Pet/Mammal, Food/Mammal', children=True,
+        )
+        self.assertTagModel(self.tag_model, {
+            'Animal':               0,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        0,
+            'Animal/Mammal/Cat':    3,
+            'Animal/Mammal/Dog':    1,
+            'Animal/Mammal/Pig':    1,
+            'Pet':                  0,
+            'Pet/Bird':             0,
+            'Pet/Bird/Robin':       1,
+        })
+    
+    def test_merge_l3(self):
+        "Test merging an l3 cleans empty parents"
+        # No need to test children=True - there are no children
+        self.tag_model.objects.get(name='Animal/Mammal/Cat').merge_tags(
+            'Pet/Mammal/Cat, Food/Mammal/Cat', children=False,
+        )
+        self.assertTagModel(self.tag_model, {
+            'Animal':               0,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        0,
+            'Animal/Mammal/Cat':    3,
+            'Animal/Mammal/Dog':    1,
+            'Pet':                  0,
+            # Pet/Mammal now empty
+            'Pet/Bird':             0,
+            'Pet/Bird/Robin':       1,
+            'Food':                 0,
+            'Food/Mammal':          0,
+            'Food/Mammal/Pig':      1,
+        })
+        
 
 ###############################################################################
 ####### Custom TagTreeModel basics
