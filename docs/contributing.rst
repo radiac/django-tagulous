@@ -48,6 +48,8 @@ Use ``tox`` to run them on one or more supported versions::
 
 Tox will also generate a ``coverage`` HTML report.
 
+You can also use ``detox`` to run the tests concurrently.
+
 Most Tagulous python modules have corresponding test modules, with test classes
 which subclass ``tests.lib.TagTestManager``. They use test apps defined under
 the ``tests`` dir where required.

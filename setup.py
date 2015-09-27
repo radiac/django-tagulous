@@ -39,6 +39,12 @@ def runtests(args):
         else:
             SERIALIZATION_MODULES['yaml'] = 'tagulous.serializers.pyyaml'
         
+        MIGRATION_MODULES = {
+            'tagulous_tests_migration' : 'tests.tagulous_tests_migration.migrations_%s' % '_'.join(
+                str(v) for v in django.VERSION
+            )
+        }
+        
         if django.VERSION < (1, 7):
             try:
                 import south
@@ -72,6 +78,8 @@ def runtests(args):
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',
                 'APP_DIRS': True,
             }],
+            MIGRATION_MODULES=MIGRATION_MODULES,
+            SOUTH_MIGRATION_MODULES=MIGRATION_MODULES,
         )
     
     execute_from_command_line(args[:1] + ['test'] + (args[2:] or ['tests']))

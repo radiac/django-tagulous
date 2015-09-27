@@ -23,7 +23,7 @@ DISPLAY_CALL_COMMAND = False
 
 app_name = 'tagulous_tests_migration'
 app_module = sys.modules['tests.%s' % app_name]
-migrations_name = 'migrations'
+migrations_name = 'migrations_%s' % '_'.join(str(v) for v in django.VERSION)
 migrations_module = 'tests.%s.%s' % (app_name, migrations_name)
 migrations_path = None
 
@@ -61,10 +61,9 @@ def get_migrations():
 def get_migrations_dir():
     "Get migration dir"
     if migrations_path is None:
-        from django.db.migrations.loader import MIGRATIONS_MODULE_NAME
         globals()['migrations_path'] = os.path.join(
             os.path.dirname(tagulous_tests_migration.__file__),
-            MIGRATIONS_MODULE_NAME
+            migrations_name
         )
     return migrations_path
 
@@ -87,7 +86,7 @@ def clean_all():
         and migrations_dir.endswith(migrations_name)
     ):
         # Catch unexpected path - don't want to delete anything important
-        raise ValueError('Migrations dir has unexpected name')
+        raise ValueError('Migrations dir has unexpected name: %s' % migrations_dir)
     if os.path.isdir(migrations_dir):
         shutil.rmtree(migrations_dir)
     elif os.path.exists(migrations_dir):

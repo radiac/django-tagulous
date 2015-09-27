@@ -28,7 +28,7 @@ DISPLAY_CALL_COMMAND = False
 
 app_name = 'tagulous_tests_migration'
 app_module = sys.modules['tests.%s' % app_name]
-migrations_name = 'migrations'
+migrations_name = 'migrations_%s' % '_'.join(str(v) for v in django.VERSION)
 migrations_module = 'tests.%s.%s' % (app_name, migrations_name)
 migrations_path = None
 
@@ -358,6 +358,12 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         self.assertFalse(
             issubclass(model_initial, tag_models.tagged.TaggedModel)
         )
+        
+        # Ensure migration dir exists - we're using a custom one, so South
+        # won't create it
+        migrations_dir = get_migrations_dir()
+        os.mkdir(migrations_dir)
+        open(os.path.join(migrations_dir, '__init__.py'), 'a').close()
         
         # Run schemamigration --initial
         with Capturing() as output:

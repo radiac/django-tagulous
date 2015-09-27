@@ -99,7 +99,9 @@ class SerializationTestMixin(DumpDataAssertMixin):
         self.fixture_path = os.path.join(fixture_root, self.fixture_name)
         
         # Need to dump to loadable file due to django#24558
-        self.tmp_fixture_name = 'tmp_%s' % self.fixture_name
+        self.tmp_fixture_name = 'tmp_%s_%s' % (
+            '_'.join(str(v) for v in django.VERSION), self.fixture_name,
+        )
         self.tmp_fixture_path = os.path.join(fixture_root, self.tmp_fixture_name)
         
         # Delete file if it exists
