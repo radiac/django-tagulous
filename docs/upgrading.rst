@@ -185,6 +185,7 @@ Feature:
 * :ref:`TagModel.merge_tags <tagmodel_merge_tags>` can now accept a tag string
 * :ref:`TagTreeModel.merge_tags <tagtreemodel_merge_tags>` can now merge
   recursively with new argument ``children=True``
+* Support for recursively merging tree tags in admin site
 
 Internal:
 * Add support for Django 1.9a1

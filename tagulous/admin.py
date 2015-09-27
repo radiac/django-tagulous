@@ -230,17 +230,28 @@ class TagModelAdmin(admin.ModelAdmin):
         #   http://www.hoboes.com/Mimsy/hacks/django-actions-their-own-intermediate-page/
         
         # Create a form
+        is_tree = issubclass(self.model, tag_models.TagTreeModel)
         class MergeForm(forms.Form):
             # Keep selected items in same field, admin.ACTION_CHECKBOX_NAME
             _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
             # Allow use to select from selected items
             merge_to = forms.ModelChoiceField(queryset)
         
+        if is_tree:
+            class MergeForm(MergeForm):
+                # Allow to merge recursively
+                merge_children = forms.BooleanField(required=False)
+        
         if 'merge' in request.POST:
             merge_form = MergeForm(request.POST)
             if merge_form.is_valid():
+                # Merge - with children if set
                 merge_to = merge_form.cleaned_data['merge_to']
-                merge_to.merge_tags(queryset)
+                kwargs = {}
+                if is_tree and merge_form.cleaned_data['merge_children']:
+                    kwargs['children'] = True
+                merge_to.merge_tags(queryset, **kwargs)
+                
                 # Django 1.4 doesn't support level=messages.SUCCESS
                 self.message_user(request, 'Tags merged')
                 return HttpResponseRedirect(request.get_full_path())
@@ -258,7 +269,8 @@ class TagModelAdmin(admin.ModelAdmin):
                 initial={
                     admin.ACTION_CHECKBOX_NAME: request.POST.getlist(
                         admin.ACTION_CHECKBOX_NAME
-                    )
+                    ),
+                    'merge_children': True,
                 }
             )
             

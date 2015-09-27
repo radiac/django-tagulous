@@ -138,7 +138,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         admin.site = old_admin_site
     
     def test_register_models(self):
-        "Check register refuses multple models"
+        "Check register refuses multiple models"
         with self.assertRaises(exceptions.ImproperlyConfigured) as cm:
             tag_admin.register([self.model, self.model], self.admin, site=self.site)
         self.assertEqual(
@@ -332,16 +332,18 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
 
 
 ###############################################################################
-####### Tag ModelAdmin
+####### Tag model admin tools
 ###############################################################################
 
-class TagAdminTest(AdminTestManager, TagTestManager, TestCase):
+class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
     """
     Test Admin registration of a tag model
     """
+    def setUpModels(self):
+        raise NotImplemented()
+    
     def setUpExtra(self):
-        self.tagged_model = test_models.SimpleMixedTest
-        self.model = self.tagged_model.tags.tag_model
+        self.setUpModels()
         self.site = admin.AdminSite(name='tagulous_admin')
         tag_admin.register(self.model, site=self.site)
         self.ma = self.site._registry[self.model]
@@ -366,6 +368,178 @@ class TagAdminTest(AdminTestManager, TagTestManager, TestCase):
             return cl.get_queryset(request)
         return cl.get_query_set(request)
     
+    def assertContains(self, content, *seeks):
+        for seek in seeks:
+            self.assertTrue(seek in content, msg='Missing %s' % seek)
+    
+    def assertNotContains(self, content, *seeks):
+        for seek in seeks:
+            self.assertFalse(seek in content, msg='Unexpected %s' % seek)
+    
+    def do_test_merge_form(self, tags, excluded_tags, is_tree=False):
+        "Request the form view and check it returns valid expected HTML"
+        request = MockRequest(POST=QueryDict('&'.join(
+            ['action=merge_tags'] + [
+                '%s=%s' % (admin.ACTION_CHECKBOX_NAME, tag.pk)
+                for tag in tags
+            ]
+        )))
+        cl = self.get_changelist(request)
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        msgs = list(messages.get_messages(request))
+        
+        # Check response is appropriate
+        # Django 1.4 doesn't support assertInHTML, so have to do it manually
+        self.assertEqual(len(msgs), 0)
+        content = str(response)
+        content_form = content[
+            content.index('<form ') : content.index('</form>') + 7
+        ]
+        
+        # Strip csrfmiddlewaretoken
+        content_form = re.sub(
+            r'''<input [^>]*name=["']csrfmiddlewaretoken["'][^>]*>''',
+            '',
+            content_form,
+        )
+        
+        # Check HTML up to first <option> tag
+        self.assertHTMLEqual(
+            content_form[:content_form.index('<option')],
+            (
+                '<form action="" method="POST">'
+                '<p><label for="id_merge_to">Merge to:</label>'
+                '<select id="id_merge_to" name="merge_to">'
+            )
+        )
+        
+        # Can't be sure of options order
+        options_raw = content_form[
+            content_form.index('<option') : content_form.index('</select>')
+        ]
+        options = [
+            '<option %s' % opt.strip()
+            for opt in options_raw.split('<option ') if opt
+        ]
+        self.assertTrue(
+            '<option value="" selected="selected">---------</option>' in options
+        )
+        for tag in tags:
+            self.assertContains(
+                options,
+                '<option value="%d">%s</option>' % (tag.pk, tag.name),
+            )
+    
+        # Find remaining input tags
+        inputs_raw = content_form[
+            # First input, convenient
+            content_form.index('<input') : content_form.index('<div>')
+        ]
+        
+        # If it's a tree, it should have merge_children first
+        if is_tree:
+            merge_children_label = '<label for="id_merge_children">Merge children:</label>'
+            self.assertContains(content_form, merge_children_label)
+            merge_children_input, inputs_raw = inputs_raw.split('>', 1)
+            self.assertHTMLEqual(merge_children_input + '>', (
+                '<input type="checkbox" name="merge_children" '
+                'id="id_merge_children" checked="checked">'
+            ))
+            
+        # Remaining input tags should be tag ids selected on previous page
+        inputs = [
+            '<input %s' % inpt.strip()
+            for inpt in
+            # Some versions of django may insert a </p> here.
+            inputs_raw.replace('</p>', '').strip().split('<input ')
+            if inpt
+        ]
+        for action_id in range(len(tags)):
+            self.assertTrue(any(
+                'id="id__selected_action_%s"' % action_id
+                in input_tag for input_tag in inputs
+            ))
+        
+        # Now check the tag IDs are all there
+        found_tag_pks = []
+        for input_tag in inputs:
+            # First check tag is expected format (numbers change)
+            self.assertHTMLEqual(
+                re.sub(r'\d+', 'X', input_tag),
+                (
+                    '<input id="id__selected_action_X" type="hidden"'
+                    ' name="_selected_action" value="X" />'
+                )
+            )
+            # Now find ID
+            matches = re.search(r'value="(\d+)"', input_tag)
+            if not matches:
+                raise ValueError('Could not find tag pk in %s' % input_tag)
+            found_tag_pks.append(int(matches.group(1)))
+        self.assertEqual(set(found_tag_pks), set([tag.pk for tag in tags]))
+        
+        # Check end of form
+        self.assertHTMLEqual(
+            content_form[
+                content_form.index('<div>') : content_form.index('</div>')
+            ], (
+                '<div>'
+                '<input type="submit" name="merge" value="Merge tags">'
+                '<input class="default" type="hidden" name="action"'
+                ' value="merge_tags">'
+                '</div>'
+            )
+        )
+        
+        # And just confirm excluded tags weren't there
+        for tag in excluded_tags:
+            self.assertNotContains(
+                content,
+                '<option value="%d">%s</option>' % (tag.pk, tag.name),
+            )
+        
+    def do_form_submit(self, tags, merge_to, params=None):
+        "Submit the form and check it succeeds and returns valid expected HTML"
+        if params is None:
+            params = []
+        request = MockRequest(POST=QueryDict('&'.join(
+            [
+                # Submitting
+                'action=merge_tags',
+                'merge=Merge%%20Tags',
+            ] + [
+                # These were selected on the changelist, the ones we're merging
+                '%s=%s' % (admin.ACTION_CHECKBOX_NAME, tag.pk)
+                for tag in tags
+            ] + [
+                # This is the one we're merging to
+                'merge_to=%s' % merge_to.pk,
+            ] + params
+        )))
+        cl = self.get_changelist(request)
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        msgs = list(messages.get_messages(request))
+        
+        # Check response is appropriate
+        self.assertEqual(len(msgs), 1)
+        self.assertEqual(
+            msgs[0].message, 'Tags merged'
+        )
+        self.assertTrue('Location: %s' % MOCK_PATH in str(response))
+        
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#   TagModel admin tools
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+class TagAdminTest(TagAdminTestManager):
+    """
+    Test TagModel admin tools
+    """
+    def setUpModels(self):
+        self.tagged_model = test_models.SimpleMixedTest
+        self.model = self.tagged_model.tags.tag_model
+        
     def populate(self):
         self.o1 = self.tagged_model.objects.create(
             name='Test 1', singletag='Mr', tags='red, blue',
@@ -380,19 +554,12 @@ class TagAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.blue = self.model.objects.get(name='blue')
         self.green = self.model.objects.get(name='green')
         
-    def assertContains(self, content, *seeks):
-        for seek in seeks:
-            self.assertTrue(seek in content, msg='Missing %s' % seek)
-    
-    def assertNotContains(self, content, *seeks):
-        for seek in seeks:
-            self.assertFalse(seek in content, msg='Unexpected %s' % seek)
-    
-    
-    #
-    # Tests
-    #
-    
+        self.assertTagModel(self.model, {
+            'red': 2,
+            'blue': 2,
+            'green': 2,
+        })
+        
     def test_merge_action(self):
         "Check merge_tags action exists"
         self.assertTrue('merge_tags' in self.ma.actions)
@@ -431,132 +598,167 @@ class TagAdminTest(AdminTestManager, TagTestManager, TestCase):
             msgs[0].message, 'You must select at least two tags to merge'
         )
         self.assertTrue('Location: %s' % MOCK_PATH in str(response))
-
+    
     def test_merge_form_two(self):
         "Check the merge_tags form when two tag selected"
         self.populate()
-        request = MockRequest(POST=QueryDict('&'.join(
-            ['action=merge_tags'] + [
-                '%s=%s' % (admin.ACTION_CHECKBOX_NAME, pk)
-                for pk in [self.red.pk, self.green.pk]
-            ]
-        )))
-        cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
-        msgs = list(messages.get_messages(request))
-        
-        # Check response is appropriate
-        # Django 1.4 doesn't support assertInHTML, so have to do it manually
-        self.assertEqual(len(msgs), 0)
-        content = str(response)
-        content_form = content[
-            content.index('<form ') : content.index('</form>') + 7
-        ]
-        content_form = re.sub(
-            r'''<input [^>]*name=["']csrfmiddlewaretoken["'][^>]*>''',
-            '',
-            content_form,
-        )
-        self.assertHTMLEqual(
-            content_form[:content_form.index('<option')],
-            (
-                '<form action="" method="POST">'
-                '<p><label for="id_merge_to">Merge to:</label>'
-                '<select id="id_merge_to" name="merge_to">'
-            )
-        )
-        
-        # Can't be sure of options order
-        options_raw = content_form[
-            content_form.index('<option') : content_form.index('</select>')
-        ]
-        option1 = options_raw[:options_raw.index('<option', 1)]
-        option2 = options_raw[len(option1):options_raw.index('<option', len(option1)+1)]
-        option3 = options_raw[len(option1) + len(option2):]
-        options = [option.strip() for option in [option1, option2, option3]]
-        self.assertTrue(
-            '<option value="" selected="selected">---------</option>' in options
-        )
-        self.assertTrue(
-            '<option value="%d">%s</option>' % (self.red.pk, self.red.name) in options
-        )
-        self.assertTrue(
-            '<option value="%d">%s</option>' % (self.green.pk, self.green.name) in options
-        )
-        
-        # Check _selected_action input tags
-        inputs_raw = content_form[
-            # First input, convenient
-            content_form.index('<input') : content_form.index('<div>')
-        ]
-        input1 = inputs_raw[:inputs_raw.index('<input', 1)]
-        input2 = inputs_raw[len(input1):]
-        inputs = [
-            # Some versions of django may insert a </p> here.
-            input_tag.replace('</p>', '').strip()
-            for input_tag in [input1, input2]
-        ]
-        self.assertTrue(any('id="id__selected_action_0"' in i for i in inputs))
-        self.assertTrue(any('id="id__selected_action_1"' in i for i in inputs))
-        for input_tag in inputs:
-            input_tag = re.sub(
-                'id__selected_action_\d', 'id__selected_action_x', input_tag,
-            )
-            expected = (
-                '<input id="id__selected_action_x" type="hidden"'
-                ' name="_selected_action" value="%d" />'
-            )
-            try:
-                self.assertHTMLEqual(input_tag, expected % self.red.pk)
-            except AssertionError:
-                self.assertHTMLEqual(input_tag, expected % self.green.pk)
-        
-        # Check end of form
-        self.assertHTMLEqual(
-            content_form[
-                content_form.index('<div>') : content_form.index('</div>')
-            ], (
-                '<div>'
-                '<input type="submit" name="merge" value="Merge tags">'
-                '<input class="default" type="hidden" name="action"'
-                ' value="merge_tags">'
-                '</div>'
-            )
-        )
-        
-        # And just confirm blue wasn't there
-        self.assertNotContains(
-            content,
-            '<option value="%d">%s</option>' % (self.blue.pk, self.blue.name),
+        self.do_test_merge_form(
+            tags=[self.red, self.green],
+            excluded_tags=[self.blue],
+            is_tree=False,
         )
     
     def test_merge_form_submit(self):
+        "Check the merge_tag form submits and merges"
         self.populate()
-        request = MockRequest(POST=QueryDict('&'.join(
-            [
-                # Submitting
-                'action=merge_tags',
-                'merge=Merge%%20Tags',
-            ] + [
-                # These were selected on the changelist, the ones we're merging
-                '%s=%s' % (admin.ACTION_CHECKBOX_NAME, pk)
-                for pk in [self.red.pk, self.green.pk]
-            ] + [
-                # This is the one we're merging to
-                'merge_to=%s' % self.red.pk,
-            ]
-        )))
-        cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
-        msgs = list(messages.get_messages(request))
-        
-        # Check response is appropriate
-        self.assertEqual(len(msgs), 1)
-        self.assertEqual(
-            msgs[0].message, 'Tags merged'
+        self.do_form_submit(
+            tags=[self.red, self.green],
+            merge_to=self.red,
         )
-        self.assertTrue('Location: %s' % MOCK_PATH in str(response))
+        
+        # Check they're merged
+        self.assertTagModel(self.model, {
+            'red': 3,
+            'blue': 2,
+        })
+        self.assertInstanceEqual(
+            self.o1, name='Test 1', singletag='Mr', tags='blue, red',
+        )
+        self.assertInstanceEqual(
+            self.o2, name='Test 2', singletag='Mrs', tags='red',
+        )
+        self.assertInstanceEqual(
+            self.o3, name='Test 3', singletag='Mr', tags='blue, red',
+        )
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#   TagTreeModel admin tools
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+class TagTreeAdminTest(TagAdminTestManager):
+    """
+    Test admin tools specific to TagTreeModel
+    """
+    def setUpModels(self):
+        self.tagged_model = test_models.CustomTreeTest
+        self.model = test_models.CustomTagTree
+    
+    def populate(self):
+        # Normal Animal leaf nodes
+        self.tagged_model.objects.create(name='cat1', tags='Animal/Mammal/Cat')
+        self.tagged_model.objects.create(name='dog1', tags='Animal/Mammal/Dog')
+        self.tagged_model.objects.create(name='bee1', tags='Animal/Insect/Bee')
+        
+        # Pet tree has Cat leaf and extra L2 not in Animal
+        self.tagged_model.objects.create(name='cat2', tags='Pet/Mammal/Cat')
+        self.tagged_model.objects.create(name='robin1', tags='Pet/Bird/Robin')
+        
+        # Food tree has Cat leaf and extra L3 not in Animal
+        self.tagged_model.objects.create(name='cat3', tags='Food/Mammal/Cat')
+        self.tagged_model.objects.create(name='pig1', tags='Food/Mammal/Pig')
+        
+        self.assertTagModel(self.model, {
+            'Animal':               0,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        0,
+            'Animal/Mammal/Cat':    1,
+            'Animal/Mammal/Dog':    1,
+            'Pet':                  0,
+            'Pet/Mammal':           0,
+            'Pet/Mammal/Cat':       1,
+            'Pet/Bird':             0,
+            'Pet/Bird/Robin':       1,
+            'Food':                 0,
+            'Food/Mammal':          0,
+            'Food/Mammal/Cat':      1,
+            'Food/Mammal/Pig':      1,
+        })
+        
+    def test_merge_form(self):
+        """
+        Check merge_tags adds merge_children option
+        """
+        self.populate()
+        tag_names = [
+            'Animal/Mammal', 'Pet/Mammal', 'Food/Mammal',
+        ]
+        excluded_tags = self.model.objects.exclude(name__in=tag_names)
+        self.assertEqual(
+            excluded_tags.count(),
+            self.model.objects.all().count() - len(tag_names),
+        )
+        
+        self.do_test_merge_form(
+            tags=self.model.objects.filter(name__in=tag_names),
+            excluded_tags = excluded_tags,
+            is_tree=True,
+        )
+        
+    def test_merge_form_l2_without_children_submit(self):
+        self.populate()
+        
+        # Tag something with 'Pet/Mammal'
+        t1 = self.tagged_model.objects.create(name='mammal1', tags='Pet/Mammal')
+        self.assertEqual(
+            self.model.objects.get(name='Pet/Mammal').count, 1,
+        )
+        
+        # Now merge
+        tag_names = [
+            'Animal/Mammal', 'Pet/Mammal', 'Food/Mammal',
+        ]
+        self.do_form_submit(
+            tags=self.model.objects.filter(name__in=tag_names),
+            merge_to=self.model.objects.get(name='Animal/Mammal'),
+        )
+        
+        self.assertTagModel(self.model, {
+            'Animal':               0,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        1,
+            'Animal/Mammal/Cat':    1,
+            'Animal/Mammal/Dog':    1,
+            'Pet':                  0,
+            'Pet/Mammal':           0,
+            'Pet/Mammal/Cat':       1,
+            'Pet/Bird':             0,
+            'Pet/Bird/Robin':       1,
+            'Food':                 0,
+            'Food/Mammal':          0,
+            'Food/Mammal/Cat':      1,
+            'Food/Mammal/Pig':      1,
+        })
+        self.assertInstanceEqual(t1, name='mammal1', tags='Animal/Mammal')
+        
+    def test_merge_form_l2_with_children_submit(self):
+        self.populate()
+        tag_names = [
+            'Animal/Mammal', 'Pet/Mammal', 'Food/Mammal',
+        ]
+        self.do_form_submit(
+            tags=self.model.objects.filter(name__in=tag_names),
+            merge_to=self.model.objects.get(name='Animal/Mammal'),
+            params=[
+                'merge_children=on'
+            ]
+        )
+        
+        self.assertTagModel(self.model, {
+            'Animal':               0,
+            'Animal/Insect':        0,
+            'Animal/Insect/Bee':    1,
+            'Animal/Mammal':        0,
+            'Animal/Mammal/Cat':    3,
+            'Animal/Mammal/Dog':    1,
+            'Animal/Mammal/Pig':    1,
+            'Pet':                  0,
+            'Pet/Bird':             0,
+            'Pet/Bird/Robin':       1,
+        })
+        
 
 ###############################################################################
 ####### Tagged inlines on tag ModelAdmin

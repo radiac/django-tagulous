@@ -145,7 +145,6 @@ class TagTestManager(object):
         jsons = {}
         if isinstance(dom, basestring):
             return dom, {}
-        
         el_name = path + '.' + dom.name
         
         # Extract json from this element
@@ -174,14 +173,15 @@ class TagTestManager(object):
         Clone of django's method, but with support for JSON in data- tag
         attributes
         """
-        dom1 = testcases.assert_and_parse_html(
-            self, html1, msg,
-            'First argument is not valid HTML:'
-        )
-        dom2 = testcases.assert_and_parse_html(
-            self, html2, msg,
-            'Second argument is not valid HTML:'
-        )
+        # Parse the HTML into a dom
+        err1 = 'First argument is not a valid HTML element:'
+        err2 = 'Second argument is not a valid HTML element:'
+        dom1 = testcases.assert_and_parse_html(self, html1, msg, err1)
+        dom2 = testcases.assert_and_parse_html(self, html2, msg, err2)
+        
+        # Check it actually managed to parse something
+        self.assertNotEqual(dom1.name, None, msg='%s\n%s' % (err1, html1))
+        self.assertNotEqual(dom2.name, None, msg='%s\n%s' % (err2, html2))
         
         # Walk the trees and pull out json
         dom1, json1 = self._extract_json(dom1)
