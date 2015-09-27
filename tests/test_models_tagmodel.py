@@ -9,7 +9,6 @@ Modules tested:
     tagulous.models.models.TagModelQuerySet
 """
 from __future__ import absolute_import
-import django
 from tests.lib import *
 
 class TagModelTest(TagTestManager, TestCase):

@@ -4,6 +4,7 @@ import json
 import sys
 import unittest
 
+import django
 from django.db import models
 from django.core import exceptions
 from django.test import TestCase, TransactionTestCase, testcases

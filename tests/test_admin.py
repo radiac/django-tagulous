@@ -8,7 +8,6 @@ from __future__ import absolute_import
 import re
 import copy
 
-import django
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib import admin

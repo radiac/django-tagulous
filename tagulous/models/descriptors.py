@@ -10,6 +10,7 @@ manager instances.
 
 import collections
 
+import django
 from django.db import models
 
 from tagulous.models.managers import (
@@ -36,7 +37,11 @@ class BaseTagDescriptor(object):
     # If the field was created using a string, the field's tag model and
     # tag options will not be available when the descriptor is created, so
     # cannot store them directly here
-    tag_model = property(lambda self: self.field.rel.to)
+    def _get_tag_model(self):
+        if django.VERSION < (1, 9):
+            return self.field.remote_field.to
+        return self.field.remote_field.model
+    tag_model = property(_get_tag_model)
     tag_options = property(lambda self: self.field.tag_options)
     
     def load_initial(self):

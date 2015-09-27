@@ -7,6 +7,7 @@ is enabled.
 
 import copy
 
+import django
 from django.db import models
 from django.db import transaction
 
@@ -380,13 +381,20 @@ class TaggedModel(models.Model):
                 # cls and fields from closure's scope
                 data = {}
                 for field in fields:
-                    if not (
-                        not isinstance(field, TagField)
-                        and field.rel
-                        and isinstance(field.rel, models.ManyToManyRel)
+                    # Find fields which are either TagFields, or not M2Ms -
+                    # anything which Deserializer will have stored data for
+                    if isinstance(field, TagField) or not (
+                        (
+                            django.VERSION < (1, 9)
+                            and field.rel
+                            and isinstance(field.rel, models.ManyToManyRel)
+                        ) or (
+                            django.VERSION >= (1, 9)
+                            and field.remote_field
+                            and isinstance(field.remote_field, models.ManyToManyRel)
+                        )
                     ):
-                        # A field which is either a TagField, or isn't a M2M -
-                        # ie Deserializer will have put the data on the object
+                        # Get data from object
                         data[field.name] = getattr(self, field.name)
                 return cls(**data)
             

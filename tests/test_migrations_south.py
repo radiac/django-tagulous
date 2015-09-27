@@ -11,7 +11,6 @@ import sys
 import shutil
 import warnings
 
-import django
 from django.core.management import call_command
 from django.db import DatabaseError
 from django.conf import settings

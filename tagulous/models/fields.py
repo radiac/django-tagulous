@@ -94,6 +94,9 @@ class BaseTagField(object):
         # This attribute will let us tell South to supress undesired M2M fields
         self.south_supression = True
     
+    if django.VERSION < (1, 9):
+        remote_field = property(lambda self: self.rel)
+    
     def do_related_class(self, other, cls):
         """
         Process tag model now it has been resolved if it was a string
@@ -107,7 +110,7 @@ class BaseTagField(object):
             self.tag_model = self.related.parent_model
         else:
             # Django 1.8 or later
-            self.tag_model = self.rel.model
+            self.tag_model = self.remote_field.model
         
         # Check class type of tag model
         if not issubclass(self.tag_model, BaseTagModel):
@@ -223,10 +226,10 @@ class BaseTagField(object):
         # Update the rel on the field
         if django.VERSION < (1, 9):
             # Django 1.8 or earlier
-            self.rel.to = self.tag_model
+            self.remote_field.to = self.tag_model
         else:
             # Django 1.9 and later
-            self.rel.model = self.tag_model
+            self.remote_field.model = self.tag_model
         
         # Contribute to class
         super(BaseTagField, self).contribute_to_class(cls, name)

@@ -32,7 +32,14 @@ class ModelTagFieldTest(TagTestManager, TestCase):
     
     def test_tag_table(self):
         "Check the tag table exists"
-        self.assertTrue(issubclass(self.tag_field.field.rel.to, tag_models.TagModel))
+        if django.VERSION < (1, 9):
+            self.assertTrue(issubclass(
+                self.tag_field.field.remote_field.to, tag_models.TagModel,
+            ))
+        else:
+            self.assertTrue(issubclass(
+                self.tag_field.field.remote_field.model, tag_models.TagModel,
+            ))
         self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
     
     def test_empty_value(self):
@@ -1094,7 +1101,10 @@ class ModelTagFieldStringTest(TagTestManager, TransactionTestCase):
     def test_to_model(self):
         "Check related model is correct"
         self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
-        self.assertEqual(self.tag_field.field.rel.to, self.tag_model)
+        if django.VERSION < (1, 9):
+            self.assertEqual(self.tag_field.field.remote_field.to, self.tag_model)
+        else:
+            self.assertEqual(self.tag_field.field.remote_field.model, self.tag_model)
         self.assertEqual(self.tag_field.tag_model, self.tag_model)
     
     def test_tag_options(self):
@@ -1129,7 +1139,10 @@ class ModelTagFieldSelfTest(TagTestManager, TransactionTestCase):
     def test_to_model(self):
         "Check related model is correct"
         self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
-        self.assertEqual(self.tag_field.field.rel.to, self.test_model)
+        if django.VERSION < (1, 9):
+            self.assertEqual(self.tag_field.field.remote_field.to, self.test_model)
+        else:
+            self.assertEqual(self.tag_field.field.remote_field.model, self.test_model)
         self.assertEqual(self.tag_field.tag_model, self.test_model)
     
     def test_tag_options(self):

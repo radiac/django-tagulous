@@ -559,7 +559,10 @@ class ModelSingleTagFieldStringTest(TagTestManager, TransactionTestCase):
     def test_to_model(self):
         "Check related model is correct"
         self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
-        self.assertEqual(self.tag_field.field.rel.to, self.tag_model)
+        if django.VERSION < (1, 9):
+            self.assertEqual(self.tag_field.field.remote_field.to, self.tag_model)
+        else:
+            self.assertEqual(self.tag_field.field.remote_field.model, self.tag_model)
         self.assertEqual(self.tag_field.tag_model, self.tag_model)
     
     def test_tag_options(self):
@@ -593,7 +596,10 @@ class ModelSingleTagFieldSelfTest(TagTestManager, TransactionTestCase):
     def test_to_model(self):
         "Check related model is correct"
         self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
-        self.assertEqual(self.tag_field.field.rel.to, self.test_model)
+        if django.VERSION < (1, 9):
+            self.assertEqual(self.tag_field.field.remote_field.to, self.test_model)
+        else:
+            self.assertEqual(self.tag_field.field.remote_field.model, self.test_model)
         self.assertEqual(self.tag_field.tag_model, self.test_model)
     
     def test_tag_options(self):
