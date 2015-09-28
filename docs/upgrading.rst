@@ -195,6 +195,7 @@ Internal:
 * Add support for Django 1.9a1
 * ``TagTreeModel.tag_options.tree`` will now always be ``True``
 * JavaScript ``parseTags`` arguments have changed
+* Added example project to github repository
 
 Bugfix:
 * ``TagRelatedManager`` instances can be compared to each other

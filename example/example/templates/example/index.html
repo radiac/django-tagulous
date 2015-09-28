@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block css %}
+    {{ form_media.css }}
+{% endblock %}
+{% block js %}
+    {{ form_media.js }}
+{% endblock %}
+
+{% block app_content %}
+
+{% if messages %}
+    <aside class="message">
+        <ul>
+            {% for message in messages %}
+                <li>{{ message|safe }}</li>
+            {% endfor %}
+        </ul>
+    </aside>
+{% endif %}
+
+<h1>Add Person</h1>
+<form action="." method="POST">
+    {% csrf_token %}
+    <table>
+    {{ person_form.as_table }}
+    <tr><td></td><td><input type="submit" value="Add" /></td></tr>
+    </table>
+</form>
+
+
+<h1>Database</h1>
+<h2>Tagged model: Person</h2>
+<table>
+    <tr>
+        <th>Class name:</th>
+        <td><code>example.models.{{ Person_name }}</code></td>
+    </tr>
+    <tr>
+        <th>Num objects:</th>
+        <td>{{ people.count }}</td>
+    </tr>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th>pk</th>
+            <th>name</th>
+            <th>title</th>
+            <th>skills</th>
+            <th>hobbies</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for person in people %}
+            <tr>
+                <td>{{ person.pk }}</td>
+                <td>{{ person.name }}</td>
+                <td>{{ person.title }}</td>
+                <td>{{ person.skills }}</td>
+                <td>{{ person.hobbies }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Tag model: Title</h2>
+<table>
+    <tr>
+        <th>Class name:</th>
+        <td><code>example.models.{{ Title_name }}</code></td>
+    </tr>
+    <tr>
+        <th>Num objects:</th>
+        <td>{{ titles.count }}</td>
+    </tr>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>slug</th>
+            <th>count</th>
+            <th>protected</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for title in titles %}
+            <tr>
+                <td>{{ title.name }}</td>
+                <td>{{ title.slug }}</td>
+                <td>{{ title.count }}</td>
+                <td>{{ title.protected }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<h2>Tag model: Hobby</h2>
+<table>
+    <tr>
+        <th>Class name:</th>
+        <td><code>example.models.{{ Hobby_name }}</code></td>
+    </tr>
+    <tr>
+        <th>Num objects:</th>
+        <td>{{ hobbies.count }}</td>
+    </tr>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>slug</th>
+            <th>count</th>
+            <th>protected</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for hobby in hobbies %}
+            <tr>
+                <td>{{ hobby.name }}</td>
+                <td>{{ hobby.slug }}</td>
+                <td>{{ hobby.count }}</td>
+                <td>{{ hobby.protected }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<h2>Tag tree model: Skill</h2>
+<table>
+    <tr>
+        <th>Class name:</th>
+        <td><code>example.models.{{ Skill_name }}</code></td>
+    </tr>
+    <tr>
+        <th>Num objects:</th>
+        <td>{{ skills.count }}</td>
+    </tr>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>label</th>
+            <th>level</th>
+            <th>parent</th>
+            <th>path</th>
+            <th>slug</th>
+            <th>count</th>
+            <th>protected</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for skill in skills %}
+            <tr>
+                <td>{{ skill.name }}</td>
+                <td>{{ skill.label }}</td>
+                <td>{{ skill.level }}</td>
+                <td>{{ skill.parent }}</td>
+                <td>{{ skill.path }}</td>
+                <td>{{ skill.slug }}</td>
+                <td>{{ skill.count }}</td>
+                <td>{{ skill.protected }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}
