@@ -4,7 +4,7 @@ Example project for django-tagulous
 
 This example project is configured for Django 1.8.
 
-To set it up and run it in a self-contained virtualenv:
+To set it up and run it in a self-contained virtualenv::
 
     virtualenv tagulous-example
     cd tagulous-example

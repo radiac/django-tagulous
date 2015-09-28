@@ -24,7 +24,12 @@ class Skill(tagulous.models.TagTreeModel):
 
 class Person(models.Model):
     name = models.CharField(max_length=255)
-    title = tagulous.models.SingleTagField(initial="Mr, Mrs")
+    title = tagulous.models.SingleTagField(
+        initial="Mr, Mrs", help_text=(
+            "This is a SingleTagField - effectively a CharField with "
+            "dynamic choices"
+        ),
+    )
     skills = tagulous.models.TagField(
         Skill, help_text="This field does not split on spaces",
     )
