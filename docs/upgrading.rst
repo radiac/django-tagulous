@@ -175,8 +175,8 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.10.0, in development
-----------------------
+0.10.0, 2015-09-28
+------------------
 See :ref:`upgrade instructions <upgrade_0-9-0>`
 
 Feature:
