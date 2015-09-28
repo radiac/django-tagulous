@@ -12,14 +12,8 @@ from tagulous import forms as tag_forms
 
 
 ###############################################################################
-########################################################### Admin registration
+########################################################### Admin classes
 ###############################################################################
-
-# Give contrib.admin a default widget for tag fields
-admin.options.FORMFIELD_FOR_DBFIELD_DEFAULTS.update({
-    tag_models.SingleTagField:  {'widget': tag_forms.AdminTagWidget},
-    tag_models.TagField:        {'widget': tag_forms.AdminTagWidget},
-})
 
 class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
     """
@@ -45,9 +39,103 @@ class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
         return formfield
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#   ModelAdmin for Tagged models
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 class TaggedModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
     pass
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#   ModelAdmin for TagModel models
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
+    list_display = ['name', 'count', 'protected']
+    list_filter = ['protected']
+    exclude = ['count']
+    actions = ['merge_tags']
+    prepopulated_fields = {"slug": ("name",)}
+    
+    def merge_tags(self, request, queryset):
+        """
+        Admin action to merge tags
+        """
+        # Thanks to:
+        #   http://www.hoboes.com/Mimsy/hacks/django-actions-their-own-intermediate-page/
+        
+        # Create a form
+        is_tree = issubclass(self.model, tag_models.TagTreeModel)
+        class MergeForm(forms.Form):
+            # Keep selected items in same field, admin.ACTION_CHECKBOX_NAME
+            _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
+            # Allow use to select from selected items
+            merge_to = forms.ModelChoiceField(queryset)
+        
+        if is_tree:
+            class MergeForm(MergeForm):
+                # Allow to merge recursively
+                merge_children = forms.BooleanField(required=False)
+        
+        if 'merge' in request.POST:
+            merge_form = MergeForm(request.POST)
+            if merge_form.is_valid():
+                # Merge - with children if set
+                merge_to = merge_form.cleaned_data['merge_to']
+                kwargs = {}
+                if is_tree and merge_form.cleaned_data['merge_children']:
+                    kwargs['children'] = True
+                merge_to.merge_tags(queryset, **kwargs)
+                
+                # Django 1.4 doesn't support level=messages.SUCCESS
+                self.message_user(request, 'Tags merged')
+                return HttpResponseRedirect(request.get_full_path())
+                
+        else:
+            tag_pks = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+            if len(tag_pks) < 2:
+                # Django 1.4 doesn't support level=messages.SUCCESS
+                self.message_user(
+                    request, 'You must select at least two tags to merge',
+                )
+                return HttpResponseRedirect(request.get_full_path())
+            
+            merge_form = MergeForm(
+                initial={
+                    admin.ACTION_CHECKBOX_NAME: request.POST.getlist(
+                        admin.ACTION_CHECKBOX_NAME
+                    ),
+                    'merge_children': True,
+                }
+            )
+            
+        return render(request, 'tagulous/admin/merge_tags.html', {
+            'title': 'Merge tags',
+            'opts': self.model._meta,
+            'merge_form': merge_form,
+            'tags': queryset,
+        })
+    merge_tags.short_description = 'Merge selected tags...'
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#   ModelAdmin for TagTreeModel models
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+class TagTreeModelAdmin(TagModelAdmin):
+    exclude = ['count', 'parent', 'path', 'label', 'level']
+
+
+###############################################################################
+########################################################### Admin registration
+###############################################################################
+
+# Give contrib.admin a default widget for tag fields
+admin.options.FORMFIELD_FOR_DBFIELD_DEFAULTS.update({
+    tag_models.SingleTagField:  {'widget': tag_forms.AdminTagWidget},
+    tag_models.TagField:        {'widget': tag_forms.AdminTagWidget},
+})
 
 def _create_display(field):
     """
@@ -228,77 +316,3 @@ def register(model, admin_class=None, site=None, **options):
     # Don't pass options - we've already dealt with that
     site.register(model, admin_class)
     
-
-###############################################################################
-######################################################## Tag model admin tools
-###############################################################################
-
-class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
-    list_display = ['name', 'count', 'protected']
-    list_filter = ['protected']
-    exclude = ['count']
-    actions = ['merge_tags']
-    prepopulated_fields = {"slug": ("name",)}
-    
-    def merge_tags(self, request, queryset):
-        """
-        Admin action to merge tags
-        """
-        # Thanks to:
-        #   http://www.hoboes.com/Mimsy/hacks/django-actions-their-own-intermediate-page/
-        
-        # Create a form
-        is_tree = issubclass(self.model, tag_models.TagTreeModel)
-        class MergeForm(forms.Form):
-            # Keep selected items in same field, admin.ACTION_CHECKBOX_NAME
-            _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
-            # Allow use to select from selected items
-            merge_to = forms.ModelChoiceField(queryset)
-        
-        if is_tree:
-            class MergeForm(MergeForm):
-                # Allow to merge recursively
-                merge_children = forms.BooleanField(required=False)
-        
-        if 'merge' in request.POST:
-            merge_form = MergeForm(request.POST)
-            if merge_form.is_valid():
-                # Merge - with children if set
-                merge_to = merge_form.cleaned_data['merge_to']
-                kwargs = {}
-                if is_tree and merge_form.cleaned_data['merge_children']:
-                    kwargs['children'] = True
-                merge_to.merge_tags(queryset, **kwargs)
-                
-                # Django 1.4 doesn't support level=messages.SUCCESS
-                self.message_user(request, 'Tags merged')
-                return HttpResponseRedirect(request.get_full_path())
-                
-        else:
-            tag_pks = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-            if len(tag_pks) < 2:
-                # Django 1.4 doesn't support level=messages.SUCCESS
-                self.message_user(
-                    request, 'You must select at least two tags to merge',
-                )
-                return HttpResponseRedirect(request.get_full_path())
-            
-            merge_form = MergeForm(
-                initial={
-                    admin.ACTION_CHECKBOX_NAME: request.POST.getlist(
-                        admin.ACTION_CHECKBOX_NAME
-                    ),
-                    'merge_children': True,
-                }
-            )
-            
-        return render(request, 'tagulous/admin/merge_tags.html', {
-            'title': 'Merge tags',
-            'opts': self.model._meta,
-            'merge_form': merge_form,
-            'tags': queryset,
-        })
-    merge_tags.short_description = 'Merge selected tags...'
-
-class TagTreeModelAdmin(TagModelAdmin):
-    exclude = ['count', 'parent', 'path', 'label', 'level']
