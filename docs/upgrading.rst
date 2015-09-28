@@ -202,6 +202,7 @@ Bugfix:
 * Admin inlines now correctly suppress popup buttons
 * Select2 adaptor correctly parses ajax response
 * :ref:`tagmeta` raises an exception if :ref:`option_tree` is set
+* Default help text no longer changes for :ref:`model_singletagfield`
 
 
 0.9.0, 2015-09-14

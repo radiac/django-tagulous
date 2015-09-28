@@ -25,11 +25,14 @@ class Skill(tagulous.models.TagTreeModel):
 class Person(models.Model):
     name = models.CharField(max_length=255)
     title = tagulous.models.SingleTagField(initial="Mr, Mrs")
-    skills = tagulous.models.TagField(Skill)
+    skills = tagulous.models.TagField(
+        Skill, help_text="This field does not split on spaces",
+    )
     hobbies = tagulous.models.TagField(
         initial="eating, coding, gaming",
         force_lowercase=True,
         blank=True,
+        help_text="This field splits on spaces and commas",
     )
     class Meta:
         verbose_name_plural = 'people'

@@ -70,9 +70,6 @@ class BaseTagField(object):
             self.tag_options = TagOptions(**options)
             self._deferred_options = None
         
-        # Note things we'll need to restore after __init__
-        help_text = kwargs.pop('help_text', '')
-        
         # If the tag model was not specified, we need to specify one.
         # However, we can't reliably auto-generate a unique and repeatable
         # model name for tags here in __init__ - we can only do that in
@@ -84,9 +81,6 @@ class BaseTagField(object):
         
         # Call super __init__
         super(BaseTagField, self).__init__(**kwargs)
-        
-        # Change default help text
-        self.help_text = help_text or 'Enter a comma-separated tag string'
         
         # Make a note that this has not been contributed to a class yet
         self.contributed = False
@@ -434,7 +428,13 @@ class TagField(BaseTagField, models.ManyToManyField):
                     "Invalid argument '%s' for TagField" % forbidden
                 )
         
+        # Note things we'll need to restore after __init__
+        help_text = kwargs.pop('help_text', '')
+        
         super(TagField, self).__init__(*args, **kwargs)
+        
+        # Change default help text
+        self.help_text = help_text or 'Enter a comma-separated tag string'
         
     def contribute_to_class(self, cls, name):
         """
