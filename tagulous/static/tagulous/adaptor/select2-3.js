@@ -202,10 +202,7 @@
                     return {q:term, p:page};
                 },
                 results: function (data) {
-                    if (isSingle) {
-                        // Not in tags mode
-                        data['results'] = listToData(data['results']);
-                    }
+                    data['results'] = listToData(data['results']);
                     return data;
                 }
             };

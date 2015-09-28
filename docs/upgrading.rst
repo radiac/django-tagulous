@@ -195,6 +195,7 @@ Internal:
 Bugfix:
 * ``TagRelatedManager`` instances can be compared to each other
 * Admin inlines now correctly suppress popup buttons
+* Select2 adaptor correctly parses ajax response
 
 
 0.9.0, 2015-09-14
