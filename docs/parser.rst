@@ -119,7 +119,7 @@ The parser adds the global variable ``Tagulous``:
         var result = Tagulous.parseTags('one,two,three', true, true),
             tags = result[0],
             raws = parsed[1];
-        tags === ['one', 'two', three'];
+        tags === ['one', 'two', 'three'];
         raws === ['two,three', 'three', null];
     
     If the last tag is not explicitly ended with a delimiter, the corresponding

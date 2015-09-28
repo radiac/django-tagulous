@@ -45,9 +45,8 @@ You should not find that you need to update ``initial`` regularly; if you
 do, it would be better to use the Tagulous :doc:`admin tools <admin>` to
 add tags to the model directly.
 
-.. note::
-    If provided as a tag string, it will be parsed using spaces and commas,
-    regardless of the :ref:`option_space_delimiter` option.
+If provided as a tag string, it will be parsed using spaces and commas,
+regardless of the :ref:`option_space_delimiter` option.
 
 Default: ``''``
 
@@ -57,7 +56,7 @@ Default: ``''``
 ``protect_initial``
 -------------------
 
-The ``protected`` state for any tags created by the `initial` argument -
+The ``protected`` state for any tags created by the ``initial`` argument -
 see :ref:`protected_tags`.
 
 Default: ``True``

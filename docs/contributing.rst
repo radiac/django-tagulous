@@ -36,7 +36,7 @@ It is greatly appreciated when contributions come with unit tests.
 Use ``setup.py`` to run the python tests on your current python environment;
 you can optionally specify which test to run::
 
-    python setup.py test [tests[.TestClass]]
+    python setup.py test [tests[.test_set.TestClass]]
     
 * If you are using Django 1.4 to 1.6, the tests will look for ``south`` - if it
   is not installed, a warning will be raised and the south tests will be
@@ -48,7 +48,8 @@ Use ``tox`` to run them on one or more supported versions::
 
 Tox will also generate a ``coverage`` HTML report.
 
-You can also use ``detox`` to run the tests concurrently.
+You can also use ``detox`` to run the tests concurrently, although you will
+need to run ``tox report`` again afterwards to generate the coverage report.
 
 Most Tagulous python modules have corresponding test modules, with test classes
 which subclass ``tests.lib.TagTestManager``. They use test apps defined under
