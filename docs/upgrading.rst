@@ -94,14 +94,18 @@ Upgrading from 0.9.0
             # For a custom tag tree model:
             #model = orm['myapp.MyTagTreeModel'].objects.rebuild()
 
-3. In version 0.10.0, ``TagOptions.field_items`` was renamed to
+3. Since version 0.10.0 :ref:`option_tree` cannot be set in :ref:`tagmeta`;
+   custom tag models must get their tree status from their base class.
+
+4. In version 0.10.0, ``TagOptions.field_items`` was renamed to
    ``TagOptions.form_items``, and ``constants.FIELD_OPTIONS`` was renamed to
    ``constants.FORM_OPTIONS``. These were internal, so should not affect your
    code.
 
-4. The tag parsers now accept a new argument to control whether space is used
+5. The tag parsers now accept a new argument to control whether space is used
    as a delimiter or not. These are internal, so should not affect your code,
    unless you have written a custom adaptor.
+
 
 
 .. _upgrade_0-8-0:
@@ -196,6 +200,7 @@ Bugfix:
 * ``TagRelatedManager`` instances can be compared to each other
 * Admin inlines now correctly suppress popup buttons
 * Select2 adaptor correctly parses ajax response
+* :ref:`tagmeta` raises an exception if :ref:`option_tree` is set
 
 
 0.9.0, 2015-09-14

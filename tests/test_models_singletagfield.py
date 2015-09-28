@@ -366,7 +366,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     def test_invalid_to_model(self):
         "Check that the to model has to be a TagModel subclass"
         with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
+            class FailModel_invalid_to(models.Model):
                 to_model = tag_models.SingleTagField(test_models.SingleTagFieldModel)
         self.assertEqual(
             str(cm.exception),
@@ -376,7 +376,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     def test_forbidden_to_field(self):
         "Check that to_field argument raises exception"
         with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
+            class FailModel_forbidden_to(models.Model):
                 to_field = tag_models.SingleTagField(to_field='fail')
         self.assertEqual(
             str(cm.exception),
@@ -386,7 +386,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     def test_forbidden_rel_class(self):
         "Check that rel_class argument raises exception"
         with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
+            class FailModel_forbidden_rel(models.Model):
                 rel_class = tag_models.SingleTagField(rel_class='fail')
         self.assertEqual(
             str(cm.exception),
@@ -396,7 +396,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     def test_forbidden_max_count(self):
         "Check that max_count argument raises exception"
         with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
+            class FailModel_forbidden_max_count(models.Model):
                 max_count = tag_models.SingleTagField(max_count='fail')
         self.assertEqual(
             str(cm.exception),

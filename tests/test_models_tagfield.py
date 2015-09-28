@@ -778,7 +778,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     def test_invalid_to_model(self):
         "Check that the to model has to be a TagModel subclass"
         with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
+            class FailModel_invalid_to(models.Model):
                 to_model = tag_models.TagField(test_models.TagFieldModel)
         self.assertEqual(
             str(cm.exception),
@@ -788,7 +788,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     def test_forbidden_db_table(self):
         "Check that db_table argument raises exception"
         with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
+            class FailModel_forbidden_db(models.Model):
                 db_table = tag_models.TagField(db_table='fail')
         self.assertEqual(
             str(cm.exception),
@@ -798,7 +798,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     def test_forbidden_through(self):
         "Check that through argument raises exception"
         with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
+            class FailModel_forbidden_through(models.Model):
                 through = tag_models.TagField(through='fail')
         self.assertEqual(
             str(cm.exception),
@@ -808,7 +808,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     def test_forbidden_symmetrical(self):
         "Check that symmetrical argument raises exception"
         with self.assertRaises(ValueError) as cm:
-            class FailModel(models.Model):
+            class FailModel_forbidden_symmetrical(models.Model):
                 symmetrical = tag_models.TagField(symmetrical='fail')
         self.assertEqual(
             str(cm.exception),

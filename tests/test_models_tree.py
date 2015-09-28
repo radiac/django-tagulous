@@ -401,9 +401,11 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
 ####### Custom TagTreeModel basics
 ###############################################################################
 
-class TagTreeModelCustomTest(TagTreeTestManager, TestCase):
+class TagTreeModelCustomTest(TagTreeTestManager, TransactionTestCase):
     """
     Test TagTreeModel basics when using a custom model
+    
+    Use a TransactionTestCase so the apps will be reset
     """
     manage_models = [
         test_models.CustomTreeTest,
@@ -422,12 +424,22 @@ class TagTreeModelCustomTest(TagTreeTestManager, TestCase):
         ))
         
     def test_tree_option(self):
-        "Check tag tree model forces tree=True"
+        "Check tag tree model forces tree=True when missing"
         self.assertTrue(self.tag_model.tag_options.tree)
         self.assertTrue(self.singletag_field.tag_options.tree)
         self.assertTrue(self.tag_field.tag_options.tree)
         
-
+    def test_tree_option_tagmodel_fail(self):
+        "Check tree option is not allowed in TagMeta"
+        with self.assertRaises(ValueError) as cm:
+            class FailModel_tree_tagmeta(tag_models.TagModel):
+                class TagMeta:
+                    tree = True
+        self.assertEqual(
+            str(cm.exception),
+            "Cannot set tree option in TagMeta"
+        )
+    
 
 ###############################################################################
 ####### TagTreeModel tree navigation methods

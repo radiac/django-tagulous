@@ -134,6 +134,8 @@ Default: ``True``
 
 ``tree``
 --------
+Field argument only - this cannot be set in :ref:`tagmeta`
+
 If ``True``, slashes in tag names will be used to denote children, eg
 ``grandparent/parent/child``, and these relationships can be traversed.
 See :doc:`models/tag_trees` for more details.

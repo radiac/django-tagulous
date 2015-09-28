@@ -120,6 +120,9 @@ class TagModelBase(models.base.ModelBase):
                 (key, val) for key, val in attrs['TagMeta'].__dict__.items()
                 if key in constants.OPTION_DEFAULTS
             )
+            if 'tree' in tag_meta:
+                raise ValueError('Cannot set tree option in TagMeta')
+            
             new_tag_options = TagOptions(**tag_meta)
         
         # Failing that, look for a direct tag_options setting
