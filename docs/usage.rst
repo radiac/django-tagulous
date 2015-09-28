@@ -3,9 +3,11 @@ Example Usage
 =============
 
 This section contains code examples of how to set up and use Tagulous. If you'd
-like a more hands-on demonstration, there is an example Django project in the
-`github repository <https://github.com/radiac/django-tagulous/tree/master/example>`_
-with some of these code examples.
+like a more interactive demonstration, there is a
+`static demo <http://radiac.net/projects/django-tagulous/demo/>` showing the
+front-end, or an 
+`example project <https://github.com/radiac/django-tagulous/tree/master/example>`_
+for you to install locally and play with some of these code examples.
 
 
 .. _example_auto_tagmodel:
