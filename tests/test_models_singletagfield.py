@@ -348,6 +348,25 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertIsInstance(t1.title, self.tag_model)
         self.assertNotEqual(t1.title, t2.title)
      
+    def test_cascade_delete(self):
+        "Check that deleting a tag deletes its related tagged items (by default)"
+        model = test_models.SingleTagFieldModel
+        t1 = model.objects.create(name='Test 1', title='Mr')
+        t2 = model.objects.create(name='Test 2', title='Mr')
+        t3 = model.objects.create(name='Test 3', title='Mrs')
+        self.assertTagModel(self.tag_model, {
+            'Mr': 2,
+            'Mrs': 1,
+        })
+        self.assertSequenceEqual(model.objects.all(), [t1, t2, t3])
+        
+        # Delete
+        self.tag_model.objects.get(name='Mr').delete()
+        self.assertTagModel(self.tag_model, {
+            'Mrs': 1,
+        })
+        self.assertSequenceEqual(model.objects.all(), [t3])
+
 
 ###############################################################################
 #######  Test invalid fields
