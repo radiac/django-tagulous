@@ -88,9 +88,9 @@ See :ref:`settings` for more information.
 Managing the tag model
 ======================
 
-You can also register a ModelAdmin to manipulate the tag table directly.
-Tagulous's ``register`` function will do this for you - just pass it the tag
-field::
+Tagulous provides additional tag-related functionality for tag models, such as
+the ability to merge tags. You can use Tagulous's ``register`` function to do
+this for you - just pass it the tag field::
 
     tagulous.admin.register(MyModel.tags)
 
