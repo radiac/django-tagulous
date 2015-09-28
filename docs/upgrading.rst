@@ -194,6 +194,7 @@ Internal:
 
 Bugfix:
 * ``TagRelatedManager`` instances can be compared to each other
+* Admin inlines now correctly suppress popup buttons
 
 
 0.9.0, 2015-09-14

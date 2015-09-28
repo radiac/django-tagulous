@@ -21,13 +21,19 @@ admin.options.FORMFIELD_FOR_DBFIELD_DEFAULTS.update({
     tag_models.TagField:        {'widget': tag_forms.AdminTagWidget},
 })
 
-
-class TaggedModelAdmin(admin.ModelAdmin):
+class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
     """
-    Tag-aware abstract base class for ModelAdmin
+    Mixin for BaseModelAdmin subclasses which are for tagged models
     """
     def formfield_for_dbfield(self, db_field, **kwargs):
-        formfield = super(TaggedModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        """
+        Remove the RelatedFieldWidgetWrapper from tag fields, so they don't
+        display popup buttons
+        """
+        formfield = super(
+            TaggedBaseModelAdminMixin, self
+        ).formfield_for_dbfield(db_field, **kwargs)
+        
         if (
             isinstance(db_field, (tag_models.SingleTagField, tag_models.TagField))
             and
@@ -37,6 +43,10 @@ class TaggedModelAdmin(admin.ModelAdmin):
         ):
             formfield.widget = formfield.widget.widget
         return formfield
+
+
+class TaggedModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
+    pass
 
 
 def _create_display(field):
@@ -115,6 +125,13 @@ def enhance(model, admin_class):
         and hasattr(admin_class, 'inlines')
     ):
         for inline_cls in admin_class.inlines:
+            # Make sure inline class uses TaggedBaseModelAdminMixin
+            if not issubclass(inline_cls, TaggedBaseModelAdminMixin):
+                inline_cls.__bases__ = (
+                    TaggedBaseModelAdminMixin,
+                ) + inline_cls.__bases__
+            
+            # Make sure inlines used TaggedInlineFormSet
             if (
                 issubclass(inline_cls.model, tag_models.TaggedModel)
                 and not
@@ -216,11 +233,12 @@ def register(model, admin_class=None, site=None, **options):
 ######################################################## Tag model admin tools
 ###############################################################################
 
-class TagModelAdmin(admin.ModelAdmin):
+class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
     list_display = ['name', 'count', 'protected']
     list_filter = ['protected']
     exclude = ['count']
     actions = ['merge_tags']
+    prepopulated_fields = {"slug": ("name",)}
     
     def merge_tags(self, request, queryset):
         """
@@ -283,4 +301,4 @@ class TagModelAdmin(admin.ModelAdmin):
     merge_tags.short_description = 'Merge selected tags...'
 
 class TagTreeModelAdmin(TagModelAdmin):
-    exclude = ['count', 'path']
+    exclude = ['count', 'parent', 'path', 'label', 'level']
