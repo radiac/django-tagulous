@@ -15,8 +15,8 @@ See the :ref:`example_modelform` example for how this works in practice.
 
 
 
-Using form fields without models
-================================
+Form field classes
+==================
 
 You can also use Tagulous form fields outside model forms by using the
 :ref:`form_singletagfield` and :ref:`form_tagfield` form fields - see the
@@ -27,7 +27,7 @@ You can also use Tagulous form fields outside model forms by using the
 .. _form_singletagfield:
 
 ``tagulous.forms.SingleTagField``
-=================================
+---------------------------------
 
 This field accepts two new arguments:
 
@@ -46,7 +46,7 @@ value is empty.
 .. _form_tagfield:
 
 ``tagulous.forms.TagField``
-===========================
+---------------------------
 
 This field accepts the same two new arguments as a ``SingleTagField``:
 
@@ -64,7 +64,7 @@ strings) - or an empty list if there are no tags.
 
 
 ``tagulous.forms.TaggedInlineFormSet``
-======================================
+--------------------------------------
 
 In most cases Tagulous works with Django's default inline model formsets, and
 you don't need to do anything special.
