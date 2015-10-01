@@ -207,6 +207,7 @@ required:
       
    2. When using Django migrations::
       
+        from django.utils import six
         import tagulous.models.migrations
         ...
         
@@ -220,7 +221,7 @@ required:
                 name='path',
                 field=models.TextField(unique=True),
                 preserve_default=False,
-                set_fn=lambda obj: setattr(obj, 'path', str(obj.pk)),
+                set_fn=lambda obj: setattr(obj, 'path', six.text_type(obj.pk)),
             ) + [
                 ...
             ]
@@ -236,11 +237,12 @@ required:
             # replace ``_Tagulous_MyModel_tags`` with your tag model name
             
             from tagulous.models.migrations import add_unique_column
+            from django.utils import six
             
             # Adding field '_Tagulous_MyModel_tags.path'
             add_unique_column(
                 self, db, orm['myapp._Tagulous_MyModel_tags'], 'path',
-                lambda obj: setattr(obj, 'path', str(obj.pk)),
+                lambda obj: setattr(obj, 'path', six.text_type(obj.pk)),
                 'django.db.models.fields.TextField',
             )
     

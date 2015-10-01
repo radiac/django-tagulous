@@ -66,7 +66,7 @@ You can use the fields to assign and query values::
     
     # Step through the list of instances in the tag model
     for skill in instance.skills.all():
-        print u'%s' % skill
+        do_something(skill)
         
     # Compare tag fields
     if instance.skills == other.skills:

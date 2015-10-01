@@ -148,8 +148,8 @@ Evaluation (getter)
     
     Example::
     
-        title_instance = person.title
-        print("Tag name: ", title_instance.name)
+        tag = person.title
+        report = "Tag %s used %d times " % (tag.name, tag.count)
 
 The ``tag_model`` and ``tag_options`` attributes are not available on a bound
 field. If you only have an instance of the tagged model, you can access them by
@@ -268,12 +268,12 @@ Returns a list of tag names.
     # tag_list == ['Judo', 'Kung Fu']
 
 
-``__unicode__()``
-~~~~~~~~~~~~~~~~~
+``__str__()``, ``__unicode__()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Same as ``get_tag_string``
 ::
 
-    print u'%s' % person.skills
+    report = '%s' % person.skills
 
 
 ``__eq__``, ``__ne__``

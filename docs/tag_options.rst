@@ -302,7 +302,7 @@ object, except for ``to``. It also provides two instance methods:
 
 Example::
 
-    print MyModel.tags.tag_options.initial
+    initial_tags = MyModel.tags.tag_options.initial
     if "force_lowercase" in MyModel.tags.tag_options.items():
         ...
 

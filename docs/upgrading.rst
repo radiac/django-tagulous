@@ -175,6 +175,17 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+0.11.0, in development
+----------------------
+
+Feature:
+* Add support for Python 3.2 (Django 1.5 to 1.8)
+
+Internal:
+* Change ``tagulous.models.initial.field_initialise_tags`` and
+  ``model_initialise_tags`` to take a file handle as ``report``.
+
+
 0.10.0, 2015-09-28
 ------------------
 See :ref:`upgrade instructions <upgrade_0-9-0>`
