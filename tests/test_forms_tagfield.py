@@ -6,7 +6,10 @@ Modules tested:
     tagulous.forms.TagField
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from django import forms
+from django.utils import six
 
 from tests.lib import *
 
@@ -70,7 +73,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
         class LocalTestForm(forms.Form):
             tag = tag_forms.TagField()
         form = LocalTestForm()
-        self.assertHTMLEqual(str(form['tag']), (
+        self.assertHTMLEqual(six.text_type(form['tag']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
@@ -82,7 +85,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
         class LocalTestForm(forms.Form):
             tag = tag_forms.TagField(required=False)
         form = LocalTestForm()
-        self.assertHTMLEqual(str(form['tag']), (
+        self.assertHTMLEqual(six.text_type(form['tag']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: false}" '
             'data-tagulous="true" '
@@ -96,7 +99,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
                 autocomplete_tags=['one', 'two', 'three'],
             )
         form = LocalTestForm()
-        self.assertHTMLEqual(str(form['tag']), (
+        self.assertHTMLEqual(six.text_type(form['tag']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
@@ -115,7 +118,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
                 ),
             )
         form = LocalTestForm()
-        self.assertHTMLEqual(str(form['tag']), (
+        self.assertHTMLEqual(six.text_type(form['tag']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
@@ -127,7 +130,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
     def test_render_value(self):
         "Check widget renders value"
         form = test_forms.TagFieldForm(data={'tags': 'run, walk'})
-        self.assertHTMLEqual(str(form['tags']), (
+        self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
@@ -146,8 +149,8 @@ class FormTagFieldTest(TagTestManager, TestCase):
             )
         form = LocalTestForm()
         with self.assertRaises(ValueError) as cm:
-            rendered = str(form['tag'])
-        self.assertTrue(str(cm.exception).startswith(
+            rendered = six.text_type(form['tag'])
+        self.assertTrue(six.text_type(cm.exception).startswith(
             "Invalid autocomplete view: Reverse for '%s' with arguments '()' "
             "and keyword arguments '{}' not found." % autocomplete_view
         ))
@@ -177,7 +180,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
         
         # Render
         # Expecting bees:buzz, cats:purr, cows:moo
-        self.assertHTMLEqual(str(form['tags']), (
+        self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;autocomplete_settings&quot;: {&quot;cows&quot;: &quot;moo'
@@ -193,7 +196,8 @@ class FormTagFieldTest(TagTestManager, TestCase):
         with self.assertRaises(ValueError) as cm:
             form['tags'].field.prepare_value(['tag', 'list', 'fails'])
         self.assertEqual(
-            str(cm.exception), "Tag field could not prepare unexpected value",
+            six.text_type(cm.exception),
+            "Tag field could not prepare unexpected value",
         )
 
 
@@ -328,7 +332,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         
         # Confirm default
         field1 = self.form().fields['tags']
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             [t.name for t in field1.autocomplete_tags],
             [t.name for t in self.tag_model.objects.all()],
         )
@@ -337,7 +341,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         field2 = self.model.tags.formfield(
             autocomplete_tags=['pink', 'lime']
         )
-        self.assertItemsEqual(field2.autocomplete_tags, ['pink', 'lime'])
+        self.assertSequenceEqual(field2.autocomplete_tags, ['pink', 'lime'])
         
     def test_render_tag_list(self):
         "Check widget renders data-tag-list"
@@ -350,7 +354,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'yellow': 0,
         })
         form = self.form(data={'name': 'Test 1', 'tags': 'red, blue'})
-        self.assertHTMLEqual(str(form['tags']), (
+        self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
@@ -362,7 +366,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
     def test_initial_string(self):
         "Check initial tag string"
         form = test_forms.TagFieldForm(initial={'tags': 'red, blue'})
-        self.assertHTMLEqual(str(form['tags']), (
+        self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
@@ -374,7 +378,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         t1 = self.tag_model.objects.create(name='red')
         t2 = self.tag_model.objects.create(name='blue')
         form = test_forms.TagFieldForm(initial={'tags': [t1, t2]})
-        self.assertHTMLEqual(str(form['tags']), (
+        self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
@@ -387,7 +391,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         t2 = self.tag_model.objects.create(name='blue')
         tags = self.tag_model.objects.all()
         form = test_forms.TagFieldForm(initial={'tags': tags})
-        self.assertHTMLEqual(str(form['tags']), (
+        self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
@@ -398,7 +402,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         "Check edit tagged model form instance works"
         t1 = self.model.objects.create(name='Test 1', tags='blue, red')
         form = self.form(instance=t1)
-        self.assertHTMLEqual(str(form['tags']), (
+        self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-list="[&quot;blue&quot;, &quot;red&quot;]" '
             'data-tag-options="{&quot;required&quot;: true}" '
@@ -421,7 +425,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'bees': 'buzz',
         }
 
-        self.assertHTMLEqual(str(form['two']), (
+        self.assertHTMLEqual(six.text_type(form['two']), (
             '<input autocomplete="off" '
             'data-tag-list="[]" '
             'data-tag-options="{&quot;autocomplete_settings&quot;: '
@@ -477,7 +481,7 @@ class ModelFormTagFieldRequiredTest(TagTestManager, TestCase):
         t1 = form.save()
         self.assertEqual(t1.name, 'Test 1')
         self.assertEqual(t1.tag, 'blue, red')
-        self.assertEqual(str(t1.tag), 'blue, red')
+        self.assertEqual(six.text_type(t1.tag), 'blue, red')
         self.assertIsInstance(t1.tag, tag_models.TagRelatedManagerMixin)
         self.assertEqual(t1.tag.count(), 2)
         self.assertEqual(t1.tag.all()[0], 'blue')
@@ -492,7 +496,7 @@ class ModelFormTagFieldRequiredTest(TagTestManager, TestCase):
         form = self.form(data={'name': 'Test 1'})
         self.assertFalse(form.is_valid())
         self.assertEqual(len(form.errors.keys()), 1)
-        self.assertEqual(form.errors.keys()[0], 'tag')
+        self.assertEqual(list(form.errors.keys())[0], 'tag')
         self.assertEqual(len(form.errors['tag']), 1)
         self.assertEqual(form.errors['tag'][0], 'This field is required.')
 
@@ -530,7 +534,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         
         # No effect on form data
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['case_sensitive_true'], [u'adam'])
+        self.assertEqual(form.cleaned_data['case_sensitive_true'], ['adam'])
         
         # No effect on save
         obj = form.save()
@@ -554,7 +558,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         
         # Still no effect on form data
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['case_sensitive_false'], [u'adam'])
+        self.assertEqual(form.cleaned_data['case_sensitive_false'], ['adam'])
         
         # But when saved, the instance will be capitalised
         obj = form.save()
@@ -577,7 +581,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         
         # Form data returns lowercase case
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['force_lowercase_true'], [u'adam'])
+        self.assertEqual(form.cleaned_data['force_lowercase_true'], ['adam'])
         
         # When saved, the instance will be lowercase
         obj = form.save()
@@ -597,7 +601,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         
         # Check the input string is returned in the new case
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['force_lowercase_false'], [u'Adam'])
+        self.assertEqual(form.cleaned_data['force_lowercase_false'], ['Adam'])
     
     def test_max_count(self):
         "Test form TagField max_count is passed and enforced"
@@ -610,29 +614,29 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         
         # Check the input string is returned in the new case
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['max_count'], [u'one'])
+        self.assertEqual(form.cleaned_data['max_count'], ['one'])
         
         # Check two
         form = self.form(data={'max_count': 'one, two'})
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['max_count'], [u'one', u'two'])
+        self.assertEqual(form.cleaned_data['max_count'], ['one', 'two'])
         
         # Check three
         form = self.form(data={'max_count': 'one, two, three'})
         self.assertTrue(form.is_valid())
         self.assertEqual(
-            form.cleaned_data['max_count'], sorted([u'one', u'two', u'three'])
+            form.cleaned_data['max_count'], sorted(['one', 'two', 'three'])
         )
 
         # Check four
         form = self.form(data={'max_count': 'one, two, three, four'})
         self.assertFalse(form.is_valid())
         self.assertEqual(len(form.errors.keys()), 1)
-        self.assertEqual(form.errors.keys()[0], 'max_count')
+        self.assertEqual(list(form.errors.keys())[0], 'max_count')
         self.assertEqual(len(form.errors['max_count']), 1)
         self.assertEqual(
             form.errors['max_count'][0],
-            u'This field can only have 3 arguments',
+            'This field can only have 3 arguments',
         )
     
     def text_max_count_1(self):
@@ -646,13 +650,13 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
             )
         form = self.form(data={'max_count': 'one'})
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['max_count'], [u'one'])
+        self.assertEqual(form.cleaned_data['max_count'], ['one'])
         
         # Check two
         form = self.form(data={'max_count': 'one, two'})
         self.assertFalse(form.is_valid())
         self.assertEqual(len(form.errors.keys()), 1)
-        self.assertEqual(form.errors.keys()[0], 'max_count')
+        self.assertEqual(list(form.errors.keys())[0], 'max_count')
         self.assertEqual(len(form.errors['max_count']), 1)
         self.assertEqual(
             form.errors['max_count'][0],
@@ -668,7 +672,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         
         # Confirm default
         field = self.form().fields['initial_string']
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             [t.name for t in field.autocomplete_tags],
             [t.name for t in tag_model.objects.all()],
         )
@@ -682,7 +686,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         
         # Confirm default
         field = self.form().fields['initial_list']
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             [t.name for t in field.autocomplete_tags],
             [t.name for t in tag_model.objects.initial()],
         )

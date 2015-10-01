@@ -9,7 +9,12 @@ Modules tested:
     tagulous.models.fields.SingleTagField
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
+
+from django.utils import six
+
 from tests.lib import *
+
 
 class ModelSingleTagFieldTest(TagTestManager, TestCase):
     """
@@ -122,16 +127,14 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         # Returned before save
         self.assertEqual(t1.title.__class__, self.tag_model)
         self.assertEqual(t1.title.name, 'Mr')
-        self.assertEqual('%s' % t1.title, 'Mr')
-        self.assertEqual(u'%s' % t1.title, 'Mr')
+        self.assertEqual(six.text_type(t1.title), 'Mr')
         self.assertTagModel(self.tag_model, {})
         
         # Returned after save
         t1.save()
         self.assertEqual(t1.title.__class__, self.tag_model)
         self.assertEqual(t1.title.name, 'Mr')
-        self.assertEqual('%s' % t1.title, 'Mr')
-        self.assertEqual(u'%s' % t1.title, 'Mr')
+        self.assertEqual(six.text_type(t1.title), 'Mr')
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
@@ -147,8 +150,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t2.save()
         self.assertEqual(t1.name, 'Test 1')
         self.assertEqual(t2.name, 'Test 2')
-        self.assertEqual(str(t1.title), 'Mr')
-        self.assertEqual(str(t2.title), 'Mr')
+        self.assertEqual(six.text_type(t1.title), 'Mr')
+        self.assertEqual(six.text_type(t2.title), 'Mr')
         self.assertEqual(t1.title, t2.title)
         self.assertEqual(t1.title.pk, t2.title.pk)
         self.assertTagModel(self.tag_model, {
@@ -242,8 +245,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         """
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
         t2 = test_models.SingleTagFieldModel.objects.create(name='Test 2', title='Mrs')
-        self.assertEqual(str(t1.title.name), 'Mr')
-        self.assertEqual(str(t2.title.name), 'Mrs')
+        self.assertEqual(six.text_type(t1.title.name), 'Mr')
+        self.assertEqual(six.text_type(t2.title.name), 'Mrs')
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
             'Mrs': 1,
@@ -251,7 +254,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         
         # Now change the title and delete without saving
         t1.title = 'Mrs'
-        self.assertEqual(str(t1.title.name), 'Mrs')
+        self.assertEqual(six.text_type(t1.title.name), 'Mrs')
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
             'Mrs': 1,
@@ -264,7 +267,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         })
         
         # But check that tagulous still thinks the tag is 'Mrs'
-        self.assertEqual(str(t1.title.name), 'Mrs')
+        self.assertEqual(six.text_type(t1.title.name), 'Mrs')
     
     def test_save_deleted_instance(self):
         """
@@ -309,8 +312,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t1 = test_models.SingleTagFieldModel(name='Test 1', title='Mr')
         t2 = test_models.SingleTagFieldModel(name='Test 1', title='Mrs')
         self.assertTagModel(self.tag_model, {})
-        self.assertEqual(str(t1.title), 'Mr')
-        self.assertEqual(str(t2.title), 'Mrs')
+        self.assertEqual(six.text_type(t1.title), 'Mr')
+        self.assertEqual(six.text_type(t2.title), 'Mrs')
         t1.save()
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
@@ -320,8 +323,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mr': 1,
             'Mrs': 1,
         })
-        self.assertEqual(str(t1.title), 'Mr')
-        self.assertEqual(str(t2.title), 'Mrs')
+        self.assertEqual(six.text_type(t1.title), 'Mr')
+        self.assertEqual(six.text_type(t2.title), 'Mrs')
     
     def test_load_instance(self):
         "Check that SingleTagField is loaded correctly"
@@ -388,7 +391,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             class FailModel_invalid_to(models.Model):
                 to_model = tag_models.SingleTagField(test_models.SingleTagFieldModel)
         self.assertEqual(
-            str(cm.exception),
+            six.text_type(cm.exception),
             "Tag model must be a subclass of TagModel"
         )
     
@@ -398,7 +401,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             class FailModel_forbidden_to(models.Model):
                 to_field = tag_models.SingleTagField(to_field='fail')
         self.assertEqual(
-            str(cm.exception),
+            six.text_type(cm.exception),
             "Invalid argument 'to_field' for SingleTagField"
         )
 
@@ -408,7 +411,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             class FailModel_forbidden_rel(models.Model):
                 rel_class = tag_models.SingleTagField(rel_class='fail')
         self.assertEqual(
-            str(cm.exception),
+            six.text_type(cm.exception),
             "Invalid argument 'rel_class' for SingleTagField"
         )
 
@@ -418,7 +421,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             class FailModel_forbidden_max_count(models.Model):
                 max_count = tag_models.SingleTagField(max_count='fail')
         self.assertEqual(
-            str(cm.exception),
+            six.text_type(cm.exception),
             "Invalid argument 'max_count' for SingleTagField"
         )
     
@@ -471,13 +474,13 @@ class ModelSingleTagFieldRequiredTest(TagTestManager, TestCase):
         with self.assertRaises(exceptions.ValidationError) as cm:
             t1 = test_models.SingleTagFieldRequiredModel(name='Test')
             t1.save()
-        self.assertEqual(cm.exception.messages[0], u'This field cannot be null.')
+        self.assertEqual(cm.exception.messages[0], 'This field cannot be null.')
     
     def test_required_create_raises(self):
         "Check a required SingleTagField raises an exception in object.create"
         with self.assertRaises(exceptions.ValidationError) as cm:
             t1 = test_models.SingleTagFieldRequiredModel.objects.create(name='Test')
-        self.assertEqual(cm.exception.messages[0], u'This field cannot be null.')
+        self.assertEqual(cm.exception.messages[0], 'This field cannot be null.')
     
     
 ###############################################################################

@@ -3,7 +3,10 @@ Tag parsing and printing
 
 Loosely based on django-taggit and django-tagging
 """
-from django.utils.encoding import force_unicode
+from __future__ import unicode_literals
+
+from django.utils import six
+from django.utils.encoding import force_text
 
 import unicodedata
 try:
@@ -40,7 +43,7 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
     if not tag_string:
         return []
     
-    tag_string = force_unicode(tag_string)
+    tag_string = force_text(tag_string)
     
     # Prep variables for the parser
     tags = []
@@ -98,9 +101,9 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
                 
                 # Add back escaped start/end quotes
                 tag = (
-                    QUOTE * (left_quote_count / 2)
+                    QUOTE * int(left_quote_count / 2)
                 ) + tag + (
-                    QUOTE * (right_quote_count / 2)
+                    QUOTE * int(right_quote_count / 2)
                 )
                 
                 # Add back insignificant unescaped quotes.
@@ -151,11 +154,11 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
                 in_quote = True
             
             # Tag starts with escaped quotes
-            tag = QUOTE * (quote_count / 2)
+            tag = QUOTE * int(quote_count / 2)
         else:
             # Quote in middle or at end
             # Add any escaped
-            tag += QUOTE * (quote_count / 2)
+            tag += QUOTE * int(quote_count / 2)
             
             # An odd number followed by a delimiter will mean it has ended
             # Need to look ahead to figure it out
@@ -210,7 +213,7 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
     return tags
     
     
-def split_strip(string, delimiter=u','):
+def split_strip(string, delimiter=','):
     """
     Splits ``string`` on ``delimiter``, stripping each resulting string
     and returning a list of non-empty strings.
@@ -233,14 +236,14 @@ def render_tags(tags):
     names = []
     for tag in tags:
         # This will catch a list of Tag objects or tag name strings
-        name = u'%s' % tag
+        name = six.text_type(tag)
         
         name = name.replace(QUOTE, DOUBLE_QUOTE)
         if COMMA in name or SPACE in name:
-            names.append(u'"%s"' % name)
+            names.append('"%s"' % name)
         else:
             names.append(name)
-    return u', '.join(sorted(names))
+    return ', '.join(sorted(names))
 
 
 ###############################################################################
@@ -332,10 +335,10 @@ def unicode_to_ascii(raw):
     Returns unicode string which only contains ascii characters
     """
     if unidecode is not None:
-        return unicode(unidecode(unicode(raw)))
+        return six.text_type(unidecode(six.text_type(raw)))
         
-    return u''.join(
+    return ''.join(
         c if ord(c)<128 else '_'
-        for c in unicodedata.normalize('NFD', unicode(raw))
+        for c in unicodedata.normalize('NFD', six.text_type(raw))
         if unicodedata.category(c) != 'Mn'
     )

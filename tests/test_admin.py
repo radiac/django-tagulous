@@ -5,6 +5,7 @@ Modules tested:
     tagulous.admin
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
 import re
 import copy
 
@@ -15,6 +16,7 @@ from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
 from django.http import HttpRequest, QueryDict
+from django.utils import six
 
 from tests.lib import *
 
@@ -142,7 +144,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         with self.assertRaises(exceptions.ImproperlyConfigured) as cm:
             tag_admin.register([self.model, self.model], self.admin, site=self.site)
         self.assertEqual(
-            str(cm.exception),
+            six.text_type(cm.exception),
             'Tagulous can only register a single model with admin.',
         )
         self.assertFalse(self.model in self.site._registry)
@@ -165,7 +167,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
         self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
-        self.assertItemsEqual(ma.get_list_display(request), ['name'])
+        self.assertSequenceEqual(ma.get_list_display(request), ['name'])
 
     def test_register_tag_descriptor(self):
         "Check register tag descriptor creates correct admin class"
@@ -258,7 +260,7 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
     def test_changelist_display(self):
         "Check display fields have registered ok and return valid values"
         t1 = self.model.objects.create(name='Test 1', singletag='Mr', tags='red, blue')
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             self.ma.get_list_display(request),
             ['name', 'singletag', '_tagulous_display_tags'],
         )
@@ -279,10 +281,10 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
             re.sub(r' class=".+?"', '', r)
             for r in row
         ]
-        self.assertItemsEqual(row, [
-            u'<td>Test 1</td>',
-            u'<td>Mr</td>',
-            u'<td>blue, red</td>',
+        self.assertSequenceEqual(row, [
+            '<td>Test 1</td>',
+            '<td>Mr</td>',
+            '<td>blue, red</td>',
         ])
     
     def test_changelist_filter(self):
@@ -291,7 +293,7 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
         t3 = self.model.objects.create(name='Test 3', singletag='Mr', tags='green, blue')
         
         # Check filters are listed
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             self.ma.get_list_filter(request),
             ['singletag', 'tags'],
         )
@@ -391,7 +393,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         # Check response is appropriate
         # Django 1.4 doesn't support assertInHTML, so have to do it manually
         self.assertEqual(len(msgs), 0)
-        content = str(response)
+        content = response.content.decode('utf-8')
         content_form = content[
             content.index('<form ') : content.index('</form>') + 7
         ]
@@ -525,7 +527,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         self.assertEqual(
             msgs[0].message, 'Tags merged'
         )
-        self.assertTrue('Location: %s' % MOCK_PATH in str(response))
+        self.assertEqual(response._headers['location'][1], MOCK_PATH)
         
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -597,8 +599,8 @@ class TagAdminTest(TagAdminTestManager):
         self.assertEqual(
             msgs[0].message, 'You must select at least two tags to merge'
         )
-        self.assertTrue('Location: %s' % MOCK_PATH in str(response))
-    
+        self.assertEqual(response._headers['location'][1], MOCK_PATH)
+        
     def test_merge_form_two(self):
         "Check the merge_tags form when two tag selected"
         self.populate()
@@ -820,7 +822,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
             'simplemixedtest_set-TOTAL_FORMS': 3,
             'simplemixedtest_set-INITIAL_FORMS': 0,
             'simplemixedtest_set-MAX_NUM_FORMS': 1000,
-            '_save': u'Save',
+            '_save': 'Save',
             'name': 'Mr',
             'slug': 'mr',
             'simplemixedtest_set-0-name': 'Test 1',
@@ -855,7 +857,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.assertNotContains(response, 'id="id_simplemixedtest_set-4-singletag"')
         
         # Check the fk is an id, to confirm it's using TaggedInlineFormSet
-        html = response.content
+        html = response.content.decode('utf-8')
         i_name = html.index('name="simplemixedtest_set-0-singletag"')
         i_open = html.rindex('<', 0, i_name)
         i_close = html.index('>', i_name)
@@ -889,7 +891,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
             'simplemixedtest_set-TOTAL_FORMS': 5,
             'simplemixedtest_set-INITIAL_FORMS': 2,
             'simplemixedtest_set-MAX_NUM_FORMS': 1000,
-            '_save': u'Save',
+            '_save': 'Save',
             'name': 'Mr',
             'slug': 'mr',
             

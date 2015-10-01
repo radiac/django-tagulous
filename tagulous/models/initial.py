@@ -1,3 +1,7 @@
+from __future__ import unicode_literals
+
+from django.utils import six
+
 from tagulous.models.fields import SingleTagField, TagField
 
 
@@ -6,34 +10,45 @@ from tagulous.models.fields import SingleTagField, TagField
 # Used by tests and the management command `initialtags`
 #
 
-def field_initialise_tags(model, field, report=False):
+def field_initialise_tags(model, field, report=None):
     """
     Load any initial tags for the specified tag field
+    
+    You will not normally need to call this directly - instead use the
+    management command ``initialtags``.
+    
+    Arguments:
+        model       Model containing the field
+        field       Field with initial tags to load
+        report      Optional: a file handle to write verbose reports to
+    
     Returns True if loaded, False if nothing to load
-    If report=True, a line is written to STDOUT to report the field is loading
     """
     if not field.tag_options.initial:
         return False
         
     if report:
-        print "Loading initial tags for %s.%s.%s" % (
+        report.write("Loading initial tags for %s.%s.%s\n" % (
             model._meta.app_label,
             model.__name__,
             field.name,
-        )
+        ))
     
     descriptor = getattr(model, field.name)
     descriptor.load_initial()
     return True
 
 
-def model_initialise_tags(model, report=False):
+def model_initialise_tags(model, report=None):
     """
     Load any initial tags for the given model
-    Do not call directly - instead use the management command `initialtags`
+    
+    You will not normally need to call this directly - instead use the
+    management command ``initialtags``.
+    
     Arguments:
         model       Model to check for tag fields to load
-        report      Passed to field_initialise_tags
+        report      Optional: a file handle to write verbose reports to
     """
     if hasattr(model._meta, 'get_fields'):
         # Django 1.8 uses new meta API

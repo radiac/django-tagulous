@@ -7,11 +7,12 @@ descriptors during the ``contribute_to_class`` phase.
 Their main purposes is to act as getter/setters and pass data to and from
 manager instances.
 """
-
+from __future__ import unicode_literals
 import collections
 
 import django
 from django.db import models
+from django.utils import six
 
 from tagulous.models.managers import (
     SingleTagManager, TagRelatedManagerMixin, FakeTagRelatedManager
@@ -253,7 +254,7 @@ class TagDescriptor(BaseTagDescriptor):
         
         # Add in the mixin
         manager.__class__ = type(
-            'TagRelatedManager',
+            str('TagRelatedManager'),
             (TagRelatedManagerMixin, manager.__class__),
             {}
         )
@@ -286,7 +287,7 @@ class TagDescriptor(BaseTagDescriptor):
             # Clear
             manager.set_tag_string('')
         
-        elif isinstance(value, basestring):
+        elif isinstance(value, six.string_types):
             # If it's a string, it must be a tag string
             manager.set_tag_string(value)
         

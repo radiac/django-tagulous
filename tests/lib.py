@@ -1,14 +1,16 @@
 from __future__ import absolute_import
-from cStringIO import StringIO
+from __future__ import print_function
+from __future__ import unicode_literals
 import json
 import sys
 import unittest
 
 import django
 from django.db import models
+from django.contrib.auth.models import User
 from django.core import exceptions
 from django.test import TestCase, TransactionTestCase, testcases
-from django.contrib.auth.models import User
+from django.utils import six
 
 from tagulous import constants as tag_constants
 from tagulous import models as tag_models
@@ -23,6 +25,10 @@ from tests.tagulous_tests_app import urls as test_urls
 from tests.tagulous_tests_app import forms as test_forms
 from tests.tagulous_tests_app2 import models as test_models2
 
+if six.PY3:
+    from io import StringIO
+else:
+    from cStringIO import StringIO
 
 class TagTestManager(object):
     """
@@ -105,8 +111,10 @@ class TagTestManager(object):
                 if isinstance(
                     instance.__class__._meta.get_field(field_name),
                     (tag_models.SingleTagField, tag_models.TagField)
-                ) and isinstance(val, basestring):
-                    self.assertEqual(str(getattr(instance, field_name)), val)
+                ) and isinstance(val, six.string_types):
+                    self.assertEqual(
+                        six.text_type(getattr(instance, field_name)), val,
+                    )
                 elif isinstance(
                     instance.__class__._meta.get_field(field_name),
                     models.ManyToManyField
@@ -117,7 +125,7 @@ class TagTestManager(object):
                         self.assertTrue(obj in mm_objs)
                 else:
                     self.assertEqual(getattr(instance, field_name), val)
-            except AssertionError, e:
+            except AssertionError as e:
                 self.fail(
                     'Instances not equal for field %s: %s' % (field_name, e)
                 )
@@ -143,7 +151,7 @@ class TagTestManager(object):
     def _extract_json(self, dom, path=''):
         "Recursively break out json from a django.utils.html_parser dom object"
         jsons = {}
-        if isinstance(dom, basestring):
+        if isinstance(dom, six.string_types):
             return dom, {}
         el_name = path + '.' + dom.name
         
@@ -189,14 +197,16 @@ class TagTestManager(object):
         
         # Convert dom back to string, call super to test doms
         # Yes it's inefficient, but it's tests and saves me from forking it
-        super(TagTestManager, self).assertHTMLEqual(str(dom1), str(dom2))
+        super(TagTestManager, self).assertHTMLEqual(
+            six.text_type(dom1), six.text_type(dom2),
+        )
         
         # Test jsons
         # Assert we've found the same elements
-        self.assertItemsEqual(json1.keys(), json2.keys())
+        self.assertSequenceEqual(json1.keys(), json2.keys())
         for dom_path in json1.keys():
             # Assert the element has the same attributes
-            self.assertItemsEqual(
+            self.assertSequenceEqual(
                 json1[dom_path].keys(), json2[dom_path].keys(),
                 msg='%s has attributes do not match: %r != %r' % (
                     dom_path, json1[dom_path].keys(), json2[dom_path].keys(),
@@ -230,13 +240,13 @@ class TagTestManager(object):
         """
         Print tag model tags and their counts, to help debug failed tests
         """
-        print "-=-=-=-=-=-"
+        print("-=-=-=-=-=-")
         if isinstance(model, (tag_models.SingleTagDescriptor, tag_models.TagDescriptor)):
             model = model.tag_model
-        print "Tag model: %s" % model
+        print("Tag model: %s" % model)
         for tag in model.objects.all():
-            print '%s: %d' % (tag.name, tag.count)
-        print "-=-=-=-=-=-"
+            print('%s: %d' % (tag.name, tag.count))
+        print("-=-=-=-=-=-")
     
     def prettyPrint(self, data):
         "Pretty print data, to help debug failed tests"
@@ -254,6 +264,10 @@ class Capturing(list):
         sys.stdout = sys.stderr = self._stringio = StringIO()
         return self
     def __exit__(self, *args):
-        self.extend(self._stringio.getvalue().splitlines())
+        # Ensure output is unicode
+        self.extend(
+            six.text_type(line)
+            for line in self._stringio.getvalue().splitlines()
+        )
         sys.stdout = self._stdout
         sys.stderr = self._stderr

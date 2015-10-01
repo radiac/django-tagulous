@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.utils import six
+
 import tagulous.models.fields
 import tagulous.models.migrations
 
@@ -35,7 +37,7 @@ class Migration(migrations.Migration):
         name='path',
         field=models.TextField(unique=True),
         preserve_default=False,
-        set_fn=lambda obj: setattr(obj, 'path', str(obj.pk)),
+        set_fn=lambda obj: setattr(obj, 'path', six.text_type(obj.pk)),
     ) + [
         migrations.AlterField(
             model_name='migrationtestmodel',

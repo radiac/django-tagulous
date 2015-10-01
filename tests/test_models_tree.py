@@ -5,6 +5,10 @@ Modules tested:
     tagulous.models.tree
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
+
+from django.utils import six
+
 from tests.lib import *
 
 
@@ -184,7 +188,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         # Break slugs
         t3 = self.tag_model.objects.create(name='One/Two/Three')
         for tag in self.tag_model.objects.all():
-            tag.slug = str(tag.pk)
+            tag.slug = six.text_type(tag.pk)
             tag.save()
         
         # Load
@@ -436,7 +440,7 @@ class TagTreeModelCustomTest(TagTreeTestManager, TransactionTestCase):
                 class TagMeta:
                     tree = True
         self.assertEqual(
-            str(cm.exception),
+            six.text_type(cm.exception),
             "Cannot set tree option in TagMeta"
         )
     
@@ -583,97 +587,97 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
     def test_ancestors_l1(self):
         qs = self.tag_model.objects.filter(level=1)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Animal', u'Vegetable',
+            'Animal', 'Vegetable',
         ])
         
         qs = qs.with_ancestors()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal', u'Vegetable',
+            'Animal', 'Vegetable',
         ])
 
     def test_ancestors_l2(self):
         qs = self.tag_model.objects.filter(level=2)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Insect', u'Mammal',
+            'Insect', 'Mammal',
         ])
         
         qs = qs.with_ancestors()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal',
-            u'Animal/Insect',
-            u'Animal/Mammal',
+            'Animal',
+            'Animal/Insect',
+            'Animal/Mammal',
         ])
         
     def test_ancestors_l3(self):
         qs = self.tag_model.objects.filter(level=3)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Bee', u'Cat', u'Dog',
+            'Bee', 'Cat', 'Dog',
         ])
         
         qs = qs.with_ancestors()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal',
-            u'Animal/Insect',
-            u'Animal/Insect/Bee',
-            u'Animal/Mammal',
-            u'Animal/Mammal/Cat',
-            u'Animal/Mammal/Dog',
+            'Animal',
+            'Animal/Insect',
+            'Animal/Insect/Bee',
+            'Animal/Mammal',
+            'Animal/Mammal/Cat',
+            'Animal/Mammal/Dog',
         ])
     
     def test_descendants_l1(self):
         qs = self.tag_model.objects.filter(level=1)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Animal', u'Vegetable',
+            'Animal', 'Vegetable',
         ])
         
         qs = qs.with_descendants()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal',
-            u'Animal/Insect',
-            u'Animal/Insect/Bee',
-            u'Animal/Mammal',
-            u'Animal/Mammal/Cat',
-            u'Animal/Mammal/Dog',
-            u'Vegetable',
+            'Animal',
+            'Animal/Insect',
+            'Animal/Insect/Bee',
+            'Animal/Mammal',
+            'Animal/Mammal/Cat',
+            'Animal/Mammal/Dog',
+            'Vegetable',
         ])
     
     def test_descendants_l2(self):
         qs = self.tag_model.objects.filter(level=2)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Insect', u'Mammal',
+            'Insect', 'Mammal',
         ])
         
         qs = qs.with_descendants()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal/Insect',
-            u'Animal/Insect/Bee',
-            u'Animal/Mammal',
-            u'Animal/Mammal/Cat',
-            u'Animal/Mammal/Dog',
+            'Animal/Insect',
+            'Animal/Insect/Bee',
+            'Animal/Mammal',
+            'Animal/Mammal/Cat',
+            'Animal/Mammal/Dog',
         ])
     
     def test_descendants_l3(self):
         qs = self.tag_model.objects.filter(level=3)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Bee', u'Cat', u'Dog',
+            'Bee', 'Cat', 'Dog',
         ])
         
         qs = qs.with_descendants()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal/Insect/Bee',
-            u'Animal/Mammal/Cat',
-            u'Animal/Mammal/Dog',
+            'Animal/Insect/Bee',
+            'Animal/Mammal/Cat',
+            'Animal/Mammal/Dog',
         ])
     
     def test_siblings_l1(self):
         qs = self.tag_model.objects.filter(name='Animal')
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Animal',
+            'Animal',
         ])
         
         qs = qs.with_siblings()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal', u'Vegetable',
+            'Animal', 'Vegetable',
         ])
 
     def test_siblings_l2(self):
@@ -682,13 +686,13 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
         
         qs = self.tag_model.objects.filter(name='Animal/Insect')
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Insect',
+            'Insect',
         ])
         
         qs = qs.with_siblings()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal/Insect',
-            u'Animal/Mammal',
+            'Animal/Insect',
+            'Animal/Mammal',
         ])
         
     def test_siblings_l3(self):
@@ -697,13 +701,13 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
         
         qs = self.tag_model.objects.filter(name='Animal/Mammal/Cat')
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
-            u'Cat',
+            'Cat',
         ])
         
         qs = qs.with_siblings()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
-            u'Animal/Mammal/Cat',
-            u'Animal/Mammal/Dog',
+            'Animal/Mammal/Cat',
+            'Animal/Mammal/Dog',
         ])
         
 

@@ -9,7 +9,12 @@ Modules tested:
     tagulous.models.models.TagModelQuerySet
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
+
+from django.utils import six
+
 from tests.lib import *
+
 
 class TagModelTest(TagTestManager, TestCase):
     """
@@ -60,7 +65,7 @@ class TagModelTest(TagTestManager, TestCase):
         with self.assertRaises(AttributeError) as cm:
             t1.get_absolute_url()
         self.assertEqual(
-            str(cm.exception),
+            six.text_type(cm.exception),
             "'_Tagulous_SimpleMixedTest_tags' has no attribute 'get_absolute_url'"
         )
     
@@ -204,7 +209,7 @@ class TagModelTest(TagTestManager, TestCase):
         singletag1 = self.tag_model.objects.get(name='Mr')
         rel_st1 = singletag1.get_related_objects(flat=True)
         self.assertEqual(len(rel_st1), 3)
-        rel_st1.sort(cmp=lambda x, y: cmp(x.name, y.name))
+        rel_st1.sort(key=lambda tag: tag.name)
         self.assertEqual(rel_st1[0], t1)
         self.assertEqual(rel_st1[1], t2)
         self.assertEqual(rel_st1[2], t4)
@@ -225,7 +230,7 @@ class TagModelTest(TagTestManager, TestCase):
         tags2 = self.tag_model.objects.get(name='green')
         rel_t2 = tags2.get_related_objects(flat=True)
         self.assertEqual(len(rel_t2), 3)
-        rel_t2.sort(cmp=lambda x, y: cmp(x.name, y.name))
+        rel_t2.sort(key=lambda tag: tag.name)
         self.assertEqual(rel_t2[0], t2)
         self.assertEqual(rel_t2[1], t3)
         self.assertEqual(rel_t2[2], t4)
@@ -239,7 +244,7 @@ class TagModelTest(TagTestManager, TestCase):
         tags1 = self.tag_model.objects.get(name='blue')
         rel_t1 = tags1.get_related_objects(flat=True)
         self.assertEqual(len(rel_t1), 3)
-        rel_t1.sort(cmp=lambda x, y: cmp(x.name, y.name))
+        rel_t1.sort(key=lambda tag: tag.name)
         self.assertEqual(rel_t1[0], t1)
         self.assertEqual(rel_t1[1], t2)
         self.assertEqual(rel_t1[2], t2)
@@ -247,7 +252,7 @@ class TagModelTest(TagTestManager, TestCase):
         # Check blue distinct
         rel_t2 = tags1.get_related_objects(flat=True, distinct=True)
         self.assertEqual(len(rel_t2), 2)
-        rel_t2.sort(cmp=lambda x, y: cmp(x.name, y.name))
+        rel_t2.sort(key=lambda tag: tag.name)
         self.assertEqual(rel_t2[0], t1)
         self.assertEqual(rel_t2[1], t2)
  
@@ -266,14 +271,14 @@ class TagModelTest(TagTestManager, TestCase):
         # Check Mr
         rel_st1 = singletag1.get_related_objects(flat=True, include_standard=True)
         self.assertEqual(len(rel_st1), 2)
-        rel_st1.sort(cmp=lambda x, y: cmp(x.name, y.name))
+        rel_st1.sort(key=lambda tag: tag.name)
         self.assertEqual(rel_st1[0], t1)
         self.assertEqual(rel_st1[1], t2)
         
         # Check blue
         rel_t1 = tags1.get_related_objects(flat=True, include_standard=True)
         self.assertEqual(len(rel_t1), 2)
-        rel_t1.sort(cmp=lambda x, y: cmp(x.name, y.name))
+        rel_t1.sort(key=lambda tag: tag.name)
         self.assertEqual(rel_t1[0], t1)
         self.assertEqual(rel_t1[1], t2)
         
@@ -484,8 +489,8 @@ class TagModelUnicodeTest(TagTestManager, TestCase):
         self.tag_model = test_models.MixedTestTagModel
         self.o1 = self.create(
             self.model, name="Test",
-            singletag=u'男の子',
-            tags=u'boy, niño, 男の子',
+            singletag='男の子',
+            tags='boy, niño, 男の子',
         )
     
     def tearDownExtra(self):
@@ -494,9 +499,9 @@ class TagModelUnicodeTest(TagTestManager, TestCase):
     def test_setup(self):
         "Check setup created tags as expected"
         self.assertTagModel(self.tag_model, {
-            u'boy':     1,
-            u'niño':    1,
-            u'男の子':   2,
+            'boy':     1,
+            'niño':    1,
+            '男の子':   2,
         })
     
     
@@ -504,22 +509,22 @@ class TagModelUnicodeTest(TagTestManager, TestCase):
     
     def test_get_singletag_get(self):
         "Check unicode singletag name matches"
-        t1 = self.model.objects.get(singletag=u'男の子')
+        t1 = self.model.objects.get(singletag='男の子')
         self.assertEqual(t1.pk, self.o1.pk)
         
     def test_get_tag_ascii(self):
         "Check unicode tag name matches when ascii"
-        t1 = self.model.objects.get(tags=u'boy')
+        t1 = self.model.objects.get(tags='boy')
         self.assertEqual(t1.pk, self.o1.pk)
         
     def test_get_tag_extended_ascii(self):
         "Check unicode tag name matches when extended ascii"
-        t1 = self.model.objects.get(tags=u'niño')
+        t1 = self.model.objects.get(tags='niño')
         self.assertEqual(t1.pk, self.o1.pk)
         
     def test_get_tag_japanese(self):
         "Check unicode tag name matches when above extended ascii"
-        t1 = self.model.objects.get(tags=u'男の子')
+        t1 = self.model.objects.get(tags='男の子')
         self.assertEqual(t1.pk, self.o1.pk)
     
     
@@ -528,20 +533,20 @@ class TagModelUnicodeTest(TagTestManager, TestCase):
     def test_singletag_render(self):
         "Check unicode singletag name renders"
         t1 = self.model.objects.get(name="Test")
-        self.assertEqual(unicode(t1.singletag), u'男の子')
+        self.assertEqual(six.text_type(t1.singletag), '男の子')
         
     def test_tag_render(self):
         "Check unicode tag name renders"
         t1 = self.model.objects.get(name="Test")
         tags = list(t1.tags.all())
-        self.assertEqual(unicode(tags[0]), u'boy')
-        self.assertEqual(unicode(tags[1]), u'niño')
-        self.assertEqual(unicode(tags[2]), u'男の子')
+        self.assertEqual(six.text_type(tags[0]), 'boy')
+        self.assertEqual(six.text_type(tags[1]), 'niño')
+        self.assertEqual(six.text_type(tags[2]), '男の子')
         
     def test_tag_string_render(self):
         "Check unicode tags string renders"
         t1 = self.model.objects.get(name="Test")
-        self.assertEqual(unicode(t1.tags), u'boy, niño, 男の子')
+        self.assertEqual(six.text_type(t1.tags), 'boy, niño, 男の子')
 
 
     # Check slugs
@@ -583,16 +588,16 @@ class TagModelUnicodeUnidecodeTest(TagTestManager, TestCase):
         self.tag_model = test_models.MixedTestTagModel
         self.o1 = self.create(
             self.model, name="Test",
-            singletag=u'男の子',
-            tags=u'boy, niño, 男の子',
+            singletag='男の子',
+            tags='boy, niño, 男の子',
         )
     
     def test_setup(self):
         "Check setup created tags as expected"
         self.assertTagModel(self.tag_model, {
-            u'boy':     1,
-            u'niño':    1,
-            u'男の子':   2,
+            'boy':     1,
+            'niño':    1,
+            '男の子':   2,
         })
     
     
@@ -888,18 +893,18 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
     def test_to_string(self):
         "Check manager and queryset can be converted to a tag string"
         self.assertEqual(
-            str(self.tag_model.objects),
+            six.text_type(self.tag_model.objects),
             'Adam, Brian, Chris, David, Eric, Frank',
         )
         self.assertEqual(
-            str(self.tag_model.objects.all()),
+            six.text_type(self.tag_model.objects.all()),
             'Adam, Brian, Chris, David, Eric, Frank',
         )
         self.assertEqual(
-            str(self.tag_model.objects.initial()),
+            six.text_type(self.tag_model.objects.initial()),
             'Adam, Brian, Chris',
         )
         self.assertEqual(
-            str(self.o1.initial_list),
+            six.text_type(self.o1.initial_list),
             'David, Eric',
         )

@@ -1,12 +1,15 @@
+from __future__ import unicode_literals
+
 from django import forms
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import EMPTY_VALUES
 from django.db.models.query import QuerySet
+from django.utils import six
 from django.utils.translation import ugettext as _
 from django.utils.html import escape
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 
 # Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:
@@ -41,7 +44,7 @@ class TagWidgetBase(forms.TextInput):
         if autocomplete_view:
             try:
                 attrs['data-tag-url'] = reverse(autocomplete_view)
-            except NoReverseMatch, e:
+            except NoReverseMatch as e:
                 raise ValueError('Invalid autocomplete view: %s' % e)
         
         # Otherwise embed them, if provided
@@ -52,11 +55,11 @@ class TagWidgetBase(forms.TextInput):
             if isinstance(autocomplete_tags, QuerySet):
                 autocomplete_tags = autocomplete_tags.all()
             
-            attrs['data-tag-list'] = escape(force_unicode(
+            attrs['data-tag-list'] = escape(force_text(
                 json.dumps(
-                    # Call __unicode__ rather than tag.name directly, in case
+                    # Call str rather than tag.name directly, in case
                     # we've been given a list of tag strings
-                    [unicode(tag) for tag in autocomplete_tags],
+                    [six.text_type(tag) for tag in autocomplete_tags],
                     cls=DjangoJSONEncoder,
                 ),
             ))
@@ -76,7 +79,7 @@ class TagWidgetBase(forms.TextInput):
         })
         
         # Store tag options
-        attrs['data-tag-options'] = escape(force_unicode(
+        attrs['data-tag-options'] = escape(force_text(
             json.dumps(tag_options, cls=DjangoJSONEncoder)
         ))
         
@@ -148,7 +151,7 @@ class BaseTagField(forms.CharField):
             tag_string = ''
             
         # Will normally get a string
-        elif isinstance(value, basestring):
+        elif isinstance(value, six.string_types):
             tag_string = value
         
         # Otherwise will be given by the model's TagField.value_from_object().
@@ -214,7 +217,7 @@ class BaseTagField(forms.CharField):
                 value, self.tag_options.max_count,
                 self.tag_options.space_delimiter,
             )
-        except ValueError, e:
+        except ValueError as e:
             raise forms.ValidationError(_('%s' % e))
         
 

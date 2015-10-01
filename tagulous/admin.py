@@ -1,11 +1,14 @@
+from __future__ import unicode_literals
+
 import django
 from django import forms
 from django.contrib import admin
 from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.base import ModelBase
-from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.utils import six
 
 from tagulous import models as tag_models
 from tagulous import forms as tag_forms
@@ -194,7 +197,7 @@ def enhance(model, admin_class):
         
         for i, field in enumerate(admin_class.list_display):
             # If the field's not a callable, and not in the admin class already
-            if not callable(field) and not hasattr(admin_class, field):
+            if not hasattr(field, '__call__') and not hasattr(admin_class, field):
                 # Only TagFields (admin can already handle SingleTagField FKs)
                 if field in tag_fields:
                     # Create new field name and replace in list_display
@@ -227,7 +230,7 @@ def enhance(model, admin_class):
             ):
                 orig_cls = inline_cls.formset
                 inline_cls.formset = type(
-                    'Tagged%s' % orig_cls.__name__,
+                    str('Tagged%s' % orig_cls.__name__),
                     (tag_forms.TaggedInlineFormSet, orig_cls),
                     {},
                 )
@@ -307,7 +310,9 @@ def register(model, admin_class=None, site=None, **options):
                 if k in ['list_display', 'list_filter', 'exclude', 'actions']
                 and k not in options
             ))
-        admin_class = type("%sAdmin" % model.__name__, tuple(cls_bases), options)
+        admin_class = type(
+            str("%sAdmin" % model.__name__), tuple(cls_bases), options,
+        )
     
     # Enhance the model admin class
     enhance(model, admin_class)

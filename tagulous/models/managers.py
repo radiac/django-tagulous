@@ -6,8 +6,11 @@ the tags.
 
 For tag model manager, look in tagulous.models.models
 """
+from __future__ import unicode_literals
 
 from django.core import exceptions
+from django.utils import six
+from django.utils.encoding import python_2_unicode_compatible
 
 from tagulous.utils import parse_tags, render_tags
 
@@ -134,7 +137,7 @@ class SingleTagManager(object):
         if not value:
             tag_name = ''
             
-        elif isinstance(value, basestring):
+        elif isinstance(value, six.string_types):
             # Force tag to lowercase
             if self.tag_options.force_lowercase:
                 value = value.lower()
@@ -215,7 +218,7 @@ class SingleTagManager(object):
 ####### Mixin for TagField manager
 ###############################################################################
 
-
+@python_2_unicode_compatible
 class BaseTagRelatedManager(object):
     """
     Mixin for TagRelatedManagerMixin, and base class for FakeTagRelatedManager.
@@ -235,17 +238,14 @@ class BaseTagRelatedManager(object):
         self.tags = None
         self.reload()
         
-    def __unicode__(self):
+    def __str__(self):
         """
         If called on an instance, return the tag string
         """
         return self.get_tag_string()
-            
-    def __str__(self):
-        return unicode(self).encode('utf-8')
     
     def __contains__(self, item):
-        item_str = unicode(item)
+        item_str = six.text_type(item)
         if self.tag_options.force_lowercase:
             item_str = item_str.lower()
         
@@ -268,8 +268,8 @@ class BaseTagRelatedManager(object):
         # Prep other argument we're comparing against
         if isinstance(other, BaseTagRelatedManager):
             other = other.tags
-        if isinstance(other, basestring):
-            other_str = unicode(other)
+        if isinstance(other, six.string_types):
+            other_str = six.text_type(other)
             
             # Enforce case non-sensitivity or lowercase
             if lower:
@@ -284,7 +284,7 @@ class BaseTagRelatedManager(object):
             # Assume it's an iterable
             other_tags = other
             if lower:
-                other_tags = [unicode(tag).lower() for tag in other]
+                other_tags = [six.text_type(tag).lower() for tag in other]
         
         # Get list of set tags
         self_tags = self.get_tag_list()
@@ -362,7 +362,7 @@ class BaseTagRelatedManager(object):
             )
         
         # Force tag_names to strings, in case it's a list of tags or a queryset
-        tag_names = [u'%s' % tag_name for tag_name in tag_names]
+        tag_names = [six.text_type(tag_name) for tag_name in tag_names]
         
         # Apply force_lowercase
         if self.tag_options.force_lowercase:
@@ -531,7 +531,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         # Convert strings to tag objects
         new_tags = []
         for tag in objs:
-            if isinstance(tag, basestring):
+            if isinstance(tag, six.string_types):
                 new_tags.append(self.tag_model(name=tag))
             else:
                 new_tags.append(tag)
@@ -569,7 +569,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         # Convert strings to tag objects - if object doesn't exist, skip
         rm_tags = []
         for tag in objs:
-            if isinstance(tag, basestring):
+            if isinstance(tag, six.string_types):
                 try:
                     rm_tags.append(self.tag_model.objects.get(name=tag))
                 except self.tag_model.DoesNotExist:

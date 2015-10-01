@@ -4,12 +4,13 @@ Tagulous extensions for models which use tag fields (tagged models)
 These are all applied automatically when the TAGULOUS_ENHANCE_MODELS setting
 is enabled.
 """
-
+from __future__ import unicode_literals
 import copy
 
 import django
 from django.db import models
 from django.db import transaction
+from django.utils import six
 
 from tagulous.models.fields import (
     BaseTagField, SingleTagField, TagField,
@@ -120,7 +121,7 @@ class TaggedQuerySet(models.query.QuerySet):
         # Look up string values for SingleTagFields by name
         for field_name, val in singletag_fields.items():
             query_field_name = field_name
-            if isinstance(val, basestring):
+            if isinstance(val, six.string_types):
                 query_field_name += '__name'
                 if not field_lookup[field_name].tag_options.case_sensitive:
                     query_field_name += '__iexact'
@@ -141,7 +142,7 @@ class TaggedQuerySet(models.query.QuerySet):
             tag_options = field_lookup[field_name].tag_options
             
             # Only perform custom lookup if value is a string
-            if not isinstance(val, basestring):
+            if not isinstance(val, six.string_types):
                 qs = super(TaggedQuerySet, self)._filter_or_exclude(
                     negate, **{field_name: val}
                 )
@@ -246,7 +247,7 @@ class TaggedQuerySet(models.query.QuerySet):
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = queryset.__class__
         queryset.__class__ = type(
-            'CastTagged%s' % orig_cls.__name__, (cls, orig_cls), {},
+            str('CastTagged%s' % orig_cls.__name__), (cls, orig_cls), {},
         )
         return queryset
 
@@ -298,7 +299,7 @@ class TaggedManager(models.Manager):
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = manager.__class__
         manager.__class__ = type(
-            'CastTagged%s' % orig_cls.__name__, (cls, orig_cls), {},
+            str('CastTagged%s' % orig_cls.__name__), (cls, orig_cls), {},
         )
         return manager
     

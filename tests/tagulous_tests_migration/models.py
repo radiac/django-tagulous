@@ -1,8 +1,10 @@
 """
 Test models
 """
+from __future__ import unicode_literals
 
 from django.db import models
+from django.utils import six
 
 try:
     import django.apps as django_apps
@@ -68,7 +70,7 @@ def set_model_initial():
     "Create an initial model without tag fields"
     clear_django()
     return type(
-        "MigrationTestModel", (models.Model,), {
+        str("MigrationTestModel"), (models.Model,), {
             '__module__': 'tests.tagulous_tests_migration.models',
             'name': models.CharField(max_length=10),
         }
@@ -78,11 +80,12 @@ def set_model_tagged():
     "Initial model with tag fields"
     clear_django()
     model = type(
-        "MigrationTestModel", (models.Model,), {
+        str("MigrationTestModel"), (models.Model,), {
             '__module__': 'tests.tagulous_tests_migration.models',
             'name': models.CharField(max_length=10),
             'singletag': tagulous.models.SingleTagField(blank=True, null=True),
-            'tags': tagulous.models.TagField(),
+            # Django 1.4 hates unicode intermediary table name
+            str('tags'): tagulous.models.TagField(),
         }
     )
     
@@ -96,11 +99,11 @@ def set_model_tree():
     "Tagged model with tags field as tree"
     clear_django()
     model = type(
-        "MigrationTestModel", (models.Model,), {
+        str("MigrationTestModel"), (models.Model,), {
             '__module__': 'tests.tagulous_tests_migration.models',
             'name': models.CharField(max_length=10),
             'singletag': tagulous.models.SingleTagField(blank=True, null=True),
-            'tags': tagulous.models.TagField(tree=True),
+            str('tags'): tagulous.models.TagField(tree=True),
         }
     )
 

@@ -5,7 +5,11 @@ Modules tested:
     tagulous.management.commands.initial_tags
 """
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from django.core.management import call_command
+from django.utils import six
 
 from tests.lib import *
 
@@ -60,9 +64,9 @@ class InitialTagsTest(TagTestManager, TestCase):
             )
             
         if DISPLAY_CALL_COMMAND:
-            print ">> initial_tags target=%s" % target
-            print '\n'.join(output)
-            print "<<<<<<<<<<"
+            print(">> initial_tags target=%s" % target)
+            print('\n'.join(output))
+            print("<<<<<<<<<<")
         
         return output
         
@@ -168,7 +172,7 @@ class InitialTagsTest(TagTestManager, TestCase):
         self.assertModelsEmpty()
         field = 'tagulous_tests_app.SingleTagFieldOptionsModel.protect_all_true'
         output = self.run_command(field)
-        self.assertItemsEqual(output, [
+        self.assertSequenceEqual(output, [
             'Nothing to load for %s' % field,
         ])
         self.assertModelsEmpty()

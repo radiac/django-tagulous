@@ -5,10 +5,12 @@ Modules tested:
     tagulous.views
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from tests.lib import *
 
-from django.test import Client
 from django.core.urlresolvers import reverse
+from django.test import Client
+from django.utils import six
 
 # Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:
@@ -111,6 +113,10 @@ class TagFormCBVTest(TagTestManager, TestCase):
 ####### Test autocomplete view
 ###############################################################################
 
+def get_response_content(response):
+    return response.content.decode('utf-8')
+
+
 class AutocompleteViewTest(TagTestManager, TestCase):
     "Test autocomplete view"
     manage_models = [
@@ -134,7 +140,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             reverse('tagulous_tests_app-unlimited'),
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), 100)
         for i in range(100):
             self.assertEqual(data['results'][i], 'tag%02d' % i)
@@ -154,7 +160,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             {'q': 'tag0'},
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), 10)
         for i in range(10):
             self.assertEqual(data['results'][i], 'tag%02d' % i)
@@ -176,7 +182,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             reverse('tagulous_tests_app-limited'),
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), page_length)
         self.assertEqual(data['results'][0], 'tag00')
         self.assertEqual(data['results'][1], 'tag01')
@@ -190,7 +196,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             {'p': page},
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), page_length)
         self.assertEqual(data['results'][0], 'tag09')
         self.assertEqual(data['results'][1], 'tag10')
@@ -204,7 +210,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             {'p': page},
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), 1)
         self.assertEqual(data['results'][0], 'tag99')
         self.assertEqual(data['more'], False)
@@ -226,7 +232,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             {'q': 'tag1'},
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), page_length)
         self.assertEqual(data['results'][0], 'tag10')
         self.assertEqual(data['results'][1], 'tag11')
@@ -240,7 +246,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             {'q': 'tag1', 'p': page},
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), 1)
         self.assertEqual(data['results'][0], 'tag19')
         self.assertEqual(data['more'], False)
@@ -261,7 +267,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         )
         client.logout()
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), 100)
         for i in range(100):
             self.assertEqual(data['results'][i], 'tag%02d' % i)
@@ -280,7 +286,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             reverse('tagulous_tests_app-queryset'),
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), 10)
         for i in range(10):
             self.assertEqual(data['results'][i], 'tag2%d' % i)
@@ -300,7 +306,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             {'q': 'Tag1'},
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), 10)
         for i in range(10):
             self.assertEqual(data['results'][i], 'tag1%d' % i)
@@ -321,7 +327,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             {'q': 'Tag1'},
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         self.assertEqual(len(data['results']), 10)
         for i in range(10):
             self.assertEqual(data['results'][i], 'tag1%d' % i)
@@ -342,7 +348,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             {'q': 'Tag1'},
         )
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
+        data = json.loads(get_response_content(response))
         
         from django.db import connection
         if connection.vendor == 'sqlite':

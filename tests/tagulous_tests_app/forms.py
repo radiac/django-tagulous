@@ -1,4 +1,7 @@
+from __future__ import unicode_literals
+
 from django import forms
+from django.utils import six
 
 import tagulous
 from tests.tagulous_tests_app import models

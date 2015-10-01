@@ -8,8 +8,11 @@ Modules tested:
     tagulous.forms.TagField
 """
 from __future__ import absolute_import
-from tests.lib import *
+from __future__ import unicode_literals
 
+from django.utils import six
+
+from tests.lib import *
 
 
 ###############################################################################
@@ -169,7 +172,7 @@ class SingleInlineFormsetTest(TagTestManager, TestCase):
         self.assertEqual(self.model.objects.count(), 2)
         
         formset = self.formset(prefix='formset', instance=tag1)
-        self.assertHTMLEqual(str(formset.forms[0]['singletag']), (
+        self.assertHTMLEqual(six.text_type(formset.forms[0]['singletag']), (
             '<input type="hidden" name="formset-0-singletag" '
             'value="%d" id="id_formset-0-singletag" />'
         ) % tag1.pk)

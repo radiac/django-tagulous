@@ -5,15 +5,18 @@ Modules tested:
     tagulous.models.migrations
 """
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 import inspect
 import os
 import sys
 import shutil
 import warnings
 
+from django.conf import settings
 from django.core.management import call_command
 from django.db import DatabaseError
-from django.conf import settings
+from django.utils import six
 
 from tests.lib import *
 from tests import tagulous_tests_migration
@@ -21,6 +24,12 @@ from tests import tagulous_tests_migration
 try:
     import south
 except ImportError:
+    south = None
+
+try:
+    eval("u'string'")
+except SyntaxError:
+    # South doesn't support Python 3.2
     south = None
 
 # If True, display output from call_command - use for debugging tests
@@ -49,7 +58,7 @@ def clear_migrations():
     if hasattr(app_module, migrations_name):
         delattr(app_module, migrations_name)
     
-    for key in sys.modules.keys():
+    for key in list(sys.modules.keys()):
         if key.startswith(migrations_module):
             del sys.modules[key]
     
@@ -114,7 +123,7 @@ def migrate_app(target=None):
     clear_migrations()
     
     if DISPLAY_CALL_COMMAND:
-        print ">> manage.py migrate %s target=%s" % (app_name, target)
+        print(">> manage.py migrate %s target=%s" % (app_name, target))
     
     try:
         with Capturing() as output:
@@ -125,10 +134,10 @@ def migrate_app(target=None):
                     target=target,  # Optional target
                     verbosity=1,    # Silent
                 )
-    except Exception, e:
-        print ">> Migration failed:"
-        print "\n".join(output)
-        print "<<<<<<<<<<"
+    except Exception as e:
+        print(">> Migration failed:")
+        print("\n".join(output))
+        print("<<<<<<<<<<")
         raise e
     
     # Ensure caught warnings are expected
@@ -139,8 +148,8 @@ def migrate_app(target=None):
             assert issubclass(w.category, PendingDeprecationWarning)
         
     if DISPLAY_CALL_COMMAND:
-        print '\n'.join(output)
-        print "<<<<<<<<<<"
+        print('\n'.join(output))
+        print("<<<<<<<<<<")
     
     return output
 
@@ -208,7 +217,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         There will also be a 'vars' dict with variable definitions
         """
         import ast
-        lines, firstlineno = inspect.getsourcelines(fn.func_code)
+        lines, firstlineno = inspect.getsourcelines(fn.__code__)
         
         # De-indent and parse into an AST
         indent = len(lines[0]) - len(lines[0].lstrip())
@@ -230,10 +239,12 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
             "Parse a field into a tuple of (cls_name, 'ast value')"
             if isinstance(field.func, ast.Attribute):
                 # Call to self.gf
-                field_cls = str(field.func.value.id + '.' + field.func.attr)
+                field_cls = six.text_type(
+                    field.func.value.id + '.' + field.func.attr
+                )
             else:
                 # Direct ref to field
-                field_cls = str(field.func.args[0].s)
+                field_cls = six.text_type(field.func.args[0].s)
             
             attrs = {}
             for keyword in field.keywords:
@@ -262,7 +273,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
             if method == 'create_table':
                 # <table>, <fields tuple>
                 if isinstance(dbcall.args[0], ast.Str):
-                    table_name = str(dbcall.args[0].s)
+                    table_name = six.text_type(dbcall.args[0].s)
                 elif isinstance(dbcall.args[0], ast.Name):
                     var_name = dbcall.args[0].id
                     self.assertTrue(var_name in ast_state)
@@ -272,21 +283,21 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
                 fields = {}
                 for field_tuple in dbcall.args[1].elts:
                     # <field name>, self.gf(<type>)(<args>)
-                    field_name = str(field_tuple.elts[0].s)
+                    field_name = six.text_type(field_tuple.elts[0].s)
                     self.assertFalse(field_name in fields)
                     fields[field_name] = parse_field(field_tuple.elts[1])
                 data[method][table_name] = fields
             
             elif method == 'send_create_signal':
                 # <app name>, [<model name>]
-                model_name = str(dbcall.args[1].elts[0].s)
+                model_name = six.text_type(dbcall.args[1].elts[0].s)
                 self.assertFalse(model_name in data[method])
                 data[method][model_name] = ast_dump(dbcall)
             
             elif method == 'create_unique':
                 # <table name>, [<field name>]
                 if isinstance(dbcall.args[0], ast.Str):
-                    table_name = str(dbcall.args[0].s)
+                    table_name = six.text_type(dbcall.args[0].s)
                 elif isinstance(dbcall.args[0], ast.Name):
                     var_name = dbcall.args[0].id
                     self.assertTrue(var_name in ast_state)
@@ -296,7 +307,9 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
             
             elif method == 'add_column':
                 # <table name>, <field name>, self.gf(<type>)(<args>), keep_default=<?>
-                field_id = str(dbcall.args[0].s) + '.' + str(dbcall.args[1].s)
+                field_id = six.text_type(
+                    dbcall.args[0].s) + '.' + str(dbcall.args[1].s
+                )
                 self.assertFalse(field_id in data[method])
                 data[method][field_id] = [
                     parse_field(dbcall.args[2]),
@@ -305,7 +318,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
             
             elif method == 'shorten_name':
                 # <var> = db.shorten_name(<table name>)
-                table_name = str(dbcall.args[0].s)
+                table_name = six.text_type(dbcall.args[0].s)
                 self.assertFalse(field_id in data[method])
                 data[method][table_name] = ast_dump(node.targets[0])
                 ast_state[node.targets[0].id] = table_name
@@ -337,8 +350,25 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         mig2 = self._import_migration(get_expected_dir(), name)
         self.assertValidMigration(mig2)
         
-        # Compare models
-        self.assertEqual(mig1.Migration.models, mig2.Migration.models)
+        # Fn to standardise models dict string type
+        def fix_text_type(val):
+            if isinstance(val, six.string_types):
+                return bytes(val).replace("u'", "'")
+            elif isinstance(val, dict):
+                dct = val
+                for key, val in dct.items():
+                    del dct[key]
+                    dct[fix_text_type(key)] = fix_text_type(val)
+                return dct
+            else:
+                # Assume it's an iterable
+                val = [fix_text_type(v) for v in val]
+        
+        # Compare models - some strings will be unicode, some not
+        self.assertEqual(
+            fix_text_type(mig1.Migration.models),
+            fix_text_type(mig2.Migration.models),
+        )
         
         data1 = self._parse_migration_function(mig1.Migration.forwards)
         data2 = self._parse_migration_function(mig2.Migration.forwards)
@@ -378,7 +408,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         
         # Check the files were created as expected
         migrations = get_migrations()
-        migrations = [str(m) for m in migrations]
+        migrations = [six.text_type(m) for m in migrations]
         self.assertEqual(len(migrations), 1)
         self.assertEqual(migrations[0], '%s:0001_initial' % app_name)
         self.assertMigrationExpected('0001_initial')
@@ -420,7 +450,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         
         # Check the files were created as expected
         migrations = get_migrations()
-        migrations = [str(m) for m in migrations]
+        migrations = [six.text_type(m) for m in migrations]
         self.assertEqual(len(migrations), 2)
         self.assertEqual(migrations[0], '%s:0001_initial' % app_name)
         self.assertEqual(migrations[1], '%s:0002_tagged' % app_name)
@@ -476,7 +506,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         frozen_singletag = south.creator.freezer.prep_for_freeze(
             model_tree.singletag.tag_model
         )
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             frozen_singletag['Meta']['_bases'],
             ['tagulous.models.BaseTagModel'],
         )
@@ -484,7 +514,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         frozen_tags = south.creator.freezer.prep_for_freeze(
             model_tree.tags.tag_model
         )
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             frozen_tags['Meta']['_bases'],
             ['tagulous.models.BaseTagTreeModel'],
         )
@@ -499,7 +529,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         
         # Check the files were created as expected
         migrations = get_migrations()
-        migrations = [str(m) for m in migrations]
+        migrations = [six.text_type(m) for m in migrations]
         self.assertEqual(len(migrations), 3)
         self.assertEqual(migrations[0], '%s:0001_initial' % app_name)
         self.assertEqual(migrations[1], '%s:0002_tagged' % app_name)
@@ -589,7 +619,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         
         # Check the files were created as expected
         migrations = get_migrations()
-        migrations = [str(m) for m in migrations]
+        migrations = [six.text_type(m) for m in migrations]
         self.assertEqual(len(migrations), 4)
         self.assertEqual(migrations[0], '%s:0001_initial' % app_name)
         self.assertEqual(migrations[1], '%s:0002_tagged' % app_name)

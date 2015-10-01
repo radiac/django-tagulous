@@ -1,8 +1,11 @@
 """
 Backwards and forwards compatibility for template tags
 """
+from __future__ import unicode_literals
+
 import django
 from django import template
+from django.utils import six
 
 register = template.Library()
 

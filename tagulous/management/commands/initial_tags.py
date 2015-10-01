@@ -1,4 +1,7 @@
+from __future__ import unicode_literals
+
 from django.core.management.base import BaseCommand, NoArgsCommand, CommandError
+from django.utils import six
 
 # Abstract model lookup for django compatibility
 try:
@@ -51,17 +54,17 @@ class Command(BaseCommand):
             model = models[0]
             field = model._meta.get_field(field_name)
             loaded = field_initialise_tags(
-                model, field, report=True,
+                model, field, report=self.stdout,
             )
             
             if not loaded:
-                print "Nothing to load for %s.%s.%s" % (
+                self.stdout.write("Nothing to load for %s.%s.%s\n" % (
                     model._meta.app_label,
                     model.__name__,
                     field.name,
-                )
+                ))
             return
         
         # Step through all models and load
         for model in models:
-            model_initialise_tags(model, report=True)
+            model_initialise_tags(model, report=self.stdout)

@@ -5,8 +5,11 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.forms.SingleTagField
 """
+from __future__ import unicode_literals
 from __future__ import absolute_import
+
 from django import forms
+from django.utils import six
 
 from tests.lib import *
 
@@ -68,7 +71,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         class LocalTestForm(forms.Form):
             tag = tag_forms.SingleTagField()
         form = LocalTestForm()
-        self.assertHTMLEqual(str(form['tag']), (
+        self.assertHTMLEqual(six.text_type(form['tag']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
@@ -81,7 +84,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         class LocalTestForm(forms.Form):
             tag = tag_forms.SingleTagField(required=False)
         form = LocalTestForm()
-        self.assertHTMLEqual(str(form['tag']), (
+        self.assertHTMLEqual(six.text_type(form['tag']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;required&quot;: false, &quot;max_count&quot;: 1}" '
@@ -96,7 +99,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
                 autocomplete_tags=['one', 'two', 'three'],
             )
         form = LocalTestForm()
-        self.assertHTMLEqual(str(form['tag']), (
+        self.assertHTMLEqual(six.text_type(form['tag']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
@@ -116,7 +119,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
                 ),
             )
         form = LocalTestForm()
-        self.assertHTMLEqual(str(form['tag']), (
+        self.assertHTMLEqual(six.text_type(form['tag']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
@@ -129,7 +132,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
     def test_render_value(self):
         "Check widget renders value"
         form = test_forms.SingleTagFieldForm(data={'singletag': 'Mr'})
-        self.assertHTMLEqual(str(form['singletag']), (
+        self.assertHTMLEqual(six.text_type(form['singletag']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
@@ -223,7 +226,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         
         # Confirm default
         field1 = self.form().fields['title']
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             [t.name for t in field1.autocomplete_tags],
             [t.name for t in self.tag_model.objects.all()],
         )
@@ -232,7 +235,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         field2 = self.model.title.formfield(
             autocomplete_tags=['Ms', 'Mx']
         )
-        self.assertItemsEqual(field2.autocomplete_tags, ['Ms', 'Mx'])
+        self.assertSequenceEqual(field2.autocomplete_tags, ['Ms', 'Mx'])
         
     def test_render_tag_list(self):
         "Check widget renders data-tag-list"
@@ -243,7 +246,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
             'Mrs': 0,
         })
         form = self.form(data={'name': 'Test 1', 'title': 'Mrs'})
-        self.assertHTMLEqual(str(form['title']), (
+        self.assertHTMLEqual(six.text_type(form['title']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;required&quot;: false, &quot;max_count&quot;: 1}" '
@@ -255,7 +258,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
     def test_initial_string(self):
         "Check initial string"
         form = test_forms.SingleTagFieldForm(initial={'singletag': 'Mr'})
-        self.assertHTMLEqual(str(form['singletag']), (
+        self.assertHTMLEqual(six.text_type(form['singletag']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
@@ -268,7 +271,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         "Check initial tag"
         t1 = self.tag_model.objects.create(name='Mr')
         form = test_forms.SingleTagFieldForm(initial={'singletag': t1})
-        self.assertHTMLEqual(str(form['singletag']), (
+        self.assertHTMLEqual(six.text_type(form['singletag']), (
             '<input autocomplete="off" '
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
@@ -281,7 +284,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         "Check edit tagged model form instance works"
         t1 = self.model.objects.create(name='Test 1', title='Mr')
         form = self.form(instance=t1)
-        self.assertHTMLEqual(str(form['title']), (
+        self.assertHTMLEqual(six.text_type(form['title']), (
             '<input autocomplete="off" '
             'data-tag-list="[&quot;Mr&quot;]" '
             'data-tag-options="{'
@@ -364,7 +367,7 @@ class ModelFormSingleTagFieldRequiredTest(TagTestManager, TestCase):
         form = self.form(data={'name': 'Test 1'})
         self.assertFalse(form.is_valid())
         self.assertEqual(len(form.errors.keys()), 1)
-        self.assertEqual(form.errors.keys()[0], 'tag')
+        self.assertEqual(list(form.errors.keys())[0], 'tag')
         self.assertEqual(len(form.errors['tag']), 1)
         self.assertEqual(form.errors['tag'][0], 'This field is required.')
         
@@ -487,7 +490,7 @@ class ModelFormSingleTagFieldOptionsTest(TagTestManager, TestCase):
         
         # Confirm default
         field = self.form().fields['initial_string']
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             [t.name for t in field.autocomplete_tags],
             [t.name for t in tag_model.objects.all()],
         )
@@ -500,7 +503,7 @@ class ModelFormSingleTagFieldOptionsTest(TagTestManager, TestCase):
         
         # Confirm default
         field = self.form().fields['initial_list']
-        self.assertItemsEqual(
+        self.assertSequenceEqual(
             [t.name for t in field.autocomplete_tags],
             [t.name for t in tag_model.objects.initial()],
         )

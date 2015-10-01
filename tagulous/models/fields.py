@@ -7,9 +7,11 @@ necessary tag models, and add the descriptors back onto the model.
 
 They are also responsible for preparing form fields.
 """
+from __future__ import unicode_literals
 
 import django
 from django.db import models
+from django.utils import six
 from django.utils.text import capfirst
 
 from tagulous import constants
@@ -184,7 +186,7 @@ class BaseTagField(object):
             model_cls = TagModel
             if self.tag_options.tree:
                 model_cls = TagTreeModel
-            self.tag_model = type(model_name, (model_cls,), model_attrs)
+            self.tag_model = type(str(model_name), (model_cls,), model_attrs)
             
             # Give it a verbose name, for admin filters
             verbose_name_singular = (

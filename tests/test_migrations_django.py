@@ -5,6 +5,8 @@ Modules tested:
     tagulous.models.migrations
 """
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 from importlib import import_module
 import os
 import sys
@@ -13,6 +15,7 @@ import warnings
 
 from django.core.management import call_command
 from django.db import DatabaseError
+from django.utils import six
 
 from tests.lib import *
 from tests import tagulous_tests_migration
@@ -43,7 +46,7 @@ def clear_migrations():
     if hasattr(app_module, migrations_name):
         delattr(app_module, migrations_name)
     
-    for key in sys.modules.keys():
+    for key in list(sys.modules.keys()):
         if key.startswith(migrations_module):
             del sys.modules[key]
     
@@ -119,10 +122,10 @@ def make_migration(name):
                 app_name,       # app to make migration for
                 verbosity=0,    # Silent
             )
-    except Exception, e:
-        print ">> makemigration failed:"
-        print "\n".join(output)
-        print "<<<<<<<<<<"
+    except Exception as e:
+        print(">> makemigration failed:")
+        print("\n".join(output))
+        print("<<<<<<<<<<")
         raise e
     
     # Find file using same numeric prefix
@@ -139,7 +142,8 @@ def make_migration(name):
     old_py = os.path.join(migrations_dir, '%s.py' % last_migration)
     new_py = os.path.join(migrations_dir, '%s.py' % name)
     os.rename(old_py, new_py)
-    os.remove(old_py + 'c')
+    if os.path.exists(old_py + 'c'):
+        os.remove(old_py + 'c')
     
 
 def migrate_app(target=None):
@@ -147,7 +151,7 @@ def migrate_app(target=None):
     clear_migrations()
     
     if DISPLAY_CALL_COMMAND:
-        print ">> manage.py migrate %s target=%s" % (app_name, target)
+        print(">> manage.py migrate %s target=%s" % (app_name, target))
     
     args = [app_name]
     if target is not None:
@@ -161,12 +165,12 @@ def migrate_app(target=None):
         with Capturing() as output:
             with warnings.catch_warnings(record=True) as cw:
                 call_command('migrate', *args, **kwargs)
-    except Exception, e:
-        print ">> migration failed: %s" % e
+    except Exception as e:
+        print(">> migration failed: %s" % e)
         if not DISPLAY_CALL_COMMAND:
-            print ">> manage.py migrate %s target=%s" % (app_name, target)
-        print "\n".join(output)
-        print "<<<<<<<<<<"
+            print(">> manage.py migrate %s target=%s" % (app_name, target))
+        print("\n".join(output))
+        print("<<<<<<<<<<")
         raise e
     
     # Ensure caught warnings are expected
@@ -177,8 +181,8 @@ def migrate_app(target=None):
             assert issubclass(w.category, PendingDeprecationWarning)
         
     if DISPLAY_CALL_COMMAND:
-        print '\n'.join(output)
-        print "<<<<<<<<<<"
+        print('\n'.join(output))
+        print("<<<<<<<<<<")
     
     return output
 

@@ -1,9 +1,12 @@
 """
 Tagulous tag models
 """
+from __future__ import unicode_literals
 
 import django
 from django.db import models, router, transaction, IntegrityError
+from django.utils import six
+from django.utils.encoding import python_2_unicode_compatible
 try:
     from django.utils.text import slugify
 except ImportError:
@@ -25,11 +28,27 @@ else:
         def __enter__(self): pass
         def __exit__(self, type, value, traceback): pass
 
+# Fix for with_metaclass in Django 1.5
+# 1.4.2 and 1.6 use the same code, but it's different in 1.5 and we lose _meta
+# This is the fn from 1.6, adapted to work with unicode_literals
+if django.VERSION < (1, 6):
+    tmp_cls_name = 'temporary_class'
+    if six.PY2:
+        tmp_cls_name = bytes(tmp_cls_name)
+    def with_metaclass(meta, *bases):
+        class metaclass(meta):
+            def __new__(cls, name, this_bases, d):
+                return meta(name, bases, d)
+        return type.__new__(metaclass, tmp_cls_name, (), {})
+else:
+    with_metaclass = six.with_metaclass
+
 
 ###############################################################################
 ####### TagModel manager and queryset
 ###############################################################################
 
+@python_2_unicode_compatible
 class TagModelQuerySet(models.query.QuerySet):
     def initial(self):
         """
@@ -71,23 +90,18 @@ class TagModelQuerySet(models.query.QuerySet):
             }
         })
     
-    def __unicode__(self):
-        return utils.render_tags(self)
-        
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        return utils.render_tags(self)
 
 
+@python_2_unicode_compatible
 class TagModelManager(models.Manager):
     def get_queryset(self):
         return TagModelQuerySet(self.model, using=self._db)
     get_query_set = get_queryset
 
-    def __unicode__(self):
-        return self.get_queryset().__unicode__()
-        
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        return six.text_type(self.get_queryset())
         
     def initial(self):
         return self.get_queryset().initial()
@@ -165,27 +179,27 @@ class TagModelBase(models.base.ModelBase):
 #       Empty abstract model
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-class BaseTagModel(models.Model):
+@python_2_unicode_compatible
+class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
     """
     Empty abstract base class for tag models
     
     This is used when dynamically building models, eg by South in migrations
     """
-    __metaclass__ = TagModelBase
     objects = TagModelManager()
     
     class Meta:
         abstract = True
         
-    def __unicode__(self):
-        return u'%s' % self.name
+    def __str__(self):
+        return six.text_type(self.name)
         
     def __eq__(self, obj):
         """
         If comparing to a string, is equal if string value matches
         Otherwise compares normally
         """
-        if isinstance(obj, basestring):
+        if isinstance(obj, six.string_types):
             return self.name == obj
         return super(BaseTagModel, self).__eq__(obj)
 
@@ -359,7 +373,7 @@ class BaseTagModel(models.Model):
         excluding self
         """
         # Ensure tags is a list of tag instances
-        if isinstance(tags, basestring):
+        if isinstance(tags, six.string_types):
             tags = utils.parse_tags(
                 tags, space_delimiter=self.tag_options.space_delimiter,
             )
@@ -440,7 +454,7 @@ class BaseTagModel(models.Model):
         # the tag name. Run it through unicode_to_ascii because slugify will
         # cry if the label contains unicode characters
         label = getattr(self, 'label', self.name)
-        self.slug = slugify(unicode(utils.unicode_to_ascii(label)))
+        self.slug = slugify(six.text_type(utils.unicode_to_ascii(label)))
         self._update_extra()
         
         # Make sure we're using the same db at all times
@@ -618,13 +632,12 @@ class TagTreeModelBase(TagModelBase):
 #       Empty abstract model
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-class BaseTagTreeModel(BaseTagModel):
+class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
     """
     Empty abstract base class for tag models with tree
     
     This is used when dynamically building models, eg by South in migrations
     """
-    __metaclass__ = TagTreeModelBase
     objects = TagTreeModelManager()
     
     class Meta:

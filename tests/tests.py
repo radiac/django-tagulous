@@ -2,12 +2,15 @@
 # Install the test app and run tests
 #
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import warnings
 
 import django
 from django.conf import settings
 from django.core.management import call_command
+from django.utils import six
+
 
 # Load all tests, if necessary
 if django.VERSION < (1, 6):
