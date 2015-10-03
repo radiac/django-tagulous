@@ -4,13 +4,27 @@ install:
 script:
   - tox
 env:
+  # Django 1.4
   - TOXENV=py27-django1.4
+  # Django 1.5
   - TOXENV=py27-django1.5
-  - TOXENV=py27-django1.6
-  - TOXENV=py27-django1.7
-  - TOXENV=py27-django1.8
-  - TOXENV=py27-django1.9
   - TOXENV=py32-django1.5
+  - TOXENV=py33-django1.5
+  # Django 1.6
+  - TOXENV=py27-django1.6
   - TOXENV=py32-django1.6
+  - TOXENV=py33-django1.6
+  # Django 1.7
+  - TOXENV=py27-django1.7
   - TOXENV=py32-django1.7
+  - TOXENV=py33-django1.7
+  - TOXENV=py34-django1.7
+  # Django 1.8
+  - TOXENV=py27-django1.8
   - TOXENV=py32-django1.8
+  - TOXENV=py33-django1.8
+  - TOXENV=py34-django1.8
+  # Django 1.9
+  - TOXENV=py27-django1.9
+  - TOXENV=py34-django1.9
+  - TOXENV=py35-django1.9

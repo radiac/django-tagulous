@@ -26,7 +26,7 @@ DISPLAY_CALL_COMMAND = False
 
 app_name = 'tagulous_tests_migration'
 app_module = sys.modules['tests.%s' % app_name]
-migrations_name = 'migrations_%s' % '_'.join(str(v) for v in django.VERSION)
+migrations_name = 'migrations_%s' % testenv
 migrations_module = 'tests.%s.%s' % (app_name, migrations_name)
 migrations_path = None
 
@@ -49,6 +49,13 @@ def clear_migrations():
     for key in list(sys.modules.keys()):
         if key.startswith(migrations_module):
             del sys.modules[key]
+    
+    try:
+        from importlib import invalidate_caches
+    except ImportError:
+        pass
+    else:
+        invalidate_caches()
     
 def get_migrations():
     """

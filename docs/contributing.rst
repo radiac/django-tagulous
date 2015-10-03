@@ -49,7 +49,7 @@ Use ``tox`` to run them on one or more supported versions::
 Tox will also generate a ``coverage`` HTML report.
 
 You can also use ``detox`` to run the tests concurrently, although you will
-need to run ``tox report`` again afterwards to generate the coverage report.
+need to run ``tox -e report`` again afterwards to generate the coverage report.
 
 Most Tagulous python modules have corresponding test modules, with test classes
 which subclass ``tests.lib.TagTestManager``. They use test apps defined under
@@ -110,3 +110,6 @@ Roadmap
 
 0.11
 * Support python 3
+
+1.0
+* Resolve any bugs found in 0.11

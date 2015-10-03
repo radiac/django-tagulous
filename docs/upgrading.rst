@@ -179,7 +179,7 @@ are available by installing the master branch from github (see
 ----------------------
 
 Feature:
-* Add support for Python 3.2 (Django 1.5 to 1.8)
+* Add support for Python 3.2 to 3.5
 
 Internal:
 * Change ``tagulous.models.initial.field_initialise_tags`` and

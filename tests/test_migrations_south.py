@@ -37,7 +37,7 @@ DISPLAY_CALL_COMMAND = False
 
 app_name = 'tagulous_tests_migration'
 app_module = sys.modules['tests.%s' % app_name]
-migrations_name = 'migrations_%s' % '_'.join(str(v) for v in django.VERSION)
+migrations_name = 'migrations_%s' % testenv
 migrations_module = 'tests.%s.%s' % (app_name, migrations_name)
 migrations_path = None
 
@@ -203,7 +203,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         module_name = '.'.join(
             ['tests'] + path[len(root) + 1:].split(os.sep) + [name]
         )
-        module = __import__(module_name, {}, {}, ['Migration'], -1)
+        module = __import__(module_name, {}, {}, ['Migration'])
         
         return module
     
@@ -353,7 +353,10 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         # Fn to standardise models dict string type
         def fix_text_type(val):
             if isinstance(val, six.string_types):
-                return bytes(val).replace("u'", "'")
+                val = val.replace("u'", "'")
+                if six.PY3:
+                    return bytes(val, 'utf8')
+                return bytes(val)
             elif isinstance(val, dict):
                 dct = val
                 for key, val in dct.items():

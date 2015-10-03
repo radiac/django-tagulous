@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 import json
+import re
+import os
 import sys
 import unittest
 
@@ -30,13 +32,20 @@ if six.PY3:
 else:
     from cStringIO import StringIO
 
+# Detect test environment
+# This is used when creating files (migrations and fixtures) to ensure that
+# tests can be run concurrently without interfering with each other.
+# Also calculated in setup.py
+testenv = re.sub(
+    r'[^a-zA-Z0-9]', '_',
+    os.environ.get('TOXENV', '_'.join(str(v) for v in django.VERSION)),
+)
+
+
 class TagTestManager(object):
     """
     Test mixin to help test tag models
     """
-    # Add test app urls
-    #urls = 'tests.tagulous_tests_app.urls'
-    
     # We have some very long string comparisons (eg form field renders,
     # migrations), so set the maxDiff to 10k
     maxDiff = 1024 * 20

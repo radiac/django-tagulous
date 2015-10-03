@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from setuptools import setup, find_packages
 
@@ -39,10 +40,13 @@ def runtests(args):
         else:
             SERIALIZATION_MODULES['yaml'] = 'tagulous.serializers.pyyaml'
         
+        
+        testenv = re.sub(
+            r'[^a-zA-Z0-9]', '_',
+            os.environ.get('TOXENV', '_'.join(str(v) for v in django.VERSION)),
+        )
         MIGRATION_MODULES = {
-            'tagulous_tests_migration' : 'tests.tagulous_tests_migration.migrations_%s' % '_'.join(
-                str(v) for v in django.VERSION
-            )
+            'tagulous_tests_migration': 'tests.tagulous_tests_migration.migrations_%s' % testenv
         }
         
         if django.VERSION < (1, 7):
