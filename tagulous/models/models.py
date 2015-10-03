@@ -158,9 +158,6 @@ class TagModelBase(models.base.ModelBase):
         new_cls.tag_options = new_tag_options
         
         # Check for self-referential tag fields on this model
-        #if hasattr(new_cls._meta, 'get_fields'):
-        #    fields = new_cls._meta.get_fields()
-        #else:
         fields = new_cls._meta.fields + new_cls._meta.many_to_many
         
         for field in fields:
@@ -329,9 +326,9 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         
         # Reload count
         if hasattr(self, 'refresh_from_db'):
-            ##38# Django 1.8
             self.refresh_from_db()
         else:
+            # Django 1.7 or earlier
             self.count = self.__class__.objects.get(pk=self.pk).count
         
         self.try_delete()
