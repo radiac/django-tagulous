@@ -108,8 +108,5 @@ with tag widgets) and tag model admin (for managing tag models).
 Roadmap
 =======
 
-0.11
-* Support python 3
-
 1.0
 * Resolve any bugs found in 0.11

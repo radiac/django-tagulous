@@ -175,8 +175,8 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.11.0, in development
-----------------------
+0.11.0, 2015-10-04
+------------------
 
 Feature:
 * Add support for Python 3.2 to 3.5
