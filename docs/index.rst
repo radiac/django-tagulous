@@ -7,7 +7,7 @@ and ``ManyToManyField``, giving you all their normal power with a sprinkling of
 tagging syntactic sugar, and a full set of extra
 :doc:`features <introduction>`.
 
-Version 0.11.0; supports Django 1.4.2 to 1.9a1, on Python 2.7 to 3.5.
+Version 0.11.1; supports Django 1.4.2 to 1.9a1, on Python 2.7 to 3.5.
 
 
 .. seealso::

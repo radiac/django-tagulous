@@ -175,6 +175,13 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+0.11.1, 2015-10-05
+------------------
+
+Internal:
+* Fix package configuration in setup.py
+
+
 0.11.0, 2015-10-04
 ------------------
 
