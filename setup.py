@@ -98,9 +98,9 @@ setup(
     version = VERSION,
     author = "Richard Terry",
     author_email = "code@radiac.net",
-    description = ("Fabulous Tags for Django"),
+    description = ("Fabulous Tagging for Django"),
     license = "BSD",
-    keywords = "django tag tagging",
+    keywords = "django tagging",
     url = "http://radiac.net/projects/django-tagulous/",
     long_description=read('README.rst'),
     classifiers=[

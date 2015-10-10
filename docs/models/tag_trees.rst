@@ -60,6 +60,8 @@ A ``SlugField`` containing the slug for the tag label.
 Example: a tag named ``Animal/Mammal/Cat`` has the slug ``cat``
 
 
+.. _model_path:
+
 ``path``
 ~~~~~~~~
 A ``TextField`` containing the path for this tag - this slug, plus all ancestor

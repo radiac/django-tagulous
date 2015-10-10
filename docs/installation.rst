@@ -7,7 +7,8 @@ Requirements
 
 These packages are required:
 
-* `Django <https://www.djangoproject.com/>`_ 1.4 to 1.9a1, on Python 2.7
+* `Django <https://www.djangoproject.com/>`_ 1.4.2 to 1.9a1, on Python 2.7 to
+3.5.
 
 These packages are recommended, but optional:
 
