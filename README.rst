@@ -28,7 +28,7 @@ Features
 Version 0.11.1; supports Django 1.4.2 to 1.9a1, on Python 2.7 to 3.5.
 
 See the `Documentation <http://radiac.net/projects/django-tagulous/documentation/>`_
-for details of Tagulous works; in particular:
+for details of how Tagulous works; in particular:
 
 * `Installation <http://radiac.net/projects/django-tagulous/documentation/installation/>`_
   - how to install Tagulous
