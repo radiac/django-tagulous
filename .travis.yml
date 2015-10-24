@@ -26,7 +26,7 @@ env:
   - TOXENV=py34-django1.7
   # Django 1.8
   - TOXENV=py27-django1.8
-  - TOXENV=py27-django1.8-mysql DATABASE_ENGINE=mysql DATABASE_USER=tavis
+  - TOXENV=py27-django1.8-mysql DATABASE_ENGINE=mysql DATABASE_USER=travis
   - TOXENV=py27-django1.8-postgres DATABASE_ENGINE=pgsql DATABASE_USER=postgres
   - TOXENV=py32-django1.8
   - TOXENV=py33-django1.8
