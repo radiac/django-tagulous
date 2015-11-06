@@ -12,6 +12,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from django.utils import six
+import tagulous.settings as tagulous_settings
 
 from tests.lib import *
 
@@ -68,7 +69,22 @@ class TagModelTest(TagTestManager, TestCase):
             six.text_type(cm.exception),
             "'_Tagulous_SimpleMixedTest_tags' has no attribute 'get_absolute_url'"
         )
-    
+
+    def test_name_field_length(self):
+        """
+        Value is initialized in setup.py runtests() settings
+        """
+        self.assertEqual(self.tag_model._meta.get_field('name').max_length,
+                         tagulous_settings.NAME_MAX_LENGTH)
+
+    def test_name_field_length(self):
+        """
+        Value is initialized in setup.py runtests() settings
+        """
+        self.assertEqual(self.tag_model._meta.get_field('slug').max_length,
+                         tagulous_settings.SLUG_MAX_LENGTH)
+
+
     def assertRelatedExists(self, related_fields, match_model, field_name):
         """
         Look through the related fields and find the field which refers to the

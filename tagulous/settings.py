@@ -49,6 +49,22 @@ ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
 WEIGHT_MIN = getattr(settings, 'TAGULOUS_WEIGHT_MIN', 1)
 WEIGHT_MAX = getattr(settings, 'TAGULOUS_WEIGHT_MAX', 6)
 
+#
+# Field Size defaults
+#
+
+NAME_MAX_LENGTH = getattr(
+    settings, 'TAGULOUS_NAME_MAX_LENGTH', 255
+)
+SLUG_MAX_LENGTH = getattr(
+    settings, 'TAGULOUS_SLUG_MAX_LENGTH', NAME_MAX_LENGTH
+)
+PATH_MAX_LENGTH = getattr(
+    settings, 'TAGULOUS_NAME_MAX_LENGTH', NAME_MAX_LENGTH
+)
+LABEL_MAX_LENGTH = getattr(
+    settings, 'TAGULOUS_LABEL_MAX_LENGTH', NAME_MAX_LENGTH
+)
 
 #
 # Feature flags
