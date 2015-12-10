@@ -253,8 +253,8 @@ class BaseTagRelatedManager(object):
             return item_str in [tag.name for tag in self.tags]
         return item_str in [tag.name.lower() for tag in self.tags]
     
-    def __len__(self):
-        return len(self.tags)
+    # def __len__(self):  # Does our manager need this Operator Overloading?
+    #     return len(self.tags)
 
     def __eq__(self, other):
         """
