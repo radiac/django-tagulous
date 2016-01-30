@@ -23,12 +23,12 @@ Install ``django-tagulous``, add ``tagulous`` to ``INSTALLED_APPS``, then start
 adding tag fields to your model::
 
     from django.db import models
-    import tagulous
-    
+    from tagulous.models import SingleTagField, TagField
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        title = tagulous.models.SingleTagField(initial="Mr, Mrs, Miss, Ms")
-        skills = tagulous.models.TagField()
+        title = SingleTagField(initial="Mr, Mrs, Miss, Ms")
+        skills = TagField()
 
 A ``SingleTagField`` is based on a ``ForeignKey``, and a ``TagField`` is based
 on a ``ManyToManyField``, which both have relationships to a ``TagModel`` -
