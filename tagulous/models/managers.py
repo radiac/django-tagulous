@@ -484,15 +484,17 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         # Add and remove tags as necessary
         new_tags = self._ensure_tags_in_db(self.tags)
         self.reload()
-        # Add new tags
-        for new_tag in new_tags:
-            if new_tag not in self.tags:
-                self.add(new_tag)
         
         # Remove old tags
         for old_tag in self.tags:
             if old_tag not in new_tags:
                 self.remove(old_tag)
+                
+        # Add new tags
+        for new_tag in new_tags:
+            if new_tag not in self.tags:
+                self.add(new_tag)
+
         self.tags = new_tags
         self.changed = False
     save.alters_data = True
