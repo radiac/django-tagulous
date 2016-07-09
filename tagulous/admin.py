@@ -30,7 +30,7 @@ class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
         formfield = super(
             TaggedBaseModelAdminMixin, self
         ).formfield_for_dbfield(db_field, **kwargs)
-        
+
         if (
             isinstance(db_field, (tag_models.SingleTagField, tag_models.TagField))
             and
@@ -60,14 +60,14 @@ class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
     exclude = ['count']
     actions = ['merge_tags']
     prepopulated_fields = {"slug": ("name",)}
-    
+
     def merge_tags(self, request, queryset):
         """
         Admin action to merge tags
         """
         # Thanks to:
         #   http://www.hoboes.com/Mimsy/hacks/django-actions-their-own-intermediate-page/
-        
+
         # Create a form
         is_tree = issubclass(self.model, tag_models.TagTreeModel)
         class MergeForm(forms.Form):
@@ -75,12 +75,12 @@ class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
             _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
             # Allow use to select from selected items
             merge_to = forms.ModelChoiceField(queryset)
-        
+
         if is_tree:
             class MergeForm(MergeForm):
                 # Allow to merge recursively
                 merge_children = forms.BooleanField(required=False)
-        
+
         if 'merge' in request.POST:
             merge_form = MergeForm(request.POST)
             if merge_form.is_valid():
@@ -90,11 +90,11 @@ class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
                 if is_tree and merge_form.cleaned_data['merge_children']:
                     kwargs['children'] = True
                 merge_to.merge_tags(queryset, **kwargs)
-                
+
                 # Django 1.4 doesn't support level=messages.SUCCESS
                 self.message_user(request, 'Tags merged')
                 return HttpResponseRedirect(request.get_full_path())
-                
+
         else:
             tag_pks = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
             if len(tag_pks) < 2:
@@ -103,7 +103,7 @@ class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
                     request, 'You must select at least two tags to merge',
                 )
                 return HttpResponseRedirect(request.get_full_path())
-            
+
             merge_form = MergeForm(
                 initial={
                     admin.ACTION_CHECKBOX_NAME: request.POST.getlist(
@@ -112,7 +112,7 @@ class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
                     'merge_children': True,
                 }
             )
-            
+
         return render(request, 'tagulous/admin/merge_tags.html', {
             'title': 'Merge tags',
             'opts': self.model._meta,
@@ -157,31 +157,31 @@ def enhance(model, admin_class):
     #
     # Get a list of all tag fields
     #
-    
+
     # Dict of single tag fields, {name: tag}
     single_tag_fields = {}
-    
+
     # Dict of normal tag fields, {name: tag}
     tag_fields = {}
-    
+
     # List of all single and normal tag fields
     tag_field_names = []
-    
+
     # Check for SingleTagField related fields
     for field in tag_models.singletagfields_from_model(model):
         single_tag_fields[field.name] = field
         tag_field_names.append(field.name)
-    
+
     # Check for TagField m2m fields
     for field in tag_models.tagfields_from_model(model):
         tag_fields[field.name] = field
         tag_field_names.append(field.name)
 
-    
+
     #
     # Ensure any tag fields in list_display are rendered by functions
     #
-    
+
     # The admin.site.register will complain if it's a ManyToManyField, so this
     # will work around that.
     #
@@ -194,7 +194,7 @@ def enhance(model, admin_class):
         # Make sure we're working with a list
         if isinstance(admin_class.list_display, tuple):
             admin_class.list_display = list(admin_class.list_display)
-        
+
         for i, field in enumerate(admin_class.list_display):
             # If the field's not a callable, and not in the admin class already
             if not hasattr(field, '__call__') and not hasattr(admin_class, field):
@@ -203,10 +203,10 @@ def enhance(model, admin_class):
                     # Create new field name and replace in list_display
                     display_name = '_tagulous_display_%s' % field
                     admin_class.list_display[i] = display_name
-                
+
                     # Add display function to admin class
                     setattr(admin_class, display_name, _create_display(field))
-    
+
     #
     # If admin is for a tag model, ensure any inlines for tagged models are
     # subclasses of TaggedInlineFormSet.
@@ -221,7 +221,7 @@ def enhance(model, admin_class):
                 inline_cls.__bases__ = (
                     TaggedBaseModelAdminMixin,
                 ) + inline_cls.__bases__
-            
+
             # Make sure inlines used TaggedInlineFormSet
             if (
                 issubclass(inline_cls.model, tag_models.TaggedModel)
@@ -239,23 +239,23 @@ def enhance(model, admin_class):
 def register(model, admin_class=None, site=None, **options):
     """
     Provide tag support to the model when it is registered with the admin site.
-    
+
     For tagged models (have one or more SingleTagField or TagField fields):
         * Admin will support TagField in list_display
-    
+
     For tag models (subclass of TagModel):
         * Admin will provide a merge action to merge tags
-    
+
     For other models:
         * No changes made
-    
+
     Arguments:
         model       Model to register
         admin_class Admin class for model
         site        Admin site to register with
                     Default: django.contrib.admin.site
         **options   Extra options for admin class
-    
+
     This only supports one model, but is otherwise safe to use with non-tagged
     models.
     """
@@ -263,25 +263,25 @@ def register(model, admin_class=None, site=None, **options):
     if isinstance(model, tag_models.BaseTagDescriptor):
         # It's a tag descriptor; change it for the tag model itself
         model = model.tag_model
-    
+
     elif not isinstance(model, ModelBase):
         raise ImproperlyConfigured(
             'Tagulous can only register a single model with admin.'
         )
-    
+
     # Ensure we have a valid admin site
     if site is None:
         site = admin.site
-    
+
     #
     # Determine appropriate admin class
     #
     if not admin_class:
         admin_class = admin.ModelAdmin
-    
+
     # Going to make a list of base classes to inject
     cls_bases = []
-    
+
     # If it's a tag model, subclass TagModelAdmin or TagTreeModelAdmin
     if issubclass(model, tag_models.BaseTagModel):
         if issubclass(model, tag_models.TagTreeModel):
@@ -290,14 +290,14 @@ def register(model, admin_class=None, site=None, **options):
         else:
             if not issubclass(admin_class, TagModelAdmin):
                 cls_bases += [TagModelAdmin]
-    
+
     # If it's a tagged model, subclass TaggedModelAdmin
     singletagfields = tag_models.singletagfields_from_model(model)
     tagfields = tag_models.tagfields_from_model(model)
     if singletagfields or tagfields:
         if not issubclass(admin_class, TaggedModelAdmin):
             cls_bases += [TaggedModelAdmin]
-    
+
     # If options specified, or other bases, will need to subclass admin_class
     if options or cls_bases:
         cls_bases += [admin_class]
@@ -313,11 +313,11 @@ def register(model, admin_class=None, site=None, **options):
         admin_class = type(
             str("%sAdmin" % model.__name__), tuple(cls_bases), options,
         )
-    
+
     # Enhance the model admin class
     enhance(model, admin_class)
-    
+
     # Register the model
     # Don't pass options - we've already dealt with that
     site.register(model, admin_class)
-    
+
