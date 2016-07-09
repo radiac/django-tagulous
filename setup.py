@@ -69,17 +69,17 @@ def runtests(args):
         engine = os.environ.get('DATABASE_ENGINE')
         if engine:
             if engine == "pgsql":
-                DATABASE['engine'] = 'django.db.backends.postgresql_psycopg2'
+                DATABASE['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
             elif engine == "mysql":
-                DATABASE['engine'] = "django.db.backends.mysql"
+                DATABASE['ENGINE'] = "django.db.backends.mysql"
             else:
                 raise ValueError("Unknown database engine")
                 
             DATABASE['name'] = os.environ.get('DATABASE_NAME', 'test_tagulous_%s' % testenv)
             for key in ['USER', 'PASSWORD', 'HOST', 'PORT']:
-                if key in os.environ:
+                if 'DATABASE_' + key in os.environ:
                     DATABASE[key] = os.environ['DATABASE_' + key]
-
+        
         settings.configure(
             DATABASES={'default': DATABASE},
             INSTALLED_APPS=INSTALLED_APPS,
