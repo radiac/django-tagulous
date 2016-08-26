@@ -19,9 +19,12 @@ Installing
 The easiest way to work on Tagulous is to fork the project on github, then
 install it to a virtualenv::
 
-    pip install -e git://github.com/my_username/django-tagulous.git#egg=django-tagulous[dev][i18n]
+    virtualenv django-tagulous
+    cd djang-tagulous
+    source bin/activate
+    pip install -e git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous[dev,i18n]
 
-(replacing ``my_username`` with your username).
+(replacing ``USERNAME`` with your username).
 
 This will install the development dependencies too, and you'll find the
 tagulous source ready for you to work on in the ``src`` folder of your
@@ -37,7 +40,7 @@ Use ``setup.py`` to run the python tests on your current python environment;
 you can optionally specify which test to run::
 
     python setup.py test [tests[.test_set.TestClass]]
-    
+
 * If you are using Django 1.4 to 1.6, the tests will look for ``south`` - if it
   is not installed, a warning will be raised and the south tests will be
   skipped.
