@@ -38,11 +38,11 @@ def _deserialize_obj(obj):
     if hasattr(Model, '_retag_to_original'):
         obj.object = obj.object._retag_to_original()
     return obj
-    
+
 def DeserializerWrapper(deserializer, doc=None):
     """
     Adds tag support to any deserializer which yields DeserializedObjects
-    
+
     Given a deserializer, it modifies the DeserializedObjects which would
     normally be returned so tag fields are deserialized correctly.
     """
@@ -51,11 +51,11 @@ def DeserializerWrapper(deserializer, doc=None):
         obj_generator = deserializer(object_list, **options)
         for obj in obj_generator:
             yield _deserialize_obj(obj)
-    
+
     if doc:
         wrapper.__doc__ = doc
     return wrapper
-    
+
 
 def monkeypatch_get_model(serializer):
     """
@@ -65,11 +65,11 @@ def monkeypatch_get_model(serializer):
     old_get_model = serializer._get_model
     def _get_model(model_identifier):
         RealModel = old_get_model(model_identifier)
-        
+
         if issubclass(RealModel, TaggedModel):
             Model = RealModel._detag_to_serializable()
         else:
             Model = RealModel
-        
+
         return Model
     serializer._get_model = _get_model

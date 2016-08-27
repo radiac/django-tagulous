@@ -20,7 +20,7 @@ class ModelFieldOrderTest(TagTestManager, TestCase):
     manage_models = [
         test_models.MixedOrderTest,
     ]
-    
+
     def test_order_correct(self):
         """
         Check that the order of the non-ManyToMany fields is correct

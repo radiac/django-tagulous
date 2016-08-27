@@ -11,51 +11,51 @@ class Migration(DataMigration):
     #
     # Implement basic unittest-esque methods
     #
-    
+
     def fail(self, msg):
         # Fail loudly so the message can be picked up by the calling test
         raise AssertionError(msg)
-    
+
     def assertEqual(self, a, b):
         if a != b:
             self.fail("%r != %r" % (a, b))
-    
+
     def assertIsSubclass(self, cls, supercls):
         if not issubclass(cls, supercls):
             self.fail("%r is not a subclass of %r: %s" % (cls, supercls, cls.__bases__))
-    
+
     def assertIsInstance(self, obj, cls, msg=None):
         if not isinstance(obj, cls):
             self.fail("%r is not an instance of %r" % (obj, cls))
-    
-    
+
+
     #
     # Perform tests
     #
-    
+
     def forwards(self, orm):
         "Test that Tagulous works in data migrations"
         # Find tagged model
         model = orm['tagulous_tests_migration.MigrationTestModel']
-        
+
         # Check classes have been assigned correctly
         # If so, everything else will work as it should
         self.assertIsSubclass(model, tagulous.models.TaggedModel)
-        
+
         self.assertIsInstance(
             model.singletag, tagulous.models.SingleTagDescriptor
         )
         self.assertIsSubclass(
             model.singletag.tag_model, tagulous.models.BaseTagModel
         )
-        
+
         self.assertIsInstance(
             model.tags, tagulous.models.TagDescriptor
         )
         self.assertIsSubclass(
             model.tags.tag_model, tagulous.models.BaseTagTreeModel
         )
-        
+
 
     def backwards(self, orm):
         "Write your backwards methods here."

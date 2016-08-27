@@ -3,10 +3,10 @@
     if (!window.Select2 || !window.Tagulous) {
         return;
     }
-    
+
     /** Select2 monkeypatching
         Adds support for new option, quotedTags
-        
+
         This is used by tagulous to add quote support to the tag parser,
         without affecting other use of select2 on the page.
     */
@@ -28,13 +28,13 @@
         if (this.select || !this.opts.quotedTags) {
             return oldSetVal.call(this, val);
         }
-        
+
         var str = Tagulous.renderTags(val);
         this.opts.element.val(str);
     };
-    
+
     /** Select2 option functions
-        
+
         These replace default options with quote-aware ones
     */
     function initSelectionSingle(element, callback) {
@@ -55,7 +55,7 @@
             callback(data);
         };
     }
-    
+
     function tokenizer(input, selection, selectCallback, opts) {
         /** Tokenises input and detects when a tag has been completed */
         if (!this.opts.quotedTags) {
@@ -63,10 +63,10 @@
                 this, input, selection, selectCallback, opts
             );
         }
-        
+
         // Still need to be able to create search options
         if (!opts.createSearchChoice) return undefined;
-        
+
         // Parse with raw
         var parsed = Tagulous.parseTags(input, opts.spaceDelimiter, true),
             tags = parsed[0],
@@ -74,21 +74,21 @@
             lastRaw = raws.slice(-1)[0],
             i, token
         ;
-        
+
         if (!tags.length) {
             return input;
         }
-        
+
         if (lastRaw === null) {
             // Last tag wasn't completed
             tags.pop();
             raws.pop();
             lastRaw = raws.slice(-1)[0];
         }
-        
+
         for (i=0; i<tags.length; i++) {
             token = opts.createSearchChoice.call(this, tags[i], selection);
-            
+
             // De-dupe using select2 logic (without equal call)
             if (token !== undefined && token !== null && opts.id(token) !== undefined && opts.id(token) !== null) {
                 dupe = false;
@@ -102,14 +102,14 @@
             }
             // End select2 dedupe logic
         }
-        
+
         // Return whatever was left after the last completed tag was parsed
         return (lastRaw === undefined) ? input : lastRaw;
     }
-    
+
     function createSearchChoice(term, data) {
         /** Creates quote-aware search options from new input
-            
+
             Also makes SingleTagField look like a select field
         */
         // Thanks to https://github.com/select2/select2/issues/521
@@ -127,9 +127,9 @@
             return {id:term, text:term};
         }
     }
-    
+
     /** Apply select2 to a specified element
-        
+
         Arguments:
             el          The DOM or jQuery object to use as the tag element
             canDefer    If true and tag-options.defer is set, this field
@@ -139,47 +139,47 @@
         // Convert element to jQuery object (if it isn't already)
         var $el = $(el),
             thisTagField = this,
-            
+
             // Get info from element
             isSingle = $el.data('tag-type') === "single",
             options = $el.data('tag-options') || {},
             settings = options.autocomplete_settings || {},
             list = $el.data('tag-list'),
             url = $el.data('tag-url'),
-            
+
             // Other values
             $blank, args, field_args
         ;
-        
+
         // See if this is a deferred tag
         if (canDefer && settings.defer) {
             return $el;
         }
         delete settings.defer;
-        
+
         // Clear out first option if it's Django's blank value
         $blank = $el
             .find('option:first[value=""]:contains("---------")')
             .text('')
         ;
-        
+
         // Default constructor args, which can be overridden
         args = {
             width: 'resolve'
         };
-        
+
         // Merge in any overrides
         field_args = settings;
         if (field_args) {
             $.extend(args, field_args);
         }
-        
+
         // Merge in common compulsory settings
         $.extend(args, {
             // Our overriden methods
             tokenizer: tokenizer,
             createSearchChoice: createSearchChoice,
-            
+
             // Things defined by field/tag options, which can't be overridden
             multiple: !isSingle,
             quotedTags: true,
@@ -187,7 +187,7 @@
             maximumSelectionSize: isSingle ? 1 : options.max_count || 0,
             spaceDelimiter: options.space_delimiter !== false
         });
-        
+
         // Add in any specific to the field type
         if (isSingle) {
             args['initSelection'] = initSelectionSingle;
@@ -206,29 +206,29 @@
                     return data;
                 }
             };
-            
+
             // Merge in override ajax values
             if (field_args && field_args.ajax) {
                 $.extend(args['ajax'], field_args.ajax);
             }
-            
+
         } else if (isSingle) {
             // Make SingleTagField look like a select, set data not tags
             args['data'] = listToData(list);
-            
+
         } else {
             // Multiple tags, normal tags mode appropriate
             args['tags'] = list || [];
         }
-        
+
         // Initialise
         return $el.select2(args);
     }
-    
+
     /** Select2 initialiser
-    
+
         This initialises select2 on this
-        
+
         Arguments:
             $el         The jQuery object to use as the tag selector
             canDefer    If true and tag-options.defer is set, this field
@@ -239,7 +239,7 @@
             apply_select2(this, canDefer);
         });
     }
-    
+
     function listToData(list) {
         /** Convert a list of tags into an object with tag:tag key/vals */
         var data = [], i;
@@ -251,12 +251,12 @@
         }
         return data;
     }
-    
+
     // Make functions public
     $.extend(Tagulous, {
         select2: select2
     });
-    
+
     // Finally, initialise the tags
     $(function () {
         // Initialise tag fields which exists

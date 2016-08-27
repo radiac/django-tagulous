@@ -35,20 +35,20 @@ class Command(BaseCommand):
         # Split up target argument
         parts = target.split('.')
         app_name, model_name, field_name = parts + ([None] * (3 - len(parts)))
-        
+
         # Look up app
         if app_name:
             app = get_app(app_name)
         else:
             # get_models(None) will get all models
             app = None
-        
+
         # Look up specific model, or get all models for the app
         if model_name:
             models = [get_model(app, model_name)]
         else:
             models = get_models(app)
-        
+
         # If field is specified, can finish here
         if field_name:
             model = models[0]
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             loaded = field_initialise_tags(
                 model, field, report=self.stdout,
             )
-            
+
             if not loaded:
                 self.stdout.write("Nothing to load for %s.%s.%s\n" % (
                     model._meta.app_label,
@@ -64,7 +64,7 @@ class Command(BaseCommand):
                     field.name,
                 ))
             return
-        
+
         # Step through all models and load
         for model in models:
             model_initialise_tags(model, report=self.stdout)

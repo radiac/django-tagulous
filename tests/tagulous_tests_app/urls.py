@@ -35,7 +35,7 @@ urlpatterns = mk_urlpatterns(
             views.MixedUpdate.as_view(),
             name='tagulous_tests_app-MixedUpdate',
         ),
-        
+
         # Tagulous autocomplete
         url(r'^autocomplete/unlimited/$',
             tagulous.views.autocomplete,

@@ -21,7 +21,7 @@ def index(request):
     titles = models.Person.title.tag_model.objects.all()
     skills = models.Skill.objects.all()
     hobbies = models.Person.hobbies.tag_model.objects.all()
-    
+
     if request.POST:
         person_form = forms.PersonForm(request.POST)
         if person_form.is_valid():
@@ -30,7 +30,7 @@ def index(request):
             return HttpResponseRedirect(reverse(index))
     else:
         person_form = forms.PersonForm()
-    
+
     return render(request, 'example/index.html', {
         'title':        'Django Tagulous Example',
         'Person_name':  models.Person.__name__,

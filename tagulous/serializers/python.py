@@ -14,7 +14,7 @@ class Serializer(base.SerializerMixin, python_serializer.Serializer):
     Serializes a QuerySet to basic Python objects, with tag field support
     """
     pass
-    
+
 
 Deserializer = base.DeserializerWrapper(python_serializer.Deserializer, doc=(
     "Deserialize Python objects into Django ORM instances, with tag field "

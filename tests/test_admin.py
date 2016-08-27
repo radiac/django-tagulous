@@ -38,7 +38,7 @@ request = MockRequest()
 def _monkeypatch_modeladmin():
     """
     ModelAdmin changes between django versions.
-    
+
     Monkeypatch it where necessary to allow tests to function, without making
     any changes to ModelAdmin which would affect the code being tested.
     """
@@ -60,10 +60,10 @@ class AdminTestManager(object):
     """
     def setUp(self):
         super(AdminTestManager, self).setUp()
-        
+
         if not hasattr(self, 'site'):
             return
-        
+
         # Try to clear the resolver cache
         try:
             # Django 1.4 - 1.6
@@ -75,29 +75,29 @@ class AdminTestManager(object):
                 get_resolver.cache_clear()
         else:
             _resolver_cache.clear()
-        
+
         # Store the old urls and make a copy
         self.old_urls = test_urls.urlpatterns
         test_urls.urlpatterns = copy.copy(
             test_urls.urlpatterns
         )
-        
+
         # Add the site to the copy
         from django.conf.urls import include, url
         def safe_include(urls):
             if django.VERSION < (1, 9):
                 return include(urls)
             return urls
-        
+
         test_urls.urlpatterns += test_urls.mk_urlpatterns(
             url(r'^tagulous_tests_app/admin/', safe_include(self.site.urls))
         )
-        
+
     def tearDown(self):
         super(AdminTestManager, self).tearDown()
         if not hasattr(self, 'old_urls'):
             return
-        
+
         # Restore the original urls
         test_urls.urlpatterns = self.old_urls
 
@@ -116,7 +116,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.model_singletag = self.model.singletag.tag_model
         self.model_tags = self.model.tags.tag_model
         self.site = admin.AdminSite(name='tagulous_admin')
-        
+
     def test_register_site(self):
         "Check register with site"
         self.assertFalse(self.model in self.site._registry)
@@ -124,7 +124,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
         self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
-    
+
     def test_register_no_site(self):
         "Check register without site"
         # Replace admin.site with our own
@@ -135,10 +135,10 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
         self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
-        
+
         # Return admin.site
         admin.site = old_admin_site
-    
+
     def test_register_models(self):
         "Check register refuses multiple models"
         with self.assertRaises(exceptions.ImproperlyConfigured) as cm:
@@ -148,7 +148,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
             'Tagulous can only register a single model with admin.',
         )
         self.assertFalse(self.model in self.site._registry)
-        
+
     def test_register_auto(self):
         "Check register without admin dynamically creates admin class"
         self.assertFalse(self.model in self.site._registry)
@@ -156,7 +156,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
         self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
-    
+
     def test_register_options(self):
         "Check register with options dynamically creates admin class"
         self.assertFalse(self.model in self.site._registry)
@@ -184,7 +184,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(self.model_singletag in self.site._registry)
         ma = self.site._registry[self.model_singletag]
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
-    
+
     def test_register_tag_model_class_properties(self):
         """
         Check list_display, list_filter, exclude and actions can be set in a
@@ -205,7 +205,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertEqual(ma.list_filter, ['count'])
         self.assertEqual(ma.exclude, ['name'])
         self.assertEqual(ma.actions, [])
-    
+
     def test_register_tag_tree_model(self):
         "Check register tag tree model creates correct admin class"
         tag_model = test_models.TreeTest.tags.tag_model
@@ -233,7 +233,7 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
         tag_admin.register(self.model, self.admin, site=self.site)
         self.ma = self.site._registry[self.model]
         self.cl = None
-    
+
     def get_changelist(self, req=request):
         list_display = self.ma.get_list_display(req)
         list_display_links = self.ma.get_list_display_links(req, list_display)
@@ -246,17 +246,17 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
             self.ma
         )
         return self.cl
-        
+
     def get_changelist_results(self, req=request):
         self.get_changelist(req)
         results = self.cl.get_results(req)
         return self.cl.result_list
-    
-    
+
+
     #
     # Tests
     #
-    
+
     def test_changelist_display(self):
         "Check display fields have registered ok and return valid values"
         t1 = self.model.objects.create(name='Test 1', singletag='Mr', tags='red, blue')
@@ -268,14 +268,14 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.assertEqual(len(results), 1)
         r1 = results[0]
         self.assertEqual(t1.pk, r1.pk)
-        
+
         # Find what it's showing
         from django.contrib.admin.templatetags.admin_list import items_for_result
         row = [
             list(items_for_result(self.cl, result, None))
             for result in results
         ][0]
-        
+
         # Before comparing, strip class attrs
         row = [
             re.sub(r' class=".+?"', '', r)
@@ -286,18 +286,18 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
             '<td>Mr</td>',
             '<td>blue, red</td>',
         ])
-    
+
     def test_changelist_filter(self):
         t1 = self.model.objects.create(name='Test 1', singletag='Mr', tags='red, blue')
         t2 = self.model.objects.create(name='Test 2', singletag='Mrs', tags='red, green')
         t3 = self.model.objects.create(name='Test 3', singletag='Mr', tags='green, blue')
-        
+
         # Check filters are listed
         self.assertSequenceEqual(
             self.ma.get_list_filter(request),
             ['singletag', 'tags'],
         )
-        
+
         # Filter by singletag
         singletag_request = MockRequest(GET={
             'singletag__id__exact': self.model_singletag.objects.get(name='Mr').pk,
@@ -309,7 +309,7 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0].pk, t1.pk)
         self.assertEqual(results[1].pk, t3.pk)
-        
+
         # Filter by tag
         tag_request = MockRequest(GET={
             'tags__id__exact': self.model_tags.objects.get(name='green').pk,
@@ -321,13 +321,13 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0].pk, t2.pk)
         self.assertEqual(results[1].pk, t3.pk)
-    
+
     def test_form_fields(self):
         "Check forms get the correct widget"
         db_singletag = self.model._meta.get_field('singletag')
         field_singletag = self.ma.formfield_for_dbfield(db_singletag)
         self.assertIsInstance(field_singletag.widget, tag_forms.AdminTagWidget)
-        
+
         db_tags = self.model._meta.get_field('tags')
         field_tags = self.ma.formfield_for_dbfield(db_tags)
         self.assertIsInstance(field_tags.widget, tag_forms.AdminTagWidget)
@@ -343,14 +343,14 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
     """
     def setUpModels(self):
         raise NotImplemented()
-    
+
     def setUpExtra(self):
         self.setUpModels()
         self.site = admin.AdminSite(name='tagulous_admin')
         tag_admin.register(self.model, site=self.site)
         self.ma = self.site._registry[self.model]
         self.cl = None
-        
+
     def get_changelist(self, req=request):
         list_display = self.ma.get_list_display(req)
         list_display_links = self.ma.get_list_display_links(req, list_display)
@@ -363,21 +363,21 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
             self.ma
         )
         return self.cl
-    
+
     def get_cl_queryset(self, cl, request):
         "Because ModelAdmin.get_query_set is deprecated in 1.6"
         if hasattr(cl, 'get_queryset'):
             return cl.get_queryset(request)
         return cl.get_query_set(request)
-    
+
     def assertContains(self, content, *seeks):
         for seek in seeks:
             self.assertTrue(seek in content, msg='Missing %s' % seek)
-    
+
     def assertNotContains(self, content, *seeks):
         for seek in seeks:
             self.assertFalse(seek in content, msg='Unexpected %s' % seek)
-    
+
     def do_test_merge_form(self, tags, excluded_tags, is_tree=False):
         "Request the form view and check it returns valid expected HTML"
         request = MockRequest(POST=QueryDict('&'.join(
@@ -389,22 +389,22 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         cl = self.get_changelist(request)
         response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
-        
+
         # Check response is appropriate
         # Django 1.4 doesn't support assertInHTML, so have to do it manually
         self.assertEqual(len(msgs), 0)
         content = response.content.decode('utf-8')
         content_form = content[
-            content.index('<form ') : content.index('</form>') + 7
+            content.index('<form '):content.index('</form>') + 7
         ]
-        
+
         # Strip csrfmiddlewaretoken
         content_form = re.sub(
             r'''<input [^>]*name=["']csrfmiddlewaretoken["'][^>]*>''',
             '',
             content_form,
         )
-        
+
         # Check HTML up to first <option> tag
         self.assertHTMLEqual(
             content_form[:content_form.index('<option')],
@@ -414,10 +414,10 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
                 '<select id="id_merge_to" name="merge_to">'
             )
         )
-        
+
         # Can't be sure of options order
         options_raw = content_form[
-            content_form.index('<option') : content_form.index('</select>')
+            content_form.index('<option'):content_form.index('</select>')
         ]
         options = [
             '<option %s' % opt.strip()
@@ -431,13 +431,13 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
                 options,
                 '<option value="%d">%s</option>' % (tag.pk, tag.name),
             )
-    
+
         # Find remaining input tags
         inputs_raw = content_form[
             # First input, convenient
-            content_form.index('<input') : content_form.index('<div>')
+            content_form.index('<input'):content_form.index('<div>')
         ]
-        
+
         # If it's a tree, it should have merge_children first
         if is_tree:
             merge_children_label = '<label for="id_merge_children">Merge children:</label>'
@@ -447,7 +447,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
                 '<input type="checkbox" name="merge_children" '
                 'id="id_merge_children" checked="checked">'
             ))
-            
+
         # Remaining input tags should be tag ids selected on previous page
         inputs = [
             '<input %s' % inpt.strip()
@@ -461,7 +461,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
                 'id="id__selected_action_%s"' % action_id
                 in input_tag for input_tag in inputs
             ))
-        
+
         # Now check the tag IDs are all there
         found_tag_pks = []
         for input_tag in inputs:
@@ -479,11 +479,11 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
                 raise ValueError('Could not find tag pk in %s' % input_tag)
             found_tag_pks.append(int(matches.group(1)))
         self.assertEqual(set(found_tag_pks), set([tag.pk for tag in tags]))
-        
+
         # Check end of form
         self.assertHTMLEqual(
             content_form[
-                content_form.index('<div>') : content_form.index('</div>')
+                content_form.index('<div>'):content_form.index('</div>')
             ], (
                 '<div>'
                 '<input type="submit" name="merge" value="Merge tags">'
@@ -492,14 +492,14 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
                 '</div>'
             )
         )
-        
+
         # And just confirm excluded tags weren't there
         for tag in excluded_tags:
             self.assertNotContains(
                 content,
                 '<option value="%d">%s</option>' % (tag.pk, tag.name),
             )
-        
+
     def do_form_submit(self, tags, merge_to, params=None):
         "Submit the form and check it succeeds and returns valid expected HTML"
         if params is None:
@@ -521,14 +521,14 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         cl = self.get_changelist(request)
         response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
-        
+
         # Check response is appropriate
         self.assertEqual(len(msgs), 1)
         self.assertEqual(
             msgs[0].message, 'Tags merged'
         )
         self.assertEqual(response._headers['location'][1], MOCK_PATH)
-        
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #   TagModel admin tools
@@ -541,7 +541,7 @@ class TagAdminTest(TagAdminTestManager):
     def setUpModels(self):
         self.tagged_model = test_models.SimpleMixedTest
         self.model = self.tagged_model.tags.tag_model
-        
+
     def populate(self):
         self.o1 = self.tagged_model.objects.create(
             name='Test 1', singletag='Mr', tags='red, blue',
@@ -555,13 +555,13 @@ class TagAdminTest(TagAdminTestManager):
         self.red = self.model.objects.get(name='red')
         self.blue = self.model.objects.get(name='blue')
         self.green = self.model.objects.get(name='green')
-        
+
         self.assertTagModel(self.model, {
             'red': 2,
             'blue': 2,
             'green': 2,
         })
-        
+
     def test_merge_action(self):
         "Check merge_tags action exists"
         self.assertTrue('merge_tags' in self.ma.actions)
@@ -570,21 +570,21 @@ class TagAdminTest(TagAdminTestManager):
         self.assertTrue(hasattr(actions['merge_tags'][0], '__call__'))
         self.assertEqual(actions['merge_tags'][1], 'merge_tags')
         self.assertEqual(actions['merge_tags'][2], 'Merge selected tags...')
-    
+
     def test_merge_form_empty(self):
         "Check the merge_tags action fails when no tags selected"
         request = MockRequest(POST=QueryDict('action=merge_tags'))
         cl = self.get_changelist(request)
         response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
-        
+
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].message, (
             'Items must be selected in order to perform actions on them. No '
             'items have been changed.'
         ))
         self.assertEqual(response, None)
-        
+
     def test_merge_form_one(self):
         "Check the merge_tags action fails when only one tag selected"
         self.populate()
@@ -600,7 +600,7 @@ class TagAdminTest(TagAdminTestManager):
             msgs[0].message, 'You must select at least two tags to merge'
         )
         self.assertEqual(response._headers['location'][1], MOCK_PATH)
-        
+
     def test_merge_form_two(self):
         "Check the merge_tags form when two tag selected"
         self.populate()
@@ -609,7 +609,7 @@ class TagAdminTest(TagAdminTestManager):
             excluded_tags=[self.blue],
             is_tree=False,
         )
-    
+
     def test_merge_form_submit(self):
         "Check the merge_tag form submits and merges"
         self.populate()
@@ -617,7 +617,7 @@ class TagAdminTest(TagAdminTestManager):
             tags=[self.red, self.green],
             merge_to=self.red,
         )
-        
+
         # Check they're merged
         self.assertTagModel(self.model, {
             'red': 3,
@@ -645,21 +645,21 @@ class TagTreeAdminTest(TagAdminTestManager):
     def setUpModels(self):
         self.tagged_model = test_models.CustomTreeTest
         self.model = test_models.CustomTagTree
-    
+
     def populate(self):
         # Normal Animal leaf nodes
         self.tagged_model.objects.create(name='cat1', tags='Animal/Mammal/Cat')
         self.tagged_model.objects.create(name='dog1', tags='Animal/Mammal/Dog')
         self.tagged_model.objects.create(name='bee1', tags='Animal/Insect/Bee')
-        
+
         # Pet tree has Cat leaf and extra L2 not in Animal
         self.tagged_model.objects.create(name='cat2', tags='Pet/Mammal/Cat')
         self.tagged_model.objects.create(name='robin1', tags='Pet/Bird/Robin')
-        
+
         # Food tree has Cat leaf and extra L3 not in Animal
         self.tagged_model.objects.create(name='cat3', tags='Food/Mammal/Cat')
         self.tagged_model.objects.create(name='pig1', tags='Food/Mammal/Pig')
-        
+
         self.assertTagModel(self.model, {
             'Animal':               0,
             'Animal/Insect':        0,
@@ -677,7 +677,7 @@ class TagTreeAdminTest(TagAdminTestManager):
             'Food/Mammal/Cat':      1,
             'Food/Mammal/Pig':      1,
         })
-        
+
     def test_merge_form(self):
         """
         Check merge_tags adds merge_children option
@@ -691,22 +691,22 @@ class TagTreeAdminTest(TagAdminTestManager):
             excluded_tags.count(),
             self.model.objects.all().count() - len(tag_names),
         )
-        
+
         self.do_test_merge_form(
             tags=self.model.objects.filter(name__in=tag_names),
             excluded_tags = excluded_tags,
             is_tree=True,
         )
-        
+
     def test_merge_form_l2_without_children_submit(self):
         self.populate()
-        
+
         # Tag something with 'Pet/Mammal'
         t1 = self.tagged_model.objects.create(name='mammal1', tags='Pet/Mammal')
         self.assertEqual(
             self.model.objects.get(name='Pet/Mammal').count, 1,
         )
-        
+
         # Now merge
         tag_names = [
             'Animal/Mammal', 'Pet/Mammal', 'Food/Mammal',
@@ -715,7 +715,7 @@ class TagTreeAdminTest(TagAdminTestManager):
             tags=self.model.objects.filter(name__in=tag_names),
             merge_to=self.model.objects.get(name='Animal/Mammal'),
         )
-        
+
         self.assertTagModel(self.model, {
             'Animal':               0,
             'Animal/Insect':        0,
@@ -734,7 +734,7 @@ class TagTreeAdminTest(TagAdminTestManager):
             'Food/Mammal/Pig':      1,
         })
         self.assertInstanceEqual(t1, name='mammal1', tags='Animal/Mammal')
-        
+
     def test_merge_form_l2_with_children_submit(self):
         self.populate()
         tag_names = [
@@ -747,7 +747,7 @@ class TagTreeAdminTest(TagAdminTestManager):
                 'merge_children=on'
             ]
         )
-        
+
         self.assertTagModel(self.model, {
             'Animal':               0,
             'Animal/Insect':        0,
@@ -760,7 +760,7 @@ class TagTreeAdminTest(TagAdminTestManager):
             'Pet/Bird':             0,
             'Pet/Bird/Robin':       1,
         })
-        
+
 
 ###############################################################################
 ####### Tagged inlines on tag ModelAdmin
@@ -773,34 +773,34 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
     admin_cls       = test_admin.SimpleMixedTestSingletagAdmin
     tagged_model    = test_models.SimpleMixedTest
     model           = test_models.SimpleMixedTest.singletag.tag_model
-    
+
     def setUpExtra(self):
         self.site = admin.AdminSite(name='tagulous_admin')
         tag_admin.register(self.model, admin_class=self.admin_cls, site=self.site)
         self.ma = self.site._registry[self.model]
         self.cl = None
-        
+
         # Set up client
         User.objects.create_superuser('test', 'test@example.com', 'user')
         result = self.client.login(username='test', password='user')
         self.assertEqual(result, True)
-        
+
     def tearDownExtra(self):
         test_urls.urlpatterns = self.old_urls
         self.client.logout()
-    
+
     def get_url(self, name, *args, **kwargs):
         content_type = ContentType.objects.get_for_model(self.model)
         return reverse(
             'admin:%s_%s_%s' % (content_type.app_label, content_type.model, name),
             args=args, kwargs=kwargs
         )
-    
-    
+
+
     #
     # Tests
     #
-    
+
     def test_add_renders(self):
         "Check inline add renders without error"
         response = self.client.get(self.get_url('add'))
@@ -815,7 +815,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         # There should be 3 empty fields, zero-indexed
         self.assertContains(response, 'id="id_simplemixedtest_set-2-singletag"')
         self.assertNotContains(response, 'id="id_simplemixedtest_set-3-singletag"')
-    
+
     def test_add_submits(self):
         "Check inline add saves without error, and increments tag model"
         data = {
@@ -831,7 +831,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         response = self.client.post(self.get_url('add'), data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.tagged_model.objects.count(), 1)
-        
+
         t1 = self.tagged_model.objects.get(name='Test 1')
         self.assertInstanceEqual(t1, name='Test 1', singletag='Mr', tags=['tag1', 'tag2'])
         self.assertTagModel(self.model, {'Mr': 1})
@@ -839,13 +839,13 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
             'tag1': 1,
             'tag2': 1,
         })
-    
+
     def test_edit_renders(self):
         "Check inline edit renders without error"
         obj1 = self.tagged_model.objects.create(
             name='Test 1', singletag='Mr', tags=['tag1', 'tag2'],
         )
-                
+
         response = self.client.get(self.get_url('change', obj1.singletag.pk))
         self.assertContains(response, '<h2>Simple mixed tests</h2>')
         self.assertContains(response, 'id="id_simplemixedtest_set-TOTAL_FORMS')
@@ -855,22 +855,22 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         # There should be 1 full field and 3 empty fields, zero-indexed
         self.assertContains(response, 'id="id_simplemixedtest_set-3-singletag"')
         self.assertNotContains(response, 'id="id_simplemixedtest_set-4-singletag"')
-        
+
         # Check the fk is an id, to confirm it's using TaggedInlineFormSet
         html = response.content.decode('utf-8')
         i_name = html.index('name="simplemixedtest_set-0-singletag"')
         i_open = html.rindex('<', 0, i_name)
         i_close = html.index('>', i_name)
-        self.assertHTMLEqual(html[i_open : i_close + 1], (
+        self.assertHTMLEqual(html[i_open:i_close + 1], (
             '<input type="hidden" name="simplemixedtest_set-0-singletag" '
             'value="1" id="id_simplemixedtest_set-0-singletag" />'
         ))
-        
-    
+
+
     def test_edit_saves(self):
         """
         Check inline edit saves without error
-        
+
         Also check changing tag fields in inlines
         """
         # Create and confirm
@@ -886,7 +886,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.assertTagModel(self.tagged_model.tags.tag_model, {
             'tag1': 1, 'tag2': 1, 'tag3': 1, 'tag4': 1,
         })
-        
+
         data = {
             'simplemixedtest_set-TOTAL_FORMS': 5,
             'simplemixedtest_set-INITIAL_FORMS': 2,
@@ -894,13 +894,13 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
             '_save': 'Save',
             'name': 'Mr',
             'slug': 'mr',
-            
+
             'simplemixedtest_set-0-name':   'Test 1e',
             'simplemixedtest_set-0-tags':   'tag1, tag2e',
             'simplemixedtest_set-0-id':     '%d' % obj1.pk,
             'simplemixedtest_set-0-singletag': '%d' % tag1.pk,
             'simplemixedtest_set-0-DELETE': '',
-            
+
             'simplemixedtest_set-1-name':   'Test 2e',
             'simplemixedtest_set-1-tags':   'tag3, tag4e',
             'simplemixedtest_set-1-id':     '%d' % obj2.pk,
@@ -912,14 +912,14 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.tagged_model.objects.count(), 2)
-        
+
         self.assertInstanceEqual(
             obj1, name='Test 1e', singletag='Mr', tags=['tag1', 'tag2e'],
         )
         self.assertInstanceEqual(
             obj2, name='Test 2e', singletag='Mr', tags=['tag3', 'tag4e'],
         )
-        
+
         self.assertTagModel(self.model, {'Mr': 2})
         self.assertTagModel(self.tagged_model.tags.tag_model, {
             'tag1': 1, 'tag2e': 1, 'tag3': 1, 'tag4e': 1,

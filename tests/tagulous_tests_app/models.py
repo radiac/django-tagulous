@@ -39,8 +39,8 @@ class TagMetaUser(models.Model):
     """
     name = models.CharField(blank=True, max_length=100)
     two = tagulous.models.TagField(TagMetaModel, blank=True, null=True)
-    
-    
+
+
 ###############################################################################
 ####### Models for testing SingleTagField
 ###############################################################################
@@ -51,14 +51,14 @@ class SingleTagFieldModel(models.Model):
     """
     name = models.CharField(blank=True, max_length=100)
     title = tagulous.models.SingleTagField(blank=True, null=True)
-    
+
 class SingleTagFieldOptionalModel(models.Model):
     """
     Test optional single tag fields
     """
     name = models.CharField(blank=True, max_length=100)
     tag = tagulous.models.SingleTagField(blank=True, null=True)
-    
+
 class SingleTagFieldRequiredModel(models.Model):
     """
     Test required single tag fields
@@ -154,7 +154,7 @@ class TagFieldOptionalModel(models.Model):
     """
     name = models.CharField(blank=True, max_length=100)
     tag = tagulous.models.TagField(blank=True, null=True)
-    
+
 class TagFieldRequiredModel(models.Model):
     """
     Test required tag fields
@@ -280,7 +280,7 @@ class MixedRefTest(models.Model):
         MixedTest.tags.tag_model, related_name='mixed_ref_tags',
         blank=True,
     )
-    
+
 class NonTagRefTest(models.Model):
     """
     ForeignKeys and ManyToManyFields directly referencing a tag model

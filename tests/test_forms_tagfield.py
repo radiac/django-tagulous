@@ -43,7 +43,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             invalid={},
             empty_value=[],
         )
-    
+
     def test_force_lowercase(self):
         "Test force_lowercase flag set in constructor"
         self.assertFieldOutput(
@@ -67,7 +67,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
         form = test_forms.TagFieldForm(data={'tags': 'red, blue'})
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['tags'], ['blue', 'red'])
-        
+
     def test_render_basics(self):
         "Check widget renders default settings (not required)"
         class LocalTestForm(forms.Form):
@@ -79,7 +79,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'id="id_tag" name="tag" type="text" />'
         ))
-    
+
     def test_render_tag_optional(self):
         "Check widget renders correctly when field not required"
         class LocalTestForm(forms.Form):
@@ -91,7 +91,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'id="id_tag" name="tag" type="text" />'
         ))
-    
+
     def test_render_tag_list(self):
         "Check widget renders data-tag-list"
         class LocalTestForm(forms.Form):
@@ -107,7 +107,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             '[&quot;one&quot;, &quot;two&quot;, &quot;three&quot;]" '
             'id="id_tag" name="tag" type="text" />'
         ))
-    
+
     def test_render_tag_url(self):
         "Check widget renders data-tag-url"
         autocomplete_view = 'tagulous_tests_app-unlimited'
@@ -126,7 +126,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             '/tagulous_tests_app/autocomplete/unlimited/" '
             'id="id_tag" name="tag" type="text" />'
         ))
-    
+
     def test_render_value(self):
         "Check widget renders value"
         form = test_forms.TagFieldForm(data={'tags': 'run, walk'})
@@ -137,7 +137,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             'id="id_tags" name="tags" type="text" '
             'value="run, walk" />'
         ))
-    
+
     def test_render_invalid_tag_url(self):
         "Check widget renders data-tag-url"
         autocomplete_view = 'tagulous_tests_app-view_does_not_exist'
@@ -154,7 +154,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             "Invalid autocomplete view: Reverse for '%s' with arguments '()' "
             "and keyword arguments '{}' not found." % autocomplete_view
         ))
-    
+
     def test_render_autocomplete_settings(self):
         "Check widget merges autocomplete settings with defaults"
         # Make a form with some autocomplete settings
@@ -168,7 +168,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
                 ),
             )
         form = LocalTestForm()
-        
+
         # Set some defaults in the widget
         self.assertEqual(
             form['tags'].field.widget.default_autocomplete_settings, None
@@ -177,7 +177,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             'bees': 'buzz',
             'cats': 'mew',
         }
-        
+
         # Render
         # Expecting bees:buzz, cats:purr, cows:moo
         self.assertHTMLEqual(six.text_type(form['tags']), (
@@ -189,7 +189,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'id="id_tags" name="tags" type="text" />'
         ))
-        
+
     def test_invalid_prepare_value(self):
         "Check form field raises exception when given an invalid value"
         form = test_forms.TagFieldForm()
@@ -212,25 +212,25 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
     manage_models = [
         test_models.TagFieldModel,
     ]
-    
+
     def setUpExtra(self):
         # Load initial tags for all models which have them
         self.form = test_forms.TagFieldModelForm
         self.model = test_models.TagFieldModel
         self.tag_model = self.model.tags.tag_model
-        
+
     def test_formfield(self):
         "Test that model.TagField.formfield works correctly"
         # Check that the model fields are generated correctly
         tag1_field = self.model._meta.get_field('tags').formfield()
         self.assertIsInstance(tag1_field, tag_forms.TagField)
         self.assertIsInstance(tag1_field.tag_options, tag_models.TagOptions)
-        
+
         # Check we can get it from the descriptor shortcut method
         tag2_field = self.model.tags.formfield()
         self.assertIsInstance(tag2_field, tag_forms.TagField)
         self.assertIsInstance(tag2_field.tag_options, tag_models.TagOptions)
-        
+
     def test_media(self):
         "Test that a model form with a TagField has the correct media"
         media = self.form().media
@@ -240,7 +240,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             self.assertTrue(grp in media._css)
             for css in files:
                 self.assertTrue(css in media._css[grp])
-        
+
     def test_model_form_save(self):
         """
         Test that a model form with a TagField saves correctly
@@ -253,18 +253,18 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         )
         self.assertTrue(form.is_valid())
         t1 = form.save()
-        
+
         # Check in-memory instance
         self.assertEqual(t1.name, 'Test 1')
         self.assertEqual(t1.tags, 'blue, red')
-        
+
         # Check database
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'blue': 1,
             'red': 1,
         })
-        
+
     def test_model_form_save_commit_false(self):
         """
         Test that a model form with a TagField saves correctly when
@@ -279,20 +279,20 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         self.assertTrue(form.is_valid())
         t1 = form.save(commit=False)
         t1.save()
-        
+
         # Check in-memory instance
         self.assertEqual(t1.name, 'Test 1')
         self.assertEqual(t1.tags, '')
         self.assertTagModel(self.tag_model, {})
         self.assertInstanceEqual(t1, name='Test 1', tags='')
-        
+
         # Save M2M data
         form.save_m2m()
-        
+
         # Check in-memory instance
         self.assertEqual(t1.name, 'Test 1')
         self.assertEqual(t1.tags, 'blue, red')
-        
+
         # Check database
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
@@ -305,7 +305,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         # Confirm default
         field1 = self.form().fields['tags']
         self.assertEqual(field1.tag_options.case_sensitive, False)
-        
+
         # Change default
         field2 = self.model.tags.formfield(
             tag_options={'case_sensitive': True}
@@ -317,7 +317,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         # Confirm default
         field1 = self.form().fields['tags']
         self.assertEqual(field1.tag_options.case_sensitive, False)
-        
+
         # Change default
         field2 = self.model.tags.formfield(
             tag_options=tag_models.TagOptions(case_sensitive= True)
@@ -329,20 +329,20 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         self.tag_model.objects.create(name='red')
         self.tag_model.objects.create(name='blue')
         self.tag_model.objects.create(name='green')
-        
+
         # Confirm default
         field1 = self.form().fields['tags']
         self.assertSequenceEqual(
             [t.name for t in field1.autocomplete_tags],
             [t.name for t in self.tag_model.objects.all()],
         )
-        
+
         # Change default
         field2 = self.model.tags.formfield(
             autocomplete_tags=['pink', 'lime']
         )
         self.assertSequenceEqual(field2.autocomplete_tags, ['pink', 'lime'])
-        
+
     def test_render_tag_list(self):
         "Check widget renders data-tag-list"
         self.tag_model.objects.create(name='red')
@@ -362,7 +362,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             '[&quot;blue&quot;, &quot;red&quot;, &quot;yellow&quot;]" '
             'id="id_tags" name="tags" type="text" value="red, blue" />'
         ))
-    
+
     def test_initial_string(self):
         "Check initial tag string"
         form = test_forms.TagFieldForm(initial={'tags': 'red, blue'})
@@ -397,7 +397,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'id="id_tags" name="tags" type="text" value="blue, red" />'
         ))
-    
+
     def test_tagged_edit(self):
         "Check edit tagged model form instance works"
         t1 = self.model.objects.create(name='Test 1', tags='blue, red')
@@ -409,7 +409,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'id="id_tags" name="tags" type="text" value="blue, red" />'
         ))
-        
+
     def test_tagmeta_without_autocomplete_settings(self):
         """
         Check that a tag widget copes with a tag field which takes its options
@@ -447,12 +447,12 @@ class ModelFormTagFieldOptionalTest(TagTestManager, TestCase):
     manage_models = [
         test_models.TagFieldOptionalModel,
     ]
-    
+
     def setUpExtra(self):
         self.form = test_forms.TagFieldOptionalModelForm
         self.model = test_models.TagFieldOptionalModel
         self.tag_model = self.model.tag.tag_model
-        
+
     def test_optional_tagfield(self):
         "Check model with optional tagfield can be saved when empty"
         form = self.form(data={'name': 'Test 1'})
@@ -468,12 +468,12 @@ class ModelFormTagFieldRequiredTest(TagTestManager, TestCase):
     manage_models = [
         test_models.TagFieldRequiredModel,
     ]
-    
+
     def setUpExtra(self):
         self.form = test_forms.TagFieldRequiredModelForm
         self.model = test_models.TagFieldRequiredModel
         self.tag_model = self.model.tag.tag_model
-    
+
     def test_required_tagfield_set(self):
         "Check model with required tagfield can be saved when set"
         form = self.form(data={'name': 'Test 1', 'tag':  'red, blue'})
@@ -490,7 +490,7 @@ class ModelFormTagFieldRequiredTest(TagTestManager, TestCase):
             'red': 1,
             'blue': 1,
         })
-    
+
     def test_required_tagfield_empty(self):
         "Check model with required tagfield cannot be saved when empty"
         form = self.form(data={'name': 'Test 1'})
@@ -509,7 +509,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
     manage_models = [
         test_models.TagFieldOptionsModel,
     ]
-    
+
     def setUpExtra(self):
         # Load initial tags for all models which have them
         self.form = test_forms.TagFieldOptionsModelForm
@@ -522,20 +522,20 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         self.assertTagModel(tag_model, {
             'Adam': 0,
         })
-        
+
         # Check that the option is passed to the form field from model field
         form = self.form(data={'case_sensitive_true': 'adam'})
         field = form.fields['case_sensitive_true']
         self.assertIsInstance(field, tag_forms.TagField)
         self.assertEqual(field.tag_options.case_sensitive, True)
-        
+
         # Check that the option is passed to the widget
         self.assertEqual(field.widget.tag_options.case_sensitive, True)
-        
+
         # No effect on form data
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['case_sensitive_true'], ['adam'])
-        
+
         # No effect on save
         obj = form.save()
         self.assertEqual(obj.case_sensitive_true, 'adam')
@@ -548,48 +548,48 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         "Test form TagField case_sensitive false"
         # Prep tag model
         tag_model = self.model.case_sensitive_false.tag_model
-        
+
         # Check that the option is passed to the form field from model field
         form = self.form(data={'case_sensitive_false': 'adam'})
         field = form.fields['case_sensitive_false']
         self.assertIsInstance(field, tag_forms.TagField)
         self.assertEqual(field.tag_options.case_sensitive, False)
         self.assertEqual(field.widget.tag_options.case_sensitive, False)
-        
+
         # Still no effect on form data
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['case_sensitive_false'], ['adam'])
-        
+
         # But when saved, the instance will be capitalised
         obj = form.save()
         self.assertEqual(obj.case_sensitive_false, 'Adam')
         self.assertTagModel(tag_model, {
             'Adam': 1,
         })
-    
+
     def test_force_lowercase_true(self):
         "Test form TagField force_lowercase true"
         # Prep tag model
         tag_model = self.model.force_lowercase_true.tag_model
-        
+
         # Check that the option is passed to the form field from model field
         form = self.form(data={'force_lowercase_true': 'Adam'})
         field = form.fields['force_lowercase_true']
         self.assertIsInstance(field, tag_forms.TagField)
         self.assertEqual(field.tag_options.force_lowercase, True)
         self.assertEqual(field.widget.tag_options.force_lowercase, True)
-        
+
         # Form data returns lowercase case
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['force_lowercase_true'], ['adam'])
-        
+
         # When saved, the instance will be lowercase
         obj = form.save()
         self.assertEqual(obj.force_lowercase_true, 'adam')
         self.assertTagModel(tag_model, {
             'adam': 1,
         })
-            
+
     def test_force_lowercase_false(self):
         "Test form TagField force_lowercase false"
         # Check that the option is passed to the form field from model field
@@ -598,11 +598,11 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         self.assertIsInstance(field, tag_forms.TagField)
         self.assertEqual(field.tag_options.force_lowercase, False)
         self.assertEqual(field.widget.tag_options.force_lowercase, False)
-        
+
         # Check the input string is returned in the new case
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['force_lowercase_false'], ['Adam'])
-    
+
     def test_max_count(self):
         "Test form TagField max_count is passed and enforced"
         # It's not relevant
@@ -611,16 +611,16 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         field = form.fields['max_count']
         self.assertIsInstance(field, tag_forms.TagField)
         self.assertEqual(field.tag_options.max_count, 3)
-        
+
         # Check the input string is returned in the new case
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['max_count'], ['one'])
-        
+
         # Check two
         form = self.form(data={'max_count': 'one, two'})
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['max_count'], ['one', 'two'])
-        
+
         # Check three
         form = self.form(data={'max_count': 'one, two, three'})
         self.assertTrue(form.is_valid())
@@ -638,7 +638,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
             form.errors['max_count'][0],
             'This field can only have 3 arguments',
         )
-    
+
     def text_max_count_1(self):
         "Test form TagField max_count of 1"
         # Mostly just to test grammar of the error message
@@ -651,7 +651,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
         form = self.form(data={'max_count': 'one'})
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['max_count'], ['one'])
-        
+
         # Check two
         form = self.form(data={'max_count': 'one, two'})
         self.assertFalse(form.is_valid())
@@ -662,28 +662,28 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
             form.errors['max_count'][0],
             'This field can only have 1 argument',
         )
-    
+
     def test_initial_without_autocomplete_initial(self):
         "Check a field with initial but without autocomplete_initial lists all"
         tag_model = self.model.initial_string.tag_model
         tag_model.objects.create(name='David')
         tag_model.objects.create(name='Eric')
         tag_model.objects.create(name='Frank')
-        
+
         # Confirm default
         field = self.form().fields['initial_string']
         self.assertSequenceEqual(
             [t.name for t in field.autocomplete_tags],
             [t.name for t in tag_model.objects.all()],
         )
-        
+
     def test_initial_with_autocomplete_initial(self):
         "Check a field with initial and autocomplete_initial lists initial"
         tag_model = self.model.initial_list.tag_model
         tag_model.objects.create(name='David')
         tag_model.objects.create(name='Eric')
         tag_model.objects.create(name='Frank')
-        
+
         # Confirm default
         field = self.form().fields['initial_list']
         self.assertSequenceEqual(

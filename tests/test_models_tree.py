@@ -29,7 +29,7 @@ class TagTreeTestManager(TagTestManager):
             self.assertEqual(tag.slug, slug)
         if path is not None:
             self.assertEqual(tag.path, path)
-        
+
         if parent is not None:
             self.assertEqual(tag.parent, parent)
         if count is not None:
@@ -38,7 +38,7 @@ class TagTreeTestManager(TagTestManager):
             self.assertEqual(tag.protected, protected)
         if level is not None:
             self.assertEqual(tag.level, level)
-            
+
 
 ###############################################################################
 ####### TagTreeModel basics
@@ -48,27 +48,27 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
     """
     Test TagTreeModel basics - that the models are created correctly, and tag
     instances can be created directly with parents and fields correct.
-    
+
     These tests refer to levels; the higher the level, the deeper in the tree,
     eg: level1/level2/level3
     """
     manage_models = [
         test_models.TreeTest,
     ]
-    
+
     def setUpExtra(self):
         self.test_model = test_models.TreeTest
         self.singletag_field = test_models.TreeTest.singletag
         self.singletag_model = test_models.TreeTest.singletag.tag_model
         self.tag_field = test_models.TreeTest.tags
         self.tag_model = test_models.TreeTest.tags.tag_model
-    
+
     def test_singletag_model(self):
         "Check tag tree model is used as a base when SingleTagField tree=True"
         self.assertTrue(issubclass(
             self.singletag_model, tag_models.TagTreeModel
         ))
-        
+
     def test_tag_model(self):
         "Check tag tree model is used as a base when TagField tree=True"
         self.assertTrue(issubclass(
@@ -81,7 +81,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         self.assertTreeTag(
             t1, name='One', label='One', slug='one', path='one', level=1,
         )
-    
+
     def test_level_2_existing_l1(self):
         "Check level 2 node created with existing level 1"
         t1 = self.tag_model.objects.create(name='One')
@@ -102,7 +102,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
             t2, name='One/Two', label='Two', slug='two', path='one/two',
             parent=t1, level=2,
         )
-    
+
     def test_level_3_existing_l1_l2(self):
         "Check level 3 node created with existing level 1 and 2"
         t1 = self.tag_model.objects.create(name='One')
@@ -113,7 +113,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
             slug='three', path='one/two/three',
             parent=t2, level=3,
         )
-        
+
     def test_level_3_existing_l1_missing_l2(self):
         "Check level 3 node created with existing level 1 but missing level 2"
         t1 = self.tag_model.objects.create(name='One')
@@ -128,7 +128,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
             slug='three', path='one/two/three',
             parent=t2, level=3,
         )
-    
+
     def test_level_3_missing_l1_l2(self):
         "Check level 3 node created with missing level 1 and 2"
         t3 = self.tag_model.objects.create(name='One/Two/Three')
@@ -146,7 +146,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
             slug='three', path='one/two/three',
             parent=t2, level=3,
         )
-    
+
     def test_level_1_renames_l2_l3(self):
         "Check renaming level 1 node renames l2 and l3"
         t3 = self.tag_model.objects.create(name='One/Two/Three')
@@ -159,7 +159,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         t1.name = 'Uno'
         t1.slug = None # Force slug to be recreated
         t1.save()
-        
+
         # Reload
         self.assertTagModel(self.tag_model, {
             'Uno': 0,
@@ -169,7 +169,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         t1 = self.tag_model.objects.get(name='Uno')
         t2 = self.tag_model.objects.get(name='Uno/Two')
         t3 = self.tag_model.objects.get(name='Uno/Two/Three')
-        
+
         self.assertTreeTag(
             t1, name='Uno', label='Uno', slug='uno', path='uno', level=1,
         )
@@ -190,7 +190,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         for tag in self.tag_model.objects.all():
             tag.slug = six.text_type(tag.pk)
             tag.save()
-        
+
         # Load
         t1 = self.tag_model.objects.get(name='One')
         t2 = self.tag_model.objects.get(name='One/Two')
@@ -200,7 +200,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         self.assertTreeTag(
             t3, name='One/Two/Three', slug='3', path='1/2/3', parent=t2
         )
-        
+
         # Rebuild and re-test
         self.tag_model.objects.rebuild()
         t1 = self.tag_model.objects.get(name='One')
@@ -214,7 +214,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
             t3, name='One/Two/Three', slug='three', path='one/two/three',
             parent=t2,
         )
-        
+
 
 ###############################################################################
 ####### TagTreeModel tree merging
@@ -227,25 +227,25 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
     manage_models = [
         test_models.TreeTest,
     ]
-    
+
     def setUpExtra(self):
         self.test_model = test_models.TreeTest
         self.tag_field = test_models.TreeTest.tags
         self.tag_model = test_models.TreeTest.tags.tag_model
-        
+
         # Normal Animal leaf nodes
         self.test_model.objects.create(name='cat1', tags='Animal/Mammal/Cat')
         self.test_model.objects.create(name='dog1', tags='Animal/Mammal/Dog')
         self.test_model.objects.create(name='bee1', tags='Animal/Insect/Bee')
-        
+
         # Pet tree has Cat leaf and extra L2 not in Animal
         self.test_model.objects.create(name='cat2', tags='Pet/Mammal/Cat')
         self.test_model.objects.create(name='robin1', tags='Pet/Bird/Robin')
-        
+
         # Food tree has Cat leaf and extra L3 not in Animal
         self.test_model.objects.create(name='cat3', tags='Food/Mammal/Cat')
         self.test_model.objects.create(name='pig1', tags='Food/Mammal/Pig')
-    
+
     def test_setup(self):
         "Check test setup is correct"
         # There should be 6 tags
@@ -266,7 +266,7 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
             'Food/Mammal/Cat':      1,
             'Food/Mammal/Pig':      1,
         })
-    
+
     def test_merge_l1(self):
         """
         Test that merging an l1 without merging children reassigns tagged
@@ -277,7 +277,7 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
         self.assertEqual(
             self.tag_model.objects.get(name='Pet').count, 1,
         )
-        
+
         # Now merge
         self.tag_model.objects.get(name='Animal').merge_tags(
             'Pet, Food', children=False,
@@ -300,7 +300,7 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
             'Food/Mammal/Pig':      1,
         })
         self.assertInstanceEqual(t1, name='pet1', tags='Animal')
-        
+
     def test_merge_l1_with_children(self):
         """
         Test that merging an l1 and its children merges the full subtrees and
@@ -321,7 +321,7 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
             'Animal/Bird':          0,
             'Animal/Bird/Robin':    1,
         })
-    
+
     def test_merge_l2(self):
         """
         Test that merging an l2 without merging children reassigns tagged
@@ -332,7 +332,7 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
         self.assertEqual(
             self.tag_model.objects.get(name='Pet/Mammal').count, 1,
         )
-        
+
         # Now merge
         self.tag_model.objects.get(name='Animal/Mammal').merge_tags(
             'Pet/Mammal, Food/Mammal', children=False,
@@ -355,7 +355,7 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
             'Food/Mammal/Pig':      1,
         })
         self.assertInstanceEqual(t1, name='mammal1', tags='Animal/Mammal')
-    
+
     def test_merge_l2_with_children(self):
         """
         Test that merging an l2 and its children merges the full subtrees and
@@ -377,7 +377,7 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
             'Pet/Bird':             0,
             'Pet/Bird/Robin':       1,
         })
-    
+
     def test_merge_l3(self):
         "Test merging an l3 cleans empty parents"
         # No need to test children=True - there are no children
@@ -399,7 +399,7 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
             'Food/Mammal':          0,
             'Food/Mammal/Pig':      1,
         })
-        
+
 
 ###############################################################################
 ####### Custom TagTreeModel basics
@@ -408,31 +408,31 @@ class TagTreeModelMergeTest(TagTreeTestManager, TestCase):
 class TagTreeModelCustomTest(TagTreeTestManager, TransactionTestCase):
     """
     Test TagTreeModel basics when using a custom model
-    
+
     Use a TransactionTestCase so the apps will be reset
     """
     manage_models = [
         test_models.CustomTreeTest,
     ]
-    
+
     def setUpExtra(self):
         self.test_model = test_models.CustomTreeTest
         self.tag_model = test_models.CustomTagTree
         self.singletag_field = test_models.CustomTreeTest.singletag
         self.tag_field = test_models.CustomTreeTest.tags
-    
+
     def test_tag_model(self):
         "Check tag tree model is used as a base"
         self.assertTrue(issubclass(
             self.tag_model, tag_models.TagTreeModel
         ))
-        
+
     def test_tree_option(self):
         "Check tag tree model forces tree=True when missing"
         self.assertTrue(self.tag_model.tag_options.tree)
         self.assertTrue(self.singletag_field.tag_options.tree)
         self.assertTrue(self.tag_field.tag_options.tree)
-        
+
     def test_tree_option_tagmodel_fail(self):
         "Check tree option is not allowed in TagMeta"
         with self.assertRaises(ValueError) as cm:
@@ -443,7 +443,7 @@ class TagTreeModelCustomTest(TagTreeTestManager, TransactionTestCase):
             six.text_type(cm.exception),
             "Cannot set tree option in TagMeta"
         )
-    
+
 
 ###############################################################################
 ####### TagTreeModel tree navigation methods
@@ -456,15 +456,15 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
     manage_models = [
         test_models.TreeTest,
     ]
-    
+
     def setUpExtra(self):
         self.tag_field = test_models.TreeTest.tags
         self.tag_model = test_models.TreeTest.tags.tag_model
-        
+
         self.cat = self.tag_model.objects.create(name='Animal/Mammal/Cat')
         self.dog = self.tag_model.objects.create(name='Animal/Mammal/Dog')
         self.bee = self.tag_model.objects.create(name='Animal/Insect/Bee')
-        
+
     def test_setup(self):
         "Check test setup is correct"
         # There should be 6 tags
@@ -476,31 +476,31 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
             'Animal/Mammal/Cat': 0,
             'Animal/Mammal/Dog': 0,
         })
-        
+
     def test_ancestors(self):
         "Check l1 and l2 ancestors found from l3"
         # Add in some more extras to make sure they're not picked up
         f1 = self.tag_model.objects.create(name='Fail')
         f2 = self.tag_model.objects.create(name='Animal/Fail')
         f3 = self.tag_model.objects.create(name='Animal/Mammal/Cat/Fail')
-        
+
         # Look up from Cat
         t1 = self.tag_model.objects.get(name='Animal/Mammal/Cat')
         anc = t1.get_ancestors()
         self.assertEqual(len(anc), 2)
         self.assertTreeTag(anc[0], name='Animal', level=1)
         self.assertTreeTag(anc[1], name='Animal/Mammal', level=2)
-        
+
     def test_no_ancestors(self):
         "Check no ancestors found from l1"
         t1 = self.tag_model.objects.get(name='Animal')
         self.assertEqual(len(t1.get_ancestors()), 0)
-        
+
     def test_descendants_l1(self):
         "Check l2 and l3 descendants found from l1"
         # Add in some extras to make sure they're not picked up
         f1 = self.tag_model.objects.create(name='Fail')
-        
+
         # Look down from Animal
         t1 = self.tag_model.objects.get(name='Animal')
         self.assertTreeTag(t1, name='Animal', level=1)
@@ -511,7 +511,7 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
         self.assertTreeTag(dec[2], name='Animal/Mammal', level=2)
         self.assertTreeTag(dec[3], name='Animal/Mammal/Cat', level=3)
         self.assertTreeTag(dec[4], name='Animal/Mammal/Dog', level=3)
-        
+
     def test_descendants_l2(self):
         "Check l3 descendants found from l2"
         # Look down from Animal
@@ -529,18 +529,18 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
         self.assertTreeTag(t1, name='Animal/Insect/Bee', level=3)
         dec = t1.get_descendants()
         self.assertEqual(len(dec), 0)
-    
+
     def test_siblings_l1(self):
         "Find level 1 siblings"
         # Add another level 1 tag to find
         l1_2 = self.tag_model.objects.create(name='Vegetable')
-        
+
         t1 = self.tag_model.objects.get(name='Animal')
         sibs = t1.get_siblings()
         self.assertEqual(len(sibs), 2)
         self.assertTreeTag(sibs[0], name='Animal', level=1)
         self.assertTreeTag(sibs[1], name='Vegetable', level=1)
-        
+
     def test_siblings_l2(self):
         "Find level 2 siblings"
         t1 = self.tag_model.objects.get(name='Animal/Insect')
@@ -548,8 +548,8 @@ class TagTreeModelNavTest(TagTreeTestManager, TestCase):
         self.assertEqual(len(sibs), 2)
         self.assertTreeTag(sibs[0], name='Animal/Insect', level=2)
         self.assertTreeTag(sibs[1], name='Animal/Mammal', level=2)
-    
-    
+
+
 ###############################################################################
 ####### TagTreeQuerySet
 ###############################################################################
@@ -561,16 +561,16 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
     manage_models = [
         test_models.TreeTest,
     ]
-    
+
     def setUpExtra(self):
         self.tag_field = test_models.TreeTest.tags
         self.tag_model = test_models.TreeTest.tags.tag_model
-        
+
         self.cat = self.tag_model.objects.create(name='Animal/Mammal/Cat')
         self.dog = self.tag_model.objects.create(name='Animal/Mammal/Dog')
         self.bee = self.tag_model.objects.create(name='Animal/Insect/Bee')
         self.vegetable = self.tag_model.objects.create(name='Vegetable')
-        
+
     def test_setup(self):
         "Check test setup is correct"
         # There should be 6 tags
@@ -583,13 +583,13 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
             'Animal/Mammal/Dog': 0,
             'Vegetable': 0,
         })
-    
+
     def test_ancestors_l1(self):
         qs = self.tag_model.objects.filter(level=1)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Animal', 'Vegetable',
         ])
-        
+
         qs = qs.with_ancestors()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal', 'Vegetable',
@@ -600,20 +600,20 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Insect', 'Mammal',
         ])
-        
+
         qs = qs.with_ancestors()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal',
             'Animal/Insect',
             'Animal/Mammal',
         ])
-        
+
     def test_ancestors_l3(self):
         qs = self.tag_model.objects.filter(level=3)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Bee', 'Cat', 'Dog',
         ])
-        
+
         qs = qs.with_ancestors()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal',
@@ -623,13 +623,13 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
             'Animal/Mammal/Cat',
             'Animal/Mammal/Dog',
         ])
-    
+
     def test_descendants_l1(self):
         qs = self.tag_model.objects.filter(level=1)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Animal', 'Vegetable',
         ])
-        
+
         qs = qs.with_descendants()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal',
@@ -640,13 +640,13 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
             'Animal/Mammal/Dog',
             'Vegetable',
         ])
-    
+
     def test_descendants_l2(self):
         qs = self.tag_model.objects.filter(level=2)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Insect', 'Mammal',
         ])
-        
+
         qs = qs.with_descendants()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal/Insect',
@@ -655,26 +655,26 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
             'Animal/Mammal/Cat',
             'Animal/Mammal/Dog',
         ])
-    
+
     def test_descendants_l3(self):
         qs = self.tag_model.objects.filter(level=3)
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Bee', 'Cat', 'Dog',
         ])
-        
+
         qs = qs.with_descendants()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal/Insect/Bee',
             'Animal/Mammal/Cat',
             'Animal/Mammal/Dog',
         ])
-    
+
     def test_siblings_l1(self):
         qs = self.tag_model.objects.filter(name='Animal')
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Animal',
         ])
-        
+
         qs = qs.with_siblings()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal', 'Vegetable',
@@ -683,33 +683,33 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
     def test_siblings_l2(self):
         # Throw in something else to ensure l2 stays within subtree
         f1 = self.tag_model.objects.create(name='Vegetable/Horrible')
-        
+
         qs = self.tag_model.objects.filter(name='Animal/Insect')
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Insect',
         ])
-        
+
         qs = qs.with_siblings()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal/Insect',
             'Animal/Mammal',
         ])
-        
+
     def test_siblings_l3(self):
         # Throw in something else to ensure l3 stays within subtree
         f1 = self.tag_model.objects.create(name='Vegetable/Horrible/Mushroom')
-        
+
         qs = self.tag_model.objects.filter(name='Animal/Mammal/Cat')
         self.assertSequenceEqual(qs.values_list('label', flat=True), [
             'Cat',
         ])
-        
+
         qs = qs.with_siblings()
         self.assertSequenceEqual(qs.values_list('name', flat=True), [
             'Animal/Mammal/Cat',
             'Animal/Mammal/Dog',
         ])
-        
+
 
 
 ###############################################################################
@@ -723,13 +723,13 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
     manage_models = [
         test_models.TreeTest,
     ]
-    
+
     def setUpExtra(self):
         self.singletag_field = test_models.TreeTest.singletag
         self.singletag_model = test_models.TreeTest.singletag.tag_model
         self.tag_field = test_models.TreeTest.tags
         self.tag_model = test_models.TreeTest.tags.tag_model
-    
+
 
     def test_singletagfield_level_3(self):
         """
@@ -755,14 +755,14 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             slug='three', path='one/two/three',
             parent=t2, count=1, level=3,
         )
-        
+
         self.assertTagModel(self.singletag_model, {
             'One': 0,
             'One/Two': 0,
             'One/Two/Three': 1,
         })
         self.assertTagModel(self.tag_model, {})
-    
+
     def test_tagfield_level_3(self):
         """
         Check level 3 nodes created with missing level 1 and 2 when assigned
@@ -772,7 +772,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             name='Test 1',
             tags='One/Two/Three, Uno/Dos/Tres',
         )
-        
+
         self.assertTagModel(self.singletag_model, {})
         self.assertTagModel(self.tag_model, {
             'One': 0,
@@ -782,7 +782,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'Uno/Dos': 0,
             'Uno/Dos/Tres': 1,
         })
-        
+
         t1 = self.tag_model.objects.get(name='One')
         t2 = self.tag_model.objects.get(name='One/Two')
         t3 = self.tag_model.objects.get(name='One/Two/Three')
@@ -812,11 +812,11 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'One': 0,
             'One/Two': 1,
         })
-        
+
         obj1.singletag = ''
         obj1.save()
         self.assertTagModel(self.singletag_model, {})
-    
+
     def test_delete_l2_populated_l1(self):
         """
         Check deleting a level 2 node leaves a populated l1
@@ -831,7 +831,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'Uno/Dos': 1,
             'Uno/Due': 0,
         })
-        
+
         obj1.singletag = ''
         obj1.save()
         self.assertTagModel(self.singletag_model, {
@@ -854,7 +854,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'No/Uno/Dos': 1,
             'No/Uno/Due': 0,
         })
-        
+
         obj1.singletag = ''
         obj1.save()
         self.assertTagModel(self.singletag_model, {
@@ -879,7 +879,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'Uno/Due': 0,
             'Uno/Due/Tre': 0,
         })
-        
+
         obj1.singletag = ''
         obj1.save()
         self.assertTagModel(self.singletag_model, {
@@ -905,7 +905,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'Uno/Dos': 1,
             'Uno/Dos/Tres': 1,
         })
-        
+
         obj2.singletag = ''
         obj2.save()
         self.assertTagModel(self.singletag_model, {
@@ -921,12 +921,12 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
         obj2 = test_models.TreeTest.objects.create(
             name='Test 2', singletag='one/two',
         )
-        
+
         self.assertTagModel(self.singletag_model, {
             'one': 1,
             'one/two': 1,
         })
-        obj1.singletag=''
+        obj1.singletag = ''
         obj1.save()
         self.assertTagModel(self.singletag_model, {
             'one': 0,
@@ -951,7 +951,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'One/Two': 4,
             'One/Two/Three': 4,
         })
-        
+
         # Check the counts
         t1 = self.singletag_model.objects.get(name='One')
         t2 = self.singletag_model.objects.get(name='One/Two')
@@ -978,7 +978,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'One/Two': 4,
             'One/Two/Three': 4,
         })
-        
+
         # Check the counts
         t1 = self.singletag_model.objects.get(name='One')
         t2 = self.singletag_model.objects.get(name='One/Two')

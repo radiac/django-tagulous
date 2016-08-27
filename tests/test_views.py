@@ -30,18 +30,18 @@ class TagFormCBVTest(TagTestManager, TestCase):
     manage_models = [
         test_models.SimpleMixedTest,
     ]
-    
+
     def setUpExtra(self):
         # Load initial tags for all models which have them
         self.model = test_models.SimpleMixedTest
         self.singletag_model = self.model.singletag.tag_model
         self.tags_model = self.model.tags.tag_model
-        
+
     def test_cbv_create(self):
         "Test CBV create"
         self.assertTagModel(self.singletag_model, {})
         self.assertTagModel(self.tags_model, {})
-        
+
         # Create
         response = client.post(reverse('tagulous_tests_app-MixedCreate'), {
             'name': 'Test 1',
@@ -49,7 +49,7 @@ class TagFormCBVTest(TagTestManager, TestCase):
             'tags': 'blue, red',
         })
         self.assertEqual(response.status_code, 302)
-        
+
         # Get
         t1 = self.model.objects.get(name='Test 1')
         self.assertIsInstance(t1.singletag, tag_models.BaseTagModel)
@@ -64,7 +64,7 @@ class TagFormCBVTest(TagTestManager, TestCase):
             'blue': 1,
             'red':  1,
         })
-    
+
     def test_cbv_update(self):
         "Test CBV update"
         # Set up object
@@ -80,7 +80,7 @@ class TagFormCBVTest(TagTestManager, TestCase):
             'blue': 1,
             'red':  1,
         })
-        
+
         # Update it
         response = client.post(
             reverse('tagulous_tests_app-MixedUpdate', kwargs={'pk': t1.pk}),
@@ -122,11 +122,11 @@ class AutocompleteViewTest(TagTestManager, TestCase):
     manage_models = [
         test_models.TagFieldOptionsModel,
     ]
-    
+
     def setUpExtra(self):
         # Load initial tags for all models which have them
         self.test_model = test_models.TagFieldOptionsModel
-    
+
     def test_unlimited(self):
         "Test unlimited autocomplete view"
         # Add some tags
@@ -134,7 +134,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name='tag%02d' % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         # Get them from view
         response = client.get(
             reverse('tagulous_tests_app-unlimited'),
@@ -145,7 +145,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             self.assertEqual(data['results'][i], 'tag%02d' % i)
         self.assertEqual(data['more'], False)
-        
+
     def test_unlimited_query(self):
         "Test unlimited autocomplete view with query"
         # Add some tags
@@ -153,7 +153,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name='tag%02d' % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         # Get them from view
         response = client.get(
             reverse('tagulous_tests_app-unlimited'),
@@ -173,10 +173,10 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name='tag%02d' % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         page_length = tag_model.tag_options.autocomplete_limit
         self.assertEqual(page_length, 3)
-        
+
         # Get page 1
         response = client.get(
             reverse('tagulous_tests_app-limited'),
@@ -188,7 +188,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(data['results'][1], 'tag01')
         self.assertEqual(data['results'][2], 'tag02')
         self.assertEqual(data['more'], True)
-        
+
         # Get page 4: starting 10th tag, tag09 to tag11
         page = 4
         response = client.get(
@@ -202,7 +202,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(data['results'][1], 'tag10')
         self.assertEqual(data['results'][2], 'tag11')
         self.assertEqual(data['more'], True)
-        
+
         # Get last page, 34: starting 100th tag, tag99
         page = 34
         response = client.get(
@@ -214,7 +214,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(len(data['results']), 1)
         self.assertEqual(data['results'][0], 'tag99')
         self.assertEqual(data['more'], False)
-        
+
     def test_limited_query(self):
         "Test limited autocomplete view with query"
         # Add some tags
@@ -222,10 +222,10 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name="tag%02d" % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         page_length = tag_model.tag_options.autocomplete_limit
         self.assertEqual(page_length, 3)
-        
+
         # Get page 1
         response = client.get(
             reverse('tagulous_tests_app-limited'),
@@ -238,7 +238,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(data['results'][1], 'tag11')
         self.assertEqual(data['results'][2], 'tag12')
         self.assertEqual(data['more'], True)
-        
+
         # Get last page, 4: starting 10th tag, tag19
         page = 4
         response = client.get(
@@ -250,7 +250,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(len(data['results']), 1)
         self.assertEqual(data['results'][0], 'tag19')
         self.assertEqual(data['more'], False)
-    
+
     def test_login(self):
         "Test autocomplete_login view"
         # Add some tags
@@ -258,7 +258,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name='tag%02d' % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         # Get them from view
         user = User.objects.create_user('test', 'test@example.com', 'password')
         client.login(username='test', password='password')
@@ -272,7 +272,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             self.assertEqual(data['results'][i], 'tag%02d' % i)
         self.assertEqual(data['more'], False)
-        
+
     def test_queryset(self):
         "Test autocomplete view on a tag model queryset"
         # Add some tags
@@ -280,7 +280,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name='tag%02d' % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         # Get them from view
         response = client.get(
             reverse('tagulous_tests_app-queryset'),
@@ -299,7 +299,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name='tag%02d' % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         # Get them from view
         response = client.get(
             reverse('tagulous_tests_app-force_lowercase_true'),
@@ -320,7 +320,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name='tag%02d' % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         # Get them from view
         response = client.get(
             reverse('tagulous_tests_app-case_sensitive_false'),
@@ -341,7 +341,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         for i in range(100):
             tag_model.objects.create(name='tag%02d' % i)
         self.assertEqual(tag_model.objects.count(), 100)
-        
+
         # Get them from view
         response = client.get(
             reverse('tagulous_tests_app-case_sensitive_true'),
@@ -349,7 +349,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = json.loads(get_response_content(response))
-        
+
         from django.db import connection
         if connection.vendor == 'sqlite':
             # Sqlite doesn't support case insensitive searches - expect to

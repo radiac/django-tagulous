@@ -34,7 +34,7 @@ class Migration(SchemaMigration):
             lambda obj: setattr(obj, 'path', str(obj.pk)),
             'django.db.models.fields.TextField',
         )
-        
+
         # Adding unique constraint on '_Tagulous_MigrationTestModel_tags', fields ['slug', 'parent']
         db.create_unique(u'tagulous_tests_migration__tagulous_migrationtestmodel_tags', ['slug', 'parent_id'])
 
@@ -48,7 +48,7 @@ class Migration(SchemaMigration):
 
         # Deleting field '_Tagulous_MigrationTestModel_tags.path'
         db.delete_column(u'tagulous_tests_migration__tagulous_migrationtestmodel_tags', 'path')
-        
+
         # Deleting field 'BookmarkTag.label'
         db.delete_column(u'tagulous_tests_migration__tagulous_migrationtestmodel_tags', 'label')
 
