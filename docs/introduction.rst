@@ -24,7 +24,7 @@ adding tag fields to your model::
 
     from django.db import models
     import tagulous
-    
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
         title = tagulous.models.SingleTagField(initial="Mr, Mrs, Miss, Ms")

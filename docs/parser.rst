@@ -11,7 +11,7 @@ separated by spaces or commas::
 
 If the tag string contains both spaces and commas, commas take priority. Spaces
 at the start or end of a tag name are ignored by the parser::
-    
+
     # These will parse to 'run', 'shot put', 'hop'
     # This is also how Tagulous will render these tags
     'run, shot put, hop'
@@ -28,7 +28,7 @@ priority::
     # These will parse to 'run', 'shot put', 'hop'
     'run "shot put" hop'
     'run,"shot put",hop'
-    
+
     # But this will parse to 'run "shot put"' 'hop'
     'run "shot put", hop'
 
@@ -65,15 +65,15 @@ The python parser can be found in ``tagulous.utils``:
 
 ``tag_names = tagulous.utils.parse_tags(tag_string, max_count=0, space_delimiter=True)``
     Given a tag string, returns a sorted list of unique tag names.
-    
+
     The parser does not attempt to enforce :ref:`option_force_lowercase` or
     :ref:`option_case_sensitive` options - these should be applied before and
     after parsing, respectively.
-    
+
     The optional ``max_count`` argument defaults to ``0``, which means no
     limit. For any other value, if more tags are returned than specified, the
     parser will raise a ``ValueError``.
-    
+
     The optional ``space_delimiter`` argument defaults to ``True``, to allow
     either spaces or commas to be used as deliminaters to separate the tags,
     with priority for commas. If ``False``, only commas will be used as the
@@ -106,26 +106,26 @@ The parser adds the global variable ``Tagulous``:
 
 ``tagNames = Tagulous.parseTags(tagString, spaceDelimiter=true, withRaw=false)``
     Given a tag string, returns a sorted list of unique tag names
-    
+
     If ``spaceDelimiter=false``, only commas will be used to separate tag
     names. If it is unset or true, spaces are used as well as commas.
-    
+
     The option ``withRaw=true`` is intended for use when parsing live input;
     the function will instead return ``[tags, raws]``,  where ``tags`` is a
     list of tags which is unsorted and not unique, and ``raws`` is a list of
     raw strings which were left after the corresponding entry in ``tags`` was
     parsed. For example::
-    
+
         var result = Tagulous.parseTags('one,two,three', true, true),
             tags = result[0],
             raws = parsed[1];
         tags === ['one', 'two', 'three'];
         raws === ['two,three', 'three', null];
-    
+
     If the last tag is not explicitly ended with a delimiter, the corresponding
     item in ``raws`` will be ``null`` instead of an empty string, to indicate
     that the parser unexpectedly ran out of characters.
-    
+
     This is useful when parsing live input if the last item in ``raws`` is an
     empty string the tag has bee closed; if it is ``null`` then the tag is
     still being entered.

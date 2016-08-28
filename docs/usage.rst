@@ -5,7 +5,7 @@ Example Usage
 This section contains code examples of how to set up and use Tagulous. If you'd
 like a more interactive demonstration, there is a
 `static demo <http://radiac.net/projects/django-tagulous/demo/>`_ showing the
-front-end, or an 
+front-end, or an
 `example project <https://github.com/radiac/django-tagulous/tree/master/example>`_
 for you to install locally and play with some of these code examples.
 
@@ -20,7 +20,7 @@ and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
 
     from django.db import models
     import tagulous.models
-    
+
     class Person(models.Model):
         title = tagulous.models.SingleTagField(
             label="Your preferred title",
@@ -31,7 +31,7 @@ and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
             force_lowercase=True,
             max_count=5,
         )
-    
+
 * This will create two new models at runtime to store the tags,
   ``_Tagulous_Person_title`` and ``_Tagulous_Person_skills``.
 * These models will act like normal models, and can be managed in the database
@@ -47,31 +47,31 @@ Initial tags need to be loaded into the database with the
 You can use the fields to assign and query values::
 
     # Person.skills.tag_model == _Tagulous_Person_skills
-    
+
     # Set tags on an instance with a string
     instance = Person()
     instance.skills = 'run, "kung fu", jump'
-    
+
     # They're not committed to the database until you save
     instance.save()
 
     # Get a list of all tags
     tags = Person.skills.tag_model.objects.all()
-    
+
     # Assign a list of tags
     instance.skills = ['jump', 'kung fu']
     # Tags are readable before saving
     # str(instance.skills) == 'jump, "kung fu"'
     instance.save()
-    
+
     # Step through the list of instances in the tag model
     for skill in instance.skills.all():
         do_something(skill)
-        
+
     # Compare tag fields
     if instance.skills == other.skills:
         return True
-        
+
 
 .. _example_custom_tag_model:
 
@@ -81,14 +81,14 @@ Custom models
 You can create a tag model manually, and specify it in one or more tag fields::
 
     import tagulous.models
-    
+
     class Hobbies(tagulous.models.TagModel):
         class TagMeta:
             # Tag options
             initial = "eating, coding, gaming"
             force_lowercase = True
             autocomplete_view = 'myapp.views.hobbies_autocomplete'
-    
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
         hobbies = tagulous.models.TagField(to=Hobbies)
@@ -124,7 +124,7 @@ instead subclass :ref:`tagtreemodel`::
             initial = "food/eating, food/cooking, gaming/football"
             force_lowercase = True
             autocomplete_view = 'myapp.views.hobbies_autocomplete'
-    
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
         hobbies = tagulous.models.TagField(to=Hobbies)
@@ -133,13 +133,13 @@ You can add tags as normal, and then query using tree relationships::
 
     person.hobbies = "food/eating/mexican, sport/football"
     person.save()
-    
+
     # Get all root nodes: "food", "gaming" and "sport"
     root_nodes = Hobbies.objects.filter(parent=None)
-    
+
     # Get the direct children of food: "food/eating", "food/cooking"
     food_children = Hobbies.objects.get(name="food").children.all()
-    
+
     # Get all descendants of food:
     #   "food/eating", "food/eating/mexican", "food/cooking"
     food_children = Hobbies.objects.get(name="food").get_descendants()
@@ -159,7 +159,7 @@ objects absolute URLs without needing to create a custom tag model::
     from django.db import models
     from django.core.urlresolvers import reverse
     import tagulous.models
-    
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
         skills = tagulous.models.TagField(
@@ -197,11 +197,11 @@ A ``ModelForm`` with tag fields needs no special treatment::
     from django.db import models
     from django import forms
     import tagulous.models
-    
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
         skills = tagulous.models.TagField()
-    
+
     class PersonForm(forms.ModelForm):
         class Meta:
             fields = ['name', 'skills']
@@ -212,7 +212,7 @@ They are normal forms so can be used in normal ways; for example, with
 class-based views::
 
     from django.views.generic.edit import CreateView
-    
+
     class PersonCreate(CreateView):
         model = Person
         fields = ['name', 'skills']
@@ -235,24 +235,24 @@ the tags::
         owner = models.ForeignKey('auth.User')
         name = models.CharField(max_length=255)
         skills = tagulous.models.TagField()
-    
+
     class PetForm(forms.ModelForm):
         class Meta:
             fields = ['owner', 'name', 'skills']
             model = Pet
-            
+
     def pet_create(request, template_name="my_app/pet_form.html"):
         form = PetForm(request.POST or None)
         if form.is_valid():
             pet = form.save(commit=False)
             pet.owner = request.user
-            
+
             # Next line will save all non M2M fields (including SingleTagField)
             pet.save()
-            
+
             # Next line will save any ``TagField`` values
             form.save_m2m()
-            
+
             return redirect('home')
         return render(request, template_name, {'form': form})
 
@@ -272,7 +272,7 @@ than as separate arguments as a model form does::
 
     from django import forms
     import tagulous.forms
-    
+
     class PersonForm(forms.ModelForm):
         title = tagulous.forms.SingleTagField(
             autocomplete_tags=['Mr', 'Mrs', 'Ms']
@@ -337,16 +337,16 @@ Filter the ``autocomplete_tags`` queryset after the form initialises::
     from django.db import models
     from django import forms
     import tagulous
-    
+
     class Pet(models.Model):
         owner = models.ForeignKey('auth.User')
         name = models.CharField(max_length=255)
         skills = tagulous.models.TagField()
-    
+
     class PetForm(forms.ModelForm):
         def __init__(self, user, *args, **kwargs):
             super(PetForm, self).__init__(*args, **kwargs)
-            
+
             # Filter skills to initial skills, or ones added by this user
             self.fields['skills'].autocomplete_tags = \
                 self.fields['skills'].autocomplete_tags.filter_or_initial(

@@ -37,7 +37,7 @@ Use ``setup.py`` to run the python tests on your current python environment;
 you can optionally specify which test to run::
 
     python setup.py test [tests[.test_set.TestClass]]
-    
+
 * If you are using Django 1.4 to 1.6, the tests will look for ``south`` - if it
   is not installed, a warning will be raised and the south tests will be
   skipped.

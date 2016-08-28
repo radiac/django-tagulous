@@ -49,7 +49,7 @@ The reverse relation manager for ``parent``, eg ``mytag.children.all()``.
 ``label``
 ~~~~~~~~~
 A ``CharField`` containing the name of the tag without its ancestors.
-    
+
 Example: a tag named ``Animal/Mammal/Cat`` has the label ``Cat``
 
 
@@ -180,9 +180,9 @@ required:
             tag.name = tag.name.replace('/', '//')
             tag.save()
     operations = RunPython(escape_tag_names)
-    
+
    With South, run ``manage.py datamigration myapp escape_tags`` and add::
-   
+
     def forwards(self, orm):
         for tag in orm['myapp._Tagulous_MyModel_tags'].objects.all():
             tag.name = tag.name.replace('/', '//')
@@ -192,27 +192,27 @@ required:
    allowed to be null, you need to add the ``path`` field as a non-unique
    field, set some unique data on it (such as the object's ``pk``), and then
    change the field to add back the unique constraint.
-   
+
    To do this reliably on all database types, see
    `Migrations that add unique fields <https://docs.djangoproject.com/en/1.8/howto/writing-migrations/#migrations-that-add-unique-fields>`_
    in the official Django documentation.
-   
+
    If you are only working with databases which support transactions, you can
    use a tagulous helper to add the unique field:
-   
+
    1. When you create the migration, Django or South will prompt you for a
       default value for the unique ``path`` field; answer with ``'x'`` (do the
       same for the ``label`` field when asked).
-   
+
       Change the new migration to use the Tagulous helper to add the ``path``
       field.
-      
+
    2. When using Django migrations::
-      
+
         from django.utils import six
         import tagulous.models.migrations
         ...
-        
+
         class Migration(migrations.Migration):
             # ... rest of Migration as generated
             operations = [
@@ -227,27 +227,27 @@ required:
             ) + [
                 ...
             ]
-      
+
       With South::
 
         def forwards(self, orm):
             ...
-            
+
             # Leave other migration statements as they are - just replace the
             # call to db.add_column for the path field with add_unique_column.
             # Replace ``myapp`` with your app name, and
             # replace ``_Tagulous_MyModel_tags`` with your tag model name
-            
+
             from tagulous.models.migrations import add_unique_column
             from django.utils import six
-            
+
             # Adding field '_Tagulous_MyModel_tags.path'
             add_unique_column(
                 self, db, orm['myapp._Tagulous_MyModel_tags'], 'path',
                 lambda obj: setattr(obj, 'path', six.text_type(obj.pk)),
                 'django.db.models.fields.TextField',
             )
-    
+
     .. warning::
         Although ``add_unique_column`` and ``add_unique_field`` do work with
         non-transactional databases, it is not without risk. See
@@ -259,14 +259,14 @@ required:
    migrations have no native way to do this. You will need to use the Tagulous
    helper operation ``ChangeModelBases`` to do it manually, otherwise future
    data migrations will think it is a ``TagModel``, not a ``TagTreeModel``.
-   
+
    Modify the migration from step 2; if you followed the official Django
    documentation and have several migrations, modify the last one. Add the
    ``ChangeModelBases`` to the end of your ``operations`` list, as the last
    operation::
 
         import tagulous.models.migrations
-        
+
         class Migration(migrations.Migration):
             # ... rest of Migration as generated
             operations = [
@@ -280,14 +280,14 @@ required:
 4. Create another data migration to rebuild the tag model and set the paths.
 
    When using Django migrations::
-   
+
         def rebuild_tag_model(apps, schema_editor):
             model = apps.get_model('myapp', '_Tagulous_MyModel_Tags')
             model.objects.rebuild()
         operations = RunPython(rebuild_tag_model)
 
    With South::
-   
+
         def forwards(self, orm):
             orm['myapp._Tagulous_MyModel_tags'].objects.rebuild()
 
