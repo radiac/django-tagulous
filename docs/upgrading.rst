@@ -20,7 +20,7 @@ Instructions
 
 3. Scroll down to the earliest instructions relevant to your version, and
    follow them up to the latest version.
-   
+
    For example, to upgrade from 0.8.0, the earliest instructions relevant to
    you are for 0.8.0 or later. 0.7.0 is an earlier version than yours, so you
    don't need to follow those steps.
@@ -34,63 +34,63 @@ Upgrading from 0.9.0
 1. Starting with version 0.10.0, Tagulous is available on pypi. You can
    continue to run the development version direct from github, but if you would
    prefer to use stable releases you can reinstall::
-   
+
         pip uninstall django-tagulous
         pip install django-tagulous
 
 2. Version 0.10.0 adds ``label`` and ``level`` fields to the ``TagTreeModel``
    base class (they were previously properties). This means that each of your
    tag tree models will need a schema and data migration.
-   
+
    The schema migration will require a default value for the label; enter any
    valid string, eg ``'.'``
-   
+
    The data migration will need to call ``mytagtreemodel.objects.rebuild()`` to
    set the correct values for ``label`` and ``level``.
-   
+
    You will need to create and apply these migrations to each of your tag tree
    models
-   
+
    Django migrations::
-   
+
         python manage.py makemigrations myapp
         python manage.py migrate myapp
         python manage.py makemigrations myapp --empty
         # Add data migration operation below
         python manage.py migrate myapp
-    
+
    Your Django data migration should include::
-   
+
         def rebuild_tree(apps, schema_editor):
             # For an auto-generated tag tree model:
             model = apps.get_model('myapp', '_Tagulous_MyModel_tagtreefield')
-            
+
             # For a custom tag tree model:
             #model = apps.get_model('myapp', 'MyTagTreeModel')
-            
+
             model.objects.rebuild()
-            
+
         class Migration(migrations.Migration):
             # ... rest of Migration as generated
             operations = [
                 migrations.RunPython(rebuild_tree)
             ]
 
-   
+
    South migrations::
-   
+
         python manage.py schemamigration --auto myapp
         python manage.py migrate myapp
         python manage.py datamigration myapp upgrade_trees
         # Add data migration function below
         python manage.py migrate myapp
-    
+
    Your South data migration function should be::
-    
+
         def forwards(self, orm):
             # For an auto-generated tag tree model:
             model = orm['myapp._Tagulous_MyModel_tagtreefield'].objects.rebuild()
-            
+
             # For a custom tag tree model:
             #model = orm['myapp.MyTagTreeModel'].objects.rebuild()
 
@@ -245,7 +245,7 @@ Feature:
 * Tag cloud support
 * Improved admin.register
 * Added tag-aware serializers
-    
+
 Deprecated:
 * ``tagulous.admin.tag_model`` will be removed in the next version
 
