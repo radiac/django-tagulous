@@ -290,13 +290,13 @@ object, except for ``to``. It also provides two instance methods:
 
 ``items(with_defaults=True)``
     Get a dict of all options
-    
+
     If with_defaults is true, any missing settings will be taken from the
     defaults in ``constants.OPTION_DEFAULTS``.
 
 ``form_items(with_defaults=True)``
     Get a dict of just the options for a form field.
-    
+
     If with_defaults is true, any missing settings will be taken from the
     defaults in ``constants.OPTION_DEFAULTS``.
 

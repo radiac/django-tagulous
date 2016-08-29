@@ -131,13 +131,13 @@ in a similar way to a bound ``ForeignKey``, but with some differences:
 Assignment (setter)
     A bound ``SingleTagField`` can be assigned a tag (an instance of the
     tag model) or a tag name.
-    
+
     If it is passed ``None``, a current tag will be cleared if it is set.
-    
+
     The instance must be saved afterwards.
-    
+
     Example::
-    
+
         person.title = "Mr"
         person.save()
 
@@ -145,9 +145,9 @@ Evaluation (getter)
     The value of a bound ``SingleTagField`` will return an instance of the tag
     model. The tag may not exist in the database yet (its ``pk`` may be
     ``None``).
-    
+
     Example::
-    
+
         tag = person.title
         report = "Tag %s used %d times " % (tag.name, tag.count)
 
@@ -186,13 +186,13 @@ Assignment (setter)
     A bound ``TagField`` can be assigned a tag string or an iterable of tags or
     tag names, eg a list of strings, or a queryset of instances of the tag
     model.
-    
+
     If it is passed ``None``, any current tags will be cleared.
-    
+
     The instance must be saved afterwards.
-    
+
     Example::
-    
+
         person.skills = 'Judo, "Kung Fu"'
         person.save()
 
@@ -341,12 +341,12 @@ In most circumstances you can ignore the ``force`` flag:
 * The manager has a ``.changed`` flag which is set to ``False`` whenever
   the internal tag cache is loaded or saved. It is set to ``True`` when the
   tags are changed without being saved.
-  
+
 * If ``force=False`` (default), this method will only update the database
   if the ``.changed`` flag is ``True`` - in other words, the database will
   only be updated if there are changes to the internal cache since last
   load or save.
-  
+
 * If ``force=True``, the ``.changed`` flag will be ignored, and the current
   tag status will be forced upon the database. This can be useful in the
   rare cases where you have multiple references to the same database
@@ -354,7 +354,7 @@ In most circumstances you can ignore the ``force`` flag:
   instances may have made.
 
 For example::
-    
+
     person = Person.objects.create(name='Adam', skills='judo')
     person.name = 'Bob'
     person.skills = 'karate'

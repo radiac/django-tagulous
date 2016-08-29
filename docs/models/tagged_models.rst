@@ -23,12 +23,12 @@ on to :ref:`taggedmanually`.
     ``TaggedManager`` to the manager's base classes, which in turn adds
     ``TaggedQuerySet`` to the querysets the manager creates. It does this by
     calling the ``cast_class`` class method on each of the base classes, which change the original classes in place.
-    
+
     This all happens seamlessly behind the scenes; the only thing you may
     notice is that the names of your manager and queryset classes now have the
     prefix ``CastTagged`` to indicate that they have been automatically cast to
     their equivalents for tagged models.
-    
+
 
 Tagged model classes
 ====================
@@ -52,7 +52,7 @@ are subclasses of ``tagulous.TaggedQuerySet``.
 
 
 .. _taggedqueryset:
-    
+
 ``tagulous.models.TaggedQuerySet``
 ----------------------------------
 
@@ -114,15 +114,15 @@ and no others, use the ``__exact`` field lookup suffix::
     # Find all MyModel objects which have the tag 'red':
     qs = MyModel.objects.filter(tags='red')
     # (will include those tagged 'red, blue' etc)
-    
+
     # Find all MyModel objects which are only tagged 'red':
     qs = MyModel.objects.filter(tags__exact='red')
     # (will not include those tagged 'red, blue')
-    
+
 This currently does not work across database relations; you will need to use
 the ``name`` field on the tag model for those::
-    
-    # Find 
+
+    # Find
     qs = MyRelatedModel.objects.filter(
         foreign_model__tags__name__in=['red', 'blue', 'green'],
     )

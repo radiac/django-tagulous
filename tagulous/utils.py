@@ -24,70 +24,70 @@ from tagulous.constants import COMMA, SPACE, QUOTE, DOUBLE_QUOTE, TREE
 def parse_tags(tag_string, max_count=0, space_delimiter=True):
     """
     Tag parser
-    
+
     Rules without quotes:
         If a comma is present it's used as the delimiter
         Otherwise space is used as the delimiter
         Spaces at the start and end of tags are ignored
-    
+
     Rules with quotes
         Quotes can be escaped by double quotes, ie ""
         Commas outside quotes take precedence over spaces as delimiter
         Unmatched quotes will be left in the string
-    
+
     If space_delimiter is False, space will never be used as a delimiter.
-    
+
     Tree tags can be further split into their parts with split_tree_name
     """
     # Empty string easiest case
     if not tag_string:
         return []
-    
+
     tag_string = force_text(tag_string)
-    
+
     # Prep variables for the parser
     tags = []
     tag = ''
     delimiter = SPACE
     in_quote = None
     chars = False
-    
+
     # Disable spaces
     if not space_delimiter:
         delimiter = COMMA
-    
+
     # Bypass main parser for efficiency if no quotes
     if QUOTE not in tag_string:
         # No quotes - simple split and strip
-        
+
         # Normally split on commas
         delimiter = COMMA
-        
+
         # But if no commas, split on spaces
         if COMMA not in tag_string and space_delimiter:
             delimiter = SPACE
-        
+
         # Split and strip tags
         tags = split_strip(tag_string, delimiter)
-        
+
     else:
         # Break tag string into list of (index, char)
         chars = list(enumerate(tag_string))
-    
+
     # Loop through chars
     while chars:
         index, char = chars.pop(0)
-        
+
         # See if it's a delimiter
         if not in_quote:
             # Comma delimiter takes priority
             if delimiter != COMMA and char == COMMA:
                 delimiter = COMMA
-                
+
                 # All previous tags were actually just one tag
                 tag = tag_string[0:index].strip()
                 tags = []
-                
+
                 # Strip start/end quotes
                 tag_len = len(tag)
                 tag = tag.lstrip(QUOTE)
@@ -95,17 +95,17 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
                 tag_len = len(tag)
                 tag = tag.rstrip(QUOTE)
                 right_quote_count = tag_len - len(tag)
-                
+
                 # Escape inner quotes
                 tag = tag.replace(DOUBLE_QUOTE, QUOTE)
-                
+
                 # Add back escaped start/end quotes
                 tag = (
                     QUOTE * int(left_quote_count / 2)
                 ) + tag + (
                     QUOTE * int(right_quote_count / 2)
                 )
-                
+
                 # Add back insignificant unescaped quotes.
                 #
                 # There are only two scenarios where there can be unescaped
@@ -113,14 +113,14 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
                 #   1. The comma is quoted - but that means in_quote is True,
                 #      in which case we won't be in this code branch
                 #   2. The comma comes after a matching closing unescaped quote
-                # 
+                #
                 # Therefore there can't be insigificant unescaped quotes on the
                 # left and unescaped quotes on the right are only insignificant
                 # if there are no unescaped quotes on the left
                 if right_quote_count % 2 == 1 and left_quote_count % 2 == 0:
                     tag += QUOTE
-                
-            
+
+
             # Found end of tag
             if char == delimiter:
                 tag = tag.rstrip()
@@ -128,47 +128,47 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
                     tags.append(tag)
                     tag = ''
                 # Following tested manually due to coverage bug
-                #   See https://bitbucket.org/ned/coveragepy/issues/198 
+                #   See https://bitbucket.org/ned/coveragepy/issues/198
                 continue # pragma: no cover
-                
+
             # If tag is empty, ignore whitespace
             if not tag and char == SPACE:
                 continue
-            
+
         # Now either in a quote, or not a delimiter
         # If it's not a quote, add to tag
         if char != QUOTE:
             tag += char
             continue
-        
+
         # Char is quote - count how many quotes appear here
         quote_count = 1
         while chars and chars[0][1] == QUOTE:
             quote_count += 1
             chars.pop(0)
-        
+
         if not tag:
             # Quote at start
             # If an odd number, now in quote
             if quote_count % 2 == 1:
                 in_quote = True
-            
+
             # Tag starts with escaped quotes
             tag = QUOTE * int(quote_count / 2)
         else:
             # Quote in middle or at end
             # Add any escaped
             tag += QUOTE * int(quote_count / 2)
-            
+
             # An odd number followed by a delimiter will mean it has ended
             # Need to look ahead to figure it out
             if quote_count % 2 == 1:
-                
+
                 # If it's the last character, it has closed
                 if len(chars) == 0:
                     in_quote = False
                     break
-                
+
                 for i2, c2 in chars:
                     if c2 == SPACE:
                         if delimiter == SPACE:
@@ -185,12 +185,12 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
                         # Delimiter doesn't matter, comma always wins
                         in_quote = False
                         break
-                    
+
                     # Tag has not ended
                     # Add odd quote to tag and keep building
                     tag += QUOTE
                     break
-    
+
     # Chars expended
     if tag:
         # Partial tag remains; add to stack
@@ -202,17 +202,17 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
     # Enforce uniqueness and sort
     tags = list(set(tags))
     tags.sort()
-    
+
     # Check the count
     if max_count and len(tags) > max_count:
         raise ValueError('This field can only have %s argument%s' % (
             max_count,
             '' if max_count == 1 else 's',
         ))
-    
+
     return tags
-    
-    
+
+
 def split_strip(string, delimiter=','):
     """
     Splits ``string`` on ``delimiter``, stripping each resulting string
@@ -237,7 +237,7 @@ def render_tags(tags):
     for tag in tags:
         # This will catch a list of Tag objects or tag name strings
         name = six.text_type(tag)
-        
+
         name = name.replace(QUOTE, DOUBLE_QUOTE)
         if COMMA in name or SPACE in name:
             names.append('"%s"' % name)
@@ -253,7 +253,7 @@ def render_tags(tags):
 def split_tree_name(name):
     """
     Split a tree tag name into its parts
-    
+
     A slash can be escaped by double slash, ie //
     """
     parts = []
@@ -269,21 +269,21 @@ def split_tree_name(name):
                 split = False
             else:
                 split = True
-                
+
         elif split:
             # Previous character was a valid delimiter
             parts.append(name[start:index - 1].strip())
             start = index
             split = False
-    
+
     if split:
         # Trailing slash - shouldn't happen if sanitised, but handle anyway
         parts += [name[start:index].strip(), '']
-    
+
     elif start < index:
         # If string not empty, add everything after last slash
         parts.append(name[start:].strip())
-    
+
     return [
         part.replace(TREE + TREE, TREE) for part in parts
     ]
@@ -292,7 +292,7 @@ def split_tree_name(name):
 def join_tree_name(parts):
     """
     Join tree tag name parts into a single name string
-    
+
     A slash in a part will be escaped by double slash, ie //
     """
     return TREE.join(
@@ -303,7 +303,7 @@ def join_tree_name(parts):
 def clean_tree_name(name):
     """
     Make sure a tree name is valid
-    
+
     * Escapes leading or trailing slashes
     * Strips leading and trailing whitespace around parts
     """
@@ -311,11 +311,11 @@ def clean_tree_name(name):
     left = len(name) - len(name.lstrip(TREE))
     if left % 2 == 1:
         name = TREE + name
-    
+
     right = len(name) - len(name.rstrip(TREE))
     if right % 2 == 1:
         name += TREE
-    
+
     # Split and join to strip whitespace
     return join_tree_name(split_tree_name(name))
 
@@ -327,18 +327,18 @@ def clean_tree_name(name):
 def unicode_to_ascii(raw):
     """
     Given a string which may be unicode, return something latin-1
-    
+
     Tries to use optional dependency ``unidecode`` to transliterate something
     reasonable, otherwise strips diacritics and converts other unicode
     characters to underscore
-    
+
     Returns unicode string which only contains ascii characters
     """
     if unidecode is not None:
         return six.text_type(unidecode(six.text_type(raw)))
-        
+
     return ''.join(
-        c if ord(c)<128 else '_'
+        c if ord(c) < 128 else '_'
         for c in unicodedata.normalize('NFD', six.text_type(raw))
         if unicodedata.category(c) != 'Mn'
     )

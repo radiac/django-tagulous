@@ -58,7 +58,7 @@ site), you can do what it does manually:
    incompatible with Tagulous.
 
 2. Call ``tagulous.admin.enhance(model_class, admin_class)``.
-   
+
    This finds the tag fields on the model class, and adds support for them to
    ``list_display``.
 

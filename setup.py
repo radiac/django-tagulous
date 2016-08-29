@@ -13,7 +13,7 @@ def runtests(args):
     import django
     from django.conf import settings
     from django.core.management import execute_from_command_line
-    
+
     if not settings.configured:
         INSTALLED_APPS = [
             'django.contrib.auth',
@@ -27,7 +27,7 @@ def runtests(args):
             'tests.tagulous_tests_app2',
             'tests.tagulous_tests_migration',
         ]
-        
+
         SERIALIZATION_MODULES = {
             'xml': 'tagulous.serializers.xml_serializer',
             'json': 'tagulous.serializers.json',
@@ -39,8 +39,8 @@ def runtests(args):
             pass
         else:
             SERIALIZATION_MODULES['yaml'] = 'tagulous.serializers.pyyaml'
-        
-        
+
+
         testenv = re.sub(
             r'[^a-zA-Z0-9]', '_',
             os.environ.get('TOXENV', '_'.join(str(v) for v in django.VERSION)),
@@ -48,7 +48,7 @@ def runtests(args):
         MIGRATION_MODULES = {
             'tagulous_tests_migration': 'tests.tagulous_tests_migration.migrations_%s' % testenv
         }
-        
+
         if django.VERSION < (1, 7):
             try:
                 import south
@@ -62,7 +62,7 @@ def runtests(args):
                 )
             else:
                 INSTALLED_APPS += ['south']
-        
+
         DATABASE = {
             'ENGINE': 'django.db.backends.sqlite3',
         }
@@ -74,12 +74,13 @@ def runtests(args):
                 DATABASE['ENGINE'] = "django.db.backends.mysql"
             else:
                 raise ValueError("Unknown database engine")
-                
+
             DATABASE['name'] = os.environ.get('DATABASE_NAME', 'test_tagulous_%s' % testenv)
             for key in ['USER', 'PASSWORD', 'HOST', 'PORT']:
                 if 'DATABASE_' + key in os.environ:
                     DATABASE[key] = os.environ['DATABASE_' + key]
-        
+
+
         settings.configure(
             DATABASES={'default': DATABASE},
             INSTALLED_APPS=INSTALLED_APPS,
@@ -98,7 +99,7 @@ def runtests(args):
             MIGRATION_MODULES=MIGRATION_MODULES,
             SOUTH_MIGRATION_MODULES=MIGRATION_MODULES,
         )
-    
+
     execute_from_command_line(args[:1] + ['test'] + (args[2:] or ['tests']))
 
 

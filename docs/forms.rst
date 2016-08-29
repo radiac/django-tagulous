@@ -147,16 +147,16 @@ Autocomplete settings should be a dict:
     will need to call ``Tagulous.select2(el)`` on it from your own
     javascript. This is useful for fields which are used as templates to
     dynamically generate more.
-    
+
     For example, to use this adaptor with a
     `django-dynamic-formset <https://github.com/elo80ka/django-dynamic-formset>`_
     which uses a ``formTemplate``, set ``{'defer': True}``, then configure
     the formset with::
-    
+
         added: function ($row) {
             Tagulous.select2($row.find('input[data-tagulous]'));
         }
-    
+
     This will need to be clear or set to ``False`` in the admin settings.
 
 ``width``
@@ -194,10 +194,10 @@ Tagulous puts certain settings on the HTML field's ``data-`` attribute:
 
 ``data-tag-options``
     JSON-encoded dict of tag options
-    
+
     In addition to the dict from ``TagOptions`` containing the field's
     :ref:`form_options`, there will also be:
-    
+
     ``required``
         A boolean indicating whether the form field is required or not
 

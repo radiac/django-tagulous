@@ -13,15 +13,15 @@ views in :source:`tagulous/views.py` to support AJAX autocomplete requests.
 ``response = autocomplete(request, tag_model)``
     This takes the request object from the dispatcher, and a reference to the
     tag model which this is autocompleting.
-    
+
     You can also pass in a QuerySet of the tag model, instead of the tag model
     itself, in order to filter the tags which will be returned.
-    
+
     It returns an ``HttpResponse`` with content type ``application/json``. The
     response content is a JSON-encoded object with one key, ``results``, which
     is a list of tags.
-    
-    
+
+
 ``response = autocomplete_login(request, tag_model)``
     Same as ``autocomplete``, except is decorated with Django auth's
     ``login_required``.
@@ -31,7 +31,7 @@ These views look for two GET parameters:
 ``q``
     A query string to filter results by - used to match against the start of
     the string.
-    
+
     Note: if using a sqlite database, matches on a case sensitive tag model
     may not be case sensitive - see the
     :ref:`option_case_sensitive` option for more details.
@@ -39,7 +39,7 @@ These views look for two GET parameters:
 ``p``
     The page number to return, if :ref:`option_autocomplete_limit` is set on
     the tag model.
-    
+
     Default: ``1``
 
 For an example, see the :ref:`example_autocomplete_views` example.
@@ -89,7 +89,7 @@ up in a custom template tag::
     # myapp/templatetags/myapp_tagcloud.py
     from django import template
     from myapp import models
-    
+
     register = template.Library()
     @register.inclusion_tag('myapp/include/tagcloud.html')
     def show_results(poll):

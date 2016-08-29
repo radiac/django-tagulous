@@ -395,7 +395,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         self.assertEqual(len(msgs), 0)
         content = response.content.decode('utf-8')
         content_form = content[
-            content.index('<form ') : content.index('</form>') + 7
+            content.index('<form '):content.index('</form>') + 7
         ]
 
         # Strip csrfmiddlewaretoken
@@ -417,7 +417,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
 
         # Can't be sure of options order
         options_raw = content_form[
-            content_form.index('<option') : content_form.index('</select>')
+            content_form.index('<option'):content_form.index('</select>')
         ]
         options = [
             '<option %s' % opt.strip()
@@ -435,7 +435,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         # Find remaining input tags
         inputs_raw = content_form[
             # First input, convenient
-            content_form.index('<input') : content_form.index('<div>')
+            content_form.index('<input'):content_form.index('<div>')
         ]
 
         # If it's a tree, it should have merge_children first
@@ -483,7 +483,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         # Check end of form
         self.assertHTMLEqual(
             content_form[
-                content_form.index('<div>') : content_form.index('</div>')
+                content_form.index('<div>'):content_form.index('</div>')
             ], (
                 '<div>'
                 '<input type="submit" name="merge" value="Merge tags">'
@@ -861,7 +861,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         i_name = html.index('name="simplemixedtest_set-0-singletag"')
         i_open = html.rindex('<', 0, i_name)
         i_close = html.index('>', i_name)
-        self.assertHTMLEqual(html[i_open : i_close + 1], (
+        self.assertHTMLEqual(html[i_open:i_close + 1], (
             '<input type="hidden" name="simplemixedtest_set-0-singletag" '
             'value="1" id="id_simplemixedtest_set-0-singletag" />'
         ))

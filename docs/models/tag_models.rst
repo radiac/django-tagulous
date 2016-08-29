@@ -152,7 +152,7 @@ which use it as ``tag_options``.
 
 Tag fields will not be able to override these options, and ``SingleTagField``
 fields will ignore ``max_count``.
-    
+
 If ``tree`` is specified, it must be appropriate for the base class of the tag
 model, eg if ``tree=True`` the tag model must subclass :ref:`tagtreemodel` -
 but if it is not provided it will be set to the correct value.

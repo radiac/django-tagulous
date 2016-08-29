@@ -926,7 +926,7 @@ class TagTreeModelFieldTest(TagTreeTestManager, TestCase):
             'one': 1,
             'one/two': 1,
         })
-        obj1.singletag=''
+        obj1.singletag = ''
         obj1.save()
         self.assertTagModel(self.singletag_model, {
             'one': 0,

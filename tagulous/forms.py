@@ -29,15 +29,15 @@ class TagWidgetBase(forms.TextInput):
     """
     # Attributes that subclasses must set
     autocomplete_settings = None
-    
+
     # Attributes that the calling Field must set
     tag_options = None
     autocomplete_tags = None
-    
+
     # Provide choices attribute for admin site, to avoid an error in the event
     # tagulous.admin isn't used to register the admin model
     choices = None
-    
+
     def render(self, name, value, attrs={}):
         # Try to provide a URL for the autocomplete to load tags on demand
         autocomplete_view = self.tag_options.autocomplete_view
@@ -46,7 +46,7 @@ class TagWidgetBase(forms.TextInput):
                 attrs['data-tag-url'] = reverse(autocomplete_view)
             except NoReverseMatch as e:
                 raise ValueError('Invalid autocomplete view: %s' % e)
-        
+
         # Otherwise embed them, if provided
         elif self.autocomplete_tags is not None:
             autocomplete_tags = self.autocomplete_tags
@@ -54,7 +54,7 @@ class TagWidgetBase(forms.TextInput):
             # changes won't show in the list
             if isinstance(autocomplete_tags, QuerySet):
                 autocomplete_tags = autocomplete_tags.all()
-            
+
             attrs['data-tag-list'] = escape(force_text(
                 json.dumps(
                     # Call str rather than tag.name directly, in case
@@ -63,7 +63,7 @@ class TagWidgetBase(forms.TextInput):
                     cls=DjangoJSONEncoder,
                 ),
             ))
-        
+
         # Merge default autocomplete settings into tag options
         tag_options = self.tag_options.form_items(with_defaults=False)
         if self.default_autocomplete_settings is not None:
@@ -72,23 +72,23 @@ class TagWidgetBase(forms.TextInput):
                 tag_options.get('autocomplete_settings', {})
             )
             tag_options['autocomplete_settings'] = autocomplete_settings
-        
+
         # Inject extra settings
         tag_options.update({
             'required': self.is_required,
         })
-        
+
         # Store tag options
         attrs['data-tag-options'] = escape(force_text(
             json.dumps(tag_options, cls=DjangoJSONEncoder)
         ))
-        
+
         # Mark it for the javascript to find
         attrs['data-tagulous'] = 'true'
-        
+
         # Turn off browser's autocomplete
         attrs['autocomplete'] = 'off'
-        
+
         # Render value
         return super(TagWidgetBase, self).render(name, value, attrs)
 
@@ -123,7 +123,7 @@ class BaseTagField(forms.CharField):
     """
     # Use the tag widget
     widget = TagWidget
-    
+
     def __init__(self, tag_options=None, autocomplete_tags=None, **kwargs):
         """
         Takes all CharField options, plus:
@@ -136,12 +136,12 @@ class BaseTagField(forms.CharField):
         """
         # Initialise as normal
         super(BaseTagField, self).__init__(**kwargs)
-        
+
         # Add tag options and autocomplete tags
         # Will use getters and setters to mirror onto widget
         self.tag_options = tag_options or options.TagOptions()
         self.autocomplete_tags = autocomplete_tags
-        
+
     def prepare_value(self, value):
         """
         Prepare the value - a tag string
@@ -149,11 +149,11 @@ class BaseTagField(forms.CharField):
         # Catch no value (empty form for add)
         if not value:
             tag_string = ''
-            
+
         # Will normally get a string
         elif isinstance(value, six.string_types):
             tag_string = value
-        
+
         # Otherwise will be given by the model's TagField.value_from_object().
         # The value comes from django.forms.model.model_to_dict, which thinks
         # it produced a list of pks - but TagField.value_from_object tricked it
@@ -163,9 +163,9 @@ class BaseTagField(forms.CharField):
             if len(value) != 1:
                 raise ValueError(_("Tag field could not prepare unexpected value"))
             tag_string = value[0]
-        
+
         return super(BaseTagField, self).prepare_value(tag_string)
-    
+
     # Use setters and getters to ensure any changes to the field are mirrored
     # in the widget, in the same way ModelChoiceField mirrors its queryset
     def _get_tag_options(self):
@@ -178,14 +178,14 @@ class BaseTagField(forms.CharField):
         self._tag_options = tag_options
         self.widget.tag_options = tag_options
     tag_options = property(_get_tag_options, _set_tag_options)
-    
+
     def _get_autocomplete_tags(self):
         return self._autocomplete_tags
     def _set_autocomplete_tags(self, autocomplete_tags):
         self._autocomplete_tags = autocomplete_tags
         self.widget.autocomplete_tags = autocomplete_tags
     autocomplete_tags = property(_get_autocomplete_tags, _set_autocomplete_tags)
-    
+
     def widget_attrs(self, widget):
         """
         Given a Widget instance (*not* a Widget class), returns a dictionary of
@@ -193,25 +193,25 @@ class BaseTagField(forms.CharField):
         Field.
         """
         return {}
-        
+
     def clean(self, value, single=False):
         """
         Clean the form value
-        
+
         If optional argument ``single`` is True, the returned value will be a
         string containing the tag name.
-        
+
         If ``single`` is False (default), the returned value will be a list of
         strings containing tag names.
         """
         value = super(BaseTagField, self).clean(value)
-        
+
         if self.tag_options.force_lowercase:
             value = value.lower()
-        
+
         if single:
             return value
-        
+
         try:
             return parse_tags(
                 value, self.tag_options.max_count,
@@ -219,12 +219,12 @@ class BaseTagField(forms.CharField):
             )
         except ValueError as e:
             raise forms.ValidationError(_('%s' % e))
-        
+
 
 class SingleTagField(BaseTagField):
     """
     Single tag field
-    
+
     For parsing purposes, a single tag field wraps the contents in quotes
     """
     def prepare_value(self, value):
@@ -236,7 +236,7 @@ class SingleTagField(BaseTagField):
             value = value.name
         tag_string = value
         return super(SingleTagField, self).prepare_value(tag_string)
-      
+
     def _prepare_tag_options(self, tag_options):
         """
         Force max_count to 1
@@ -244,7 +244,7 @@ class SingleTagField(BaseTagField):
         return tag_options + options.TagOptions(
             max_count=1,
         )
-        
+
     def widget_attrs(self, widget):
         """
         Given a Widget instance (*not* a Widget class), returns a dictionary of
@@ -256,7 +256,7 @@ class SingleTagField(BaseTagField):
             'data-tag-type': 'single',
         })
         return attrs
-        
+
     def clean(self, value):
         """
         Clean by parsing tag with quotes
@@ -285,7 +285,7 @@ class TagField(BaseTagField):
             )
         ):
             value = render_tags(value)
-        
+
         # Deal with it as normal
         return super(TagField, self).prepare_value(value)
 
@@ -299,12 +299,12 @@ class TaggedInlineFormSet(forms.models.BaseInlineFormSet):
     An inline formset base class which works when the model is a tagged model
     using a SingleTagField, and the parent model is a tag model. Only affects
     this usage, otherwise operates as a normal InlineFormSet.
-    
+
     When adding an inline instance, Django's BaseInlineFormSet sets the parent
     model instance by fk id instead of fk value. This normally makes sense, but
     it means Tagulous doesn't detect the change of tag, and can't update the
     count. This formset updates the count after saving.
-    
+
     When editing an inline instance, Django's BaseInlineFormSet switches the
     fk form field from SingleTagField to InlineForeignKeyField, which expects
     the fk's pk - but when constructing the initial form data, it gets it from
@@ -317,11 +317,11 @@ class TaggedInlineFormSet(forms.models.BaseInlineFormSet):
         if isinstance(self.instance, BaseTagModel):
             self.instance.update_count()
         return obj
-    
+
     def _construct_form(self, i, **kwargs):
         # Construct as normal
         form = super(TaggedInlineFormSet, self)._construct_form(i, **kwargs)
-        
+
         # SingleTagField will have broken the pk - fix it by clearing and
         # letting BoundField.value() use the field's initial value
         if (
