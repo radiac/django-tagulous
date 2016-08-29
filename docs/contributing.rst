@@ -20,9 +20,9 @@ The easiest way to work on Tagulous is to fork the project on github, then
 install it to a virtualenv::
 
     virtualenv django-tagulous
-    cd djang-tagulous
+    cd django-tagulous
     source bin/activate
-    pip install -e git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous[dev,i18n]
+    pip install -e git+git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous[dev,i18n]
 
 (replacing ``USERNAME`` with your username).
 
