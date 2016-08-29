@@ -10,6 +10,16 @@ from django.utils import six
 
 
 #
+# Database control settings
+#
+
+# Number of characters to allow for finding a unique slug, ie if set to 5, the
+# slug will be truncated by up to 5 characters to allow for a suffix of _9999.
+# The suffix is base64
+SLUG_TRUNCATE_UNIQUE = getattr(settings, 'TAGULOUS_SLUG_TRUNCATE_UNIQUE', 5)
+
+
+#
 # Autocomplete settings
 #
 

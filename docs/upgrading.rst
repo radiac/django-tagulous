@@ -16,7 +16,7 @@ Instructions
 
 2. Upgrade the Tagulous package::
 
-    pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous
+    pip install --upgrade django-tagulous
 
 3. Scroll down to the earliest instructions relevant to your version, and
    follow them up to the latest version.
@@ -24,6 +24,24 @@ Instructions
    For example, to upgrade from 0.8.0, the earliest instructions relevant to
    you are for 0.8.0 or later. 0.7.0 is an earlier version than yours, so you
    don't need to follow those steps.
+
+
+.. _upgrade_0-11-1
+
+Upgrading from 0.11.1
+---------------------
+
+1. Starting with version 0.12.0, Tagulous no longer enforces uniqueness for
+   tree ``path`` fields. This means that Django will detect a change to your
+   models, and warn you that your migrations are out of sync. It is safe for
+   you to create and apply a standard migration with::
+
+        ./manage.py makemigrations
+        ./manage.py migrate
+
+   This change is to avoid MySQL (and possibly other databases) from the errror
+   ``"BLOB/TEXT column 'path' used in key specification without a key length"``
+   - see https://github.com/radiac/django-tagulous/issues/1 for discussion.
 
 
 .. _upgrade_0-9-0:
@@ -173,6 +191,17 @@ links to the instructions above.
 Changes for upcoming releases will be listed without a release date - these
 are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
+
+
+0.12.0, 2016-08-29
+------------------
+
+Bugfix:
+* Remove ``unique=True`` from tag tree models' ``path`` field (fixes #1)
+* Implement slug field truncation (fixes #3)
+
+Thanks to:
+* Pamela McA'Nulty (PamelaM) for #1
 
 
 0.11.1, 2015-10-05

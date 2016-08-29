@@ -33,6 +33,17 @@ class TagMetaModel(TagMetaAbstractModel):
         max_count = 10
         case_sensitive = True
 
+class TagSlugShorterModel(tagulous.models.BaseTagModel):
+    """
+    A tag model with a slug field shorter than the name
+    """
+    name = models.CharField(max_length=20, unique=True)
+    slug = models.SlugField(max_length=10)
+
+    # Other fields we're not interested in testing but need to have anyway
+    count = models.IntegerField(default=0)
+    protected = models.BooleanField(default=False)
+
 class TagMetaUser(models.Model):
     """
     A tagged model which uses the TagMetaModel

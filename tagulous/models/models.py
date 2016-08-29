@@ -451,7 +451,9 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         # the tag name. Run it through unicode_to_ascii because slugify will
         # cry if the label contains unicode characters
         label = getattr(self, 'label', self.name)
-        self.slug = slugify(six.text_type(utils.unicode_to_ascii(label)))
+        slug_max_length = self.__class__._meta.get_field('slug').max_length
+        slug_base = slugify(six.text_type(utils.unicode_to_ascii(label)))
+        self.slug = slug_base[:slug_max_length]
         self._update_extra()
 
         # Make sure we're using the same db at all times
@@ -473,7 +475,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         # Integrity error - something is probably not unique.
         # Assume it was the slug - make it unique by appending a number.
         # See which numbers have been used
-        slug_base = self.slug
+        slug_base = slug_base[:slug_max_length - settings.SLUG_TRUNCATE_UNIQUE]
         try:
             last = cls.objects.filter(
                 slug__regex="^%s_\d+$" % slug_base

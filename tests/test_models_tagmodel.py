@@ -13,6 +13,7 @@ from __future__ import unicode_literals
 
 from django.utils import six
 
+from tagulous.settings import SLUG_TRUNCATE_UNIQUE
 from tests.lib import *
 
 
@@ -423,6 +424,34 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t2b.slug, 'one-and-two_1')
         self.assertEqual(t3b.slug, 'one-and-two_2')
         self.assertEqual(t4b.slug, 'one-and-two_3')
+
+    def test_long_slug_truncates(self):
+        "Check the slug field is truncated correctly"
+        TestModel = test_models.TagSlugShorterModel
+        name_length = TestModel._meta.get_field('name').max_length
+        slug_length = TestModel._meta.get_field('slug').max_length
+        self.assertLess(slug_length, name_length)
+        long_name = 'x' * name_length
+        t1a = TestModel.objects.create(name='x' * name_length)
+        self.assertEqual(t1a.name, 'x' * name_length)
+        self.assertEqual(t1a.slug, 'x' * slug_length)
+
+    def test_long_slug_clash_truncates(self):
+        "Check clashing slug fields are truncated correctly"
+        TestModel = test_models.TagSlugShorterModel
+        name_length = TestModel._meta.get_field('name').max_length
+        slug_length = TestModel._meta.get_field('slug').max_length
+        self.assertLess(slug_length, name_length)
+        long_name = 'x' * name_length
+        ln1 = '{}{}'.format('x' * (name_length - 1), '1')
+        ln2 = '{}{}'.format('x' * (name_length - 1), '2')
+        t1a = TestModel.objects.create(name=ln1)
+        t2a = TestModel.objects.create(name=ln2)
+        self.assertEqual(t1a.name, ln1)
+        self.assertEqual(t1a.slug, 'x' * slug_length)
+        self.assertEqual(t2a.name, ln2)
+        slug2 = '{}_{}'.format('x' * (slug_length - SLUG_TRUNCATE_UNIQUE), '1')
+        self.assertEqual(t2a.slug, 'x' * slug_length)
 
 
 ###############################################################################
