@@ -11,7 +11,7 @@ from tests.tagulous_tests_app import models
 
 class SingleTagFieldForm(forms.Form):
     singletag = tagulous.forms.SingleTagField()
-    
+
 class TagFieldForm(forms.Form):
     tags = tagulous.forms.TagField()
 
@@ -27,7 +27,7 @@ class SingleTagFieldOptionalModelForm(forms.ModelForm):
     class Meta:
         model = models.SingleTagFieldOptionalModel
         exclude = ()
-        
+
 class SingleTagFieldRequiredModelForm(forms.ModelForm):
     class Meta:
         model = models.SingleTagFieldRequiredModel
@@ -50,7 +50,7 @@ class TagFieldOptionalModelForm(forms.ModelForm):
     class Meta:
         model = models.TagFieldOptionalModel
         exclude = ()
-        
+
 class TagFieldRequiredModelForm(forms.ModelForm):
     class Meta:
         model = models.TagFieldRequiredModel
@@ -60,7 +60,7 @@ class TagFieldOptionsModelForm(forms.ModelForm):
     class Meta:
         model = models.TagFieldOptionsModel
         exclude = ()
-        
+
 
 # Mixed model forms
 

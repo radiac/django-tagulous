@@ -34,14 +34,14 @@ class InitialTagsTest(TagTestManager, TestCase):
         self.tag_model = test_models.TagFieldOptionsModel.initial_list
         self.singletag_model_2 = test_models2.MixedModel.singletag
         self.tag_model_2 = test_models2.MixedModel.tags
-        
+
     def assertModelsEmpty(self):
         self.assertTagModel(self.singletag_model, {})
         self.assertTagModel(self.singletag_model_alt, {})
         self.assertTagModel(self.tag_model, {})
         self.assertTagModel(self.singletag_model_2, {})
         self.assertTagModel(self.tag_model_2, {})
-    
+
     def assertSingleTagFilled(self, model):
         self.assertTagModel(model, {
             'Mr':   0,
@@ -54,7 +54,7 @@ class InitialTagsTest(TagTestManager, TestCase):
             'Brian': 0,
             'Chris': 0,
         })
-    
+
     def run_command(self, target=''):
         with Capturing() as output:
             call_command(
@@ -62,19 +62,19 @@ class InitialTagsTest(TagTestManager, TestCase):
                 target=target,  # Optional target
                 verbosity=1,    # Silent
             )
-            
+
         if DISPLAY_CALL_COMMAND:
             print(">> initial_tags target=%s" % target)
             print('\n'.join(output))
             print("<<<<<<<<<<")
-        
+
         return output
-        
+
     def test_load_all(self):
         "Check no target loads all"
         self.assertModelsEmpty()
         output = self.run_command()
-        
+
         # Output correct if at least expected fields are loaded (more in apps)
         expected = [
             'tagulous_tests_app.SingleTagFieldOptionsModel.initial_list',
@@ -86,19 +86,19 @@ class InitialTagsTest(TagTestManager, TestCase):
         self.assertGreaterEqual(len(output), len(expected))
         for field in expected:
             self.assertTrue('Loading initial tags for %s' % field in output)
-        
+
         # All loaded
         self.assertSingleTagFilled(self.singletag_model)
         self.assertSingleTagFilled(self.singletag_model_alt)
         self.assertTagFilled(self.tag_model)
         self.assertSingleTagFilled(self.singletag_model_2)
         self.assertTagFilled(self.tag_model_2)
-    
+
     def test_load_app(self):
         "Check app target just loads that app"
         self.assertModelsEmpty()
         output = self.run_command('tagulous_tests_app')
-        
+
         # Output correct if at least expected fields are loaded (more in apps)
         expected = [
             'tagulous_tests_app.SingleTagFieldOptionsModel.initial_list',
@@ -108,23 +108,23 @@ class InitialTagsTest(TagTestManager, TestCase):
         self.assertGreaterEqual(len(output), len(expected))
         for field in expected:
             self.assertTrue('Loading initial tags for %s' % field in output)
-        
+
         # Test app 1 loaded
         self.assertSingleTagFilled(self.singletag_model)
         self.assertSingleTagFilled(self.singletag_model_alt)
         self.assertTagFilled(self.tag_model)
-        
+
         # Test app 2 empty
         self.assertTagModel(self.singletag_model_2, {})
         self.assertTagModel(self.tag_model_2, {})
-    
+
     def test_load_model(self):
         "Check app and model target just loads that model"
         self.assertModelsEmpty()
         output = self.run_command(
             'tagulous_tests_app.SingleTagFieldOptionsModel'
         )
-        
+
         # Output correct if at least expected fields are loaded (more in model)
         expected = [
             'tagulous_tests_app.SingleTagFieldOptionsModel.initial_list',
@@ -133,23 +133,23 @@ class InitialTagsTest(TagTestManager, TestCase):
         self.assertGreaterEqual(len(output), len(expected))
         for field in expected:
             self.assertTrue('Loading initial tags for %s' % field in output)
-        
+
         # SingleTagFieldOptionsModel loaded
         self.assertSingleTagFilled(self.singletag_model)
         self.assertSingleTagFilled(self.singletag_model_alt)
-        
+
         # Rest not loaded
         self.assertTagModel(self.tag_model, {})
         self.assertTagModel(self.singletag_model_2, {})
         self.assertTagModel(self.tag_model_2, {})
-    
+
     def test_load_field(self):
         "Check app, model and field target just loads that field"
         self.assertModelsEmpty()
         output = self.run_command(
             'tagulous_tests_app.SingleTagFieldOptionsModel.initial_list'
         )
-        
+
         # Output correct if only expected fields are loaded
         expected = [
             'tagulous_tests_app.SingleTagFieldOptionsModel.initial_list',
@@ -157,10 +157,10 @@ class InitialTagsTest(TagTestManager, TestCase):
         self.assertEqual(len(output), len(expected))
         for field in expected:
             self.assertTrue('Loading initial tags for %s' % field in output)
-        
+
         # SingleTagFieldOptionsModel loaded
         self.assertSingleTagFilled(self.singletag_model)
-        
+
         # Rest not loaded
         self.assertTagModel(self.singletag_model_alt, {})
         self.assertTagModel(self.tag_model, {})

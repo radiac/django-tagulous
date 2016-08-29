@@ -23,23 +23,23 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
     manage_models = [
         test_models.SingleTagFieldModel,
     ]
-    
+
     def setUpExtra(self):
         self.tag_model = test_models.SingleTagFieldModel.title.tag_model
         self.tag_field = test_models.SingleTagFieldModel.title
-    
+
     def test_descriptor(self):
         "Check SingleTagDescriptor is in place"
         self.assertIsInstance(
             self.tag_field, tag_models.SingleTagDescriptor
         )
-    
+
     def test_tag_table(self):
         "Check the tag table exists"
         self.assertTrue(issubclass(
             self.tag_model, tag_models.TagModel
         ))
-        
+
     def test_empty_value(self):
         "Check the descriptor returns None for no value"
         t1 = self.create(test_models.SingleTagFieldModel, name="Test")
@@ -55,7 +55,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-        
+
     def test_assign_by_object_in_constructor(self):
         "Check a tag object can be passed in the constructor"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
@@ -66,7 +66,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 2,
         })
-    
+
     def test_tag_assign_in_object_create(self):
         "Check a tag string can be passed in object.create"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test', title='Mr')
@@ -75,7 +75,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-    
+
     def test_assign_by_object_in_object_create(self):
         "Check a tag object can be passed in object.create"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
@@ -85,7 +85,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 2,
         })
-    
+
     def test_tag_assign_in_object_get_or_create_true(self):
         """
         Check a tag string can be passed in object.get_or_create, when object
@@ -100,7 +100,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-        
+
     def test_tag_assign_in_object_get_or_create_false(self):
         """
         Check a tag string can be passed in object.get_or_create, when object
@@ -118,18 +118,18 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-            
+
     def test_tag_assign_by_string(self):
         "Check a tag string can be assigned to descriptor and returned"
         t1 = self.create(test_models.SingleTagFieldModel, name="Test")
         t1.title = 'Mr'
-        
+
         # Returned before save
         self.assertEqual(t1.title.__class__, self.tag_model)
         self.assertEqual(t1.title.name, 'Mr')
         self.assertEqual(six.text_type(t1.title), 'Mr')
         self.assertTagModel(self.tag_model, {})
-        
+
         # Returned after save
         t1.save()
         self.assertEqual(t1.title.__class__, self.tag_model)
@@ -138,7 +138,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-        
+
     def test_assign_by_object(self):
         """
         Check a tag object can be assigned to a SingleTagfield, and that its
@@ -157,7 +157,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 2,
         })
-    
+
     def test_assign_string_empty(self):
         "Check an empty string can clear a SingleTagField"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
@@ -166,7 +166,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t1.save()
         self.assertInstanceEqual(t1, name='Test 1', title=None)
         self.assertTagModel(self.tag_model, {})
-    
+
     def test_assign_none(self):
         "Check assigning None can clear a SingleTagField"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
@@ -175,7 +175,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t1.save()
         self.assertInstanceEqual(t1, name='Test 1', title=None)
         self.assertTagModel(self.tag_model, {})
-    
+
     def test_assign_string_quotes(self):
         "Check that a tag can contain quotes"
         # Check it saves ok
@@ -183,23 +183,23 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             name='Test 1', title='"One", Two"',
         )
         self.assertInstanceEqual(t1, name='Test 1', title='"One", Two"')
-        
+
         # Check it loads ok
         t2 = test_models.SingleTagFieldModel.objects.get(pk=t1.pk)
         self.assertInstanceEqual(t2, name='Test 1', title='"One", Two"')
-    
+
     def test_tag_assign_same(self):
         "Check that setting the same tag doesn't make a change"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
         tag = t1.title
         self.assertEqual(tag, 'Mr')
-        
+
         # Access the manager via the cache to watch changed state
         self.assertIsInstance(t1._title_tagulous, tag_models.SingleTagManager)
         self.assertFalse(t1._title_tagulous.changed, 'tag has changed')
         t1.title = 'Mr'
         self.assertFalse(t1._title_tagulous.changed, 'tag has changed')
-        
+
     def test_change_decreases_count(self):
         "Check a tag string changes the count"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
@@ -213,7 +213,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mr': 1,
             'Mrs': 1,
         })
-        
+
     def test_delete_decreases_count(self):
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
         t2 = test_models.SingleTagFieldModel.objects.create(name='Test 2', title=t1.title)
@@ -225,7 +225,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-        
+
     def test_count_zero_deletes_tag(self):
         "Check a count of 0 deletes an unprotected tag"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
@@ -237,7 +237,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mrs': 1,
         })
-    
+
     def test_delete_decreases_correct(self):
         """
         Check that the actual tag in the database is decreased, not the one in
@@ -251,7 +251,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mr': 1,
             'Mrs': 1,
         })
-        
+
         # Now change the title and delete without saving
         t1.title = 'Mrs'
         self.assertEqual(six.text_type(t1.title.name), 'Mrs')
@@ -260,15 +260,15 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mrs': 1,
         })
         t1.delete()
-        
+
         # Check the original tag 'Mr' was decremented (and deleted)
         self.assertTagModel(self.tag_model, {
             'Mrs': 1,
         })
-        
+
         # But check that tagulous still thinks the tag is 'Mrs'
         self.assertEqual(six.text_type(t1.title.name), 'Mrs')
-    
+
     def test_save_deleted_instance(self):
         """
         Check that a deleted tag in memory can be re-saved when the instance it
@@ -284,7 +284,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-    
+
     def test_save_deleted_tag(self):
         """
         Check that a delete tag in memory can be read and re-saved when it is
@@ -296,17 +296,17 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         })
         self.tag_model.objects.all().delete()
         self.assertTagModel(self.tag_model, {})
-        
+
         # Check it's still usable
         self.assertIsInstance(t1.title, tag_models.BaseTagModel)
         self.assertEqual(t1.title, 'Mr')
-        
+
         # Check it can be re-saved
         t1.save()
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-        
+
     def test_multiple_unsaved(self):
         "Check that there's no leak between unsaved objects"
         t1 = test_models.SingleTagFieldModel(name='Test 1', title='Mr')
@@ -325,7 +325,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         })
         self.assertEqual(six.text_type(t1.title), 'Mr')
         self.assertEqual(six.text_type(t2.title), 'Mrs')
-    
+
     def test_load_instance(self):
         "Check that SingleTagField is loaded correctly"
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1', title='Mr')
@@ -350,7 +350,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t2 = test_models.SingleTagFieldModel.objects.create(name='Test 2', title='Mrs')
         self.assertIsInstance(t1.title, self.tag_model)
         self.assertNotEqual(t1.title, t2.title)
-     
+
     def test_cascade_delete(self):
         "Check that deleting a tag deletes its related tagged items (by default)"
         model = test_models.SingleTagFieldModel
@@ -362,7 +362,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mrs': 1,
         })
         self.assertSequenceEqual(model.objects.all(), [t1, t2, t3])
-        
+
         # Delete
         self.tag_model.objects.get(name='Mr').delete()
         self.assertTagModel(self.tag_model, {
@@ -378,13 +378,13 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
 class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
     """
     Test invalid model SingleTagField
-    
+
     Use a TransactionTestCase so the apps will be reset
     """
     manage_models = [
         test_models.SingleTagFieldModel,
     ]
-    
+
     def test_invalid_to_model(self):
         "Check that the to model has to be a TagModel subclass"
         with self.assertRaises(ValueError) as cm:
@@ -394,7 +394,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             six.text_type(cm.exception),
             "Tag model must be a subclass of TagModel"
         )
-    
+
     def test_forbidden_to_field(self):
         "Check that to_field argument raises exception"
         with self.assertRaises(ValueError) as cm:
@@ -424,14 +424,14 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             six.text_type(cm.exception),
             "Invalid argument 'max_count' for SingleTagField"
         )
-    
+
     def test_value_from_object_none(self):
         "Check that value_from_object returns empty string instead of None"
         # Called by forms, but part of model, so test it here
         t1 = test_models.SingleTagFieldModel.objects.create(name='Test 1')
         field = test_models.SingleTagFieldModel._meta.get_field('title')
         self.assertEqual(field.value_from_object(t1), '')
-        
+
 
 ###############################################################################
 #######  Test model field blank=True
@@ -450,7 +450,7 @@ class ModelSingleTagFieldOptionalTest(TagTestManager, TestCase):
         t1 = test_models.SingleTagFieldOptionalModel(name='Test 1')
         t1.save()
         self.assertNotEqual(t1.pk, None)
-    
+
     def test_optional_create_missing(self):
         "Check an optional SingleTagField isn't required for object.create"
         # If it fails, it will return an exception
@@ -475,14 +475,14 @@ class ModelSingleTagFieldRequiredTest(TagTestManager, TestCase):
             t1 = test_models.SingleTagFieldRequiredModel(name='Test')
             t1.save()
         self.assertEqual(cm.exception.messages[0], 'This field cannot be null.')
-    
+
     def test_required_create_raises(self):
         "Check a required SingleTagField raises an exception in object.create"
         with self.assertRaises(exceptions.ValidationError) as cm:
             t1 = test_models.SingleTagFieldRequiredModel.objects.create(name='Test')
         self.assertEqual(cm.exception.messages[0], 'This field cannot be null.')
-    
-    
+
+
 ###############################################################################
 ####### Test multiple SingleTagFields on a model
 ###############################################################################
@@ -494,23 +494,23 @@ class ModelSingleTagFieldMultipleTest(TagTestManager, TestCase):
     manage_models = [
         test_models.SingleTagFieldMultipleModel,
     ]
-    
+
     def setUpExtra(self):
         self.test_model = test_models.SingleTagFieldMultipleModel
         self.tag_field_1 = test_models.SingleTagFieldMultipleModel.tag1
         self.tag_field_2 = test_models.SingleTagFieldMultipleModel.tag2
         self.tag_field_3 = test_models.SingleTagFieldMultipleModel.tag3
-    
+
     def test_tag_models(self):
         self.assertTrue(issubclass(self.tag_field_1.tag_model, tag_models.TagModel))
         self.assertTrue(issubclass(self.tag_field_2.tag_model, tag_models.TagModel))
         self.assertTrue(issubclass(self.tag_field_3.tag_model, tag_models.TagModel))
-        
+
     def test_separate_models(self):
         self.assertNotEqual(self.tag_field_1.tag_model, self.tag_field_2.tag_model)
         self.assertNotEqual(self.tag_field_1.tag_model, self.tag_field_3.tag_model)
         self.assertNotEqual(self.tag_field_2.tag_model, self.tag_field_3.tag_model)
-    
+
     def test_model_names(self):
         self.assertEqual(
             self.tag_field_1.tag_model.__name__,
@@ -524,7 +524,7 @@ class ModelSingleTagFieldMultipleTest(TagTestManager, TestCase):
             self.tag_field_3.tag_model.__name__,
             '_Tagulous_SingleTagFieldMultipleModel_tag3'
         )
-    
+
     def test_set_and_get(self):
         "Test multiple fields can be set and retrieved independently"
         t1 = self.create(
@@ -539,7 +539,7 @@ class ModelSingleTagFieldMultipleTest(TagTestManager, TestCase):
             self.test_model, name="Test 3",
             tag1='Ms', tag2='red', tag3='chris',
         )
-        
+
         self.assertTagModel(self.tag_field_1, {
             'Mr':   1,
             'Mrs':  1,
@@ -555,7 +555,7 @@ class ModelSingleTagFieldMultipleTest(TagTestManager, TestCase):
             'brian': 1,
             'chris': 1,
         })
-        
+
         self.assertInstanceEqual(t1, name="Test 1", tag1='Mr', tag2='blue', tag3='adam')
         self.assertInstanceEqual(t2, name="Test 2", tag1='Mrs', tag2='green', tag3='brian')
         self.assertInstanceEqual(t3, name="Test 3", tag1='Ms', tag2='red', tag3='chris')
@@ -572,12 +572,12 @@ class ModelSingleTagFieldStringTest(TagTestManager, TransactionTestCase):
     manage_models = [
         test_models.MixedStringTo,
     ]
-    
+
     def setUpExtra(self):
         self.test_model = test_models.MixedStringTo
         self.tag_field = self.test_model.singletag
         self.tag_model = test_models.MixedStringTagModel
-    
+
     def test_to_model(self):
         "Check related model is correct"
         self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
@@ -586,13 +586,13 @@ class ModelSingleTagFieldStringTest(TagTestManager, TransactionTestCase):
         else:
             self.assertEqual(self.tag_field.field.remote_field.model, self.tag_model)
         self.assertEqual(self.tag_field.tag_model, self.tag_model)
-    
+
     def test_tag_options(self):
         "Check tag options are available correctly"
         self.assertEqual(
             self.tag_field.tag_options, self.tag_model.tag_options
         )
-        
+
     def test_use(self):
         "Test basic use of tag field"
         self.assertTagModel(self.tag_model, {})
@@ -601,7 +601,7 @@ class ModelSingleTagFieldStringTest(TagTestManager, TransactionTestCase):
             'Mr':  1,
         })
         self.assertInstanceEqual(t1, name='Test 1', singletag='Mr')
-        
+
 
 class ModelSingleTagFieldSelfTest(TagTestManager, TransactionTestCase):
     """
@@ -610,11 +610,11 @@ class ModelSingleTagFieldSelfTest(TagTestManager, TransactionTestCase):
     manage_models = [
         test_models.MixedSelfTo,
     ]
-    
+
     def setUpExtra(self):
         self.test_model = test_models.MixedSelfTo
         self.tag_field = self.test_model.alternate
-    
+
     def test_to_model(self):
         "Check related model is correct"
         self.assertTrue(issubclass(self.tag_field.tag_model, tag_models.TagModel))
@@ -623,13 +623,13 @@ class ModelSingleTagFieldSelfTest(TagTestManager, TransactionTestCase):
         else:
             self.assertEqual(self.tag_field.field.remote_field.model, self.test_model)
         self.assertEqual(self.tag_field.tag_model, self.test_model)
-    
+
     def test_tag_options(self):
         "Check tag options are available correctly"
         self.assertEqual(
             self.tag_field.tag_options, self.test_model.tag_options
         )
-        
+
     def test_use(self):
         "Test basic use of tag field"
         self.assertTagModel(self.test_model, {})
@@ -652,10 +652,10 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
     manage_models = [
         test_models.SingleTagFieldOptionsModel,
     ]
-    
+
     def setUpExtra(self):
         self.test_model = test_models.SingleTagFieldOptionsModel
-    
+
     def test_initial_string(self):
         # Initial will have been loaded by TagTestManager
         self.assertTagModel(self.test_model.initial_string, {
@@ -663,7 +663,7 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
             'Mrs':  0,
             'Ms':   0,
         })
-        
+
     def test_initial_list(self):
         # Initial will have been loaded by TagTestManager
         self.assertTagModel(self.test_model.initial_list, {
@@ -671,59 +671,59 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
             'Mrs':  0,
             'Ms':   0,
         })
-    
+
     def test_protect_initial_true(self):
         self.assertTagModel(self.test_model.protect_initial_true, {
             'Mr':   0,
         })
-        
+
         t1 = self.create(self.test_model, name="Test 1", protect_initial_true='Mr')
         self.assertTagModel(self.test_model.protect_initial_true, {
             'Mr':   1,
         })
-        
+
         t1.protect_initial_true = ''
         t1.save()
         self.assertTagModel(self.test_model.protect_initial_true, {
             'Mr':   0,
         })
-        
+
     def test_protect_initial_false(self):
         self.assertTagModel(self.test_model.protect_initial_true, {
             'Mr':   0,
         })
-        
+
         t1 = self.create(self.test_model, name="Test 1", protect_initial_false='Mr')
         self.assertTagModel(self.test_model.protect_initial_false, {
             'Mr':   1,
         })
-        
+
         t1.protect_initial_false = ''
         t1.save()
         self.assertTagModel(self.test_model.protect_initial_false, {})
-    
+
     def test_protect_all_true(self):
         t1 = self.create(self.test_model, name="Test 1", protect_all_true='Mr')
         self.assertTagModel(self.test_model.protect_all_true, {
             'Mr':   1,
         })
-        
+
         t1.protect_all_true = ''
         t1.save()
         self.assertTagModel(self.test_model.protect_all_true, {
             'Mr':   0,
         })
-        
+
     def test_protect_all_false(self):
         t1 = self.create(self.test_model, name="Test 1", protect_all_false='Mr')
         self.assertTagModel(self.test_model.protect_all_false, {
             'Mr':   1,
         })
-        
+
         t1.protect_all_false = ''
         t1.save()
         self.assertTagModel(self.test_model.protect_all_false, {})
-    
+
     def test_case_sensitive_true(self):
         self.assertTagModel(self.test_model.case_sensitive_true, {
             'Mr':   0,
@@ -733,7 +733,7 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
             'Mr':   0,
             'mr':   1,
         })
-        
+
     def test_case_sensitive_false(self):
         self.assertTagModel(self.test_model.case_sensitive_false, {
             'Mr':   0,
@@ -742,13 +742,13 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
         self.assertTagModel(self.test_model.case_sensitive_false, {
             'Mr':   1,
         })
-    
+
     def test_force_lowercase_true(self):
         t1 = self.create(self.test_model, name="Test 1", force_lowercase_true='Mr')
         self.assertTagModel(self.test_model.force_lowercase_true, {
             'mr':   1,
         })
-        
+
     def test_force_lowercase_false(self):
         t1 = self.create(self.test_model, name="Test 1", force_lowercase_false='Mr')
         self.assertTagModel(self.test_model.force_lowercase_false, {

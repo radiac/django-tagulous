@@ -58,10 +58,10 @@ class DumpDataAssertMixin(object):
             os.remove(filename)
         else:
             command_output = new_io.getvalue().strip()
-        
+
         # Return early, do comparison externally
         return command_output
-        
+
         if format == "json":
             self.assertJSONEqual(command_output, output)
         elif format == "xml":
@@ -92,26 +92,26 @@ class SerializationTestMixin(DumpDataAssertMixin):
         'tagulous_tests_app.SimpleMixedTest',
     ]
     fixture_format = 'undefined'
-    
+
     def setUpExtra(self):
         self.model = test_models.SimpleMixedTest
         self.singletag_model = self.model.singletag.tag_model
         self.tags_model = self.model.tags.tag_model
         self.fixture_name = 'test_fixtures.%s' % self.fixture_format
         self.fixture_path = os.path.join(fixture_root, self.fixture_name)
-        
+
         # Need to dump to loadable file due to django#24558
         self.tmp_fixture_name = 'tmp_%s_%s' % (testenv, self.fixture_name)
         self.tmp_fixture_path = os.path.join(fixture_root, self.tmp_fixture_name)
-        
+
         # Delete file if it exists
         if os.path.exists(self.tmp_fixture_path):
             os.remove(self.tmp_fixture_path)
-    
+
     def tearDownExtra(self):
         if os.path.exists(self.tmp_fixture_path):
             os.remove(self.tmp_fixture_path)
-    
+
     def _populate(self):
         self.t1 = self.model.objects.create(name='Test 1', singletag='single1', tags='tag1, tag2')
         self.t2 = self.model.objects.create(name='Test 2', singletag='single2', tags='tag3, tag4')
@@ -135,7 +135,7 @@ class SerializationTestMixin(DumpDataAssertMixin):
             'tag3': 1,
             'tag4': 1,
         })
-    
+
     def _assert_dumped(self, dumped):
         # Basic checks to make sure it's not completely invalid
         # Cannot test in more detail without django#24558
@@ -148,27 +148,27 @@ class SerializationTestMixin(DumpDataAssertMixin):
         self.assertEqual(self.model.objects.count(), 0)
         self.assertTagModel(self.singletag_model, {})
         self.assertTagModel(self.tags_model, {})
-    
+
     def test_dump_load(self):
         "Check dumpdata and loaddata recreate data"
         # Populate and confirm
         self._populate()
         self._check()
-        
+
         # Dump
         dumped = self._dumpdata(self.dump_models, format=self.fixture_format)
         self._assert_dumped(dumped)
-        
+
         # Fixture path
         with open(self.tmp_fixture_path, 'w') as f:
             f.write(dumped)
-        
+
         # Empty the database
         self._empty()
-        
+
         # Now load fixture
         management.call_command('loaddata', self.tmp_fixture_name, verbosity=0)
-        
+
         # Check they were loaded correctly
         self._check()
 
@@ -203,21 +203,21 @@ class MixedTestMixin(SerializationTestMixin):
         'tagulous_tests_app.MixedNonTagModel',
         'tagulous_tests_app.MixedNonTagRefTest',
     ]
-    
+
     def setUpExtra(self):
         self.model = test_models.MixedNonTagRefTest
         self.tag_model = test_models.MixedNonTagModel
         self.fixture_name = 'test_fixtures.%s' % self.fixture_format
         self.fixture_path = os.path.join(fixture_root, self.fixture_name)
-        
+
         # Need to dump to loadable file due to django#24558
         self.tmp_fixture_name = 'tmp_%s_%s' % (testenv, self.fixture_name)
         self.tmp_fixture_path = os.path.join(fixture_root, self.tmp_fixture_name)
-        
+
         # Delete file if it exists
         if os.path.exists(self.tmp_fixture_path):
             os.remove(self.tmp_fixture_path)
-    
+
     def _populate(self):
         tag1 = self.tag_model.objects.create(name='tag1')
         tag2 = self.tag_model.objects.create(name='tag2')
@@ -253,7 +253,7 @@ class MixedTestMixin(SerializationTestMixin):
             'tag3': 1,
             'tag4': 1,
         })
-    
+
     def _assert_dumped(self, dumped):
         # Basic checks to make sure it's not completely invalid
         # Cannot test in more detail without django#24558
@@ -270,12 +270,12 @@ class MixedTestMixin(SerializationTestMixin):
 class MixedJsonSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test JSON serializer with normal fk and m2m fields"
     fixture_format = 'json'
-    
+
 @unittest.skipIf(yaml is None, 'pyyaml is not installed')
 class MixedYamlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test Yaml serializer with normal fk and m2m fields"
     fixture_format = 'yaml'
-    
+
 class MixedXmlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test XML serializer with normal fk and m2m fields"
     fixture_format = 'xml'
