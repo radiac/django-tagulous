@@ -1,7 +1,7 @@
 language: python
 python: 3.5
 install:
-  - pip install tox
+  - pip install "virtualenv<14.0.0" tox
 before_script:
   - sh -c "if [ '$DATABASE_ENGINE' = 'pgsql' ]; then psql -c 'DROP DATABASE IF EXISTS tagulous_tests;' -U postgres; fi"
   - sh -c "if [ '$DATABASE_ENGINE' = 'pgsql' ]; then psql -c 'create database tagulous_tests;' -U postgres; fi"
