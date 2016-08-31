@@ -64,16 +64,6 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         self.tag_field = test_models.TreeTest.tags
         self.tag_model = test_models.TreeTest.tags.tag_model
 
-    def test_path_field_length(self):
-        """
-        Value is initialized in setup.py runtests() settings
-        """
-        # PATH_MAX_LENGTH is NOT configured, so it defaults to NAME_MAX_LENGTH
-        self.assertEqual(tagulous_settings.NAME_MAX_LENGTH,
-                         tagulous_settings.PATH_MAX_LENGTH)
-        self.assertEqual(self.tag_model._meta.get_field('path').max_length,
-                         tagulous_settings.PATH_MAX_LENGTH)
-
     def test_label_field_length(self):
         """
         Value is initialized in setup.py runtests() settings

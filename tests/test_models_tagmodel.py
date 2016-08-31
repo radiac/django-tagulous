@@ -440,6 +440,12 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t3b.slug, 'one-and-two_2')
         self.assertEqual(t4b.slug, 'one-and-two_3')
 
+    def test_tag_model_factory(self):
+        "Check the tag model factory supports setting max lengths"
+        TestModel = test_models.TagSlugShorterModel
+        self.assertEqual(TestModel._meta.get_field('name').max_length, 20)
+        self.assertEqual(TestModel._meta.get_field('slug').max_length, 10)
+
     def test_long_slug_truncates(self):
         "Check the slug field is truncated correctly"
         TestModel = test_models.TagSlugShorterModel
@@ -466,7 +472,7 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t1a.slug, 'x' * slug_length)
         self.assertEqual(t2a.name, ln2)
         slug2 = '{}_{}'.format('x' * (slug_length - SLUG_TRUNCATE_UNIQUE), '1')
-        self.assertEqual(t2a.slug, 'x' * slug_length)
+        self.assertEqual(t2a.slug, slug2)
 
 
 ###############################################################################

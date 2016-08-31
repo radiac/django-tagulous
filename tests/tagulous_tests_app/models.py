@@ -44,6 +44,11 @@ class TagSlugShorterModel(tagulous.models.BaseTagModel):
     count = models.IntegerField(default=0)
     protected = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ('name',)
+        unique_together = (('slug',),)
+
+
 class TagMetaUser(models.Model):
     """
     A tagged model which uses the TagMetaModel

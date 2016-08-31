@@ -487,7 +487,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
             slug_base, number = last.slug.rsplit('_', 1)
             number = int(number) + 1
 
-        self.slug = '%s_%d' % (self.slug, number)
+        self.slug = '%s_%d' % (slug_base, number)
         self._update_extra()
         return super(BaseTagModel, self).save(*args, **kwargs)
     save.alters_data = True
@@ -504,21 +504,17 @@ class TagModel(BaseTagModel):
     """
     Abstract base class for tag models
     """
-    name        = models.CharField(
-        max_length=settings.NAME_MAX_LENGTH,
-        unique=True
-        )
-    slug        = models.SlugField(
-        max_length=settings.SLUG_MAX_LENGTH,
-        # Slug field must be unique, but manage it with Meta.unique_together
-        # so that subclasses can override
-        unique=False,
+    name = models.CharField(
+        unique=True, max_length=settings.NAME_MAX_LENGTH,
     )
-    count       = models.IntegerField(
+    slug = models.SlugField(
+        unique=False, max_length=settings.SLUG_MAX_LENGTH,
+    )
+    count = models.IntegerField(
         default=0,
         help_text="Internal counter of how many times this tag is in use"
     )
-    protected   = models.BooleanField(
+    protected = models.BooleanField(
         default=False,
         help_text="Will not be deleted when the count reaches 0"
     )
@@ -526,6 +522,8 @@ class TagModel(BaseTagModel):
     class Meta:
         abstract = True
         ordering = ('name',)
+        # Slug field must be unique, but manage it with unique_together
+        # so that subclasses can override
         unique_together = (
             ('slug',),
         )
