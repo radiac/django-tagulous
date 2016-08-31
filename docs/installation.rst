@@ -92,7 +92,6 @@ Settings
 
 ``TAGULOUS_NAME_MAX_LENGTH``
 ``TAGULOUS_SLUG_MAX_LENGTH``
-``TAGULOUS_NAME_MAX_LENGTH``
 ``TAGULOUS_LABEL_MAX_LENGTH``
     Default max length for tag models.
 
