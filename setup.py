@@ -98,6 +98,7 @@ def runtests(args):
             }],
             MIGRATION_MODULES=MIGRATION_MODULES,
             SOUTH_MIGRATION_MODULES=MIGRATION_MODULES,
+            TAGULOUS_NAME_MAX_LENGTH=191,
         )
 
     execute_from_command_line(args[:1] + ['test'] + (args[2:] or ['tests']))
