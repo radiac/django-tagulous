@@ -17,7 +17,7 @@ class Migration(SchemaMigration):
 
         # Adding field '_Tagulous_MigrationTestModel_tags.label'
         db.add_column(u'tagulous_tests_migration__tagulous_migrationtestmodel_tags', 'label',
-                      self.gf('django.db.models.fields.CharField')(default='.', max_length=255),
+                      self.gf('django.db.models.fields.CharField')(default='.', max_length=191),
                       keep_default=False)
 
         # Adding field '_Tagulous_MigrationTestModel_tags.level'
@@ -64,7 +64,7 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "('name',)", 'unique_together': "(('slug',),)", 'object_name': '_Tagulous_MigrationTestModel_singletag', '_bases': ['tagulous.models.BaseTagModel']},
             'count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '191'}),
             'protected': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50'})
         },
@@ -72,9 +72,9 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "('name',)", 'unique_together': "(('slug', 'parent'),)", 'object_name': '_Tagulous_MigrationTestModel_tags', '_bases': ['tagulous.models.BaseTagTreeModel']},
             'count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'label': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'label': ('django.db.models.fields.CharField', [], {'max_length': '191'}),
             'level': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '191'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': u"orm['tagulous_tests_migration._Tagulous_MigrationTestModel_tags']"}),
             'path': ('django.db.models.fields.TextField', [], {'unique': 'True'}),
             'protected': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),

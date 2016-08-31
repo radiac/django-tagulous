@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='_tagulous_migrationtestmodel_tags',
             name='label',
-            field=models.CharField(default='-', max_length=255, help_text=b'The name of the tag, without ancestors'),
+            field=models.CharField(default='-', max_length=191, help_text=b'The name of the tag, without ancestors'),
             preserve_default=True,
         ),
         migrations.AddField(

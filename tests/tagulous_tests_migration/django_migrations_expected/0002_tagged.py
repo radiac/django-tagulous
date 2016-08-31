@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             name='_Tagulous_MigrationTestModel_singletag',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(unique=True, max_length=255)),
+                ('name', models.CharField(unique=True, max_length=191)),
                 ('slug', models.SlugField()),
                 ('count', models.IntegerField(default=0, help_text=b'Internal counter of how many times this tag is in use')),
                 ('protected', models.BooleanField(default=False, help_text=b'Will not be deleted when the count reaches 0')),
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
             name='_Tagulous_MigrationTestModel_tags',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(unique=True, max_length=255)),
+                ('name', models.CharField(unique=True, max_length=191)),
                 ('slug', models.SlugField()),
                 ('count', models.IntegerField(default=0, help_text=b'Internal counter of how many times this tag is in use')),
                 ('protected', models.BooleanField(default=False, help_text=b'Will not be deleted when the count reaches 0')),
