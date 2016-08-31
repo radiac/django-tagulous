@@ -504,9 +504,13 @@ class TagModel(BaseTagModel):
     """
     Abstract base class for tag models
     """
-    name        = models.CharField(max_length=255, unique=True)
+    name        = models.CharField(
+        max_length=settings.NAME_MAX_LENGTH,
+        unique=True
+        )
     slug        = models.SlugField(
         unique=False,
+        max_length=settings.SLUG_MAX_LENGTH,
         # Slug field must be unique, but manage it with Meta.unique_together
         # so that subclasses can override
     )
@@ -812,9 +816,10 @@ class TagTreeModel(BaseTagTreeModel, TagModel):
         'self', null=True, blank=True, related_name='children',
         on_delete=models.CASCADE, db_index=True,
     )
-    path        = models.TextField()
+    path        = models.TextField(max_length=settings.PATH_MAX_LENGTH)
     label       = models.CharField(
-        max_length=255, help_text='The name of the tag, without ancestors',
+        max_length=settings.LABEL_MAX_LENGTH,
+        help_text='The name of the tag, without ancestors',
     )
     level       = models.IntegerField(
         default=1, help_text='The level of the tag in the tree',

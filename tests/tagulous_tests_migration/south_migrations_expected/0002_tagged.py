@@ -11,8 +11,8 @@ class Migration(SchemaMigration):
         # Adding model '_Tagulous_MigrationTestModel_tags'
         db.create_table(u'tagulous_tests_migration__tagulous_migrationtestmodel_tags', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('slug', self.gf('django.db.models.fields.SlugField')(max_length=50)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=191)),
+            ('slug', self.gf('django.db.models.fields.SlugField')(max_length=180)),
             ('count', self.gf('django.db.models.fields.IntegerField')(default=0)),
             ('protected', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
@@ -24,8 +24,8 @@ class Migration(SchemaMigration):
         # Adding model '_Tagulous_MigrationTestModel_singletag'
         db.create_table(u'tagulous_tests_migration__tagulous_migrationtestmodel_singletag', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('slug', self.gf('django.db.models.fields.SlugField')(max_length=50)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=191)),
+            ('slug', self.gf('django.db.models.fields.SlugField')(max_length=180)),
             ('count', self.gf('django.db.models.fields.IntegerField')(default=0)),
             ('protected', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
@@ -74,17 +74,17 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "('name',)", 'unique_together': "(('slug',),)", 'object_name': '_Tagulous_MigrationTestModel_singletag', '_bases': ['tagulous.models.BaseTagModel']},
             'count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '191'}),
             'protected': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50'})
+            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '180'})
         },
         u'tagulous_tests_migration._tagulous_migrationtestmodel_tags': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('slug',),)", 'object_name': '_Tagulous_MigrationTestModel_tags', '_bases': ['tagulous.models.BaseTagModel']},
             'count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '191'}),
             'protected': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50'})
+            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '180'})
         },
         u'tagulous_tests_migration.migrationtestmodel': {
             'Meta': {'object_name': 'MigrationTestModel'},
