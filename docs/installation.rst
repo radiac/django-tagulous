@@ -66,8 +66,12 @@ Instructions
         'yaml':   'tagulous.serializers.pyyaml',
     }
 
-   You may also want to change some Tagulous settings here - see
-   :ref:`settings` for details.
+   You may also want to change some Tagulous settings here - see the global
+   :ref:`max_length settings <settings_max_length>` for details.
+
+   .. note::
+        If you use MySQL you'll want to tweak the max lengths for fields - see
+        :ref:
 
 You are now ready to add Tagulous fields to your models - see
 :doc:`models/index`, :doc:`forms` and :doc:`usage`.
@@ -83,6 +87,37 @@ Settings
 
 .. note::
     Model and form field options are managed separately by :doc:`tag_options`.
+
+.. _settings_max_length:
+
+``TAGULOUS_NAME_MAX_LENGTH``
+``TAGULOUS_SLUG_MAX_LENGTH``
+``TAGULOUS_NAME_MAX_LENGTH``
+``TAGULOUS_LABEL_MAX_LENGTH``
+    Default max length for tag models.
+
+    .. note::
+
+        When MySQL is using utf8mb4 charset, all unique fields have a
+        max-length of 191 characters, because MySQL max key length in 767
+        bytes and utf8mb4 reserves 4 bytes per character, thus 767/4 = 191.
+
+        If you use MySQL, we therefore recommend the following settings:
+
+            TAGULOUS_NAME_MAX_LENGTH=191
+
+    Default::
+
+        TAGULOUS_NAME_MAX_LENGTH = 255
+        TAGULOUS_SLUG_MAX_LENGTH = 50
+        TAGULOUS_LABEL_MAX_LENGTH = TAGULOUS_NAME_MAX_LENGTH
+
+``TAGULOUS_SLUG_TRUNCATE_UNIQUE``
+    Number of characters to allow for the numerical suffix when finding a
+    unique slug, ie if set to 5, the slug will be truncated by up to 5
+    characters to allow for a suffix of up to `_9999`.
+
+    Default: ``5``
 
 ``TAGULOUS_AUTOCOMPLETE_JS``
     List of paths under ``STATIC_URL`` for any JavaScript files which are
