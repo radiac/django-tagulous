@@ -40,7 +40,7 @@ Instructions
         If you prefer, you can also install the development version direct from
         github::
 
-            pip install -e git+https://github.com/radiac/django-tagulous.git#egg=django-tagulous
+            pip install -e git+https://github.com/radiac/django-tagulous.git@develop#egg=django-tagulous
 
         This may contain changes made since the last version was released -
         these will be listed in the :ref:`changelog`.
