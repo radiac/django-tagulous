@@ -13,6 +13,12 @@ from django.utils import six
 # Database control settings
 #
 
+NAME_MAX_LENGTH = getattr(settings, 'TAGULOUS_NAME_MAX_LENGTH', 255)
+SLUG_MAX_LENGTH = getattr(settings, 'TAGULOUS_SLUG_MAX_LENGTH', 50)
+LABEL_MAX_LENGTH = getattr(
+    settings, 'TAGULOUS_LABEL_MAX_LENGTH', NAME_MAX_LENGTH,
+)
+
 # Number of characters to allow for finding a unique slug, ie if set to 5, the
 # slug will be truncated by up to 5 characters to allow for a suffix of _9999.
 # The suffix is base64
@@ -59,22 +65,6 @@ ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
 WEIGHT_MIN = getattr(settings, 'TAGULOUS_WEIGHT_MIN', 1)
 WEIGHT_MAX = getattr(settings, 'TAGULOUS_WEIGHT_MAX', 6)
 
-#
-# Field Size defaults
-#
-
-NAME_MAX_LENGTH = getattr(
-    settings, 'TAGULOUS_NAME_MAX_LENGTH', 255
-)
-SLUG_MAX_LENGTH = getattr(
-    settings, 'TAGULOUS_SLUG_MAX_LENGTH', 50
-)
-PATH_MAX_LENGTH = getattr(
-    settings, 'TAGULOUS_NAME_MAX_LENGTH', NAME_MAX_LENGTH
-)
-LABEL_MAX_LENGTH = getattr(
-    settings, 'TAGULOUS_LABEL_MAX_LENGTH', NAME_MAX_LENGTH
-)
 
 #
 # Feature flags

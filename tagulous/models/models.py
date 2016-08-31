@@ -509,10 +509,10 @@ class TagModel(BaseTagModel):
         unique=True
         )
     slug        = models.SlugField(
-        unique=False,
         max_length=settings.SLUG_MAX_LENGTH,
         # Slug field must be unique, but manage it with Meta.unique_together
         # so that subclasses can override
+        unique=False,
     )
     count       = models.IntegerField(
         default=0,
