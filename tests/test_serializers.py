@@ -17,10 +17,8 @@ Modules tested:
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
-import json
 import os
 import tempfile
-import six
 
 from django.core import management
 from django.utils import six
