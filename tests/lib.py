@@ -42,6 +42,18 @@ testenv = re.sub(
 )
 
 
+def tweak_for_1_10(html, before):
+    """Add "required" attribute to input element in html.
+
+    @before - a substring in html before which the required attribute
+    should be inserted.
+    """
+    if django.VERSION >= (1, 10):
+        split_at = html.rindex(before)
+        return ' required '.join([html[:split_at],
+                                  html[split_at:]])
+
+
 class TagTestManager(object):
     """
     Test mixin to help test tag models

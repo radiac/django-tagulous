@@ -1,21 +1,18 @@
 from __future__ import unicode_literals
 
-import django
 from django import forms
 from django.contrib import admin
-from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.base import ModelBase
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.utils import six
 
 from tagulous import models as tag_models
 from tagulous import forms as tag_forms
 
 
 ###############################################################################
-########################################################### Admin classes
+# Admin classes
 ###############################################################################
 
 class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
@@ -27,17 +24,16 @@ class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
         Remove the RelatedFieldWidgetWrapper from tag fields, so they don't
         display popup buttons
         """
-        formfield = super(
-            TaggedBaseModelAdminMixin, self
-        ).formfield_for_dbfield(db_field, **kwargs)
-
-        if (
-            isinstance(db_field, (tag_models.SingleTagField, tag_models.TagField))
-            and
-            isinstance(formfield.widget, admin.widgets.RelatedFieldWidgetWrapper)
-            and
-            isinstance(formfield.widget.widget, tag_forms.AdminTagWidget)
-        ):
+        formfield = super(TaggedBaseModelAdminMixin,
+                          self).formfield_for_dbfield(db_field,
+                                                      request=kwargs.pop('request', None),
+                                                      **kwargs)
+        if (isinstance(db_field,
+                       (tag_models.SingleTagField, tag_models.TagField)) and
+            isinstance(formfield.widget,
+                       admin.widgets.RelatedFieldWidgetWrapper) and
+            isinstance(formfield.widget.widget,
+                       tag_forms.AdminTagWidget)):
             formfield.widget = formfield.widget.widget
         return formfield
 
@@ -320,4 +316,3 @@ def register(model, admin_class=None, site=None, **options):
     # Register the model
     # Don't pass options - we've already dealt with that
     site.register(model, admin_class)
-
