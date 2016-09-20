@@ -418,7 +418,6 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
 
     def test_tagged_edit(self):
         "Check edit tagged model form instance works"
-        import ipdb; ipdb.set_trace()
         t1 = self.model.objects.create(name='Test 1', tags='blue, red')
 
         form = self.form(instance=t1)

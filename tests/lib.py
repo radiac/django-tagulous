@@ -52,6 +52,8 @@ def tweak_for_1_10(html, before):
         split_at = html.rindex(before)
         return ' required '.join([html[:split_at],
                                   html[split_at:]])
+    else:
+        return html
 
 
 class TagTestManager(object):
