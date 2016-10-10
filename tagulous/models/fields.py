@@ -471,6 +471,9 @@ class TagField(BaseTagField, models.ManyToManyField):
             def __init__(self, value):
                 self.pk = value
 
+            def __unicode__(self):
+                return self.pk
+
         class FakeQuerySet(object):
             """
             FakeQuerySet so m2d can call qs.values_list() (django >= 1.5)
