@@ -334,7 +334,7 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
 
 
 ###############################################################################
-# Tag model admin tools
+####### Tag model admin tools
 ###############################################################################
 class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
     """
@@ -386,9 +386,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
             ]
         )))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(
-            request,
-            self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
 
         # Check response is appropriate
@@ -576,8 +574,7 @@ class TagAdminTest(TagAdminTestManager):
         "Check the merge_tags action fails when no tags selected"
         request = MockRequest(POST=QueryDict('action=merge_tags'))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request,
-                                           self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
 
         self.assertEqual(len(msgs), 1)
@@ -591,12 +588,10 @@ class TagAdminTest(TagAdminTestManager):
         "Check the merge_tags action fails when only one tag selected"
         self.populate()
         request = MockRequest(POST=QueryDict(
-            'action=merge_tags&%s=%s' % (admin.ACTION_CHECKBOX_NAME,
-                                         self.red.pk)
+            'action=merge_tags&%s=%s' % (admin.ACTION_CHECKBOX_NAME, self.red.pk)
         ))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request,
-                                           self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
 
         self.assertEqual(len(msgs), 1)
@@ -706,8 +701,7 @@ class TagTreeAdminTest(TagAdminTestManager):
         self.populate()
 
         # Tag something with 'Pet/Mammal'
-        t1 = self.tagged_model.objects.create(name='mammal1',
-                                              tags='Pet/Mammal')
+        t1 = self.tagged_model.objects.create(name='mammal1', tags='Pet/Mammal')
         self.assertEqual(
             self.model.objects.get(name='Pet/Mammal').count, 1,
         )
@@ -775,15 +769,13 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
     """
     Test inlines of tagged models on tag modeladmins
     """
-    admin_cls = test_admin.SimpleMixedTestSingletagAdmin
-    tagged_model = test_models.SimpleMixedTest
-    model = test_models.SimpleMixedTest.singletag.tag_model
+    admin_cls       = test_admin.SimpleMixedTestSingletagAdmin
+    tagged_model    = test_models.SimpleMixedTest
+    model           = test_models.SimpleMixedTest.singletag.tag_model
 
     def setUpExtra(self):
         self.site = admin.AdminSite(name='tagulous_admin')
-        tag_admin.register(self.model,
-                           admin_class=self.admin_cls,
-                           site=self.site)
+        tag_admin.register(self.model, admin_class=self.admin_cls, site=self.site)
         self.ma = self.site._registry[self.model]
         self.cl = None
 
@@ -799,8 +791,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
     def get_url(self, name, *args, **kwargs):
         content_type = ContentType.objects.get_for_model(self.model)
         return reverse(
-            'admin:%s_%s_%s' % (content_type.app_label,
-                                content_type.model, name),
+            'admin:%s_%s_%s' % (content_type.app_label, content_type.model, name),
             args=args, kwargs=kwargs
         )
 

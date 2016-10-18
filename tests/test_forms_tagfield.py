@@ -15,7 +15,7 @@ from tests.lib import *
 
 
 ###############################################################################
-# Test form TagField
+####### Test form TagField
 ###############################################################################
 
 class FormTagFieldTest(TagTestManager, TestCase):
@@ -87,12 +87,12 @@ class FormTagFieldTest(TagTestManager, TestCase):
         class LocalTestForm(forms.Form):
             tag = tag_forms.TagField(required=False)
         form = LocalTestForm()
-        self.assertHTMLEqual(
-            six.text_type(form['tag']),
-            ('<input autocomplete="off" '
-             'data-tag-options="{&quot;required&quot;: false}" '
-             'data-tagulous="true" '
-             'id="id_tag" name="tag" type="text" />'))
+        self.assertHTMLEqual(six.text_type(form['tag']), (
+            '<input autocomplete="off" '
+            'data-tag-options="{&quot;required&quot;: false}" '
+            'data-tagulous="true" '
+            'id="id_tag" name="tag" type="text" />'
+        ))
 
     def test_render_tag_list(self):
         "Check widget renders data-tag-list"
@@ -448,21 +448,20 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'bees': 'buzz',
         }
 
-        self.assertHTMLEqual(
-            six.text_type(form['two']),
-            ('<input autocomplete="off" '
-             'data-tag-list="[]" '
-             'data-tag-options="{&quot;autocomplete_settings&quot;: '
-             '{&quot;bees&quot;: &quot;buzz&quot;}, '
-             '&quot;case_sensitive&quot;: true, '
-             '&quot;force_lowercase&quot;: true, &quot;max_count&quot;: 10, '
-             '&quot;required&quot;: false}" '
-             'data-tagulous="true" '
-             'id="id_two" name="two" type="text" />'))
-
+        self.assertHTMLEqual(six.text_type(form['two']), (
+            '<input autocomplete="off" '
+            'data-tag-list="[]" '
+            'data-tag-options="{&quot;autocomplete_settings&quot;: '
+            '{&quot;bees&quot;: &quot;buzz&quot;}, '
+            '&quot;case_sensitive&quot;: true, '
+            '&quot;force_lowercase&quot;: true, &quot;max_count&quot;: 10, '
+            '&quot;required&quot;: false}" '
+            'data-tagulous="true" '
+            'id="id_two" name="two" type="text" />'
+        ))
 
 ###############################################################################
-# Test TagField blank
+#######  Test TagField blank
 ###############################################################################
 
 class ModelFormTagFieldOptionalTest(TagTestManager, TestCase):
