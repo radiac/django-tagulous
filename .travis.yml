@@ -31,6 +31,8 @@ env:
   - TOXENV=py32-django1.8
   - TOXENV=py33-django1.8
   - TOXENV=py34-django1.8
+  - TOXENV=py34-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
+  - TOXENV=py34-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
   # Django 1.9
   - TOXENV=py27-django1.9
   - TOXENV=py34-django1.9
