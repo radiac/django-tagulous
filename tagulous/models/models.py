@@ -4,7 +4,7 @@ Tagulous tag models
 from __future__ import unicode_literals
 
 import django
-from django.db import models, router, transaction, IntegrityError
+from django.db import connection, models, router, transaction, IntegrityError
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
 try:
@@ -78,17 +78,26 @@ class TagModelQuerySet(models.query.QuerySet):
         """
         # Ignoring PEP 8 intentionally regarding conflict of min/max keywords -
         # concerns are outweighed by clarity of function argument names.
-        return self.extra(select={
-            'weight': (
-                '((count*%(upper)d)/'
-                '(SELECT MAX(count) FROM %(table)s)'
-                ')+%(lower)d'
-            ) % {
-                'upper': max-min,
-                'lower': min,
-                'table': self.model._meta.db_table,
-            }
-        })
+
+        # Build SQL
+        template = (
+            '%(floor)s((count*%(upper)d)/'
+            '(SELECT MAX(count) FROM %(table)s)'
+            ')+%(lower)d'
+        )
+        data = {
+            'floor': 'FLOOR',
+            'upper': max-min,
+            'lower': min,
+            'table': self.model._meta.db_table,
+        }
+
+        # Sqlite doesn't support FLOOR, but that's ok because it does it anyway
+        if connection.vendor == 'sqlite':
+            data['floor'] = ''
+
+        # Perform query and add it as `weight`
+        return self.extra(select={'weight': template % data})
 
     def __str__(self):
         return utils.render_tags(self)

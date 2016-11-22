@@ -200,6 +200,7 @@ Bugfix:
 * Remove ``unique=True`` from tag tree models' ``path`` field (fixes #1)
 * Implement slug field truncation (fixes #3)
 * Correct MySQL slug clash detection in tag model save
+* Correct ``.weight(..)`` to always return floored integers instead of decimals
 
 Thanks to:
 * Pamela McA'Nulty (PamelaM) for #1
