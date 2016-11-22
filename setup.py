@@ -71,7 +71,23 @@ def runtests(args):
             if engine == "pgsql":
                 DATABASE['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
             elif engine == "mysql":
-                DATABASE['ENGINE'] = "django.db.backends.mysql"
+                DATABASE['ENGINE'] = 'django.db.backends.mysql'
+
+                # Make sure test DB is going to be UTF8
+                if django.VERSION < (1, 7):
+                    DATABASE_TEST = {
+                        'TEST_CHARSET': 'utf8',
+                        'TEST_COLLATION': 'utf8_general_ci',
+                    }
+                else:
+                    DATABASE_TEST = {
+                        'TEST': {
+                            'CHARSET': 'utf8',
+                            'COLLATION': 'utf8_general_ci',
+                        }
+                    }
+                DATABASE.update(DATABASE_TEST)
+
             else:
                 raise ValueError("Unknown database engine")
 
@@ -82,7 +98,7 @@ def runtests(args):
 
 
         settings.configure(
-            DATABASES={'default': DATABASE},
+            DATABASES={'default': DATABASE, 'test': DATABASE},
             INSTALLED_APPS=INSTALLED_APPS,
             MIDDLEWARE_CLASSES=[
                 'django.middleware.common.CommonMiddleware',
