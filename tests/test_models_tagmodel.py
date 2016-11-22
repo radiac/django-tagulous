@@ -367,10 +367,10 @@ class TagModelTest(TagTestManager, TestCase):
 
         # Create object with conventional references to tags
         t1 = self.create(
-            self.model_nontag, name="Non-tag field", fk=tag1, mm=[tag2]
+            self.model_nontag, name="CharField", fk=tag1, mm=[tag2]
         )
         self.assertInstanceEqual(
-            t1, name="Non-tag field", fk=tag1, mm=[tag2]
+            t1, name="CharField", fk=tag1, mm=[tag2]
         )
 
         # No change to count
