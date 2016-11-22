@@ -478,7 +478,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         slug_base = slug_base[:slug_max_length - settings.SLUG_TRUNCATE_UNIQUE]
         try:
             last = cls.objects.filter(
-                slug__regex="^%s_\d+$" % slug_base
+                slug__regex="^%s_[0-9]+$" % slug_base
             ).latest('slug')
         except cls.DoesNotExist:
             # No numbered version of the slug exists

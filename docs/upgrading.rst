@@ -199,6 +199,7 @@ are available by installing the master branch from github (see
 Bugfix:
 * Remove ``unique=True`` from tag tree models' ``path`` field (fixes #1)
 * Implement slug field truncation (fixes #3)
+* Correct MySQL slug clash detection in tag model save
 
 Thanks to:
 * Pamela McA'Nulty (PamelaM) for #1
