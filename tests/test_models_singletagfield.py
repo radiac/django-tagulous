@@ -724,6 +724,7 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
         t1.save()
         self.assertTagModel(self.test_model.protect_all_false, {})
 
+    @skip_if_mysql
     def test_case_sensitive_true(self):
         self.assertTagModel(self.test_model.case_sensitive_true, {
             'Mr':   0,
@@ -734,6 +735,7 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
             'mr':   1,
         })
 
+    @skip_if_mysql
     def test_case_sensitive_false(self):
         self.assertTagModel(self.test_model.case_sensitive_false, {
             'Mr':   0,

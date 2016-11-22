@@ -90,6 +90,14 @@ django documentation for more information.
 
 See also :ref:`option_force_lowercase`
 
+.. note::
+
+    MySQL struggles to offer string case sensitivity at the database level -
+    see the `django documentation <https://docs.djangoproject.com/en/dev/ref/databases/#mysql-collation>`_
+    for more details. Tagulous therefore offers no formal support for this
+    option when running on MySQL - the relevant tests are bypassed, and you
+    should assume that ``case_sensitive`` is always ``False``. Patches welcome.
+
 Default: ``False``
 
 

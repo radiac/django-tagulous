@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
     ] + tagulous.models.migrations.add_unique_field(
         model_name='_tagulous_migrationtestmodel_tags',
         name='path',
-        field=models.TextField(unique=True),
+        field=models.TextField(),
         preserve_default=False,
         set_fn=lambda obj: setattr(obj, 'path', six.text_type(obj.pk)),
     ) + [

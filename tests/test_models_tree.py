@@ -203,10 +203,20 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         t1 = self.tag_model.objects.get(name='One')
         t2 = self.tag_model.objects.get(name='One/Two')
         t3 = self.tag_model.objects.get(name='One/Two/Three')
-        self.assertTreeTag(t1, name='One', slug='1', path='1')
-        self.assertTreeTag(t2, name='One/Two', slug='2', path='1/2', parent=t1)
+        t1_slug = six.text_type(t1.pk)
+        t2_slug = six.text_type(t2.pk)
+        t3_slug = six.text_type(t3.pk)
+        self.assertRegex(t1_slug, r'^\d+$')
+        self.assertRegex(t2_slug, r'^\d+$')
+        self.assertRegex(t3_slug, r'^\d+$')
+        self.assertTreeTag(t1, name='One', slug=t1_slug, path=t1_slug)
         self.assertTreeTag(
-            t3, name='One/Two/Three', slug='3', path='1/2/3', parent=t2
+            t2, name='One/Two', slug=t2_slug,
+            path='{}/{}'.format(t1_slug, t2_slug), parent=t1,
+        )
+        self.assertTreeTag(
+            t3, name='One/Two/Three', slug=t3_slug,
+            path='{}/{}/{}'.format(t1_slug, t2_slug, t3_slug), parent=t2
         )
 
         # Rebuild and re-test

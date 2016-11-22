@@ -378,6 +378,7 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         self.assertEqual(qs1[2].pk, self.o3.pk)
 
 
+@skip_if_mysql
 class ModelTaggedQuerysetOptionsSingleTest(TagTestManager, TestCase):
     """
     Test tag options on tagged model querysets, for SingleTagField
@@ -443,6 +444,7 @@ class ModelTaggedQuerysetOptionsSingleTest(TagTestManager, TestCase):
         self.assertEqual(qs1.count(), 0)
 
 
+@skip_if_mysql
 class ModelTaggedQuerysetOptionsTest(TagTestManager, TestCase):
     """
     Test tag options on tagged model querysets, for TagField

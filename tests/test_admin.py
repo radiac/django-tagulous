@@ -863,8 +863,8 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         i_close = html.index('>', i_name)
         self.assertHTMLEqual(html[i_open:i_close + 1], (
             '<input type="hidden" name="simplemixedtest_set-0-singletag" '
-            'value="1" id="id_simplemixedtest_set-0-singletag" />'
-        ))
+            'value="%d" id="id_simplemixedtest_set-0-singletag" />'
+        ) % obj1.singletag.pk)
 
 
     def test_edit_saves(self):

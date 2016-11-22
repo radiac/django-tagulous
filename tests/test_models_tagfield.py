@@ -1249,6 +1249,7 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         t1.save()
         self.assertTagModel(self.test_model.protect_all_false, {})
 
+    @skip_if_mysql
     def test_case_sensitive_true(self):
         self.assertTagModel(self.test_model.case_sensitive_true, {
             'Adam':     0,
@@ -1259,6 +1260,7 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
             'adam':     1,
         })
 
+    @skip_if_mysql
     def test_case_sensitive_false(self):
         self.assertTagModel(self.test_model.case_sensitive_false, {
             'Adam':     0,
@@ -1268,6 +1270,7 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
             'Adam':     1,
         })
 
+    @skip_if_mysql
     def test_cmp_case_sensitive_true(self):
         "Test case sensitive matches"
         t1 = self.create(
@@ -1277,6 +1280,7 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         self.assertNotEqual(t1.case_sensitive_true, 'django, HTML')
         self.assertNotEqual(t1.case_sensitive_true, 'Django, html')
 
+    @skip_if_mysql
     def test_contains_case_sensitive_true(self):
         "Check case sensitive __contains__"
         t1 = self.create(
@@ -1292,6 +1296,7 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         self.assertFalse('django' in t1.case_sensitive_true)
         self.assertFalse('Html' in t1.case_sensitive_true)
 
+    @skip_if_mysql
     def test_cmp_case_sensitive_false(self):
         """
         Test case insensitive matches

@@ -8,7 +8,7 @@ import sys
 import unittest
 
 import django
-from django.db import models
+from django.db import connection, models
 from django.contrib.auth.models import User
 from django.core import exceptions
 from django.test import TestCase, TransactionTestCase, testcases
@@ -109,6 +109,12 @@ class TagTestManager(object):
                 field.add(obj)
 
         return item
+
+    def assertRegex(self, text, expected_regex, msg="Regex didn't match"):
+        # Implement python 3.2's assertRegex for all
+        if isinstance(text, six.string_types):
+            expected_regex = re.compile(expected_regex)
+        self.assertTrue(expected_regex.search(text), msg=msg)
 
     def assertInstanceEqual(self, instance, **kwargs):
         # First, reload instance
@@ -280,3 +286,8 @@ class Capturing(list):
         )
         sys.stdout = self._stdout
         sys.stderr = self._stderr
+
+def skip_if_mysql(fn):
+    if connection.vendor == 'mysql':
+        return unittest.skip('MySQL does not support tested feature')(fn)
+    return fn

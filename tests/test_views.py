@@ -312,6 +312,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             self.assertEqual(data['results'][i], 'tag1%d' % i)
         self.assertEqual(data['more'], False)
 
+    @skip_if_mysql
     def test_case_sensitive_false(self):
         "Test autocomplete view on a tag model with case_sensitive=False"
         # Add some tags

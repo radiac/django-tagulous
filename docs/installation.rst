@@ -7,7 +7,7 @@ Requirements
 
 These packages are required:
 
-* `Django <https://www.djangoproject.com/>`_ 1.4.2 to 1.9a1, on Python 2.7 to
+* `Django <https://www.djangoproject.com/>`_ 1.4.2 to 1.9, on Python 2.7 to
   3.5.
 
 These packages are recommended, but optional:
@@ -69,15 +69,19 @@ Instructions
    You may also want to change some Tagulous settings here - see the global
    :ref:`max_length settings <settings_max_length>` for details.
 
-   .. note::
-        If you use MySQL you'll want to tweak the max lengths for fields - see
-        :ref:
-
 You are now ready to add Tagulous fields to your models - see
 :doc:`models/index`, :doc:`forms` and :doc:`usage`.
 
 When you want to upgrade your Tagulous installation in the future, check
 :doc:`upgrading` to see if there are any special actions that you need to take.
+
+.. note::
+    If you use MySQL there are some limitations you should be aware of - see:
+
+    * the setting :ref:`settings_max_length` for limitations of maximum tag
+      lengths
+    * the tag option :ref:`option_case_sensitive` for limitations of case
+      sensitivity.
 
 
 .. _settings:

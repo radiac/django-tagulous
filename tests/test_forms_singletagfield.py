@@ -386,6 +386,7 @@ class ModelFormSingleTagFieldOptionsTest(TagTestManager, TestCase):
         self.form = test_forms.SingleTagFieldOptionsModelForm
         self.model = test_models.SingleTagFieldOptionsModel
 
+    @skip_if_mysql
     def test_case_sensitive_true(self):
         "Test form SingleTagField case_sensitive true"
         # Prep tag model
@@ -413,6 +414,7 @@ class ModelFormSingleTagFieldOptionsTest(TagTestManager, TestCase):
             'mr': 1,
         })
 
+    @skip_if_mysql
     def test_case_sensitive_false(self):
         "Test form SingleTagField case_sensitive false"
         # Prep tag model
