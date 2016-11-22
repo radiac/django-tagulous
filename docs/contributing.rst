@@ -54,6 +54,12 @@ Tox will also generate a ``coverage`` HTML report.
 You can also use ``detox`` to run the tests concurrently, although you will
 need to run ``tox -e report`` again afterwards to generate the coverage report.
 
+To use a different database (mysql, postgres etc) use the environment variables
+``DATABASE_ENGINE``, ``DATABASE_NAME``, ``DATABASE_USER``,
+``DATABASE_PASSWORD``,  ``DATABASE_HOST`` and ``DATABASE_PORT``, eg::
+
+    DATABASE_ENGINE=pgsql DATABASE_NAME=tagulous_test [...] tox
+
 Most Tagulous python modules have corresponding test modules, with test classes
 which subclass ``tests.lib.TagTestManager``. They use test apps defined under
 the ``tests`` dir where required.
