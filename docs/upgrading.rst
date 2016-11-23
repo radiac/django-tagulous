@@ -193,7 +193,7 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.12.0, 2016-08-29
+0.12.0, 2016-
 ------------------
 
 Bugfix:

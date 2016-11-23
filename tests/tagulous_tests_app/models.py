@@ -151,6 +151,7 @@ class SingleTagFieldOptionsModel(models.Model):
         # Must set a short verbose name - tagulous auto-generated model
         # verbose names will be too long otherwise
         verbose_name = 'STFOM'
+        ordering = ('name',)
 
 
 ###############################################################################
@@ -252,6 +253,8 @@ class TagFieldOptionsModel(models.Model):
     class Meta:
         # Set a short verbose name for tagulous auto-generated verbose name
         verbose_name = 'TFOM'
+        ordering = ('name',)
+
 
 
 ###############################################################################
@@ -284,6 +287,8 @@ class MixedTest(models.Model):
         MixedTestTagModel, related_name='mixed_tags',
         blank=True,
     )
+    class Meta:
+        ordering = ('name',)
 
 class MixedRefTest(models.Model):
     """
