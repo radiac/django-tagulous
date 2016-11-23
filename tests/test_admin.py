@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import re
 import copy
 
-from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib import admin
 from django.contrib import messages
@@ -17,6 +16,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
 from django.http import HttpRequest, QueryDict
 from django.utils import six
+
+# Django 1.10 deprecates urlresolvers
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 from tests.lib import *
 

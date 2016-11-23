@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 import django
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import capfirst
 
 from tagulous import constants
@@ -464,6 +465,7 @@ class TagField(BaseTagField, models.ManyToManyField):
         where the pk attribute is the tag string - a bit of a hack, but avoids
         monkey-patching Django.
         """
+        @python_2_unicode_compatible
         class FakeObject(object):
             """
             FakeObject so m2d can check obj.pk (django <= 1.4)
@@ -471,7 +473,7 @@ class TagField(BaseTagField, models.ManyToManyField):
             def __init__(self, value):
                 self.pk = value
 
-            def __unicode__(self):
+            def __str__(self):
                 return self.pk
 
         class FakeQuerySet(object):

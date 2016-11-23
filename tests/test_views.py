@@ -8,7 +8,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from tests.lib import *
 
-from django.core.urlresolvers import reverse
 from django.test import Client
 from django.utils import six
 
@@ -17,6 +16,12 @@ try:
     import json
 except ImportError:
    from django.utils import simplejson as json
+
+# Django 1.10 deprecates urlresolvers
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 client = Client()
 

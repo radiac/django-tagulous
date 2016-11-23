@@ -10,8 +10,8 @@ from __future__ import unicode_literals
 import django
 from django.conf.urls import include, url
 
-if django.VERSION < (1, 9):
-    # Django 1.8 or earlier
+# Django 1.8 removes patterns
+if django.VERSION < (1, 8):
     from django.conf.urls import patterns
     mk_urlpatterns = lambda *urls: patterns('', *urls)
 else:
