@@ -410,14 +410,11 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         )
 
         # Check HTML up to first <option> tag
-        self.assertHTMLEqual(
-            content_form[:content_form.index('<option')],
-            tweak_for_1_10(
-                html=('<form action="" method="POST">'
-                      '<p><label for="id_merge_to">Merge to:</label>'
-                      '<select id="id_merge_to" name="merge_to">'),
-                before='name="merge_to"')
-        )
+        self.assertHTMLEqual(content_form[:content_form.index('<option')], (
+            '<form action="" method="POST">'
+            '<p><label for="id_merge_to">Merge to:</label>'
+            '<select id="id_merge_to" {{required}}name="merge_to">'
+        ))
 
         # Can't be sure of options order
         options_raw = content_form[
