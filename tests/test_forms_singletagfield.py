@@ -71,13 +71,15 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         class LocalTestForm(forms.Form):
             tag = tag_forms.SingleTagField()
         form = LocalTestForm()
-        self.assertHTMLEqual(six.text_type(form['tag']), (
-            '<input autocomplete="off" '
-            'data-tag-options="{'
-            '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
-            'data-tag-type="single" data-tagulous="true" '
-            'id="id_tag" name="tag" type="text" />'
-        ))
+        self.assertHTMLEqual(
+            six.text_type(form['tag']),
+            tweak_for_1_10(
+                ('<input autocomplete="off" '
+                 'data-tag-options="{'
+                 '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
+                 'data-tag-type="single" data-tagulous="true" '
+                 'id="id_tag" name="tag" type="text" />'),
+                'type="text"'))
 
     def test_render_tag_optional(self):
         "Check widget renders correctly when field not required"
@@ -99,15 +101,17 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
                 autocomplete_tags=['one', 'two', 'three'],
             )
         form = LocalTestForm()
-        self.assertHTMLEqual(six.text_type(form['tag']), (
-            '<input autocomplete="off" '
-            'data-tag-options="{'
-            '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
-            'data-tag-type="single" data-tagulous="true" '
-            'data-tag-list="'
-            '[&quot;one&quot;, &quot;two&quot;, &quot;three&quot;]" '
-            'id="id_tag" name="tag" type="text" />'
-        ))
+        self.assertHTMLEqual(
+            six.text_type(form['tag']),
+            tweak_for_1_10(
+                html=('<input autocomplete="off" '
+                      'data-tag-options="{'
+                      '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
+                      'data-tag-type="single" data-tagulous="true" '
+                      'data-tag-list="'
+                      '[&quot;one&quot;, &quot;two&quot;, &quot;three&quot;]" '
+                      'id="id_tag" name="tag" type="text" />'),
+                before='type="text"'))
 
     def test_render_tag_url(self):
         "Check widget renders data-tag-url"
@@ -119,27 +123,31 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
                 ),
             )
         form = LocalTestForm()
-        self.assertHTMLEqual(six.text_type(form['tag']), (
-            '<input autocomplete="off" '
-            'data-tag-options="{'
-            '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
-            'data-tag-type="single" data-tagulous="true" '
-            'data-tag-url="'
-            '/tagulous_tests_app/views/" '
-            'id="id_tag" name="tag" type="text" />'
-        ))
+        self.assertHTMLEqual(
+            six.text_type(form['tag']),
+            tweak_for_1_10(
+                html=('<input autocomplete="off" '
+                      'data-tag-options="{'
+                      '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
+                      'data-tag-type="single" data-tagulous="true" '
+                      'data-tag-url="'
+                      '/tagulous_tests_app/views/" '
+                      'id="id_tag" name="tag" type="text" />'),
+                before='type="text"'))
 
     def test_render_value(self):
         "Check widget renders value"
         form = test_forms.SingleTagFieldForm(data={'singletag': 'Mr'})
-        self.assertHTMLEqual(six.text_type(form['singletag']), (
-            '<input autocomplete="off" '
-            'data-tag-options="{'
-            '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
-            'data-tag-type="single" data-tagulous="true" '
-            'id="id_singletag" name="singletag" type="text" '
-            'value="Mr" />'
-        ))
+        self.assertHTMLEqual(
+            six.text_type(form['singletag']),
+            tweak_for_1_10(
+                html=('<input autocomplete="off" '
+                      'data-tag-options="{'
+                      '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
+                      'data-tag-type="single" data-tagulous="true" '
+                      'id="id_singletag" name="singletag" type="text" '
+                      'value="Mr" />'),
+                before='type="text"'))
 
 
 ###############################################################################
@@ -246,39 +254,43 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
             'Mrs': 0,
         })
         form = self.form(data={'name': 'Test 1', 'title': 'Mrs'})
-        self.assertHTMLEqual(six.text_type(form['title']), (
-            '<input autocomplete="off" '
-            'data-tag-options="{'
-            '&quot;required&quot;: false, &quot;max_count&quot;: 1}" '
-            'data-tag-type="single" data-tagulous="true" '
-            'data-tag-list="[&quot;Mr&quot;, &quot;Mrs&quot;]" '
-            'id="id_title" name="title" type="text" value="Mrs" />'
-        ))
+        self.assertHTMLEqual(
+            six.text_type(form['title']),
+            ('<input autocomplete="off" '
+             'data-tag-options="{'
+             '&quot;required&quot;: false, &quot;max_count&quot;: 1}" '
+             'data-tag-type="single" data-tagulous="true" '
+             'data-tag-list="[&quot;Mr&quot;, &quot;Mrs&quot;]" '
+             'id="id_title" name="title" type="text" value="Mrs" />'))
 
     def test_initial_string(self):
         "Check initial string"
         form = test_forms.SingleTagFieldForm(initial={'singletag': 'Mr'})
-        self.assertHTMLEqual(six.text_type(form['singletag']), (
-            '<input autocomplete="off" '
-            'data-tag-options="{'
-            '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
-            'data-tag-type="single" data-tagulous="true" '
-            'id="id_singletag" name="singletag" type="text" '
-            'value="Mr" />'
-        ))
+        self.assertHTMLEqual(
+            six.text_type(form['singletag']),
+            tweak_for_1_10(
+                html=('<input autocomplete="off" '
+                      'data-tag-options="{'
+                      '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
+                      'data-tag-type="single" data-tagulous="true" '
+                      'id="id_singletag" name="singletag" type="text" '
+                      'value="Mr" />'),
+                before='type="text"'))
 
     def test_initial_tag(self):
         "Check initial tag"
         t1 = self.tag_model.objects.create(name='Mr')
         form = test_forms.SingleTagFieldForm(initial={'singletag': t1})
-        self.assertHTMLEqual(six.text_type(form['singletag']), (
-            '<input autocomplete="off" '
-            'data-tag-options="{'
-            '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
-            'data-tag-type="single" data-tagulous="true" '
-            'id="id_singletag" name="singletag" type="text" '
-            'value="Mr" />'
-        ))
+        self.assertHTMLEqual(
+            six.text_type(form['singletag']),
+            tweak_for_1_10(
+                html=('<input autocomplete="off" '
+                      'data-tag-options="{'
+                      '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
+                      'data-tag-type="single" data-tagulous="true" '
+                      'id="id_singletag" name="singletag" type="text" '
+                      'value="Mr" />'),
+                before='type="text"'))
 
     def test_tagged_edit(self):
         "Check edit tagged model form instance works"

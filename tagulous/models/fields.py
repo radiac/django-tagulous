@@ -11,16 +11,13 @@ from __future__ import unicode_literals
 
 import django
 from django.db import models
-from django.utils import six
 from django.utils.text import capfirst
 
 from tagulous import constants
-from tagulous import settings
 from tagulous import forms
 from tagulous.models.options import TagOptions
 from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
 from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
-from tagulous.utils import render_tags
 
 
 ###############################################################################
@@ -474,6 +471,9 @@ class TagField(BaseTagField, models.ManyToManyField):
             def __init__(self, value):
                 self.pk = value
 
+            def __unicode__(self):
+                return self.pk
+
         class FakeQuerySet(object):
             """
             FakeQuerySet so m2d can call qs.values_list() (django >= 1.5)
@@ -489,6 +489,12 @@ class TagField(BaseTagField, models.ManyToManyField):
                 """
                 yield self.obj
 
+            def __len__(self):
+                return 1
+
+            def __getitem__(self, key):
+                return self.obj
+
             def values_list(self, *fields, **kwargs):
                 """
                 Ignores arguments and returns an empty list with the object.pk
@@ -498,7 +504,6 @@ class TagField(BaseTagField, models.ManyToManyField):
         return FakeQuerySet(FakeObject(
             getattr(obj, self.attname).get_tag_string()
         ))
-
 
     def formfield(self, form_class=forms.TagField, **kwargs):
         """

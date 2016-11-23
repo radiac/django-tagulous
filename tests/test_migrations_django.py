@@ -13,9 +13,9 @@ import sys
 import shutil
 import warnings
 
+import django
 from django.core.management import call_command
 from django.db import DatabaseError
-from django.utils import six
 
 from tests.lib import *
 from tests import tagulous_tests_migration
@@ -30,11 +30,11 @@ migrations_name = 'migrations_%s' % testenv
 migrations_module = 'tests.%s.%s' % (app_name, migrations_name)
 migrations_path = None
 
-# Django 1.8 has extra lines
-RENDERING_MODEL_STATES = [] if django.VERSION < (1, 8) else [
-    '  Rendering model states... DONE'
-]
-
+# Django 1.8, 1.9 have extra lines
+if django.VERSION >= (1, 8) and django.VERSION < (1, 10):
+    RENDERING_MODEL_STATES = ['  Rendering model states... DONE']
+else:
+    RENDERING_MODEL_STATES = []
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Util functions
@@ -302,6 +302,7 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
 
         # Check they apply correctly
         output = migrate_app()
+
         self.assertEqual(output, [
             'Operations to perform:',
             '  Apply all migrations: tagulous_tests_migration',

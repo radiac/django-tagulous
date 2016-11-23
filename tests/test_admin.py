@@ -336,7 +336,6 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
 ###############################################################################
 ####### Tag model admin tools
 ###############################################################################
-
 class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
     """
     Test Admin registration of a tag model
@@ -408,11 +407,11 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         # Check HTML up to first <option> tag
         self.assertHTMLEqual(
             content_form[:content_form.index('<option')],
-            (
-                '<form action="" method="POST">'
-                '<p><label for="id_merge_to">Merge to:</label>'
-                '<select id="id_merge_to" name="merge_to">'
-            )
+            tweak_for_1_10(
+                html=('<form action="" method="POST">'
+                      '<p><label for="id_merge_to">Merge to:</label>'
+                      '<select id="id_merge_to" name="merge_to">'),
+                before='name="merge_to"')
         )
 
         # Can't be sure of options order
@@ -694,7 +693,7 @@ class TagTreeAdminTest(TagAdminTestManager):
 
         self.do_test_merge_form(
             tags=self.model.objects.filter(name__in=tag_names),
-            excluded_tags = excluded_tags,
+            excluded_tags=excluded_tags,
             is_tree=True,
         )
 
@@ -847,6 +846,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         )
 
         response = self.client.get(self.get_url('change', obj1.singletag.pk))
+
         self.assertContains(response, '<h2>Simple mixed tests</h2>')
         self.assertContains(response, 'id="id_simplemixedtest_set-TOTAL_FORMS')
         self.assertContains(response, 'id="id_simplemixedtest_set-0-singletag"')
@@ -924,4 +924,3 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.assertTagModel(self.tagged_model.tags.tag_model, {
             'tag1': 1, 'tag2e': 1, 'tag3': 1, 'tag4e': 1,
         })
-
