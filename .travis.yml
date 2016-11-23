@@ -37,3 +37,7 @@ env:
   - TOXENV=py27-django1.9
   - TOXENV=py34-django1.9
   - TOXENV=py35-django1.9
+  # Django 1.10
+  - TOXENV=py27-django1.10
+  - TOXENV=py34-django1.10
+  - TOXENV=py35-django1.10
