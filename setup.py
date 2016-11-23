@@ -81,7 +81,7 @@ def runtests(args):
 
         # Backwards compatibility for middleware
         if django.VERSION < (1, 10):
-            settings['MIDDLEWARE_CLASSES'] = settings['MIDDLEWARE']
+            SETTINGS['MIDDLEWARE_CLASSES'] = SETTINGS['MIDDLEWARE']
 
         # Build database settings
         DATABASE = {
