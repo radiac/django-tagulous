@@ -196,6 +196,9 @@ are available by installing the master branch from github (see
 0.12.0, 2016-
 ------------------
 
+Feature:
+* Add Django 1.10 support (fixes #18, #20)
+
 Bugfix:
 * Remove ``unique=True`` from tag tree models' ``path`` field (fixes #1)
 * Implement slug field truncation (fixes #3)
@@ -204,6 +207,8 @@ Bugfix:
 
 Thanks to:
 * Pamela McA'Nulty (PamelaM) for #1
+* Robert Erb (rerb) at AASHE (http://www.aashe.org/) for doing most of the work
+  for Django 1.10 support (#18, #20)
 
 
 0.11.1, 2015-10-05
