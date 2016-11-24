@@ -22,6 +22,8 @@ You can also use Tagulous form fields outside model forms by using the
 :ref:`form_singletagfield` and :ref:`form_tagfield` form fields - see the
 :ref:`example_form` example for how this works in practice.
 
+Tag forms fields take standard `Django core field arguments <https://docs.djangoproject.com/en/dev/ref/forms/fields/#core-field-arguments>`_
+such as ``label`` and ``required``.
 
 
 .. _form_singletagfield:

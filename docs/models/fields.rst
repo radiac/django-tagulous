@@ -45,6 +45,9 @@ The ``related_name`` will default to ``<field>_set``, as is normal for a
 ``ForeignKey`` or ``ManyToManyField``. If using the same tag table on multiple
 fields, you will need to set this to something else to avoid clashes.
 
+Tag fields obey standard ``null`` and ``blank`` options; to make an optional
+model tag field set ``null=True`` and ``blank=True``.
+
 
 .. _field_auto_model:
 
