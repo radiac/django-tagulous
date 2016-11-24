@@ -8,6 +8,7 @@ For tag model manager, look in tagulous.models.models
 """
 from __future__ import unicode_literals
 
+import django
 from django.core import exceptions
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
@@ -68,11 +69,20 @@ class SingleTagManager(object):
         Get the actual value of the instance according to the FK descriptor
         """
         # A ForeignKey would be on the .attname (field_id), but only
-        # if it has been set, otherwise the attribute will not exist
-        if hasattr(self.instance, self.field.attname):
+        # if it has been set, otherwise the attribute will not exist.
+        #
+        # In Django <1.9 we could just check for the attribute, but 1.10
+        # sets a DeferredAttribute on the field id to load it on demand, so
+        # we need to check the dict directly instead
+        check_value = self.field.attname in self.instance.__dict__
+
+        # Check the value if we need to
+        if check_value:
             try:
                 value = self.descriptor.descriptor.__get__(self.instance)
-            except self.tag_model.DoesNotExist:
+            except (self.tag_model.DoesNotExist, self.instance.DoesNotExist):
+                # Django 1.10 returns instance.DoesNotExist, so check for both.
+                #
                 # If the tag is deleted but nobody tells this instance; because
                 # the real cache is kept empty, this will fail. Try our cache,
                 # and if it's set clear the pk.

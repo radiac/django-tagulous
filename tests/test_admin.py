@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import re
 import copy
 
-from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib import admin
 from django.contrib import messages
@@ -17,6 +16,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
 from django.http import HttpRequest, QueryDict
 from django.utils import six
+
+# Django 1.10 deprecates urlresolvers
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 from tests.lib import *
 
@@ -65,16 +70,17 @@ class AdminTestManager(object):
             return
 
         # Try to clear the resolver cache
-        try:
+        if django.VERSION < (1, 7):
             # Django 1.4 - 1.6
             from django.core.urlresolvers import _resolver_cache
-        except ImportError:
-            # Django 1.7+
-            from django.core.urlresolvers import get_resolver
+            _resolver_cache.clear()
+        else:
+            if django.VERSION < (1, 10):
+                from django.core.urlresolvers import get_resolver
+            else:
+                from django.urls import get_resolver
             if hasattr(get_resolver, 'cache_clear'):
                 get_resolver.cache_clear()
-        else:
-            _resolver_cache.clear()
 
         # Store the old urls and make a copy
         self.old_urls = test_urls.urlpatterns
@@ -336,7 +342,6 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
 ###############################################################################
 ####### Tag model admin tools
 ###############################################################################
-
 class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
     """
     Test Admin registration of a tag model
@@ -406,14 +411,11 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         )
 
         # Check HTML up to first <option> tag
-        self.assertHTMLEqual(
-            content_form[:content_form.index('<option')],
-            (
-                '<form action="" method="POST">'
-                '<p><label for="id_merge_to">Merge to:</label>'
-                '<select id="id_merge_to" name="merge_to">'
-            )
-        )
+        self.assertHTMLEqual(content_form[:content_form.index('<option')], (
+            '<form action="" method="POST">'
+            '<p><label for="id_merge_to">Merge to:</label>'
+            '<select id="id_merge_to" {{required}}name="merge_to">'
+        ))
 
         # Can't be sure of options order
         options_raw = content_form[
@@ -694,7 +696,7 @@ class TagTreeAdminTest(TagAdminTestManager):
 
         self.do_test_merge_form(
             tags=self.model.objects.filter(name__in=tag_names),
-            excluded_tags = excluded_tags,
+            excluded_tags=excluded_tags,
             is_tree=True,
         )
 
@@ -847,6 +849,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         )
 
         response = self.client.get(self.get_url('change', obj1.singletag.pk))
+
         self.assertContains(response, '<h2>Simple mixed tests</h2>')
         self.assertContains(response, 'id="id_simplemixedtest_set-TOTAL_FORMS')
         self.assertContains(response, 'id="id_simplemixedtest_set-0-singletag"')
@@ -924,4 +927,3 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.assertTagModel(self.tagged_model.tags.tag_model, {
             'tag1': 1, 'tag2e': 1, 'tag3': 1, 'tag4e': 1,
         })
-

@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from django import forms
-from django.core.urlresolvers import reverse, NoReverseMatch
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import EMPTY_VALUES
@@ -16,6 +15,12 @@ try:
     import json
 except ImportError: # pragma: no cover
    from django.utils import simplejson as json
+
+# Django 1.10 deprecates urlresolvers
+try:
+    from django.urls import reverse, NoReverseMatch
+except ImportError:
+    from django.core.urlresolvers import reverse, NoReverseMatch
 
 from tagulous import settings
 from tagulous.models import options

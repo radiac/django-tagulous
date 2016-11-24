@@ -77,7 +77,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
-            'id="id_tag" name="tag" type="text" />'
+            'id="id_tag" name="tag" {{required}}type="text" />'
         ))
 
     def test_render_tag_optional(self):
@@ -105,7 +105,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'data-tag-list="'
             '[&quot;one&quot;, &quot;two&quot;, &quot;three&quot;]" '
-            'id="id_tag" name="tag" type="text" />'
+            'id="id_tag" name="tag" {{required}}type="text" />'
         ))
 
     def test_render_tag_url(self):
@@ -124,7 +124,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'data-tag-url="'
             '/tagulous_tests_app/autocomplete/unlimited/" '
-            'id="id_tag" name="tag" type="text" />'
+            'id="id_tag" name="tag" {{required}}type="text" />'
         ))
 
     def test_render_value(self):
@@ -134,7 +134,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
-            'id="id_tags" name="tags" type="text" '
+            'id="id_tags" name="tags" {{required}}type="text" '
             'value="run, walk" />'
         ))
 
@@ -187,7 +187,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
             '&quot;, &quot;bees&quot;: &quot;buzz&quot;, &quot;cats&quot;: '
             '&quot;purr&quot;}, &quot;required&quot;: true}" '
             'data-tagulous="true" '
-            'id="id_tags" name="tags" type="text" />'
+            'id="id_tags" name="tags" {{required}}type="text" />'
         ))
 
     def test_invalid_prepare_value(self):
@@ -320,7 +320,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
 
         # Change default
         field2 = self.model.tags.formfield(
-            tag_options=tag_models.TagOptions(case_sensitive= True)
+            tag_options=tag_models.TagOptions(case_sensitive=True)
         )
         self.assertEqual(field2.tag_options.case_sensitive, True)
 
@@ -360,7 +360,8 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'data-tag-list="'
             '[&quot;blue&quot;, &quot;red&quot;, &quot;yellow&quot;]" '
-            'id="id_tags" name="tags" type="text" value="red, blue" />'
+            'id="id_tags" name="tags" {{required}}type="text" '
+            'value="red, blue" />'
         ))
 
     def test_initial_string(self):
@@ -370,7 +371,8 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
-            'id="id_tags" name="tags" type="text" value="red, blue" />'
+            'id="id_tags" name="tags" {{required}}type="text" '
+            'value="red, blue" />'
         ))
 
     def test_initial_tag_list(self):
@@ -382,32 +384,37 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
-            'id="id_tags" name="tags" type="text" value="blue, red" />'
+            'id="id_tags" name="tags" {{required}}type="text" '
+            'value="blue, red" />'
         ))
 
     def test_initial_tag_queryset(self):
         "Check initial tag queryset"
-        t1 = self.tag_model.objects.create(name='red')
-        t2 = self.tag_model.objects.create(name='blue')
+        self.tag_model.objects.create(name='red')
+        self.tag_model.objects.create(name='blue')
         tags = self.tag_model.objects.all()
         form = test_forms.TagFieldForm(initial={'tags': tags})
         self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
-            'id="id_tags" name="tags" type="text" value="blue, red" />'
+            'id="id_tags" name="tags" {{required}}type="text" '
+            'value="blue, red" />'
         ))
 
     def test_tagged_edit(self):
         "Check edit tagged model form instance works"
         t1 = self.model.objects.create(name='Test 1', tags='blue, red')
+
         form = self.form(instance=t1)
+
         self.assertHTMLEqual(six.text_type(form['tags']), (
             '<input autocomplete="off" '
             'data-tag-list="[&quot;blue&quot;, &quot;red&quot;]" '
             'data-tag-options="{&quot;required&quot;: true}" '
             'data-tagulous="true" '
-            'id="id_tags" name="tags" type="text" value="blue, red" />'
+            'id="id_tags" name="tags" {{required}}type="text" '
+            'value="blue, red" />'
         ))
 
     def test_tagmeta_without_autocomplete_settings(self):
@@ -436,7 +443,6 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
             'data-tagulous="true" '
             'id="id_two" name="two" type="text" />'
         ))
-
 
 ###############################################################################
 #######  Test TagField blank

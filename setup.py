@@ -15,40 +15,56 @@ def runtests(args):
     from django.core.management import execute_from_command_line
 
     if not settings.configured:
-        INSTALLED_APPS = [
-            'django.contrib.auth',
-            'django.contrib.admin',
-            'django.contrib.sessions',
-            'django.contrib.contenttypes',
-            'django.contrib.messages',
-            'tagulous',
-            'tests',
-            'tests.tagulous_tests_app',
-            'tests.tagulous_tests_app2',
-            'tests.tagulous_tests_migration',
-        ]
+        testenv = re.sub(
+            r'[^a-zA-Z0-9]', '_',
+            os.environ.get('TOXENV', '_'.join(str(v) for v in django.VERSION)),
+        )
 
-        SERIALIZATION_MODULES = {
-            'xml': 'tagulous.serializers.xml_serializer',
-            'json': 'tagulous.serializers.json',
-            'python': 'tagulous.serializers.python',
-        }
+        SETTINGS = dict(
+            INSTALLED_APPS=[
+                'django.contrib.auth',
+                'django.contrib.admin',
+                'django.contrib.sessions',
+                'django.contrib.contenttypes',
+                'django.contrib.messages',
+                'tagulous',
+                'tests',
+                'tests.tagulous_tests_app',
+                'tests.tagulous_tests_app2',
+                'tests.tagulous_tests_migration',
+            ],
+            MIDDLEWARE=[
+                'django.middleware.common.CommonMiddleware',
+                'django.contrib.sessions.middleware.SessionMiddleware',
+                'django.contrib.auth.middleware.AuthenticationMiddleware',
+                'django.contrib.messages.middleware.MessageMiddleware',
+            ],
+            ROOT_URLCONF='tests.tagulous_tests_app.urls',
+            SERIALIZATION_MODULES={
+                'xml': 'tagulous.serializers.xml_serializer',
+                'json': 'tagulous.serializers.json',
+                'python': 'tagulous.serializers.python',
+            },
+            TEMPLATES=[{
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'APP_DIRS': True,
+            }],
+            MIGRATION_MODULES={
+                'tagulous_tests_migration': 'tests.tagulous_tests_migration.migrations_%s' % testenv
+            },
+            TAGULOUS_NAME_MAX_LENGTH=191,
+        )
+        SETTINGS['SOUTH_MIGRATION_MODULES'] = SETTINGS['MIGRATION_MODULES']
+
+        # If yaml is available, add to serialisers
         try:
             import yaml
         except ImportError:
             pass
         else:
-            SERIALIZATION_MODULES['yaml'] = 'tagulous.serializers.pyyaml'
+            SETTINGS['SERIALIZATION_MODULES']['yaml'] = 'tagulous.serializers.pyyaml'
 
-
-        testenv = re.sub(
-            r'[^a-zA-Z0-9]', '_',
-            os.environ.get('TOXENV', '_'.join(str(v) for v in django.VERSION)),
-        )
-        MIGRATION_MODULES = {
-            'tagulous_tests_migration': 'tests.tagulous_tests_migration.migrations_%s' % testenv
-        }
-
+        # If south is required and available, add to installed apps
         if django.VERSION < (1, 7):
             try:
                 import south
@@ -61,8 +77,13 @@ def runtests(args):
                     ImportWarning
                 )
             else:
-                INSTALLED_APPS += ['south']
+                SETTINGS['INSTALLED_APPS'] += ['south']
 
+        # Backwards compatibility for middleware
+        if django.VERSION < (1, 10):
+            SETTINGS['MIDDLEWARE_CLASSES'] = SETTINGS['MIDDLEWARE']
+
+        # Build database settings
         DATABASE = {
             'ENGINE': 'django.db.backends.sqlite3',
         }
@@ -96,27 +117,10 @@ def runtests(args):
             for key in ['USER', 'PASSWORD', 'HOST', 'PORT']:
                 if 'DATABASE_' + key in os.environ:
                     DATABASE[key] = os.environ['DATABASE_' + key]
+        SETTINGS['DATABASES'] = {'default': DATABASE, 'test': DATABASE}
 
-
-        settings.configure(
-            DATABASES={'default': DATABASE, 'test': DATABASE},
-            INSTALLED_APPS=INSTALLED_APPS,
-            MIDDLEWARE_CLASSES=[
-                'django.middleware.common.CommonMiddleware',
-                'django.contrib.sessions.middleware.SessionMiddleware',
-                'django.contrib.auth.middleware.AuthenticationMiddleware',
-                'django.contrib.messages.middleware.MessageMiddleware',
-            ],
-            ROOT_URLCONF='tests.tagulous_tests_app.urls',
-            SERIALIZATION_MODULES=SERIALIZATION_MODULES,
-            TEMPLATES=[{
-                'BACKEND': 'django.template.backends.django.DjangoTemplates',
-                'APP_DIRS': True,
-            }],
-            MIGRATION_MODULES=MIGRATION_MODULES,
-            SOUTH_MIGRATION_MODULES=MIGRATION_MODULES,
-            TAGULOUS_NAME_MAX_LENGTH=191,
-        )
+        # Configure
+        settings.configure(**SETTINGS)
 
     execute_from_command_line(args[:1] + ['test'] + (args[2:] or ['tests']))
 

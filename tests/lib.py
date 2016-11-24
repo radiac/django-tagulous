@@ -194,8 +194,18 @@ class TagTestManager(object):
     def assertHTMLEqual(self, html1, html2, msg=None):
         """
         Clone of django's method, but with support for JSON in data- tag
-        attributes
+        attributes and backwards-compatible support for HTML 5 "required"
         """
+        # Add backwards compatibility for HTML 5 "required"
+        REQUIRED = '{{required}}'
+        required = ''
+        if django.VERSION >= (1, 10):
+            required = ' required '
+        if REQUIRED in html1:
+            html1 = html1.replace(REQUIRED, required)
+        if REQUIRED in html2:
+            html2 = html2.replace(REQUIRED, required)
+
         # Parse the HTML into a dom
         err1 = 'First argument is not a valid HTML element:'
         err2 = 'Second argument is not a valid HTML element:'

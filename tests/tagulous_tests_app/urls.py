@@ -8,11 +8,11 @@ Usage:
 from __future__ import unicode_literals
 
 import django
-from django.conf.urls import include, patterns, url
-from django.utils import six
+from django.conf.urls import include, url
 
+# Django 1.8 removes patterns
 if django.VERSION < (1, 8):
-    # Django 1.7 or earlier
+    from django.conf.urls import patterns
     mk_urlpatterns = lambda *urls: patterns('', *urls)
 else:
     mk_urlpatterns = lambda *urls: list(urls)
@@ -76,4 +76,3 @@ urlpatterns = mk_urlpatterns(
         ),
     )))
 )
-

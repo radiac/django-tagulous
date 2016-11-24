@@ -76,7 +76,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
             'data-tag-type="single" data-tagulous="true" '
-            'id="id_tag" name="tag" type="text" />'
+            'id="id_tag" name="tag" {{required}}type="text" />'
         ))
 
     def test_render_tag_optional(self):
@@ -106,7 +106,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
             'data-tag-type="single" data-tagulous="true" '
             'data-tag-list="'
             '[&quot;one&quot;, &quot;two&quot;, &quot;three&quot;]" '
-            'id="id_tag" name="tag" type="text" />'
+            'id="id_tag" name="tag" {{required}}type="text" />'
         ))
 
     def test_render_tag_url(self):
@@ -126,7 +126,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
             'data-tag-type="single" data-tagulous="true" '
             'data-tag-url="'
             '/tagulous_tests_app/views/" '
-            'id="id_tag" name="tag" type="text" />'
+            'id="id_tag" name="tag" {{required}}type="text" />'
         ))
 
     def test_render_value(self):
@@ -137,7 +137,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
             'data-tag-type="single" data-tagulous="true" '
-            'id="id_singletag" name="singletag" type="text" '
+            'id="id_singletag" name="singletag" {{required}}type="text" '
             'value="Mr" />'
         ))
 
@@ -246,14 +246,14 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
             'Mrs': 0,
         })
         form = self.form(data={'name': 'Test 1', 'title': 'Mrs'})
-        self.assertHTMLEqual(six.text_type(form['title']), (
-            '<input autocomplete="off" '
-            'data-tag-options="{'
-            '&quot;required&quot;: false, &quot;max_count&quot;: 1}" '
-            'data-tag-type="single" data-tagulous="true" '
-            'data-tag-list="[&quot;Mr&quot;, &quot;Mrs&quot;]" '
-            'id="id_title" name="title" type="text" value="Mrs" />'
-        ))
+        self.assertHTMLEqual(
+            six.text_type(form['title']),
+            ('<input autocomplete="off" '
+             'data-tag-options="{'
+             '&quot;required&quot;: false, &quot;max_count&quot;: 1}" '
+             'data-tag-type="single" data-tagulous="true" '
+             'data-tag-list="[&quot;Mr&quot;, &quot;Mrs&quot;]" '
+             'id="id_title" name="title" type="text" value="Mrs" />'))
 
     def test_initial_string(self):
         "Check initial string"
@@ -263,7 +263,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
             'data-tag-type="single" data-tagulous="true" '
-            'id="id_singletag" name="singletag" type="text" '
+            'id="id_singletag" name="singletag" {{required}}type="text" '
             'value="Mr" />'
         ))
 
@@ -276,7 +276,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
             'data-tag-options="{'
             '&quot;required&quot;: true, &quot;max_count&quot;: 1}" '
             'data-tag-type="single" data-tagulous="true" '
-            'id="id_singletag" name="singletag" type="text" '
+            'id="id_singletag" name="singletag" {{required}}type="text" '
             'value="Mr" />'
         ))
 

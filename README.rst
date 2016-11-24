@@ -12,7 +12,7 @@ you all their normal power with a sprinkling of tagging syntactic sugar.
     :target: https://travis-ci.org/radiac/django-tagulous
 
 .. image:: https://coveralls.io/repos/radiac/django-tagulous/badge.svg?branch=master&service=github
-    :target: https://coveralls.io/github/radiac/django-tagulous?branch=master 
+    :target: https://coveralls.io/github/radiac/django-tagulous?branch=master
 
 Features
 ========
@@ -25,14 +25,14 @@ Features
 * Supports trees of nested tags, for detailed categorisation
 * Admin support for managing tags and tagged models
 
-Version 0.11.1; supports Django 1.4.2 to 1.9a1, on Python 2.7 to 3.5.
+Version 0.11.1; supports Django 1.4.2 to 1.10, on Python 2.7 to 3.5.
 
 See the `Documentation <http://radiac.net/projects/django-tagulous/documentation/>`_
 for details of how Tagulous works; in particular:
 
 * `Installation <http://radiac.net/projects/django-tagulous/documentation/installation/>`_
   - how to install Tagulous
-* `Example Usage <http://radiac.net/projects/django-tagulous/documentation/usage/>`_ 
+* `Example Usage <http://radiac.net/projects/django-tagulous/documentation/usage/>`_
   - see examples of Tagulous in use
 * `Upgrading <http://radiac.net/projects/django-tagulous/documentation/upgrading/>`_  - how to upgrade Tagulous, and see what has changed in the
   `changelog <http://radiac.net/projects/django-tagulous/documentation/upgrading/#changelog>`_.
@@ -49,14 +49,14 @@ Install with ``pip install django-tagulous``, add ``tagulous`` to Django's
 
     from django.db import models
     import tagulous
-    
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
         title = tagulous.models.SingleTagField(initial="Mr, Mrs, Miss, Ms")
         skills = tagulous.models.TagField()
 
 You can now set and get them using strings, lists or querysets::
-    
+
     myperson = Person.objects.create(name='Bob', title='Mr', skills='run, hop')
     # myperson.skills == 'run, hop'
     myperson.skills = ['jump', 'kung fu']
