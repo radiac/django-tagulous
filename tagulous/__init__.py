@@ -9,4 +9,6 @@ __license__ = "BSD"
 __author__ = "Richard Terry"
 __credits__ = [
     "Pamela McA'Nulty (PamelaM)",
+    "James Pic (jpic)",
+    "Robert Erb (rerb) at AASHE",
 ]

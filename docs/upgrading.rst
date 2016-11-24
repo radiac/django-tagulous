@@ -206,9 +206,9 @@ Bugfix:
 * Correct ``.weight(..)`` to always return floored integers instead of decimals
 
 Thanks to:
-* Pamela McA'Nulty (PamelaM) for #1
-* Robert Erb (rerb) at AASHE (http://www.aashe.org/) for doing most of the work
-  for Django 1.10 support (#18, #20)
+* Pamela McA'Nulty (PamelaM) for MySQL fixes (#1)
+* James Pic (jpic) for documentation corrections (#13)
+* Robert Erb (rerb) at AASHE (http://www.aashe.org/) for Django 1.10 support (#18, #20)
 
 
 0.11.1, 2015-10-05
