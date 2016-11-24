@@ -70,21 +70,17 @@ class AdminTestManager(object):
             return
 
         # Try to clear the resolver cache
-        try:
-            # Django 1.10+
-            from django.urls import get_resolver
+        if django.VERSION < (1, 7):
+            # Django 1.4 - 1.6
+            from django.core.urlresolvers import _resolver_cache
+            _resolver_cache.clear()
+        else:
+            if django.VERSION < (1, 10):
+                from django.core.urlresolvers import get_resolver
+            else:
+                from django.urls import get_resolver
             if hasattr(get_resolver, 'cache_clear'):
                 get_resolver.cache_clear()
-        except ImportError:
-            try:
-                # Django 1.7 - 1.9
-                from django.core.urlresolvers import get_resolver
-                if hasattr(get_resolver, 'cache_clear'):
-                    get_resolver.cache_clear()
-            except:
-                # Django 1.4 - 1.6
-                from django.core.urlresolvers import _resolver_cache
-                _resolver_cache.clear()
 
         # Store the old urls and make a copy
         self.old_urls = test_urls.urlpatterns
