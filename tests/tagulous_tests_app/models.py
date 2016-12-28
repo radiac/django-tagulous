@@ -68,6 +68,9 @@ class SingleTagFieldModel(models.Model):
     name = models.CharField(blank=True, max_length=100)
     title = tagulous.models.SingleTagField(blank=True, null=True)
 
+class SingleTagFieldConcreteInheritanceModel(SingleTagFieldModel):
+    pass
+
 class SingleTagFieldOptionalModel(models.Model):
     """
     Test optional single tag fields
@@ -268,6 +271,12 @@ class SimpleMixedTest(models.Model):
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(blank=True)
     tags = tagulous.models.TagField(blank=True)
+
+class ConcreteInheritanceTest(SimpleMixedTest):
+    """
+    For testing concrete inheritance
+    """
+    pass
 
 class MixedTestTagModel(tagulous.models.TagModel):
     class TagMeta:

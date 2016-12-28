@@ -17,6 +17,53 @@ from tagulous.models.tagged import _split_kwargs
 from tests.lib import *
 
 
+###############################################################################
+####### Test TaggedModel
+###############################################################################
+
+class ModelTaggedTest(TagTestManager, TestCase):
+    """
+    Basic TaggedModel tests
+    """
+    manage_models = [
+        test_models.MixedTest,
+    ]
+    def setUpExtra(self):
+        self.test_model = test_models.MixedTest
+
+    def test_tagged_model(self):
+        "Check tagged model is the correct class"
+        self.assertTrue(issubclass(
+            self.test_model,
+            tag_models.TaggedModel,
+        ))
+
+    def test_tagged_manager(self):
+        "Check tagged manager is the correct class"
+        self.assertTrue(issubclass(
+            self.test_model.objects.__class__,
+            tag_models.TaggedManager,
+        ))
+
+    def test_base_manager_not_tagged(self):
+        "Check normal base manager hasn't been modified"
+        self.assertFalse(issubclass(
+            models.Manager,
+            tag_models.TaggedManager,
+        ))
+
+    def test_init(self):
+        "Check constructor can set singletag and tag fields"
+        t1 = self.test_model(
+            name='Test 1',
+            singletag='Mr',
+            tags='red, blue',
+        )
+        t1.save()
+        t2 = self.test_model.objects.get(name='Test 1')
+        self.assertEqual(six.text_type(t2.singletag), 'Mr')
+        self.assertEqual(six.text_type(t2.tags), 'blue, red')
+
 
 ###############################################################################
 ####### Test _split_kwargs
@@ -508,30 +555,3 @@ class ModelTaggedQuerysetOptionsTest(TagTestManager, TestCase):
         "Check case insensitive matches"
         qs1 = self.test_model.objects.exclude(case_sensitive_false='adam')
         self.assertEqual(qs1.count(), 0)
-
-
-###############################################################################
-####### Test TaggedModel
-###############################################################################
-
-class ModelTaggedTest(TagTestManager, TestCase):
-    """
-    Test parts of TaggedModel not caught by other tests
-    """
-    manage_models = [
-        test_models.MixedTest,
-    ]
-    def setUpExtra(self):
-        self.test_model = test_models.MixedTest
-
-    def test_init(self):
-        "Check constructor can set singletag and tag fields"
-        t1 = self.test_model(
-            name='Test 1',
-            singletag='Mr',
-            tags='red, blue',
-        )
-        t1.save()
-        t2 = self.test_model.objects.get(name='Test 1')
-        self.assertEqual(six.text_type(t2.singletag), 'Mr')
-        self.assertEqual(six.text_type(t2.tags), 'blue, red')

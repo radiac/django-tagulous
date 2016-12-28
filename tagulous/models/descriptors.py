@@ -79,15 +79,18 @@ class SingleTagDescriptor(BaseTagDescriptor):
         # The manager needs to know when the model is about to be saved
         # so that it can ensure the tag exists and assign its pk to field_id
         def pre_save_handler(sender, instance, **kwargs):
+            if not issubclass(sender, self.field.model):
+                return
             manager = self.get_manager(instance)
             manager.pre_save_handler()
-        models.signals.pre_save.connect(
-            pre_save_handler, sender=self.field.model, weak=False
-        )
+
+        models.signals.pre_save.connect(pre_save_handler, weak=False)
 
         # The manager needs to know after the model has been saved, so it can
         # change tag count
         def post_save_handler(sender, instance, **kwargs):
+            if not issubclass(sender, self.field.model):
+                return
             manager = self.get_manager(instance)
             manager.post_save_handler()
 
@@ -97,17 +100,16 @@ class SingleTagDescriptor(BaseTagDescriptor):
             if kwargs.get('raw', False):
                 manager.get().update_count()
 
-        models.signals.post_save.connect(
-            post_save_handler, sender=self.field.model, weak=False
-        )
+        models.signals.post_save.connect(post_save_handler, weak=False)
 
         # Update tag count on delete
         def post_delete_handler(sender, instance, **kwargs):
+            if not issubclass(sender, self.field.model):
+                return
             manager = self.get_manager(instance)
             manager.post_delete_handler()
-        models.signals.post_delete.connect(
-            post_delete_handler, sender=self.field.model, weak=False
-        )
+
+        models.signals.post_delete.connect(post_delete_handler, weak=False)
 
     def __set__(self, instance, value):
         # Check we've actually got an instance. No practical way this could
