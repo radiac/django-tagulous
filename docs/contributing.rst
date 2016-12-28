@@ -22,13 +22,28 @@ install it to a virtualenv::
     virtualenv django-tagulous
     cd django-tagulous
     source bin/activate
-    pip install -e git+git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous[dev,i18n]
+    pip install -e git+git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous[dev,devdb,devextra,i18n]
 
 (replacing ``USERNAME`` with your username).
 
 This will install the development dependencies too, and you'll find the
 tagulous source ready for you to work on in the ``src`` folder of your
 virtualenv.
+
+.. note::
+    The dev extra requirements are broken into 3 parts to make it easier for
+    you to run at least some tests:
+
+    * ``dev`` is the packages required for testing.
+    * ``devextra`` installs third party packages for interoperability tests.
+      These don't require any further configuration on your part so this option
+      is recommended, but it is optional because supporting third party
+      packages is a moving goalpost.
+    * ``devdb`` installs packages required for testing against MySQL and
+      PostgreSQL. This can be a hassle as the tests will then require test
+      databases for both. If you're going to skip one, skip this.
+
+    Travis will run the full tests against your PR.
 
 
 Testing

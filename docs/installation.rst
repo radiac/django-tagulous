@@ -46,8 +46,8 @@ Instructions
         these will be listed in the :ref:`changelog`.
 
         If you are planning to contribute to Tagulous, you may want to install
-        with the ``dev`` extra requirements - see :doc:`contributing` for more
-        details.
+        with the ``dev``, ``devdb`` and ``devextra`` extra requirements - see
+        :doc:`contributing` for more details.
 
 2. In your site settings, add Tagulous to ``INSTALLED_APPS``::
 

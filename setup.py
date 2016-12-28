@@ -161,9 +161,17 @@ setup(
         'Framework :: Django :: 1.8',
     ],
     extras_require = {
-        'dev': ['tox', 'jasmine'],
-        'devdb': ['psycopg2', 'mysqlclient'],
+        # Required for internationalisation
         'i18n': ['unidecode'],
+
+        # Compulsory for tests
+        'dev': ['tox', 'jasmine'],
+
+        # Optional for testing different databases
+        'devdb': ['psycopg2', 'mysqlclient'],
+
+        # Optional for testing third party packages
+        'devextra': ['django-polymorphic'],
     },
     zip_safe=True,
     packages=find_packages(exclude=('docs', 'tests*',)),
