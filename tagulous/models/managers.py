@@ -482,6 +482,35 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         self.changed = False
     reload.alters_data = True
 
+    def post_save_handler(self):
+        """
+        When the model has saved, save related tags
+
+        Called by the signal handler
+        """
+        self.save()
+
+    def pre_delete_handler(self):
+        """
+        Safely clear the M2M tag field, persisting tags on the manager
+
+        When deleting an instance, Django does not call the add/remove of the
+        M2M manager, so tag counts would be too high. Related to:
+          https://code.djangoproject.com/ticket/6707
+        We need to clear the M2M manually to update tag counts
+
+        Called by the signal handler
+        """
+        # Get tags so we can make them available to the fake manager later
+        self.reload()
+        tags = self.tags
+
+        # Clear the object
+        self.clear()
+
+        # Put the tags back on the manager
+        self.tags = tags
+
     def save(self, force=False):
         """
         Set the actual tags to the internal tag state

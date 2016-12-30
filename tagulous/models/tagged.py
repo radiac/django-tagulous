@@ -418,17 +418,3 @@ class TaggedModel(models.Model):
 
     class Meta:
         abstract = True
-
-
-###############################################################################
-# Start automatic enhancement
-###############################################################################
-
-if settings.ENHANCE_MODELS:
-    def class_prepared_listener(sender, **kwargs):
-        """
-        Listen to the class_prepared signal and subclass any model with tag
-        fields
-        """
-        TaggedModel.cast_class(sender)
-    models.signals.class_prepared.connect(class_prepared_listener, weak=False)

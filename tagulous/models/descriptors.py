@@ -73,44 +73,6 @@ class SingleTagDescriptor(BaseTagDescriptor):
     Wraps the ReverseSingleRelatedObjectDescriptor and passes set and get
     requests through to the SingleTagManager
     """
-    def __init__(self, descriptor):
-        super(SingleTagDescriptor, self).__init__(descriptor)
-
-        # The manager needs to know when the model is about to be saved
-        # so that it can ensure the tag exists and assign its pk to field_id
-        def pre_save_handler(sender, instance, **kwargs):
-            if not issubclass(sender, self.field.model):
-                return
-            manager = self.get_manager(instance)
-            manager.pre_save_handler()
-
-        models.signals.pre_save.connect(pre_save_handler, weak=False)
-
-        # The manager needs to know after the model has been saved, so it can
-        # change tag count
-        def post_save_handler(sender, instance, **kwargs):
-            if not issubclass(sender, self.field.model):
-                return
-            manager = self.get_manager(instance)
-            manager.post_save_handler()
-
-            # If raw is set, data is being injected into the system, most
-            # likely from a deserialization operation. If the tag model has
-            # just been deserialized too, the tag counts will probably be off.
-            if kwargs.get('raw', False):
-                manager.get().update_count()
-
-        models.signals.post_save.connect(post_save_handler, weak=False)
-
-        # Update tag count on delete
-        def post_delete_handler(sender, instance, **kwargs):
-            if not issubclass(sender, self.field.model):
-                return
-            manager = self.get_manager(instance)
-            manager.post_delete_handler()
-
-        models.signals.post_delete.connect(post_delete_handler, weak=False)
-
     def __set__(self, instance, value):
         # Check we've actually got an instance. No practical way this could
         # happen, but Django does it, so we will too
@@ -157,52 +119,6 @@ class TagDescriptor(BaseTagDescriptor):
     This will use a RelatedManager which we cannot customise
     This will intercept calls for the RelatedManager, and add the tag functions
     """
-    def __init__(self, descriptor):
-        super(TagDescriptor, self).__init__(descriptor)
-
-        # After an instance is saved, save any tag changes
-        def post_save_handler(sender, instance, **kwargs):
-            """
-            Save any tag changes
-            """
-            manager = self.__get__(instance)
-            manager.save()
-
-            # If raw is set, data is being injected into the system, most
-            # likely from a deserialization operation. If the tag model has
-            # just been deserialized too, the tag counts will probably be off.
-            if kwargs.get('raw', False):
-                for tag in manager.tags:
-                    tag.update_count()
-
-        models.signals.post_save.connect(
-            post_save_handler, sender=self.field.model, weak=False
-        )
-
-        # When deleting an instance, Django does not call the add/remove of the
-        # M2M manager, so tag counts would be too high. Related to:
-        #   https://code.djangoproject.com/ticket/6707
-        # We need to clear the M2M manually to update tag counts
-        def pre_delete_handler(sender, instance, **kwargs):
-            """
-            Safely clear the M2M tag field, persisting tags on the manager
-            """
-            # Get the manager and tell it to clear
-            manager = self.__get__(instance)
-
-            # Get tags so we can make them available to the fake manager later
-            manager.reload()
-            tags = manager.tags
-
-            # Clear the object
-            manager.clear()
-
-            # Put the tags back on the manager
-            manager.tags = tags
-        models.signals.pre_delete.connect(
-            pre_delete_handler, sender=self.field.model, weak=False
-        )
-
     def get_manager(self, instance, instance_type=None):
         """
         Get the Manager instance for this field on this model instance.

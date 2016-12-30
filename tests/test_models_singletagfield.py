@@ -221,7 +221,9 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 2,
         })
+        print('DEL expecting to del Mr >>>>>>>>')
         t2.delete()
+        print('<<<<<<<<<')
         self.assertInstanceEqual(t1, name='Test 1', title='Mr')
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
@@ -260,7 +262,9 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mr': 1,
             'Mrs': 1,
         })
+        print('DEL expecting to del Mr >>>>>>>>>')
         t1.delete()
+        print('<<<<<<<<<')
 
         # Check the original tag 'Mr' was decremented (and deleted)
         self.assertTagModel(self.tag_model, {
@@ -279,7 +283,9 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
+        print('DEL expecting to del Mr >>>>>>>>>>>>')
         t1.delete()
+        print('<<<<<<<<<<<<')
         self.assertTagModel(self.tag_model, {})
         t1.save()
         self.assertTagModel(self.tag_model, {
