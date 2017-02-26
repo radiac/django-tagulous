@@ -200,7 +200,7 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.12.0, 2016-
+0.12.0, 2017-02-26
 ------------------
 
 Feature:
@@ -213,6 +213,7 @@ Bugfix:
 * Correct ``.weight(..)`` to always return floored integers instead of decimals
 * Correct max length calculation when adding and removing a value through
   assignment
+* `TagDescriptor` now has a `through` attribute to match `ManyToManyDescriptor`
 
 Deprecates:
 * `TagField` manager's `__len__` method is now deprecated and will be removed
@@ -223,6 +224,7 @@ Thanks to:
 * Mary (minidietcoke) for max count fix (#16)
 * James Pic (jpic) for documentation corrections (#13)
 * Robert Erb (rerb) at AASHE (http://www.aashe.org/) for Django 1.10 support (#18, #20)
+* Gaël Utard (gutard) for tag descriptor `through` fix (#19)
 
 
 0.11.1, 2015-10-05
