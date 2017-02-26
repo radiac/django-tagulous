@@ -67,7 +67,7 @@ Instructions
     }
 
    You may also want to change some Tagulous settings here - see the global
-   :ref:`max_length settings <settings_max_length>` for details.
+   max length :ref:`settings` for details.
 
 You are now ready to add Tagulous fields to your models - see
 :doc:`models/index`, :doc:`forms` and :doc:`usage`.
@@ -78,8 +78,8 @@ When you want to upgrade your Tagulous installation in the future, check
 .. note::
     If you use MySQL there are some limitations you should be aware of - see:
 
-    * the setting :ref:`settings_max_length` for limitations of maximum tag
-      lengths
+    * the :ref:`setting <settings>` for max length for limitations of maximum
+      tag lengths
     * the tag option :ref:`option_case_sensitive` for limitations of case
       sensitivity.
 
@@ -91,8 +91,6 @@ Settings
 
 .. note::
     Model and form field options are managed separately by :doc:`tag_options`.
-
-.. _settings_max_length:
 
 ``TAGULOUS_NAME_MAX_LENGTH``
 ``TAGULOUS_SLUG_MAX_LENGTH``
