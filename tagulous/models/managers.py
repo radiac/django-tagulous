@@ -499,10 +499,11 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         # Add and remove tags as necessary
         new_tags = self._ensure_tags_in_db(self.tags)
         self.reload()
+
         # Add new tags
         for new_tag in new_tags:
             if new_tag not in self.tags:
-                self.add(new_tag)
+                self.add(new_tag, _enforce_max_count=False)
 
         # Remove old tags
         for old_tag in self.tags:
@@ -542,7 +543,16 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         self.clear()
         self.add(*objs)
 
-    def add(self, *objs):
+    def add(self, *objs, **kwargs):
+        """
+        Add a list of tags or tag strings
+
+        Takes on internal argument, _enforce_max_count - don't use in your code
+        """
+        enforce_max_count = kwargs.pop('_enforce_max_count', True)
+        if kwargs:
+            raise TypeError("add() got an unexpected keyword argument")
+
         # Convert strings to tag objects
         new_tags = []
         for tag in objs:
@@ -561,7 +571,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         ]
 
         # Enforce max_count
-        if self.tag_options.max_count:
+        if enforce_max_count and self.tag_options.max_count:
             current_count = len(self.tags)
             if current_count + len(new_tags) > self.tag_options.max_count:
                 raise ValueError(

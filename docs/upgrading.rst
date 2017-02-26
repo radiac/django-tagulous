@@ -211,9 +211,16 @@ Bugfix:
 * Implement slug field truncation (fixes #3)
 * Correct MySQL slug clash detection in tag model save
 * Correct ``.weight(..)`` to always return floored integers instead of decimals
+* Correct max length calculation when adding and removing a value through
+  assignment
+
+Deprecates:
+* `TagField` manager's `__len__` method is now deprecated and will be removed
+  in 0.13
 
 Thanks to:
 * Pamela McA'Nulty (PamelaM) for MySQL fixes (#1)
+* Mary (minidietcoke) for max count fix (#16)
 * James Pic (jpic) for documentation corrections (#13)
 * Robert Erb (rerb) at AASHE (http://www.aashe.org/) for Django 1.10 support (#18, #20)
 

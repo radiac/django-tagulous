@@ -1386,6 +1386,17 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
             t2 = self.test_model.objects.get(name="Test 1")
         self.assertTagModel(self.test_model.max_count, {})
 
+    def test_max_count_assign_equal_replaces(self):
+        t1 = self.create(self.test_model, name="Test 1", max_count='Adam, Brian, Chris')
+        t1.max_count = 'Adam, Brian, David'
+        t1.save()
+        self.assertInstanceEqual(t1, name="Test 1", max_count='Adam, Brian, David')
+        self.assertTagModel(self.test_model.max_count, {
+            'Adam':     1,
+            'Brian':    1,
+            'David':    1,
+        })
+
     def test_max_count_assign_above(self):
         t1 = self.create(self.test_model, name="Test 1")
         with self.assertRaises(ValueError) as cm:
