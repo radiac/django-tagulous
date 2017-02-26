@@ -43,6 +43,13 @@ Upgrading from 0.11.1
    ``"BLOB/TEXT column 'path' used in key specification without a key length"``
    - see https://github.com/radiac/django-tagulous/issues/1 for discussion.
 
+2. Version 0.12.0 deprecates the model tag manager's `__len__` method in
+   preparation for merging https://github.com/radiac/django-tagulous/pull/10
+   to resolve https://github.com/radiac/django-tagulous/issues/9.
+
+   If you are currently using `len(instance.tagfield)` then you should switch
+   to using `instance.tagfield.count()` instead.
+
 
 .. _upgrade_0-9-0:
 

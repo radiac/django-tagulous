@@ -7,13 +7,14 @@ the tags.
 For tag model manager, look in tagulous.models.models
 """
 from __future__ import unicode_literals
+import warnings
 
 import django
 from django.core import exceptions
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
 
-from tagulous.utils import parse_tags, render_tags
+from tagulous.utils import parse_tags, render_tags, RemovedInTagulous013Warning
 
 
 ###############################################################################
@@ -264,6 +265,10 @@ class BaseTagRelatedManager(object):
         return item_str in [tag.name.lower() for tag in self.tags]
 
     def __len__(self):
+        warnings.warn(
+            "`len(<tagfield>)` is deprecated, use `<tagfield>.count()` instead",
+            RemovedInTagulous013Warning, 2,
+        )
         return len(self.tags)
 
     def __eq__(self, other):

@@ -308,6 +308,17 @@ is determined by the options :ref:`option_case_sensitive` and
 
 ``__len__``
 ~~~~~~~~~~~
+
+.. warning::
+
+    This method is deprecated in Tagulous 0.12, and will be removed in 0.13.
+
+    You should use the `count` manager method instead, eg::
+
+        person.skills = 'judo, "kung fu", karate'
+        person.skills.count() == 3
+
+
 Return the number of tags set for this instance.
 ::
 
