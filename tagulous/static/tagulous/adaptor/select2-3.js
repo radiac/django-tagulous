@@ -80,8 +80,10 @@
             return input;
         }
 
-        if (lastRaw === null) {
-            // Last tag wasn't completed
+        // Check for incomplete partial tag
+        // If more than one tag then raw was pasted - assume all complete
+        if (lastRaw === null && tags.length < 2) {
+            // Last tag wasn't completed - return it to input
             tags.pop();
             raws.pop();
             lastRaw = raws.slice(-1)[0];
