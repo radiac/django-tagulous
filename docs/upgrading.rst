@@ -200,6 +200,16 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+0.12.1, 2017-
+------------------
+
+Bugfix:
+* Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
+
+Thanks to:
+* Mark London for select2 v3 widget fix when pasting tags (#26)
+
+
 0.12.0, 2017-02-26
 ------------------
 
