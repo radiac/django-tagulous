@@ -33,6 +33,11 @@ Upgrading from 0.12.0
    been introduced, but this version of Python will no longer be tested against
    due to lack of support in third party tools.
 
+2. The `TagField` manager's `__len__` has now been removed, following its
+   deprecation in 0.12.0. As noted in :ref:`_upgrade_0-11-1`, if you are
+   currently using `len(instance.tagfield)` then you should switch to using
+   `instance.tagfield.count()` instead.
+
 
 .. _upgrade_0-11-1
 
@@ -211,10 +216,15 @@ are available by installing the master branch from github (see
 0.13.0, 2017-
 ------------------
 
+Changes:
+* Drop support for Python 3.2
+* Remove deprecated `TagField` manager's `__len__`
+
 Bugfix:
 * Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
 
 Thanks to:
+* Martín R. Guerrero (slackmart) for removing `__len__` method
 * Mark London for select2 v3 widget fix when pasting tags (#26)
 
 

@@ -17,10 +17,6 @@ except ImportError: # pragma: no cover - tests simulate this
 from tagulous.constants import COMMA, SPACE, QUOTE, DOUBLE_QUOTE, TREE
 
 
-class RemovedInTagulous013Warning(DeprecationWarning):
-    pass
-
-
 ###############################################################################
 ####### Tag name parse and render
 ###############################################################################

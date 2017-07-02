@@ -413,9 +413,9 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertFalse(green in t1.tags, 'green incorrectly found')
 
     def test_len(self):
-        "Check __len__ returns the number of tags"
+        "Check manager count method returns the number of tags"
         t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
-        self.assertEqual(len(t1.tags), 2)
+        self.assertEqual(t1.tags.count(), 2)
 
     def test_eq(self):
         "Check __eq__ correctly determines equality"
