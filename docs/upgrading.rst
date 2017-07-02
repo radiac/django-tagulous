@@ -208,7 +208,7 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.12.1, 2017-
+0.13.0, 2017-
 ------------------
 
 Bugfix:
