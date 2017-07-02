@@ -218,13 +218,13 @@ are available by installing the master branch from github (see
 
 Changes:
 * Drop support for Python 3.2
-* Remove deprecated `TagField` manager's `__len__`
+* Remove deprecated `TagField` manager's `__len__` (#10, fixes #9)
 
 Bugfix:
 * Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
 
 Thanks to:
-* Martín R. Guerrero (slackmart) for removing `__len__` method
+* Martín R. Guerrero (slackmart) for removing `__len__` method (#9, #10)
 * Mark London for select2 v3 widget fix when pasting tags (#26)
 
 
