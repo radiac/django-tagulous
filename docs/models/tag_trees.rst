@@ -175,7 +175,7 @@ required:
    and add::
 
     def escape_tag_names(apps, schema_editor):
-        model = apps.get_model('myapp', '_Tagulous_MyModel_Tags')
+        model = apps.get_model('myapp', 'Tagulous_MyModel_Tags')
         for tag in model.objects.all():
             tag.name = tag.name.replace('/', '//')
             tag.save()
@@ -184,7 +184,7 @@ required:
    With South, run ``manage.py datamigration myapp escape_tags`` and add::
 
     def forwards(self, orm):
-        for tag in orm['myapp._Tagulous_MyModel_tags'].objects.all():
+        for tag in orm['myapp.Tagulous_MyModel_tags'].objects.all():
             tag.name = tag.name.replace('/', '//')
             tag.save()
 
@@ -236,14 +236,14 @@ required:
             # Leave other migration statements as they are - just replace the
             # call to db.add_column for the path field with add_unique_column.
             # Replace ``myapp`` with your app name, and
-            # replace ``_Tagulous_MyModel_tags`` with your tag model name
+            # replace ``Tagulous_MyModel_tags`` with your tag model name
 
             from tagulous.models.migrations import add_unique_column
             from django.utils import six
 
-            # Adding field '_Tagulous_MyModel_tags.path'
+            # Adding field 'Tagulous_MyModel_tags.path'
             add_unique_column(
-                self, db, orm['myapp._Tagulous_MyModel_tags'], 'path',
+                self, db, orm['myapp.Tagulous_MyModel_tags'], 'path',
                 lambda obj: setattr(obj, 'path', six.text_type(obj.pk)),
                 'django.db.models.fields.TextField',
             )
@@ -282,14 +282,14 @@ required:
    When using Django migrations::
 
         def rebuild_tag_model(apps, schema_editor):
-            model = apps.get_model('myapp', '_Tagulous_MyModel_Tags')
+            model = apps.get_model('myapp', 'Tagulous_MyModel_Tags')
             model.objects.rebuild()
         operations = RunPython(rebuild_tag_model)
 
    With South::
 
         def forwards(self, orm):
-            orm['myapp._Tagulous_MyModel_tags'].objects.rebuild()
+            orm['myapp.Tagulous_MyModel_tags'].objects.rebuild()
 
    If you skipped step 1, this will also create and set parent tags as
    necessary.

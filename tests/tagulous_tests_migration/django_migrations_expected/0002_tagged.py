@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='_Tagulous_MigrationTestModel_singletag',
+            name='Tagulous_MigrationTestModel_singletag',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(unique=True, max_length=191)),
@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
             bases=(tagulous.models.models.BaseTagModel, models.Model),
         ),
         migrations.CreateModel(
-            name='_Tagulous_MigrationTestModel_tags',
+            name='Tagulous_MigrationTestModel_tags',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(unique=True, max_length=191)),
@@ -46,23 +46,23 @@ class Migration(migrations.Migration):
             bases=(tagulous.models.models.BaseTagModel, models.Model),
         ),
         migrations.AlterUniqueTogether(
-            name='_tagulous_migrationtestmodel_tags',
+            name='tagulous_migrationtestmodel_tags',
             unique_together=set([('slug',)]),
         ),
         migrations.AlterUniqueTogether(
-            name='_tagulous_migrationtestmodel_singletag',
+            name='tagulous_migrationtestmodel_singletag',
             unique_together=set([('slug',)]),
         ),
         migrations.AddField(
             model_name='migrationtestmodel',
             name='singletag',
-            field=tagulous.models.fields.SingleTagField(force_lowercase=False, to='tagulous_tests_migration._Tagulous_MigrationTestModel_singletag', blank=True, help_text=b'Enter a comma-separated tag string', null=True, autocomplete_initial=True, autocomplete_view=b'tagulous_tests_app-null', autocomplete_limit=3, initial='Mr', protect_all=False, case_sensitive=True, protect_initial=True, _set_tag_meta=True),
+            field=tagulous.models.fields.SingleTagField(force_lowercase=False, to='tagulous_tests_migration.Tagulous_MigrationTestModel_singletag', blank=True, help_text=b'Enter a comma-separated tag string', null=True, autocomplete_initial=True, autocomplete_view=b'tagulous_tests_app-null', autocomplete_limit=3, initial='Mr', protect_all=False, case_sensitive=True, protect_initial=True, _set_tag_meta=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='migrationtestmodel',
             name='tags',
-            field=tagulous.models.fields.TagField(force_lowercase=True, to='tagulous_tests_migration._Tagulous_MigrationTestModel_tags', protect_initial=True, help_text=b'Enter a comma-separated tag string', case_sensitive=True, autocomplete_initial=True, autocomplete_view=b'tagulous_tests_app-null', autocomplete_limit=3, initial='Mr', protect_all=False, _set_tag_meta=True),
+            field=tagulous.models.fields.TagField(force_lowercase=True, to='tagulous_tests_migration.Tagulous_MigrationTestModel_tags', protect_initial=True, help_text=b'Enter a comma-separated tag string', case_sensitive=True, autocomplete_initial=True, autocomplete_view=b'tagulous_tests_app-null', autocomplete_limit=3, initial='Mr', protect_all=False, _set_tag_meta=True),
             preserve_default=True,
         ),
     ]

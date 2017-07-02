@@ -29,11 +29,31 @@ Instructions
 Upgrading from 0.12.0
 ---------------------
 
-1. Version 0.13.0 drops support for Python 3.2. No known breaking changes have
+1. Auto-generated tag models have been renamed.
+
+   Django 1.11 introduced a rule that models cannot start with an underscore.
+   Prior to this, Tagulous auto-generated tag models started `_Tagulous_`, to
+   indicate they are auto-generated. From now on, they will start `Tagulous_`.
+
+   Django migrations should detect this model name change::
+
+        ./manage.py makemigrations
+        Did you rename the myapp._Tagulous_MyModel model to Tagulous_MyModel? [y/N]
+
+   Answer `y` for all Tagulous auto-generated models, and migrate::
+
+        ./manage.py migrate
+
+   If you do not see the rename prompt when running `makemigrations`, you will
+   need to edit the migration manually - see
+   `RenameModel <https://docs.djangoproject.com/en/1.11/ref/migration-operations/#renamemodel>`
+   in the Django documentation for more details.
+
+2. Version 0.13.0 drops support for Python 3.2. No known breaking changes have
    been introduced, but this version of Python will no longer be tested against
    due to lack of support in third party tools.
 
-2. The `TagField` manager's `__len__` has now been removed, following its
+3. The `TagField` manager's `__len__` has now been removed, following its
    deprecation in 0.12.0. As noted in :ref:`_upgrade_0-11-1`, if you are
    currently using `len(instance.tagfield)` then you should switch to using
    `instance.tagfield.count()` instead.

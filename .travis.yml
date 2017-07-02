@@ -1,5 +1,4 @@
 language: python
-python: 3.5
 install:
   - pip install "virtualenv<14.0.0" tox
 before_script:
@@ -33,11 +32,16 @@ env:
   - TOXENV=py27-django1.9
   - TOXENV=py34-django1.9
   - TOXENV=py35-django1.9
-  # Django 1.10 - latest, so test mysql and pgsql for 2.7 and 3.5
+  # Django 1.10
   - TOXENV=py27-django1.10
-  - TOXENV=py27-django1.10 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py27-django1.10 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
   - TOXENV=py34-django1.10
   - TOXENV=py35-django1.10
-  - TOXENV=py35-django1.10 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py35-django1.10 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+  # Django 1.11 - latest, so test mysql and pgsql for 2.7 and 3.6
+  - TOXENV=py27-django1.11
+  - TOXENV=py34-django1.11
+  - TOXENV=py35-django1.11
+  - TOXENV=py36-django1.11
+  - TOXENV=py27-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
+  - TOXENV=py27-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+  - TOXENV=py36-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
+  - TOXENV=py36-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres

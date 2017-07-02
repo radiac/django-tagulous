@@ -5,7 +5,7 @@ Django Tagulous - Fabulous Tags
 from __future__ import unicode_literals
 
 
-__version__ = "0.12.0"
+__version__ = "0.13.0.dev0"
 __license__ = "BSD"
 __author__ = "Richard Terry"
 __credits__ = [
@@ -15,4 +15,5 @@ __credits__ = [
     "Mary (minidietcoke)",
     "Gaël Utard (gutard)",
     "Mark London",
+    "Martín R. Guerrero (slackmart)",
 ]

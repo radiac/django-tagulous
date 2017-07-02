@@ -57,7 +57,7 @@ Auto-generating a tag model
 If the :ref:`to argument <argument_to>` is not set, a tag model will be
 auto-generated for you. It will be given a class name based on the names of
 the tagged model and tag field; for example, the class name of the
-auto-generated model for ``MyModel.tags`` would be ``_Tagulous_MyModel_tags``.
+auto-generated model for ``MyModel.tags`` would be ``Tagulous_MyModel_tags``.
 
 When auto-generating a model, any :ref:`model option <model_options>` can be
 passed as a field argument - see the :ref:`example_auto_tagmodel` example.
@@ -90,7 +90,7 @@ confident that ``MyOtherModel`` will always be defined first.
 It can also be a string containing the name of the tag model, eg
 ``to='MyTagModel'``. However, this is resolved using Django's standard model
 name resolution, so you have to reference auto-generated models by their class
-name, not via the field - eg ``to='otherapp._Tagulous_MyOtherModel_tags'``.
+name, not via the field - eg ``to='otherapp.Tagulous_MyOtherModel_tags'``.
 
 If the tagged model for this field is also a custom tag model, you can
 specify a recursive relationship as normal, using ``'self'``.
@@ -103,7 +103,7 @@ details.
 This argument is optional; if omitted, a tag model will be
 :ref:`auto-generated <field_auto_model>` for you.
 
-Default: ``_Tagulous_<ModelName>_<FieldName>`` (auto-generated)
+Default: ``Tagulous_<ModelName>_<FieldName>`` (auto-generated)
 
 
 .. _model_singletagfield:

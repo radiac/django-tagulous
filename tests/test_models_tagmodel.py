@@ -68,7 +68,7 @@ class TagModelTest(TagTestManager, TestCase):
             t1.get_absolute_url()
         self.assertEqual(
             six.text_type(cm.exception),
-            "'_Tagulous_SimpleMixedTest_tags' has no attribute 'get_absolute_url'"
+            "'Tagulous_SimpleMixedTest_tags' has no attribute 'get_absolute_url'"
         )
 
     def test_name_field_length(self):
