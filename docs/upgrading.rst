@@ -26,6 +26,14 @@ Instructions
    don't need to follow those steps.
 
 
+Upgrading from 0.12.0
+---------------------
+
+1. Version 0.13.0 drops support for Python 3.2. No known breaking changes have
+   been introduced, but this version of Python will no longer be tested against
+   due to lack of support in third party tools.
+
+
 .. _upgrade_0-11-1
 
 Upgrading from 0.11.1
