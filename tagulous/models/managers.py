@@ -516,15 +516,13 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
                 db_tag = tag
             else:
                 # Not in DB - get or create
-                try:
-                    if self.tag_options.case_sensitive:
-                        db_tag = self.tag_model.objects.get(name=tag.name)
-                    else:
-                        db_tag = self.tag_model.objects.get(name__iexact=tag.name)
-                except self.tag_model.DoesNotExist:
-                    db_tag = self.tag_model.objects.create(
-                        name=tag.name, protected=False,
-                    )
+                field_lookup = 'name'
+                if not self.tag_options.case_sensitive:
+                    field_lookup += '__iexact'
+                db_tag, __ = self.tag_model.objects.get_or_create(
+                    defaults={'name': tag.name, 'protected': False},
+                    **{field_lookup: tag.name}
+                )
             db_tags.append(db_tag)
         return db_tags
 
