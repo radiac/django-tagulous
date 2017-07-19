@@ -242,10 +242,12 @@ Changes:
 
 Bugfix:
 * Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
+* Fix potential race condition when creating new tags (#31)
 
 Thanks to:
 * Martín R. Guerrero (slackmart) for removing `__len__` method (#9, #10)
 * Mark London for select2 v3 widget fix when pasting tags (#26)
+* Peter Baumgartner (ipmb) for fixing race condition (#31)
 
 
 0.12.0, 2017-02-26

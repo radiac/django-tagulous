@@ -16,4 +16,5 @@ __credits__ = [
     "Gaël Utard (gutard)",
     "Mark London",
     "Martín R. Guerrero (slackmart)",
+    "Peter Baumgartner (ipmb)",
 ]
