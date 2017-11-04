@@ -4,7 +4,7 @@ sudo: required
 dist: trusty
 install:
   - pip install --upgrade pip wheel setuptools
-  - pip install "cryptography>=1.5,<=1.9" "virtualenv<14.0.0" tox
+  - pip install virtualenv tox
 before_script:
   - sh -c "if [ '$DATABASE_ENGINE' = 'pgsql' ]; then psql -c 'DROP DATABASE IF EXISTS tagulous_tests;' -U postgres; fi"
   - sh -c "if [ '$DATABASE_ENGINE' = 'pgsql' ]; then psql -c 'create database tagulous_tests;' -U postgres; fi"
