@@ -10,40 +10,52 @@ before_script:
 script:
   - tox
 env:
-  # Django 1.4
-  - TOXENV=py27-django1.4
-  # Django 1.5
-  - TOXENV=py27-django1.5
-  - TOXENV=py33-django1.5
-  # Django 1.6
-  - TOXENV=py27-django1.6
-  - TOXENV=py33-django1.6
-  # Django 1.7
-  - TOXENV=py27-django1.7
-  - TOXENV=py33-django1.7
-  - TOXENV=py34-django1.7
-  # Django 1.8 - LTS, so test mysql and pgsql for 2.7 and 3.4
-  - TOXENV=py27-django1.8
-  - TOXENV=py27-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py27-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
-  - TOXENV=py33-django1.8
-  - TOXENV=py34-django1.8
-  - TOXENV=py34-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py34-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
-  # Django 1.9
-  - TOXENV=py27-django1.9
-  - TOXENV=py34-django1.9
-  - TOXENV=py35-django1.9
-  # Django 1.10
-  - TOXENV=py27-django1.10
-  - TOXENV=py34-django1.10
-  - TOXENV=py35-django1.10
-  # Django 1.11 - latest, so test mysql and pgsql for 2.7 and 3.6
-  - TOXENV=py27-django1.11
-  - TOXENV=py34-django1.11
-  - TOXENV=py35-django1.11
-  - TOXENV=py36-django1.11
-  - TOXENV=py27-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py27-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
-  - TOXENV=py36-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py36-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+  matrix:
+    # Django 1.4
+    - TOXENV=py27-django1.4
+    # Django 1.5
+    - TOXENV=py27-django1.5
+    - TOXENV=py33-django1.5
+    # Django 1.6
+    - TOXENV=py27-django1.6
+    - TOXENV=py33-django1.6
+    # Django 1.7
+    - TOXENV=py27-django1.7
+    - TOXENV=py33-django1.7
+    - TOXENV=py34-django1.7
+    # Django 1.8 - LTS, so test mysql and pgsql for 2.7 and 3.4
+    - TOXENV=py27-django1.8
+    - TOXENV=py27-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
+    - TOXENV=py27-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+    - TOXENV=py33-django1.8
+    - TOXENV=py34-django1.8
+    - TOXENV=py34-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
+    - TOXENV=py34-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+    # Django 1.9
+    - TOXENV=py27-django1.9
+    - TOXENV=py34-django1.9
+    - TOXENV=py35-django1.9
+    # Django 1.10
+    - TOXENV=py27-django1.10
+    - TOXENV=py34-django1.10
+    - TOXENV=py35-django1.10
+    # Django 1.11 - latest, so test mysql and pgsql for 2.7 and 3.6
+    - TOXENV=py27-django1.11
+    - TOXENV=py34-django1.11
+    - TOXENV=py35-django1.11
+    - TOXENV=py36-django1.11
+    - TOXENV=py27-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
+    - TOXENV=py27-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+    - TOXENV=py36-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
+    - TOXENV=py36-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+matrix:
+  include:
+    - python: "3.5"
+      env: TOXENV=py35-django1.10
+    - python: "3.5"
+      env: TOXENV=py35-django1.11
+  exclude:
+    - python: "3.6"
+      env: TOXENV=py35-django1.10
+    - python: "3.6"
+      env: TOXENV=py35-django1.11
