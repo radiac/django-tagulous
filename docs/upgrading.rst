@@ -233,8 +233,11 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.13.0, 2017-
+0.13.0, 2018-
 ------------------
+
+Feature:
+* Add Django 1.11 support (fixes #28)
 
 Changes:
 * Drop support for Python 3.2
@@ -243,6 +246,8 @@ Changes:
 Bugfix:
 * Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
 * Fix potential race condition when creating new tags (#31)
+* Temporarily disabled some migration tests which only failed under Python 2.7
+  with Django 1.9+ due to logic issues in the tests.
 
 Thanks to:
 * Martín R. Guerrero (slackmart) for removing `__len__` method (#9, #10)
