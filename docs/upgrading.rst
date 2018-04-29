@@ -216,6 +216,18 @@ Upgrading from 0.7.0 or earlier
 
     'labels': ('tagulous.models.fields.TagField', [], {'force_lowercase': 'True', 'to': u"orm['myapp._Tagulous_MyModel_labels']", 'blank': 'True', '_set_tag_meta': 'True'}),
 
+   Any `db.add_column` calls will need to be changed too::
+
+    db.add_column(u'myapp_mymodel', 'singletag',
+                  self.gf('tagulous.models.fields.SingleTagField')(null=True, ...),
+                  ...)
+
+   becomes::
+
+    db.add_column(u'myapp_mymodel', 'singletag',
+                  self.gf('tagulous.models.fields.SingleTagField')(_set_tag_meta=True, null=True, ...),
+                  ...)
+
    This will use the keyword tag options to update the tag model's objects,
    rather than raising the new ``ValueError``.
 
