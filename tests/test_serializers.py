@@ -289,7 +289,7 @@ class MixedTestMixin(TagTestManager, TestCase):
         Check serialization of a tagged model with reverse FKs
         """
         t1 = test_models.MixedRefTest.objects.create(name='test', singletag='test', tags='test')
-        rfk1 = test_models.ManyToOneTest.objects.create(mixed_ref_test=t1)
+        rfk1 = test_models.ManyToOneTest.objects.create(name='rfk1', mixed_ref_test=t1)
         t1.refresh_from_db()
         self.assertEqual(t1.many_to_one.count(), 1)
         self.assertEqual(t1.many_to_one.first(), rfk1)
@@ -297,5 +297,7 @@ class MixedTestMixin(TagTestManager, TestCase):
         serialized = serializers.serialize('xml', test_models.MixedRefTest.objects.all())
         deserialized = list(serializers.deserialize('xml', serialized))
         self.assertEqual(len(deserialized), 1)
-        obj = deserialized[1]
+        obj = deserialized[0].object
         self.assertInstanceEqual(obj, name='test', singletag='test', tags='test')
+        self.assertEqual(obj.many_to_one.count(), 1)
+        self.assertEqual(obj.many_to_one.first().name, 'rfk1')
