@@ -177,7 +177,7 @@ class BaseTagField(object):
             }
 
             # Build new tag model
-            # Name is _Tagulous_MODELNAME_FIELDNAME
+            # Name is Tagulous_MODELNAME_FIELDNAME
             model_name = "%s_%s_%s" % (
                 constants.MODEL_PREFIX, cls._meta.object_name, name,
             )

@@ -29,8 +29,8 @@ def clear_django():
         'migrationtestmodel',
 
         # Tagulous models
-        '_tagulous_migrationtestmodel_singletag',
-        '_tagulous_migrationtestmodel_tags',
+        'tagulous_migrationtestmodel_singletag',
+        'tagulous_migrationtestmodel_tags',
 
         # Django through models
         'migrationtestmodel_tags',

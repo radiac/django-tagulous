@@ -26,6 +26,40 @@ Instructions
    don't need to follow those steps.
 
 
+Upgrading from 0.12.0
+---------------------
+
+1. Auto-generated tag models have been renamed.
+
+   Django 1.11 introduced a rule that models cannot start with an underscore.
+   Prior to this, Tagulous auto-generated tag models started `_Tagulous_`, to
+   indicate they are auto-generated. From now on, they will start `Tagulous_`.
+
+   Django migrations should detect this model name change::
+
+        ./manage.py makemigrations
+        Did you rename the myapp._Tagulous_MyModel model to Tagulous_MyModel? [y/N]
+
+   Answer `y` for all Tagulous auto-generated models, and migrate::
+
+        ./manage.py migrate
+
+   If you do not see the rename prompt when running `makemigrations`, you will
+   need to edit the migration manually - see
+   `RenameModel <https://docs.djangoproject.com/en/1.11/ref/migration-operations/#renamemodel>`
+   in the Django documentation for more details.
+
+2. Version 0.13.0 reduces support for Django 1.4 and Python 3.2. No known
+   breaking changes have been introduced, but these versions of Django and
+   Python will no longer be tested against due to lack of support in third
+   party tools.
+
+3. The `TagField` manager's `__len__` has now been removed, following its
+   deprecation in 0.12.0. As noted in :ref:`_upgrade_0-11-1`, if you are
+   currently using `len(instance.tagfield)` then you should switch to using
+   `instance.tagfield.count()` instead.
+
+
 .. _upgrade_0-11-1
 
 Upgrading from 0.11.1
@@ -183,6 +217,18 @@ Upgrading from 0.7.0 or earlier
 
     'labels': ('tagulous.models.fields.TagField', [], {'force_lowercase': 'True', 'to': u"orm['myapp._Tagulous_MyModel_labels']", 'blank': 'True', '_set_tag_meta': 'True'}),
 
+   Any `db.add_column` calls will need to be changed too::
+
+    db.add_column(u'myapp_mymodel', 'singletag',
+                  self.gf('tagulous.models.fields.SingleTagField')(null=True, ...),
+                  ...)
+
+   becomes::
+
+    db.add_column(u'myapp_mymodel', 'singletag',
+                  self.gf('tagulous.models.fields.SingleTagField')(_set_tag_meta=True, null=True, ...),
+                  ...)
+
    This will use the keyword tag options to update the tag model's objects,
    rather than raising the new ``ValueError``.
 
@@ -198,6 +244,28 @@ links to the instructions above.
 Changes for upcoming releases will be listed without a release date - these
 are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
+
+
+0.13.0, 2018-
+------------------
+
+Feature:
+* Add Django 1.11 support (fixes #28)
+
+Changes:
+* Drop support for Python 3.2
+* Remove deprecated `TagField` manager's `__len__` (#10, fixes #9)
+
+Bugfix:
+* Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
+* Fix potential race condition when creating new tags (#31)
+* Temporarily disabled some migration tests which only failed under Python 2.7
+  with Django 1.9+ due to logic issues in the tests.
+
+Thanks to:
+* Martín R. Guerrero (slackmart) for removing `__len__` method (#9, #10)
+* Mark London for select2 v3 widget fix when pasting tags (#26)
+* Peter Baumgartner (ipmb) for fixing race condition (#31)
 
 
 0.12.0, 2017-02-26

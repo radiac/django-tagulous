@@ -8,6 +8,7 @@ Modules tested:
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import django
 from django import forms
 from django.utils import six
 
@@ -150,10 +151,19 @@ class FormTagFieldTest(TagTestManager, TestCase):
         form = LocalTestForm()
         with self.assertRaises(ValueError) as cm:
             rendered = six.text_type(form['tag'])
-        self.assertTrue(six.text_type(cm.exception).startswith(
-            "Invalid autocomplete view: Reverse for '%s' with arguments '()' "
-            "and keyword arguments '{}' not found." % autocomplete_view
-        ))
+        if django.VERSION < (1, 11):
+            self.assertTrue(six.text_type(cm.exception).startswith(
+                "Invalid autocomplete view: Reverse for '%s' with arguments '("
+                ")' and keyword arguments '{}' not found." % autocomplete_view
+            ))
+        else:
+            # Django 1.11 changes the error message
+            self.assertTrue(six.text_type(cm.exception).startswith(
+                "Invalid autocomplete view: Reverse for '{0}' not found. "
+                "'{0}' is not a valid view function or pattern name.".format(
+                    autocomplete_view,
+                )
+            ))
 
     def test_render_autocomplete_settings(self):
         "Check widget merges autocomplete settings with defaults"

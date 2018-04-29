@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import re
 import copy
 
+import django
 from django.contrib.auth.models import User
 from django.contrib import admin
 from django.contrib import messages
@@ -425,9 +426,16 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
             '<option %s' % opt.strip()
             for opt in options_raw.split('<option ') if opt
         ]
-        self.assertTrue(
-            '<option value="" selected="selected">---------</option>' in options
-        )
+        if django.VERSION < (1, 11):
+            self.assertTrue(
+                '<option value="" selected="selected">---------</option>' in options
+            )
+        else:
+            # Django 1.11 tidies the option tag
+            self.assertTrue(
+                '<option value="" selected>---------</option>' in options
+            )
+
         for tag in tags:
             self.assertContains(
                 options,

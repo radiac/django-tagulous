@@ -85,8 +85,8 @@ class SerializationTestMixin(DumpDataAssertMixin):
         test_models.SimpleMixedTest,
     ]
     dump_models = [
-        'tagulous_tests_app._Tagulous_SimpleMixedTest_singletag',
-        'tagulous_tests_app._Tagulous_SimpleMixedTest_tags',
+        'tagulous_tests_app.Tagulous_SimpleMixedTest_singletag',
+        'tagulous_tests_app.Tagulous_SimpleMixedTest_tags',
         'tagulous_tests_app.SimpleMixedTest',
     ]
     fixture_format = 'undefined'
