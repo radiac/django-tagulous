@@ -13,8 +13,6 @@ script:
   - tox
 env:
   matrix:
-    # Django 1.4
-    - TOXENV=py27-django1.4
     # Django 1.5
     - TOXENV=py27-django1.5
     - TOXENV=py33-django1.5
