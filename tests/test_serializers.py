@@ -290,7 +290,8 @@ class MixedTestMixin(TagTestManager, TestCase):
         """
         t1 = test_models.MixedRefTest.objects.create(name='test', singletag='test', tags='test')
         rfk1 = test_models.ManyToOneTest.objects.create(name='rfk1', mixed_ref_test=t1)
-        t1.refresh_from_db()
+        # Django 1.7 and earlier don't support refresh_from_db
+        t1 = test_models.MixedRefTest.objects.get(pk=t1.pk)
         self.assertEqual(t1.many_to_one.count(), 1)
         self.assertEqual(t1.many_to_one.first(), rfk1)
 
