@@ -293,7 +293,8 @@ class MixedTestMixin(TagTestManager, TestCase):
         # Django 1.7 and earlier don't support refresh_from_db
         t1 = test_models.MixedRefTest.objects.get(pk=t1.pk)
         self.assertEqual(t1.many_to_one.count(), 1)
-        self.assertEqual(t1.many_to_one.first(), rfk1)
+        # Django 1.5 and earlier don't support .first
+        self.assertEqual(t1.many_to_one.all()[0], rfk1)
 
         serialized = serializers.serialize('xml', test_models.MixedRefTest.objects.all())
         deserialized = list(serializers.deserialize('xml', serialized))
@@ -301,4 +302,5 @@ class MixedTestMixin(TagTestManager, TestCase):
         obj = deserialized[0].object
         self.assertInstanceEqual(obj, name='test', singletag='test', tags='test')
         self.assertEqual(obj.many_to_one.count(), 1)
-        self.assertEqual(obj.many_to_one.first().name, 'rfk1')
+        # Django 1.5 and earlier don't support .first
+        self.assertEqual(obj.many_to_one.all()[0].name, 'rfk1')
