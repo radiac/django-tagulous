@@ -49,9 +49,10 @@ Upgrading from 0.12.0
    `RenameModel <https://docs.djangoproject.com/en/1.11/ref/migration-operations/#renamemodel>`
    in the Django documentation for more details.
 
-2. Version 0.13.0 drops support for Python 3.2. No known breaking changes have
-   been introduced, but this version of Python will no longer be tested against
-   due to lack of support in third party tools.
+2. Version 0.13.0 reduces support for Django 1.4 and Python 3.2. No known
+   breaking changes have been introduced, but these versions of Django and
+   Python will no longer be tested against due to lack of support in third
+   party tools.
 
 3. The `TagField` manager's `__len__` has now been removed, following its
    deprecation in 0.12.0. As noted in :ref:`_upgrade_0-11-1`, if you are
