@@ -405,3 +405,9 @@ class CustomTreeTest(models.Model):
     tags = tagulous.models.TagField(
         'CustomTagTree', blank=True, related_name='custom_tags',
     )
+
+class ManyToOneTest(models.Model):
+    """
+    Add a reverse FK to MixedRefTest for serialization tests
+    """
+    mixed_ref_test = models.ForeignKey(MixedRefTest, related_name='many_to_one')

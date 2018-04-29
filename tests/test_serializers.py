@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 import os
 import tempfile
 
-from django.core import management
+from django.core import management, serializers
 from django.utils import six
 
 from tests.lib import *
@@ -277,3 +277,25 @@ class MixedYamlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
 class MixedXmlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test XML serializer with normal fk and m2m fields"
     fixture_format = 'xml'
+
+
+###############################################################################
+####### Other serialization tests
+###############################################################################
+
+class MixedTestMixin(TagTestManager, TestCase):
+    def test_many_to_one(self):
+        """
+        Check serialization of a tagged model with reverse FKs
+        """
+        t1 = test_models.MixedRefTest.objects.create(name='test', singletag='test', tags='test')
+        rfk1 = test_models.ManyToOneTest.objects.create(mixed_ref_test=t1)
+        t1.refresh_from_db()
+        self.assertEqual(t1.many_to_one.count(), 1)
+        self.assertEqual(t1.many_to_one.first(), rfk1)
+
+        serialized = serializers.serialize('xml', test_models.MixedRefTest.objects.all())
+        deserialized = list(serializers.deserialize('xml', serialized))
+        self.assertEqual(len(deserialized), 1)
+        obj = deserialized[1]
+        self.assertInstanceEqual(obj, name='test', singletag='test', tags='test')
