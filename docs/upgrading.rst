@@ -253,7 +253,7 @@ Feature:
 * Add Django 1.11 support (fixes #28)
 
 Changes:
-* Drop support for Python 3.2
+* Reduce support for Django 1.4 and Python 3.2
 * Remove deprecated `TagField` manager's ``__len__`` (#10, fixes #9)
 
 Bugfix:
