@@ -253,19 +253,21 @@ Feature:
 * Add Django 1.11 support (fixes #28)
 
 Changes:
-* Drop support for Python 3.2
-* Remove deprecated `TagField` manager's `__len__` (#10, fixes #9)
+* Reduce support for Django 1.4 and Python 3.2
+* Remove deprecated `TagField` manager's ``__len__`` (#10, fixes #9)
 
 Bugfix:
 * Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
 * Fix potential race condition when creating new tags (#31)
 * Temporarily disabled some migration tests which only failed under Python 2.7
   with Django 1.9+ due to logic issues in the tests.
+* Fix deserialization exception for model with ``ManyToOneRel`` (fixes #14)
 
 Thanks to:
 * Martín R. Guerrero (slackmart) for removing `__len__` method (#9, #10)
 * Mark London for select2 v3 widget fix when pasting tags (#26)
 * Peter Baumgartner (ipmb) for fixing race condition (#31)
+* Raniere Silva (rgaics) for fixing deserialization exeption (#14, #45)
 
 
 0.12.0, 2017-02-26

@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 import os
 import tempfile
 
-from django.core import management
+from django.core import management, serializers
 from django.utils import six
 
 from tests.lib import *
@@ -277,3 +277,30 @@ class MixedYamlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
 class MixedXmlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test XML serializer with normal fk and m2m fields"
     fixture_format = 'xml'
+
+
+###############################################################################
+####### Other serialization tests
+###############################################################################
+
+class MixedTestMixin(TagTestManager, TestCase):
+    def test_many_to_one(self):
+        """
+        Check serialization of a tagged model with reverse FKs
+        """
+        t1 = test_models.MixedRefTest.objects.create(name='test', singletag='test', tags='test')
+        rfk1 = test_models.ManyToOneTest.objects.create(name='rfk1', mixed_ref_test=t1)
+        # Django 1.7 and earlier don't support refresh_from_db
+        t1 = test_models.MixedRefTest.objects.get(pk=t1.pk)
+        self.assertEqual(t1.many_to_one.count(), 1)
+        # Django 1.5 and earlier don't support .first
+        self.assertEqual(t1.many_to_one.all()[0], rfk1)
+
+        serialized = serializers.serialize('xml', test_models.MixedRefTest.objects.all())
+        deserialized = list(serializers.deserialize('xml', serialized))
+        self.assertEqual(len(deserialized), 1)
+        obj = deserialized[0].object
+        self.assertInstanceEqual(obj, name='test', singletag='test', tags='test')
+        self.assertEqual(obj.many_to_one.count(), 1)
+        # Django 1.5 and earlier don't support .first
+        self.assertEqual(obj.many_to_one.all()[0].name, 'rfk1')
