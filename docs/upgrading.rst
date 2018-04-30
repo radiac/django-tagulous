@@ -246,7 +246,7 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.13.0, 2018-
+0.13.0, 2018-04-30
 ------------------
 
 Feature:
