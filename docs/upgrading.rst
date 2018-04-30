@@ -25,6 +25,7 @@ Instructions
    you are for 0.8.0 or later. 0.7.0 is an earlier version than yours, so you
    don't need to follow those steps.
 
+.. _upgrade_0-12-0:
 
 Upgrading from 0.12.0
 ---------------------
@@ -58,10 +59,10 @@ Upgrading from 0.12.0
 3. The ``TagField`` manager's ``__len__`` has now been removed, following its
    deprecation in 0.12.0. If you are currently using ``len(instance.tagfield)``
    then you should switch to using ``instance.tagfield.count()`` instead (see
-   notes on upgrading from 0.11.1).
+   :ref:`upgrade instructions <upgrade_0-11-1>`).
 
 
-.. _upgrade_0-11-1
+.. _upgrade_0-11-1:
 
 Upgrading from 0.11.1
 ---------------------
@@ -249,7 +250,7 @@ are available by installing the master branch from github (see
 
 0.13.0, 2018-04-30
 ------------------
-See :ref:`upgrade instructions <upgrade_0-11-1>`
+See :ref:`upgrade instructions <upgrade_0-12-0>`
 
 Feature:
 * Add Django 1.11 support (fixes #28)
