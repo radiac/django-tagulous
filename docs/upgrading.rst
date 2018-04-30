@@ -32,8 +32,9 @@ Upgrading from 0.12.0
 1. Auto-generated tag models have been renamed.
 
    Django 1.11 introduced a rule that models cannot start with an underscore.
-   Prior to this, Tagulous auto-generated tag models started `_Tagulous_`, to
-   indicate they are auto-generated. From now on, they will start `Tagulous_`.
+   Prior to this, Tagulous auto-generated tag models started ``_Tagulous_``, to
+   indicate they are auto-generated. From now on, they will start
+   ``Tagulous_``.
 
    Django migrations should detect this model name change::
 
@@ -44,8 +45,8 @@ Upgrading from 0.12.0
 
         ./manage.py migrate
 
-   If you do not see the rename prompt when running `makemigrations`, you will
-   need to edit the migration manually - see
+   If you do not see the rename prompt when running ``makemigrations``, you
+   will need to edit the migration manually - see
    `RenameModel <https://docs.djangoproject.com/en/1.11/ref/migration-operations/#renamemodel>`
    in the Django documentation for more details.
 
@@ -54,8 +55,8 @@ Upgrading from 0.12.0
    Python will no longer be tested against due to lack of support in third
    party tools.
 
-3. The `TagField` manager's `__len__` has now been removed, following its
-   deprecation in 0.12.0. As noted in :ref:`_upgrade_0-11-1`, if you are
+3. The `TagField` manager's ``__len__`` has now been removed, following its
+   deprecation in 0.12.0. As noted in :ref:`upgrade_0-11-1`, if you are
    currently using `len(instance.tagfield)` then you should switch to using
    `instance.tagfield.count()` instead.
 
@@ -264,7 +265,7 @@ Bugfix:
 * Fix deserialization exception for model with ``ManyToOneRel`` (fixes #14)
 
 Thanks to:
-* Martín R. Guerrero (slackmart) for removing `__len__` method (#9, #10)
+* Martín R. Guerrero (slackmart) for removing ``__len__`` method (#9, #10)
 * Mark London for select2 v3 widget fix when pasting tags (#26)
 * Peter Baumgartner (ipmb) for fixing race condition (#31)
 * Raniere Silva (rgaics) for fixing deserialization exeption (#14, #45)
