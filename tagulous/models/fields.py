@@ -15,9 +15,9 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import capfirst
 
 try:
-    from django.core import checks
+    from django.core.checks import Warning as ChecksWarning
 except ImportError:
-    checks = None
+    ChecksWarning = None
 
 from tagulous import constants
 from tagulous import forms
@@ -448,13 +448,13 @@ class TagField(BaseTagField, models.ManyToManyField):
 
         # Django 1.9 introduces this, but later version remove has_null_arg
         if (
-            checks and (
+            ChecksWarning and (
                 getattr(self, 'has_null_arg', False) or
                 getattr(self, 'null', False)
             )
         ):
             warnings.append(
-                checks.Warning(
+                ChecksWarning(
                     'null has no effect on TagField.',
                     hint=None,
                     obj=self,
