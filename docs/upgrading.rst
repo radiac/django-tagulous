@@ -30,7 +30,12 @@ Instructions
 Upgrading from 0.13.0
 ---------------------
 
-1. Version 0.13.1 reduces support for Python 3.3. No known breaking changes
+1. Setting ``null`` in a model ``TagField`` has raised a warning in the
+   parent ``ManyToManyField`` since Django 1.9. The warning now correctly
+   blames a ``TagField`` instead. The ``null`` argument in a model ``TagField``
+   is deprecated and has no effect, so should not be used.
+
+2. Version 0.13.1 reduces support for Python 3.3. No known breaking changes
    have been introduced, but this version of Python will no longer be tested
    against due to lack of support in third party tools.
 
@@ -255,11 +260,12 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.13.1,
+0.13.1, 2018-05-19
 ------------------
 
 Bugfix:
-* `TagField(null=...)` no longer raises a warning
+* ``TagField(null=...)`` now raises a warning about the ``TagField``, rather
+  than the parent ``ManyToManyField``.
 
 Changes:
 * Reduce support for Python 3.3
@@ -273,7 +279,7 @@ Feature:
 
 Changes:
 * Reduce support for Django 1.4 and Python 3.2
-* Remove deprecated `TagField` manager's ``__len__`` (#10, fixes #9)
+* Remove deprecated ``TagField`` manager's ``__len__`` (#10, fixes #9)
 
 Bugfix:
 * Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
@@ -283,7 +289,7 @@ Bugfix:
 * Fix deserialization exception for model with ``ManyToOneRel`` (fixes #14)
 
 Thanks to:
-* Martín R. Guerrero (slackmart) for removing `__len__` method (#9, #10)
+* Martín R. Guerrero (slackmart) for removing ``__len__`` method (#9, #10)
 * Mark London for select2 v3 widget fix when pasting tags (#26)
 * Peter Baumgartner (ipmb) for fixing race condition (#31)
 * Raniere Silva (rgaics) for fixing deserialization exeption (#14, #45)
