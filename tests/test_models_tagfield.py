@@ -13,6 +13,11 @@ from __future__ import unicode_literals
 
 from django.utils import six
 
+try:
+    from django.core import checks
+except ImportError:
+    checks = None
+
 from tests.lib import *
 
 
@@ -816,6 +821,14 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             six.text_type(cm.exception),
             "Invalid argument 'symmetrical' for TagField"
         )
+
+    @unittest.skipIf(checks is None, 'Check test only run for Django 1.9+')
+    def test_nulled_tag_field(self):
+        "Check model field raises warning when given an invalid value"
+        nulled_tagfield = tag_models.TagField(null=True)
+        warnings = nulled_tagfield._check_ignored_options()
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0].msg, 'null has no effect on TagField.')
 
 
 ###############################################################################

@@ -246,6 +246,13 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+0.13.1,
+------------------
+
+Bugfix:
+* `TagField(null=...)` no longer raises a warning
+
+
 0.13.0, 2018-04-30
 ------------------
 
