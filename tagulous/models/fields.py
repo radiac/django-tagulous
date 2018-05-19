@@ -464,6 +464,10 @@ class TagField(BaseTagField, models.ManyToManyField):
             self.has_null_arg = False
             self.null = None
 
+        # Essentially a hack for tests in Django 1.7
+        if not hasattr(super(TagField, self), '_check_ignored_options'):
+            return warnings
+
         return warnings + super(TagField, self)._check_ignored_options(**kwargs)
 
     def contribute_to_class(self, cls, name):
