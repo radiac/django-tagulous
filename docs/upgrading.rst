@@ -26,6 +26,15 @@ Instructions
    don't need to follow those steps.
 
 
+
+Upgrading from 0.13.0
+---------------------
+
+1. Version 0.13.1 reduces support for Python 3.3. No known breaking changes
+   have been introduced, but this version of Python will no longer be tested
+   against due to lack of support in third party tools.
+
+
 Upgrading from 0.12.0
 ---------------------
 
@@ -244,6 +253,16 @@ links to the instructions above.
 Changes for upcoming releases will be listed without a release date - these
 are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
+
+
+0.13.1,
+------------------
+
+Bugfix:
+* `TagField(null=...)` no longer raises a warning
+
+Changes:
+* Reduce support for Python 3.3
 
 
 0.13.0, 2018-04-30
