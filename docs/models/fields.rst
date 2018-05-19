@@ -37,16 +37,13 @@ The ``SingleTagField`` supports most standard ``ForeignKey`` arguments, except
 for ``to_field`` and ``rel_class``.
 
 The ``TagField`` supports most normal ``ManyToManyField`` arguments, except
-for ``db_table``, ``through`` and ``symmetrical``. Also note that ``null`` and
-``blank`` have no effect at the database level, they are just used for form
-validation - as is the case with a normal ``ManyToManyField``.
+for ``db_table``, ``through`` and ``symmetrical``. Also note that ``blank`` has
+no effect at the database level, it is just used for form validation - as is
+the case with a normal ``ManyToManyField``.
 
 The ``related_name`` will default to ``<field>_set``, as is normal for a
 ``ForeignKey`` or ``ManyToManyField``. If using the same tag table on multiple
 fields, you will need to set this to something else to avoid clashes.
-
-Tag fields obey standard ``null`` and ``blank`` options; to make an optional
-model tag field set ``null=True`` and ``blank=True``.
 
 
 .. _field_auto_model:

@@ -7,7 +7,7 @@ and ``ManyToManyField``, giving you all their normal power with a sprinkling of
 tagging syntactic sugar, and a full set of extra
 :doc:`features <introduction>`.
 
-Version 0.13.0
+Version 0.13.1
 
 
 .. seealso::
