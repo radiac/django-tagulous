@@ -26,6 +26,7 @@ Instructions
    don't need to follow those steps.
 
 
+.. _upgrade_0-13-0:
 
 Upgrading from 0.13.0
 ---------------------
@@ -40,14 +41,17 @@ Upgrading from 0.13.0
    against due to lack of support in third party tools.
 
 
+.. _upgrade_0-12-0:
+
 Upgrading from 0.12.0
 ---------------------
 
 1. Auto-generated tag models have been renamed.
 
    Django 1.11 introduced a rule that models cannot start with an underscore.
-   Prior to this, Tagulous auto-generated tag models started `_Tagulous_`, to
-   indicate they are auto-generated. From now on, they will start `Tagulous_`.
+   Prior to this, Tagulous auto-generated tag models started ``_Tagulous_``, to
+   indicate they are auto-generated. From now on, they will start
+   ``Tagulous_``.
 
    Django migrations should detect this model name change::
 
@@ -71,19 +75,18 @@ Upgrading from 0.12.0
      object has no attribute 'm2m_reverse_field_name'``. To resolve these,
      manually change the ``to`` parameter in your ``AlterField``'s tag field definition from ``myapp._Tagulous_...`` to ``myapp.Tagulous_...``.
 
-
 2. Version 0.13.0 reduces support for Django 1.4 and Python 3.2. No known
    breaking changes have been introduced, but these versions of Django and
    Python will no longer be tested against due to lack of support in third
    party tools.
 
-3. The `TagField` manager's `__len__` has now been removed, following its
-   deprecation in 0.12.0. As noted in :ref:`_upgrade_0-11-1`, if you are
-   currently using `len(instance.tagfield)` then you should switch to using
-   `instance.tagfield.count()` instead.
+3. The ``TagField`` manager's ``__len__`` has now been removed, following its
+   deprecation in 0.12.0. If you are currently using ``len(instance.tagfield)``
+   then you should switch to using ``instance.tagfield.count()`` instead (see
+   :ref:`upgrade instructions <upgrade_0-11-1>`).
 
 
-.. _upgrade_0-11-1
+.. _upgrade_0-11-1:
 
 Upgrading from 0.11.1
 ---------------------
@@ -271,6 +274,7 @@ are available by installing the master branch from github (see
 
 0.13.1, 2018-05-19
 ------------------
+See :ref:`upgrade instructions <upgrade_0-13-0>`
 
 Bugfix:
 * ``TagField(null=...)`` now raises a warning about the ``TagField``, rather
@@ -282,6 +286,7 @@ Changes:
 
 0.13.0, 2018-04-30
 ------------------
+See :ref:`upgrade instructions <upgrade_0-12-0>`
 
 Feature:
 * Add Django 1.11 support (fixes #28)
@@ -306,6 +311,7 @@ Thanks to:
 
 0.12.0, 2017-02-26
 ------------------
+See :ref:`upgrade instructions <upgrade_0-11-1>`
 
 Feature:
 * Add Django 1.10 support (fixes #18, #20)
