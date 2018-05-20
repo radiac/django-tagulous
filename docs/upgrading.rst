@@ -58,10 +58,19 @@ Upgrading from 0.12.0
 
         ./manage.py migrate
 
-   If you do not see the rename prompt when running `makemigrations`, you will
-   need to edit the migration manually - see
-   `RenameModel <https://docs.djangoproject.com/en/1.11/ref/migration-operations/#renamemodel>`
-   in the Django documentation for more details.
+   Troubleshooting:
+
+   * If you do not see the rename prompt when running ``makemigrations``, you
+     will need to edit the migration manually - see
+     `RenameModel <https://docs.djangoproject.com/en/1.11/ref/migration-operations/#renamemodel>`
+     in the Django documentation for more details.
+   * If any ``AlterField`` changes to the ``SingleTagField`` or ``TagField``
+     definitions are included in this set of migrations, the new tag model's
+     name will not be correctly detected and you will see the errors
+     ``Related model ... cannot be resolved`` or ``AttributeError: 'TagField'
+     object has no attribute 'm2m_reverse_field_name'``. To resolve these,
+     manually change the ``to`` parameter in your ``AlterField``'s tag field definition from ``myapp._Tagulous_...`` to ``myapp.Tagulous_...``.
+
 
 2. Version 0.13.0 reduces support for Django 1.4 and Python 3.2. No known
    breaking changes have been introduced, but these versions of Django and
