@@ -18,5 +18,5 @@ class MixedModel(models.Model):
         blank=True, null=True, initial='Mr, Mrs, Ms',
     )
     tags = tagulous.models.TagField(
-        blank=True, null=True, initial='Adam, Brian, Chris',
+        blank=True, initial='Adam, Brian, Chris',
     )

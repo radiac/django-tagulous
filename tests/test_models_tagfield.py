@@ -824,7 +824,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
 
     @unittest.skipIf(ChecksWarning is None, 'Check test only run for Django 1.9+')
     def test_nulled_tag_field(self):
-        "Check model field raises warning when given an invalid value"
+        "Check model field raises warning when given invalid null"
         nulled_tagfield = tag_models.TagField(null=True)
         warnings = nulled_tagfield._check_ignored_options()
         self.assertEqual(len(warnings), 1)
