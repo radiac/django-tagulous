@@ -412,3 +412,22 @@ class ManyToOneTest(models.Model):
     """
     name = models.CharField(max_length=10)
     mixed_ref_test = models.ForeignKey(MixedRefTest, related_name='many_to_one')
+
+
+class CustomTagBase(tagulous.models.TagModel):
+    """
+    For testing custom tag base models for auto-generated tag models
+    """
+    is_custom = True
+
+    class Meta:
+        abstract = True
+
+class CustomTagBaseTest(models.Model):
+    """
+    Test custom tag base model
+    """
+    name = models.CharField(max_length=10)
+    singletag = tagulous.models.SingleTagField(
+        to_base=CustomTagBase, blank=True, related_name='custom_singletag',
+    )

@@ -272,6 +272,13 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+0.13.2, 2018-05-28
+------------------
+
+Feature:
+* Tag fields now support the argument :ref:`argument_to_base`
+
+
 0.13.1, 2018-05-19
 ------------------
 See :ref:`upgrade instructions <upgrade_0-13-0>`

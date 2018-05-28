@@ -37,7 +37,7 @@ class BaseTagField(object):
     # List of fields which are forbidden from __init__
     forbidden_fields = ()
 
-    def __init__(self, to=None, **kwargs):
+    def __init__(self, to=None, to_base=None, **kwargs):
         """
         Initialise the tag options and store
 
@@ -49,8 +49,9 @@ class BaseTagField(object):
         a ``to`` tag model is specified. However, this is intended for internal
         use only (when migrating), so if you must use it, use it with care.
         """
-        # Save tag model
+        # Save tag model data
         self.tag_model = to
+        self.tag_model_base = to_base
 
         # Extract options from kwargs
         options = {}
@@ -186,9 +187,14 @@ class BaseTagField(object):
             model_name = "%s_%s_%s" % (
                 constants.MODEL_PREFIX, cls._meta.object_name, name,
             )
-            model_cls = TagModel
-            if self.tag_options.tree:
+
+            if self.tag_model_base is not None:
+                model_cls = self.tag_model_base
+            elif self.tag_options.tree:
                 model_cls = TagTreeModel
+            else:
+                model_cls = TagModel
+
             self.tag_model = type(str(model_name), (model_cls,), model_attrs)
 
             # Give it a verbose name, for admin filters

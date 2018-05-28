@@ -59,6 +59,10 @@ auto-generated model for ``MyModel.tags`` would be ``Tagulous_MyModel_tags``.
 When auto-generating a model, any :ref:`model option <model_options>` can be
 passed as a field argument - see the :ref:`example_auto_tagmodel` example.
 
+If you want to override the default base class, for convenience you can specify
+a custom base class for the auto tag model - see the :ref:`argument_to_base`
+argument for details.
+
 
 .. _field_explicit_model:
 
@@ -73,6 +77,7 @@ You can specify the tag model for the tag field to use with the
 
 ``to=MyTagModel`` (or first unnamed argument)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Manually specify a tag model for this tag field. This can either be a
 reference to the tag model class, or string reference to it in the format
 ``app.model``.
@@ -101,6 +106,23 @@ This argument is optional; if omitted, a tag model will be
 :ref:`auto-generated <field_auto_model>` for you.
 
 Default: ``Tagulous_<ModelName>_<FieldName>`` (auto-generated)
+
+
+.. _argument_to_base:
+
+``to_base=MyTagModelBase``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can specify a base class to use for an auto-generated tag model, instead of
+using ``TagModel``.
+
+This can be useful on complex sites where multiple auto-generated tag models
+need to share common custom functionality - for example, tracking and filtering
+by user who creates the tags. This argument will allow you to define one base
+class and re-use it across your project with less boilerplate than defining
+many empty custom tag models.
+
+Default: ``tagulous.models.TagModel``
 
 
 .. _model_singletagfield:
