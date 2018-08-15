@@ -82,7 +82,7 @@ class TagModelQuerySet(models.query.QuerySet):
         # Build SQL
         template = (
             '%(floor)s((count*%(upper)d)/'
-            '(SELECT MAX(count) FROM %(table)s)'
+            '(SELECT MAX(count) FROM "%(table)s")'
             ')+%(lower)d'
         )
         data = {
