@@ -82,20 +82,24 @@ class TagModelQuerySet(models.query.QuerySet):
         # Build SQL
         template = (
             '%(floor)s((count*%(upper)d)/'
-            '(SELECT NULLIF(MAX(count), 0) FROM "%(table)s")'
+            '(SELECT NULLIF(MAX(count), 0) FROM %(table)s)'
             ')+%(lower)d'
         )
         data = {
             'floor': 'FLOOR',
             'upper': max-min,
             'lower': min,
-            'table': self.model._meta.db_table,
+            'table': '"%s"' % self.model._meta.db_table,
         }
 
         # Sqlite doesn't support FLOOR, but that's ok because it does it anyway
         if connection.vendor == 'sqlite':
             data['floor'] = ''
 
+        # MySQL doesn't support double quoted tablenames, use backticks instead
+        if connection.vendor == 'mysql':
+            data['table'] = '`%s`' % self.model._meta.db_table            
+            
         # Perform query and add it as `weight`
         return self.extra(select={'weight': template % data})
 
