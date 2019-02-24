@@ -51,6 +51,8 @@ matrix:
     env: TOXENV=py35-django1.10
   - python: '3.5'
     env: TOXENV=py35-django1.11
+  - python: '3.5'
+    env: TOXENV=py35-django2.0
   exclude:
   - python: '3.6'
     env: TOXENV=py35-django1.9
@@ -58,6 +60,8 @@ matrix:
     env: TOXENV=py35-django1.10
   - python: '3.6'
     env: TOXENV=py35-django1.11
+  - python: '3.6'
+    env: TOXENV=py35-django2.0
 deploy:
   provider: pypi
   user: radiac
