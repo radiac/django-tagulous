@@ -26,6 +26,16 @@ Instructions
    don't need to follow those steps.
 
 
+.. _upgrade_0-14-2:
+
+Upgradiung from 0.13.2
+----------------------
+
+1. Version 0.14.0 reduces support for Python 3.3. No known breaking changes
+   have been introduced, but these versions of Python will no longer be tested
+   against due to lack of support in third party tools.
+
+
 .. _upgrade_0-13-0:
 
 Upgrading from 0.13.0
@@ -270,6 +280,16 @@ links to the instructions above.
 Changes for upcoming releases will be listed without a release date - these
 are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
+
+
+0.14.0, 2019-02
+------------------
+
+Feature:
+* Add Django 2.0 support (fixes #28)
+
+Changes:
+* Reduce support for Python 3.3
 
 
 0.13.2, 2018-05-28

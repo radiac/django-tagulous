@@ -411,7 +411,7 @@ class ManyToOneTest(models.Model):
     Add a reverse FK to MixedRefTest for serialization tests
     """
     name = models.CharField(max_length=10)
-    mixed_ref_test = models.ForeignKey(MixedRefTest, related_name='many_to_one')
+    mixed_ref_test = models.ForeignKey(MixedRefTest, related_name='many_to_one', on_delete=models.CASCADE)
 
 
 class CustomTagBase(tagulous.models.TagModel):

@@ -60,9 +60,15 @@ class SingleTagManager(object):
 
         Must be called after all
         """
-        cache_name = self.field.get_cache_name()
-        if hasattr(self.instance, cache_name):
-            delattr(self.instance, cache_name)
+        # Django 2.0 changes cache management
+        if hasattr(self.field, 'get_cached_value'):
+            if self.field.is_cached(self.instance):
+                self.field.delete_cached_value(self.instance)
+        else:
+            # Django <2.0
+            cache_name = self.field.get_cache_name()
+            if hasattr(self.instance, cache_name):
+                delattr(self.instance, cache_name)
 
     def get_actual(self):
         """
