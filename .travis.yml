@@ -21,11 +21,11 @@ env:
   - TOXENV=py27-django1.7
   - TOXENV=py34-django1.7
   - TOXENV=py27-django1.8
-  - TOXENV=py27-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py27-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+  - TOXENV=py27-django1.8
+  - TOXENV=py27-django1.8
   - TOXENV=py34-django1.8
-  - TOXENV=py34-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py34-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+  - TOXENV=py34-django1.8
+  - TOXENV=py34-django1.8
   - TOXENV=py27-django1.9
   - TOXENV=py34-django1.9
   - TOXENV=py35-django1.9
@@ -40,6 +40,9 @@ env:
   - TOXENV=py27-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
   - TOXENV=py36-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
   - TOXENV=py36-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+  - TOXENV=py34-django2.0
+  - TOXENV=py35-django2.0
+  - TOXENV=py36-django2.0
 matrix:
   include:
   - python: '3.5'
