@@ -325,26 +325,6 @@ is determined by the options :ref:`option_case_sensitive` and
         candidates.append(person)
 
 
-``__len__``
-~~~~~~~~~~~
-
-.. warning::
-
-    This method is deprecated in Tagulous 0.12, and will be removed in 0.13.
-
-    You should use the `count` manager method instead, eg::
-
-        person.skills = 'judo, "kung fu", karate'
-        person.skills.count() == 3
-
-
-Return the number of tags set for this instance.
-::
-
-    person.skills = 'judo, "kung fu", karate'
-    len(person.skills) == 3
-
-
 ``reload()``
 ~~~~~~~~~~~~
 Discard any unsaved changes to the tags and load tags from the database

@@ -26,16 +26,6 @@ Instructions
    don't need to follow those steps.
 
 
-.. _upgrade_0-14-2:
-
-Upgradiung from 0.13.2
-----------------------
-
-1. Version 0.14.0 reduces support for Python 3.3. No known breaking changes
-   have been introduced, but these versions of Python will no longer be tested
-   against due to lack of support in third party tools.
-
-
 .. _upgrade_0-13-0:
 
 Upgrading from 0.13.0
@@ -289,8 +279,8 @@ Feature:
 * Add Django 2.0 support (fixes #48, #65)
 * Add Django 2.1 support (fixes #56, #58)
 
-Changes:
-* Reduce support for Python 3.3
+Bugfix:
+* Fix example project (fixes #64)
 
 Thanks to:
 * Diego Ubirajara (dubirajara) for Widget.render() fix (#58)
@@ -305,6 +295,7 @@ Feature:
 
 0.13.1, 2018-05-19
 ------------------
+
 See :ref:`upgrade instructions <upgrade_0-13-0>`
 
 Bugfix:
@@ -317,6 +308,7 @@ Changes:
 
 0.13.0, 2018-04-30
 ------------------
+
 See :ref:`upgrade instructions <upgrade_0-12-0>`
 
 Feature:
