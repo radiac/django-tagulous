@@ -286,10 +286,14 @@ are available by installing the master branch from github (see
 ------------------
 
 Feature:
-* Add Django 2.0 support (fixes #65)
+* Add Django 2.0 support (fixes #48, #65)
+* Add Django 2.1 support (fixes #56, #58)
 
 Changes:
 * Reduce support for Python 3.3
+
+Thanks to:
+* Diego Ubirajara (dubirajara) for Widget.render() fix (#58)
 
 
 0.13.2, 2018-05-28
