@@ -25,6 +25,22 @@ Instructions
    you are for 0.8.0 or later. 0.7.0 is an earlier version than yours, so you
    don't need to follow those steps.
 
+
+.. _upgrade_0-13-0:
+
+Upgrading from 0.13.0
+---------------------
+
+1. Setting ``null`` in a model ``TagField`` has raised a warning in the
+   parent ``ManyToManyField`` since Django 1.9. The warning now correctly
+   blames a ``TagField`` instead. The ``null`` argument in a model ``TagField``
+   is deprecated and has no effect, so should not be used.
+
+2. Version 0.13.1 reduces support for Python 3.3. No known breaking changes
+   have been introduced, but this version of Python will no longer be tested
+   against due to lack of support in third party tools.
+
+
 .. _upgrade_0-12-0:
 
 Upgrading from 0.12.0
@@ -46,10 +62,18 @@ Upgrading from 0.12.0
 
         ./manage.py migrate
 
-   If you do not see the rename prompt when running ``makemigrations``, you
-   will need to edit the migration manually - see
-   `RenameModel <https://docs.djangoproject.com/en/1.11/ref/migration-operations/#renamemodel>`
-   in the Django documentation for more details.
+   Troubleshooting:
+
+   * If you do not see the rename prompt when running ``makemigrations``, you
+     will need to edit the migration manually - see
+     `RenameModel <https://docs.djangoproject.com/en/1.11/ref/migration-operations/#renamemodel>`
+     in the Django documentation for more details.
+   * If any ``AlterField`` changes to the ``SingleTagField`` or ``TagField``
+     definitions are included in this set of migrations, the new tag model's
+     name will not be correctly detected and you will see the errors
+     ``Related model ... cannot be resolved`` or ``AttributeError: 'TagField'
+     object has no attribute 'm2m_reverse_field_name'``. To resolve these,
+     manually change the ``to`` parameter in your ``AlterField``'s tag field definition from ``myapp._Tagulous_...`` to ``myapp.Tagulous_...``.
 
 2. Version 0.13.0 reduces support for Django 1.4 and Python 3.2. No known
    breaking changes have been introduced, but these versions of Django and
@@ -248,6 +272,25 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+0.13.2, 2018-05-28
+------------------
+
+Feature:
+* Tag fields now support the argument :ref:`argument_to_base`
+
+
+0.13.1, 2018-05-19
+------------------
+See :ref:`upgrade instructions <upgrade_0-13-0>`
+
+Bugfix:
+* ``TagField(null=...)`` now raises a warning about the ``TagField``, rather
+  than the parent ``ManyToManyField``.
+
+Changes:
+* Reduce support for Python 3.3
+
+
 0.13.0, 2018-04-30
 ------------------
 See :ref:`upgrade instructions <upgrade_0-12-0>`
@@ -257,7 +300,7 @@ Feature:
 
 Changes:
 * Reduce support for Django 1.4 and Python 3.2
-* Remove deprecated `TagField` manager's ``__len__`` (#10, fixes #9)
+* Remove deprecated ``TagField`` manager's ``__len__`` (#10, fixes #9)
 
 Bugfix:
 * Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)

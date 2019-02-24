@@ -17,16 +17,12 @@ script:
 env:
   matrix:
   - TOXENV=py27-django1.5
-  - TOXENV=py33-django1.5
   - TOXENV=py27-django1.6
-  - TOXENV=py33-django1.6
   - TOXENV=py27-django1.7
-  - TOXENV=py33-django1.7
   - TOXENV=py34-django1.7
   - TOXENV=py27-django1.8
   - TOXENV=py27-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
   - TOXENV=py27-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
-  - TOXENV=py33-django1.8
   - TOXENV=py34-django1.8
   - TOXENV=py34-django1.8 DATABASE_ENGINE=mysql DATABASE_USER=travis
   - TOXENV=py34-django1.8 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
@@ -46,14 +42,6 @@ env:
   - TOXENV=py36-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
 matrix:
   include:
-  - python: '3.3'
-    env: TOXENV=py33-django1.5
-  - python: '3.3'
-    env: TOXENV=py33-django1.6
-  - python: '3.3'
-    env: TOXENV=py33-django1.7
-  - python: '3.3'
-    env: TOXENV=py33-django1.8
   - python: '3.5'
     env: TOXENV=py35-django1.9
   - python: '3.5'
@@ -61,14 +49,6 @@ matrix:
   - python: '3.5'
     env: TOXENV=py35-django1.11
   exclude:
-  - python: '3.6'
-    env: TOXENV=py33-django1.5
-  - python: '3.6'
-    env: TOXENV=py33-django1.6
-  - python: '3.6'
-    env: TOXENV=py33-django1.7
-  - python: '3.6'
-    env: TOXENV=py33-django1.8
   - python: '3.6'
     env: TOXENV=py35-django1.9
   - python: '3.6'
@@ -84,4 +64,4 @@ deploy:
     tags: true
     distributions: sdist bdist_wheel
     repo: radiac/django-tagulous
-    condition: '$TOXENV = py36-django1.11'
+    condition: '$TOXENV = py35-django1.11'
