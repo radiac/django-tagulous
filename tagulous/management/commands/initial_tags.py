@@ -33,6 +33,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--target',
             type=str,
+            default='',
             help='Target to load: [<app_name>[.<model_name>[.<field_name>]]]',
         )
 

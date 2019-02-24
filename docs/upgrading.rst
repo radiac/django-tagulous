@@ -286,7 +286,7 @@ are available by installing the master branch from github (see
 ------------------
 
 Feature:
-* Add Django 2.0 support (fixes #28)
+* Add Django 2.0 support (fixes #65)
 
 Changes:
 * Reduce support for Python 3.3
