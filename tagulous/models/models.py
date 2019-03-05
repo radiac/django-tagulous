@@ -87,8 +87,8 @@ class TagModelQuerySet(models.query.QuerySet):
         )
         data = {
             'floor': 'FLOOR',
-            'upper': max-min,
-            'lower': min,
+            'upper': int(max-min),
+            'lower': int(min),
             'table': self.model._meta.db_table,
         }
 
