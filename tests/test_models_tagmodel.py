@@ -943,13 +943,9 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
     def test_weight_integer(self):
         "Test weight() is a whole number"
 
-        self.assertTagModel(self.model.initial_list, {
-            'Adam':  2.5,
-        })
-
-        weighted = self.tag_model.objects.weight(min=2.0, max=6)
+        weighted = self.tag_model.objects.weight(min=2.5, max=6)
         self.assertEqual(weighted[0].name, 'Adam')
-        self.assertEqual(weighted[0].weight, 3)
+        self.assertEqual(weighted[0].weight, 2)
 
     def test_to_string(self):
         "Check manager and queryset can be converted to a tag string"
