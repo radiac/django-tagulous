@@ -45,6 +45,10 @@ env:
   - TOXENV=py36-django2.0
   - TOXENV=py35-django2.1
   - TOXENV=py36-django2.1
+  - TOXENV=py35-django2.2
+  - TOXENV=py36-django2.2
+  - TOXENV=py36-django2.2 DATABASE_ENGINE=mysql DATABASE_USER=travis
+  - TOXENV=py36-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
 matrix:
   include:
   - python: '3.5'
@@ -57,6 +61,8 @@ matrix:
     env: TOXENV=py35-django2.0
   - python: '3.5'
     env: TOXENV=py35-django2.1
+  - python: '3.5'
+    env: TOXENV=py35-django2.2
   exclude:
   - python: '3.6'
     env: TOXENV=py35-django1.9
@@ -68,6 +74,8 @@ matrix:
     env: TOXENV=py35-django2.0
   - python: '3.6'
     env: TOXENV=py35-django2.1
+  - python: '3.6'
+    env: TOXENV=py35-django2.2
 deploy:
   provider: pypi
   user: radiac
