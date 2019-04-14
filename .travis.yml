@@ -5,6 +5,9 @@ dist: xenial
 install:
 - pip install --upgrade pip wheel setuptools
 - pip install virtualenv tox
+services:
+  - mysql
+  - postgresql
 before_script:
 - sh -c "if [ '$DATABASE_ENGINE' = 'pgsql' ]; then psql -c 'DROP DATABASE IF EXISTS
   tagulous_tests;' -U postgres; fi"
@@ -33,6 +36,45 @@ env:
   - TOXENV=py37-django2.2
   - TOXENV=py37-django2.2 DATABASE_ENGINE=mysql DATABASE_USER=travis
   - TOXENV=py37-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+matrix:
+  include:
+  - python: '3.4'
+    env: TOXENV=py34-django1.11
+  - python: '3.5'
+    env: TOXENV=py35-django1.11
+  - python: '3.5'
+    env: TOXENV=py35-django2.0
+  - python: '3.5'
+    env: TOXENV=py35-django2.1
+  - python: '3.5'
+    env: TOXENV=py35-django2.2
+  - python: '3.6'
+    env: TOXENV=py36-django1.11
+  - python: '3.6'
+    env: TOXENV=py36-django2.0
+  - python: '3.6'
+    env: TOXENV=py36-django2.1
+  - python: '3.6'
+    env: TOXENV=py36-django2.2
+  exclude:
+  - python: '3.7'
+    env: TOXENV=py34-django1.11
+  - python: '3.7'
+    env: TOXENV=py35-django1.11
+  - python: '3.7'
+    env: TOXENV=py35-django2.0
+  - python: '3.7'
+    env: TOXENV=py35-django2.1
+  - python: '3.7'
+    env: TOXENV=py35-django2.2
+  - python: '3.7'
+    env: TOXENV=py36-django1.11
+  - python: '3.7'
+    env: TOXENV=py36-django2.0
+  - python: '3.7'
+    env: TOXENV=py36-django2.1
+  - python: '3.7'
+    env: TOXENV=py36-django2.2
 deploy:
   provider: pypi
   user: radiac
