@@ -334,8 +334,8 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         )
 
         # Reload count
-        # Use BD for write because we just updated the value
-        using = router.db_for_write(self.__class__, instance=self)
+        # Use DB for write because we just updated the value
+        using = router.db_for_write(self.tag_model, instance=self)
         if hasattr(self, 'refresh_from_db'):
             self.refresh_from_db(using=using)
         else:
