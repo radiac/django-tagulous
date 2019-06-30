@@ -209,6 +209,8 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
             return self.name == obj
         return super(BaseTagModel, self).__eq__(obj)
 
+    __hash__ = models.Model.__hash__
+
     def __ne__(self, obj):
         return not self == obj
 

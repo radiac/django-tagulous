@@ -20,12 +20,10 @@ script:
 env:
   matrix:
   - TOXENV=py27-django1.11
-  - TOXENV=py34-django1.11
   - TOXENV=py35-django1.11
   - TOXENV=py36-django1.11
   - TOXENV=py27-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
   - TOXENV=py27-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
-  - TOXENV=py34-django2.0
   - TOXENV=py35-django2.0
   - TOXENV=py36-django2.0
   - TOXENV=py35-django2.1
@@ -38,8 +36,6 @@ env:
   - TOXENV=py37-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
 matrix:
   include:
-  - python: '3.4'
-    env: TOXENV=py34-django1.11
   - python: '3.5'
     env: TOXENV=py35-django1.11
   - python: '3.5'
@@ -57,8 +53,6 @@ matrix:
   - python: '3.6'
     env: TOXENV=py36-django2.2
   exclude:
-  - python: '3.7'
-    env: TOXENV=py34-django1.11
   - python: '3.7'
     env: TOXENV=py35-django1.11
   - python: '3.7'
