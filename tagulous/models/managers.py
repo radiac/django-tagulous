@@ -186,7 +186,7 @@ class SingleTagManager(object):
         # Only need to go further if there has been a change
         if not self.changed:
             return
-https://github.com/samaranin/django-tagulous.git
+
         # Store the old tag so we know to decrement it in post_save
         self.removed_tag = self.get_actual()
 
@@ -516,20 +516,21 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         Ensure that self.tags all exist in the database
         """
         db_tags = []
-        for tag in tags:
-            if (tag[0] is not None) and tag[0].pk:
-                # Already in DB
-                db_tag = tag
-            else:
-                # Not in DB - get or create
-                field_lookup = 'name'
-                if not self.tag_options.case_sensitive:
-                    field_lookup += '__iexact'
-                db_tag, __ = self.tag_model.objects.get_or_create(
-                    defaults={'name': tag.name, 'protected': False},
-                    **{field_lookup: tag.name}
-                )
-            db_tags.append(db_tag)
+        for tag_list in tags:
+            for tag in tag_list:
+                if tag.pk:
+                    # Already in DB
+                    db_tag = tag
+                else:
+                    # Not in DB - get or create
+                    field_lookup = 'name'
+                    if not self.tag_options.case_sensitive:
+                        field_lookup += '__iexact'
+                    db_tag, __ = self.tag_model.objects.get_or_create(
+                        defaults={'name': tag.name, 'protected': False},
+                        **{field_lookup: tag.name}
+                    )
+                db_tags.append(db_tag)
         return db_tags
 
     #
