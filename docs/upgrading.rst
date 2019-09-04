@@ -272,7 +272,14 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.14.0, 2019-02
+0.14.1, 2019-09-04
+------------------
+
+Feature:
+* Add Django 2.2 support (closes #71)
+
+
+0.14.0, 2019-02-24
 ------------------
 
 Feature:
