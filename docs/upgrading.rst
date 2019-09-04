@@ -26,6 +26,15 @@ Instructions
    don't need to follow those steps.
 
 
+.. _upgrade_0-14-0:
+
+Upgrading from 0.14.0
+---------------------
+
+Tagulous 0.14.0 was the last version to officially support Django 1.10 or
+earlier. From version 0.15.0 tests will only be run for Django 1.11 or later.
+
+
 .. _upgrade_0-13-0:
 
 Upgrading from 0.13.0
@@ -74,6 +83,9 @@ Upgrading from 0.12.0
      ``Related model ... cannot be resolved`` or ``AttributeError: 'TagField'
      object has no attribute 'm2m_reverse_field_name'``. To resolve these,
      manually change the ``to`` parameter in your ``AlterField``'s tag field definition from ``myapp._Tagulous_...`` to ``myapp.Tagulous_...``.
+   * If you see an error ``Renaming the table while in a transaction is not supported
+     because it would break referential integrity``, add ``atomic = False`` to your
+     migration class.
 
 2. Version 0.13.0 reduces support for Django 1.4 and Python 3.2. No known
    breaking changes have been introduced, but these versions of Django and
@@ -272,7 +284,21 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-0.14.0, 2019-02
+0.14.1, 2019-09-04
+------------------
+
+Feature:
+* Add Django 2.2 support (closes #71)
+* Upgrade example project to Django 2.2 on Python 3.7
+
+Bugfix:
+* Correct issue with multiple databases (#72)
+
+Thanks to:
+* Dmitry Ivanchenko (ivanchenkodmitry) for multiple database fix (#72)
+
+
+0.14.0, 2019-02-24
 ------------------
 
 Feature:
