@@ -10,6 +10,8 @@ class Migration(migrations.Migration):
         ('example', '0001_initial'),
     ]
 
+    atomic = False
+
     operations = [
         migrations.RenameModel(
             old_name='_Tagulous_Person_hobbies',
