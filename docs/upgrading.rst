@@ -74,6 +74,9 @@ Upgrading from 0.12.0
      ``Related model ... cannot be resolved`` or ``AttributeError: 'TagField'
      object has no attribute 'm2m_reverse_field_name'``. To resolve these,
      manually change the ``to`` parameter in your ``AlterField``'s tag field definition from ``myapp._Tagulous_...`` to ``myapp.Tagulous_...``.
+   * If you see an error ``Renaming the table while in a transaction is not supported
+     because it would break referential integrity``, add ``atomic = False`` to your
+     migration class.
 
 2. Version 0.13.0 reduces support for Django 1.4 and Python 3.2. No known
    breaking changes have been introduced, but these versions of Django and

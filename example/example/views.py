@@ -4,6 +4,7 @@ Views for Tagulous example app
 from __future__ import unicode_literals
 
 from django.contrib import messages
+from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
