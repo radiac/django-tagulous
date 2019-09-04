@@ -26,6 +26,15 @@ Instructions
    don't need to follow those steps.
 
 
+.. _upgrade_0-14-0:
+
+Upgrading from 0.14.0
+---------------------
+
+Tagulous 0.14.0 was the last version to officially support Django 1.10 or
+earlier. From version 0.15.0 tests will only be run for Django 1.11 or later.
+
+
 .. _upgrade_0-13-0:
 
 Upgrading from 0.13.0
