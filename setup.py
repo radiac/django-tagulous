@@ -3,7 +3,7 @@ import re
 import sys
 from setuptools import setup, find_packages
 
-VERSION = "0.14.0"
+VERSION = "0.14.1"
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -181,6 +181,8 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Framework :: Django',
         'Framework :: Django :: 1.4',
         'Framework :: Django :: 1.5',
@@ -190,6 +192,9 @@ setup(
         'Framework :: Django :: 1.9',
         'Framework :: Django :: 1.10',
         'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
+        'Framework :: Django :: 2.2',
     ],
     extras_require = {
         'dev': ['tox', 'jasmine'],
