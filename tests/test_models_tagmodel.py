@@ -869,6 +869,21 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
         self.assertEqual(filtered[3], 'David')
         self.assertEqual(filtered[4], 'Eric')
 
+    def test_weight_empty(self):
+        "Test weight() works with no records"
+        self.o1.delete()
+        self.o2.delete()
+        weighted = self.tag_model.objects.weight(min=2, max=6)
+
+        self.assertEqual(weighted[0].name, 'Adam')
+        self.assertEqual(weighted[0].weight, 3)
+
+        self.assertEqual(weighted[1], 'Brian')
+        self.assertEqual(weighted[1].weight, 3)
+
+        self.assertEqual(weighted[2], 'Chris')
+        self.assertEqual(weighted[2].weight, 3)
+
     def test_weight_scale_up(self):
         "Test weight() scales up to max"
         # Scale them to 2+2n: 0=2, 1=4, 2=6
