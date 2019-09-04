@@ -289,6 +289,13 @@ are available by installing the master branch from github (see
 
 Feature:
 * Add Django 2.2 support (closes #71)
+* Upgrade example project to Django 2.2 on Python 3.7
+
+Bugfix:
+* Correct issue with multiple databases (#72)
+
+Thanks to:
+* Dmitry Ivanchenko (ivanchenkodmitry) for multiple database fix (#72)
 
 
 0.14.0, 2019-02-24

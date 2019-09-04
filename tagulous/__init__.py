@@ -18,4 +18,5 @@ __credits__ = [
     "Martín R. Guerrero (slackmart)",
     "Peter Baumgartner (ipmb)",
     "Raniere Silva (rgaics)",
+    "Dmitry Ivanchenko (ivanchenkodmitry)",
 ]
