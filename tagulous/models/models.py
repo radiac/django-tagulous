@@ -334,11 +334,13 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         )
 
         # Reload count
+        # Use DB for write because we just updated the value
+        using = router.db_for_write(self.tag_model, instance=self)
         if hasattr(self, 'refresh_from_db'):
-            self.refresh_from_db()
+            self.refresh_from_db(using=using)
         else:
             # Django 1.7 or earlier
-            self.count = self.__class__.objects.get(pk=self.pk).count
+            self.count = self.__class__.objects.using(using).get(pk=self.pk).count
 
         self.try_delete()
 
