@@ -33,6 +33,7 @@ class Person(models.Model):
             "This is a SingleTagField - effectively a CharField with "
             "dynamic choices"
         ),
+        on_delete=models.CASCADE,
     )
     skills = tagulous.models.TagField(
         Skill, help_text="This field does not split on spaces",

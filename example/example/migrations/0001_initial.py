@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                 ('path', models.TextField()),
                 ('label', models.CharField(help_text='The name of the tag, without ancestors', max_length=255)),
                 ('level', models.IntegerField(default=1, help_text='The level of the tag in the tree')),
-                ('parent', models.ForeignKey(related_name='children', blank=True, to='example.Skill', null=True)),
+                ('parent', models.ForeignKey(related_name='children', blank=True, to='example.Skill', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('name',),
@@ -80,7 +80,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='person',
             name='title',
-            field=tagulous.models.fields.SingleTagField(initial='eating, coding, gaming', force_lowercase=True, blank=True, to='example._Tagulous_Person_title', help_text='This is a SingleTagField - effectively a CharField with dynamic choices', _set_tag_meta=True, null=True),
+            field=tagulous.models.fields.SingleTagField(initial='eating, coding, gaming', force_lowercase=True, blank=True, to='example._Tagulous_Person_title', help_text='This is a SingleTagField - effectively a CharField with dynamic choices', _set_tag_meta=True, null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='_tagulous_person_title',
