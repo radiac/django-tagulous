@@ -90,6 +90,13 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
             t1, name='One', label='One', slug='one', path='one', level=1,
         )
 
+    def test_level_1_single_character(self):
+        "Check level 1 node created correctly if only one character"
+        t1 = self.tag_model.objects.create(name='O')
+        self.assertTreeTag(
+            t1, name='O', label='O', slug='o', path='o', level=1,
+        )
+
     def test_level_2_existing_l1(self):
         "Check level 2 node created with existing level 1"
         t1 = self.tag_model.objects.create(name='One')

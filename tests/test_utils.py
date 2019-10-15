@@ -275,12 +275,24 @@ class TagTreeSplitUtilTest(TestCase):
         self.assertEqual(len(parts), 1)
         self.assertEqual(parts[0], "one")
 
+    def test_split_tree_one_single_character(self):
+        parts = tag_utils.split_tree_name("o")
+        self.assertEqual(len(parts), 1)
+        self.assertEqual(parts[0], "o")
+
     def test_split_tree_three(self):
         parts = tag_utils.split_tree_name("one/two/three")
         self.assertEqual(len(parts), 3)
         self.assertEqual(parts[0], "one")
         self.assertEqual(parts[1], "two")
         self.assertEqual(parts[2], "three")
+
+    def test_split_tree_three_last_one_with_single_character(self):
+        parts = tag_utils.split_tree_name("one/two/3")
+        self.assertEqual(len(parts), 3)
+        self.assertEqual(parts[0], "one")
+        self.assertEqual(parts[1], "two")
+        self.assertEqual(parts[2], "3")
 
     def test_split_tree_three_spaced(self):
         parts = tag_utils.split_tree_name("  one  /  two  /  three  ")
