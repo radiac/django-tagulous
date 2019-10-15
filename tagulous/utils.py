@@ -256,38 +256,13 @@ def split_tree_name(name):
 
     A slash can be escaped by double slash, ie //
     """
-    parts = []
-    split = False
-    start = 0
-    index = 0
-    chars = list(enumerate(name))
-    while chars:
-        index, char = chars.pop(0)
-        if char == TREE:
-            if split:
-                # Slash was escaped
-                split = False
-            else:
-                split = True
+    name = name.strip()
+    if len(name) == 0:
+        return []
 
-        elif split:
-            # Previous character was a valid delimiter
-            parts.append(name[start:index - 1].strip())
-            start = index
-            split = False
-
-    if split:
-        # Trailing slash - shouldn't happen if sanitised, but handle anyway
-        parts += [name[start:index].strip(), '']
-
-    elif start < index:
-        # If string not empty, add everything after last slash
-        parts.append(name[start:].strip())
-
-    return [
-        part.replace(TREE + TREE, TREE) for part in parts
-    ]
-
+    ESCAPE_CHAR = '\0'
+    return [ x.strip().replace(ESCAPE_CHAR, TREE)
+             for x in name.replace(TREE+TREE, ESCAPE_CHAR).split(TREE)]
 
 def join_tree_name(parts):
     """
