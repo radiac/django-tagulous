@@ -9,7 +9,7 @@ To support TagField and SingleTagField fields in the admin, you need to
 register the Model and ModelAdmin using Tagulous's ``register()`` function,
 instead of the standard one::
 
-    import tagulous
+    import tagulous.admin
     class MyAdmin(admin.ModelAdmin):
         list_display = ['name', 'tags']
     tagulous.admin.register(MyModel, MyAdmin)
