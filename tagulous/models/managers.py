@@ -241,6 +241,20 @@ class BaseTagRelatedManager(object):
 
     Provides methods to managed cached tags
     """
+    @property
+    def tags(self):
+        if not hasattr(self, '_tags') or self._tags is None:
+            try:
+                self._tags = list(self.all())
+            except AttributeError:
+                self._tags = []
+
+        return self._tags
+
+    @tags.setter
+    def tags(self, value):
+        self._tags = value
+
     def init_tagulous(self, descriptor):
         """
         Called directly after the mixin is added to the instantiated manager
@@ -252,7 +266,6 @@ class BaseTagRelatedManager(object):
         # If internal tags are None, haven't been loaded yet
         self.changed = False
         self.tags = None
-        self.reload()
 
     def __str__(self):
         """
