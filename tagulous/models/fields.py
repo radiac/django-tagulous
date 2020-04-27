@@ -14,6 +14,11 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import capfirst
 
+try:
+    from django.core.checks import Warning as ChecksWarning
+except ImportError:
+    ChecksWarning = None
+
 from tagulous import constants
 from tagulous import forms
 from tagulous.models.options import TagOptions
@@ -32,7 +37,7 @@ class BaseTagField(object):
     # List of fields which are forbidden from __init__
     forbidden_fields = ()
 
-    def __init__(self, to=None, **kwargs):
+    def __init__(self, to=None, to_base=None, **kwargs):
         """
         Initialise the tag options and store
 
@@ -44,8 +49,9 @@ class BaseTagField(object):
         a ``to`` tag model is specified. However, this is intended for internal
         use only (when migrating), so if you must use it, use it with care.
         """
-        # Save tag model
+        # Save tag model data
         self.tag_model = to
+        self.tag_model_base = to_base
 
         # Extract options from kwargs
         options = {}
@@ -177,13 +183,18 @@ class BaseTagField(object):
             }
 
             # Build new tag model
-            # Name is _Tagulous_MODELNAME_FIELDNAME
+            # Name is Tagulous_MODELNAME_FIELDNAME
             model_name = "%s_%s_%s" % (
                 constants.MODEL_PREFIX, cls._meta.object_name, name,
             )
-            model_cls = TagModel
-            if self.tag_options.tree:
+
+            if self.tag_model_base is not None:
+                model_cls = self.tag_model_base
+            elif self.tag_options.tree:
                 model_cls = TagTreeModel
+            else:
+                model_cls = TagModel
+
             self.tag_model = type(str(model_name), (model_cls,), model_attrs)
 
             # Give it a verbose name, for admin filters
@@ -430,11 +441,40 @@ class TagField(BaseTagField, models.ManyToManyField):
 
         # Note things we'll need to restore after __init__
         help_text = kwargs.pop('help_text', '')
+        null = kwargs.pop('null', False)
 
         super(TagField, self).__init__(*args, **kwargs)
 
         # Change default help text
         self.help_text = help_text or 'Enter a comma-separated tag string'
+        self.null = null
+
+    def _check_ignored_options(self, **kwargs):
+        warnings = []
+
+        # Django 1.9 introduces this, but later version remove has_null_arg
+        if (
+            ChecksWarning and (
+                getattr(self, 'has_null_arg', False) or
+                getattr(self, 'null', False)
+            )
+        ):
+            warnings.append(
+                ChecksWarning(
+                    'null has no effect on TagField.',
+                    hint=None,
+                    obj=self,
+                    id='fields.W340',
+                )
+            )
+            self.has_null_arg = False
+            self.null = None
+
+        # Essentially a hack for tests in Django 1.7
+        if not hasattr(super(TagField, self), '_check_ignored_options'):
+            return warnings
+
+        return warnings + super(TagField, self)._check_ignored_options(**kwargs)
 
     def contribute_to_class(self, cls, name):
         """

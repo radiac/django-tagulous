@@ -121,4 +121,4 @@ Roadmap
 =======
 
 1.0
-* Resolve any bugs found in 0.11
+* Resolve open bugs

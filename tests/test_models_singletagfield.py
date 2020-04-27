@@ -536,15 +536,15 @@ class ModelSingleTagFieldMultipleTest(TagTestManager, TestCase):
     def test_model_names(self):
         self.assertEqual(
             self.tag_field_1.tag_model.__name__,
-            '_Tagulous_SingleTagFieldMultipleModel_tag1'
+            'Tagulous_SingleTagFieldMultipleModel_tag1'
         )
         self.assertEqual(
             self.tag_field_2.tag_model.__name__,
-            '_Tagulous_SingleTagFieldMultipleModel_tag2'
+            'Tagulous_SingleTagFieldMultipleModel_tag2'
         )
         self.assertEqual(
             self.tag_field_3.tag_model.__name__,
-            '_Tagulous_SingleTagFieldMultipleModel_tag3'
+            'Tagulous_SingleTagFieldMultipleModel_tag3'
         )
 
     def test_set_and_get(self):

@@ -54,7 +54,7 @@ class TagMetaUser(models.Model):
     A tagged model which uses the TagMetaModel
     """
     name = models.CharField(blank=True, max_length=100)
-    two = tagulous.models.TagField(TagMetaModel, blank=True, null=True)
+    two = tagulous.models.TagField(TagMetaModel, blank=True)
 
 
 ###############################################################################
@@ -173,7 +173,7 @@ class TagFieldOptionalModel(models.Model):
     Test optional tag fields
     """
     name = models.CharField(blank=True, max_length=100)
-    tag = tagulous.models.TagField(blank=True, null=True)
+    tag = tagulous.models.TagField(blank=True)
 
 class TagFieldRequiredModel(models.Model):
     """
@@ -197,57 +197,57 @@ class TagFieldOptionsModel(models.Model):
     """
     name = models.CharField(blank=True, max_length=100)
     initial_string = tagulous.models.TagField(
-        blank=True, null=True, initial='Adam, Brian, Chris',
+        blank=True, initial='Adam, Brian, Chris',
     )
     initial_list = tagulous.models.TagField(
-        blank=True, null=True, initial=['Adam', 'Brian', 'Chris'],
+        blank=True, initial=['Adam', 'Brian', 'Chris'],
         autocomplete_initial=True,
     )
     protect_initial_true = tagulous.models.TagField(
-        blank=True, null=True, protect_initial=True, initial='Adam',
+        blank=True, protect_initial=True, initial='Adam',
     )
     protect_initial_false = tagulous.models.TagField(
-        blank=True, null=True, protect_initial=False, initial='Adam',
+        blank=True, protect_initial=False, initial='Adam',
     )
     protect_all_true = tagulous.models.TagField(
-        blank=True, null=True, protect_all=True,
+        blank=True, protect_all=True,
     )
     protect_all_false = tagulous.models.TagField(
-        blank=True, null=True, protect_all=False,
+        blank=True, protect_all=False,
     )
     case_sensitive_true = tagulous.models.TagField(
-        blank=True, null=True, case_sensitive=True, initial='Adam',
+        blank=True, case_sensitive=True, initial='Adam',
     )
     case_sensitive_false = tagulous.models.TagField(
-        blank=True, null=True, case_sensitive=False, initial='Adam',
+        blank=True, case_sensitive=False, initial='Adam',
     )
     force_lowercase_true = tagulous.models.TagField(
-        blank=True, null=True, force_lowercase=True,
+        blank=True, force_lowercase=True,
     )
     force_lowercase_false = tagulous.models.TagField(
-        blank=True, null=True, force_lowercase=False,
+        blank=True, force_lowercase=False,
     )
     # case_sensitive_true_force_lowercase_true - abbreviated to avoid problems
     # with databases that have field name length limits
     cs_true_fl_true = tagulous.models.TagField(
-        blank=True, null=True, case_sensitive=False, force_lowercase=True,
+        blank=True, case_sensitive=False, force_lowercase=True,
         verbose_name_singular='case sensitive test',
     )
     max_count = tagulous.models.TagField(
-        blank=True, null=True, max_count=3,
+        blank=True, max_count=3,
     )
     autocomplete_view = tagulous.models.TagField(
-        blank=True, null=True,
+        blank=True,
         autocomplete_view='tagulous_tests_app-unlimited',
     )
     autocomplete_limit = tagulous.models.TagField(
-        blank=True, null=True,
+        blank=True,
         autocomplete_limit=3,
         # Limit only takes effect when there's a view
         autocomplete_view='tagulous_tests_app-limited',
     )
     autocomplete_settings = tagulous.models.TagField(
-        blank=True, null=True, autocomplete_settings={
+        blank=True, autocomplete_settings={
             'setting1': 1,
             'setting2': True,
             'setting3': 'example',
@@ -413,4 +413,30 @@ class CustomTreeTest(models.Model):
     )
     tags = tagulous.models.TagField(
         'CustomTagTree', blank=True, related_name='custom_tags',
+    )
+
+class ManyToOneTest(models.Model):
+    """
+    Add a reverse FK to MixedRefTest for serialization tests
+    """
+    name = models.CharField(max_length=10)
+    mixed_ref_test = models.ForeignKey(MixedRefTest, related_name='many_to_one', on_delete=models.CASCADE)
+
+
+class CustomTagBase(tagulous.models.TagModel):
+    """
+    For testing custom tag base models for auto-generated tag models
+    """
+    is_custom = True
+
+    class Meta:
+        abstract = True
+
+class CustomTagBaseTest(models.Model):
+    """
+    Test custom tag base model
+    """
+    name = models.CharField(max_length=10)
+    singletag = tagulous.models.SingleTagField(
+        to_base=CustomTagBase, blank=True, related_name='custom_singletag',
     )

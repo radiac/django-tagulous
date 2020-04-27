@@ -3,7 +3,7 @@ import re
 import sys
 from setuptools import setup, find_packages
 
-VERSION = "0.11.1"
+VERSION = "0.14.1"
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -19,6 +19,7 @@ def runtests(args):
             r'[^a-zA-Z0-9]', '_',
             os.environ.get('TOXENV', '_'.join(str(v) for v in django.VERSION)),
         )
+        tests_migration_module_name = 'migrations_{}'.format(testenv)
 
         SETTINGS = dict(
             INSTALLED_APPS=[
@@ -48,9 +49,15 @@ def runtests(args):
             TEMPLATES=[{
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',
                 'APP_DIRS': True,
+                'OPTIONS': {
+                    'context_processors': [
+                        'django.contrib.auth.context_processors.auth',
+                        'django.contrib.messages.context_processors.messages',
+                    ],
+                },
             }],
             MIGRATION_MODULES={
-                'tagulous_tests_migration': 'tests.tagulous_tests_migration.migrations_%s' % testenv
+                'tagulous_tests_migration': 'tests.tagulous_tests_migration.{}'.format(tests_migration_module_name),
             },
             TAGULOUS_NAME_MAX_LENGTH=191,
         )
@@ -86,6 +93,7 @@ def runtests(args):
         # Build database settings
         DATABASE = {
             'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
         }
         engine = os.environ.get('DATABASE_ENGINE')
         if engine:
@@ -118,6 +126,26 @@ def runtests(args):
                 if 'DATABASE_' + key in os.environ:
                     DATABASE[key] = os.environ['DATABASE_' + key]
         SETTINGS['DATABASES'] = {'default': DATABASE, 'test': DATABASE}
+
+        # Make sure the django migration loader will find MIGRATION_MODULES
+        # This will be cleaned away after each test
+        tests_migration_path = os.path.join(
+            os.path.dirname(__file__), 'tests', 'tagulous_tests_migration',
+        )
+        if not os.path.isdir(tests_migration_path):
+            raise ValueError('tests.tagulous_tests_migration not found')
+
+        tests_migration_module_path = os.path.join(
+            tests_migration_path, tests_migration_module_name,
+        )
+        if not os.path.exists(tests_migration_module_path):
+            os.mkdir(tests_migration_module_path)
+
+        tests_migration_module_init = os.path.join(
+            tests_migration_module_path, '__init__.py',
+        )
+        if not os.path.exists(tests_migration_module_init):
+            open(tests_migration_module_init, 'a').close()
 
         # Configure
         settings.configure(**SETTINGS)
@@ -153,12 +181,20 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Framework :: Django',
         'Framework :: Django :: 1.4',
         'Framework :: Django :: 1.5',
         'Framework :: Django :: 1.6',
         'Framework :: Django :: 1.7',
         'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
+        'Framework :: Django :: 2.2',
     ],
     extras_require = {
         'dev': ['tox', 'jasmine'],

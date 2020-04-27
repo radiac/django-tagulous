@@ -60,9 +60,15 @@ class SingleTagManager(object):
 
         Must be called after all
         """
-        cache_name = self.field.get_cache_name()
-        if hasattr(self.instance, cache_name):
-            delattr(self.instance, cache_name)
+        # Django 2.0 changes cache management
+        if hasattr(self.field, 'get_cached_value'):
+            if self.field.is_cached(self.instance):
+                self.field.delete_cached_value(self.instance)
+        else:
+            # Django <2.0
+            cache_name = self.field.get_cache_name()
+            if hasattr(self.instance, cache_name):
+                delattr(self.instance, cache_name)
 
     def get_actual(self):
         """
@@ -262,9 +268,6 @@ class BaseTagRelatedManager(object):
         if self.tag_options.case_sensitive:
             return item_str in [tag.name for tag in self.tags]
         return item_str in [tag.name.lower() for tag in self.tags]
-
-    def __len__(self):
-        return len(self.tags)
 
     def __eq__(self, other):
         """
@@ -523,10 +526,11 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         # Add and remove tags as necessary
         new_tags = self._ensure_tags_in_db(self.tags)
         self.reload()
+
         # Add new tags
         for new_tag in new_tags:
             if new_tag not in self.tags:
-                self.add(new_tag)
+                self.add(new_tag, _enforce_max_count=False)
 
         # Remove old tags
         for old_tag in self.tags:
@@ -547,15 +551,13 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
                 db_tag = tag
             else:
                 # Not in DB - get or create
-                try:
-                    if self.tag_options.case_sensitive:
-                        db_tag = self.tag_model.objects.get(name=tag.name)
-                    else:
-                        db_tag = self.tag_model.objects.get(name__iexact=tag.name)
-                except self.tag_model.DoesNotExist:
-                    db_tag = self.tag_model.objects.create(
-                        name=tag.name, protected=False,
-                    )
+                field_lookup = 'name'
+                if not self.tag_options.case_sensitive:
+                    field_lookup += '__iexact'
+                db_tag, __ = self.tag_model.objects.get_or_create(
+                    defaults={'name': tag.name, 'protected': False},
+                    **{field_lookup: tag.name}
+                )
             db_tags.append(db_tag)
         return db_tags
 
@@ -566,7 +568,16 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         self.clear()
         self.add(*objs)
 
-    def add(self, *objs):
+    def add(self, *objs, **kwargs):
+        """
+        Add a list of tags or tag strings
+
+        Takes on internal argument, _enforce_max_count - don't use in your code
+        """
+        enforce_max_count = kwargs.pop('_enforce_max_count', True)
+        if kwargs:
+            raise TypeError("add() got an unexpected keyword argument")
+
         # Convert strings to tag objects
         new_tags = []
         for tag in objs:
@@ -585,7 +596,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         ]
 
         # Enforce max_count
-        if self.tag_options.max_count:
+        if enforce_max_count and self.tag_options.max_count:
             current_count = len(self.tags)
             if current_count + len(new_tags) > self.tag_options.max_count:
                 raise ValueError(

@@ -28,7 +28,14 @@ class Command(BaseCommand):
     If app_name is missing, initialise all tag fields on all models in all apps
     """
     help = 'Load initial tagulous tags'
-    args = '[<app_name>[.<model_name>[.<field_name>]]]'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--target',
+            type=str,
+            default='',
+            help='Target to load: [<app_name>[.<model_name>[.<field_name>]]]',
+        )
 
     def handle(self, target='', **options):
         # Split up target argument

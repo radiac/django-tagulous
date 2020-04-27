@@ -13,6 +13,11 @@ from __future__ import unicode_literals
 
 from django.utils import six
 
+try:
+    from django.core.checks import Warning as ChecksWarning
+except ImportError:
+    ChecksWarning = None
+
 from tests.lib import *
 
 
@@ -413,9 +418,9 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertFalse(green in t1.tags, 'green incorrectly found')
 
     def test_len(self):
-        "Check __len__ returns the number of tags"
+        "Check manager count method returns the number of tags"
         t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
-        self.assertEqual(len(t1.tags), 2)
+        self.assertEqual(t1.tags.count(), 2)
 
     def test_eq(self):
         "Check __eq__ correctly determines equality"
@@ -698,10 +703,18 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_fake_manager(self):
         "Check that the FakeTagRelatedManager doesn't do databases"
-        errmsg = (
-            '"<TagFieldModel: TagFieldModel object>" needs to be saved '
-            'before TagField can use the database'
-        )
+        if django.VERSION < (2, 0):
+            errmsg = (
+                '"<TagFieldModel: TagFieldModel object>" needs to be '
+                'saved before TagField can use the database'
+            )
+        else:
+            # Django 2.0 adds primary key to model __str__ and __repr__
+            errmsg = (
+                '"<TagFieldModel: TagFieldModel object (None)>" needs to be '
+                'saved before TagField can use the database'
+            )
+
         t1 = test_models.TagFieldModel(name="Test 1", tags='blue, red')
 
         with self.assertRaises(ValueError) as cm:
@@ -816,6 +829,14 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             six.text_type(cm.exception),
             "Invalid argument 'symmetrical' for TagField"
         )
+
+    @unittest.skipIf(ChecksWarning is None, 'Check test only run for Django 1.9+')
+    def test_nulled_tag_field(self):
+        "Check model field raises warning when given invalid null"
+        nulled_tagfield = tag_models.TagField(null=True)
+        warnings = nulled_tagfield._check_ignored_options()
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0].msg, 'null has no effect on TagField.')
 
 
 ###############################################################################
@@ -1017,15 +1038,15 @@ class ModelTagFieldMultipleTest(TagTestManager, TestCase):
     def test_model_names(self):
         self.assertEqual(
             self.tag_field_1.tag_model.__name__,
-            '_Tagulous_TagFieldMultipleModel_tags1'
+            'Tagulous_TagFieldMultipleModel_tags1'
         )
         self.assertEqual(
             self.tag_field_2.tag_model.__name__,
-            '_Tagulous_TagFieldMultipleModel_tags2'
+            'Tagulous_TagFieldMultipleModel_tags2'
         )
         self.assertEqual(
             self.tag_field_3.tag_model.__name__,
-            '_Tagulous_TagFieldMultipleModel_tags3'
+            'Tagulous_TagFieldMultipleModel_tags3'
         )
 
     def test_set_and_get(self):
@@ -1385,6 +1406,17 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         with self.assertRaises(self.test_model.DoesNotExist) as cm:
             t2 = self.test_model.objects.get(name="Test 1")
         self.assertTagModel(self.test_model.max_count, {})
+
+    def test_max_count_assign_equal_replaces(self):
+        t1 = self.create(self.test_model, name="Test 1", max_count='Adam, Brian, Chris')
+        t1.max_count = 'Adam, Brian, David'
+        t1.save()
+        self.assertInstanceEqual(t1, name="Test 1", max_count='Adam, Brian, David')
+        self.assertTagModel(self.test_model.max_count, {
+            'Adam':     1,
+            'Brian':    1,
+            'David':    1,
+        })
 
     def test_max_count_assign_above(self):
         t1 = self.create(self.test_model, name="Test 1")

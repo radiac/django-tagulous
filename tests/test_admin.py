@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import re
 import copy
 
+import django
 from django.contrib.auth.models import User
 from django.contrib import admin
 from django.contrib import messages
@@ -27,18 +28,7 @@ from tests.lib import *
 
 
 MOCK_PATH = 'mock/path'
-def MockRequest(GET=None, POST=None):
-    """
-    Create a fake Request object based on the GET and POST kwargs
-    """
-    r = HttpRequest()
-    r.path = MOCK_PATH
-    r.method = 'POST' if POST is not None else 'GET'
-    r.GET = GET or QueryDict('')
-    r.POST = POST or QueryDict('')
-    r._messages = CookieStorage(r)
-    return r
-request = MockRequest()
+
 
 def _monkeypatch_modeladmin():
     """
@@ -57,6 +47,21 @@ def _monkeypatch_modeladmin():
             )
         admin.ModelAdmin.get_list_filter = lambda self, request: self.list_filter
 _monkeypatch_modeladmin()
+
+
+class TestRequestMixin(object):
+    def mock_request(self, GET=None, POST=None):
+        """
+        Create a fake Request object based on the GET and POST kwargs
+        """
+        r = HttpRequest()
+        r.path = MOCK_PATH
+        r.method = 'POST' if POST is not None else 'GET'
+        r.GET = GET or QueryDict('')
+        r.POST = POST or QueryDict('')
+        r._messages = CookieStorage(r)
+        r.user = User.objects.get_or_create(username='test_user')[0]
+        return r
 
 
 class AdminTestManager(object):
@@ -112,7 +117,7 @@ class AdminTestManager(object):
 ####### Admin registration
 ###############################################################################
 
-class AdminRegisterTest(TagTestManager, TestCase):
+class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
     """
     Test Admin registration of tagged model
     """
@@ -173,7 +178,10 @@ class AdminRegisterTest(TagTestManager, TestCase):
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
         self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
-        self.assertSequenceEqual(ma.get_list_display(request), ['name'])
+        self.assertSequenceEqual(
+            ma.get_list_display(self.mock_request()),
+            ['name'],
+        )
 
     def test_register_tag_descriptor(self):
         "Check register tag descriptor creates correct admin class"
@@ -226,7 +234,7 @@ class AdminRegisterTest(TagTestManager, TestCase):
 ####### Tagged ModelAdmin
 ###############################################################################
 
-class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
+class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCase):
     """
     Test ModelAdmin enhancements
     """
@@ -240,20 +248,27 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.ma = self.site._registry[self.model]
         self.cl = None
 
-    def get_changelist(self, req=request):
+    def get_changelist(self, req=None):
+        if not req:
+            req = self.mock_request()
         list_display = self.ma.get_list_display(req)
         list_display_links = self.ma.get_list_display_links(req, list_display)
         list_filter = self.ma.get_list_filter(req)
         ChangeList = self.ma.get_changelist(req)
-        self.cl = ChangeList(req, self.model, list_display,
+        changelist_args = [req, self.model, list_display,
             list_display_links, list_filter, self.ma.date_hierarchy,
             self.ma.search_fields, self.ma.list_select_related,
             self.ma.list_per_page, self.ma.list_max_show_all, self.ma.list_editable,
             self.ma
-        )
+        ]
+        if django.VERSION >= (2, 1):
+            changelist_args.append(self.ma.get_sortable_by(req))
+        self.cl = ChangeList(*changelist_args)
         return self.cl
 
-    def get_changelist_results(self, req=request):
+    def get_changelist_results(self, req=None):
+        if not req:
+            req = self.mock_request()
         self.get_changelist(req)
         results = self.cl.get_results(req)
         return self.cl.result_list
@@ -267,7 +282,7 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
         "Check display fields have registered ok and return valid values"
         t1 = self.model.objects.create(name='Test 1', singletag='Mr', tags='red, blue')
         self.assertSequenceEqual(
-            self.ma.get_list_display(request),
+            self.ma.get_list_display(self.mock_request()),
             ['name', 'singletag', '_tagulous_display_tags'],
         )
         results = self.get_changelist_results()
@@ -300,12 +315,12 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
 
         # Check filters are listed
         self.assertSequenceEqual(
-            self.ma.get_list_filter(request),
+            self.ma.get_list_filter(self.mock_request()),
             ['singletag', 'tags'],
         )
 
         # Filter by singletag
-        singletag_request = MockRequest(GET={
+        singletag_request = self.mock_request(GET={
             'singletag__id__exact': self.model_singletag.objects.get(name='Mr').pk,
         })
         results = sorted(
@@ -317,7 +332,7 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
         self.assertEqual(results[1].pk, t3.pk)
 
         # Filter by tag
-        tag_request = MockRequest(GET={
+        tag_request = self.mock_request(GET={
             'tags__id__exact': self.model_tags.objects.get(name='green').pk,
         })
         results = sorted(
@@ -342,7 +357,7 @@ class TaggedAdminTest(AdminTestManager, TagTestManager, TestCase):
 ###############################################################################
 ####### Tag model admin tools
 ###############################################################################
-class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
+class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, TestCase):
     """
     Test Admin registration of a tag model
     """
@@ -356,17 +371,22 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         self.ma = self.site._registry[self.model]
         self.cl = None
 
-    def get_changelist(self, req=request):
+    def get_changelist(self, req=None):
+        if not req:
+            req = self.mock_request()
         list_display = self.ma.get_list_display(req)
         list_display_links = self.ma.get_list_display_links(req, list_display)
         list_filter = self.ma.get_list_filter(req)
         ChangeList = self.ma.get_changelist(req)
-        self.cl = ChangeList(req, self.model, list_display,
+        changelist_args = [req, self.model, list_display,
             list_display_links, list_filter, self.ma.date_hierarchy,
             self.ma.search_fields, self.ma.list_select_related,
             self.ma.list_per_page, self.ma.list_max_show_all, self.ma.list_editable,
             self.ma
-        )
+        ]
+        if django.VERSION >= (2, 1):
+            changelist_args.append(self.ma.get_sortable_by(req))
+        self.cl = ChangeList(*changelist_args)
         return self.cl
 
     def get_cl_queryset(self, cl, request):
@@ -385,7 +405,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
 
     def do_test_merge_form(self, tags, excluded_tags, is_tree=False):
         "Request the form view and check it returns valid expected HTML"
-        request = MockRequest(POST=QueryDict('&'.join(
+        request = self.mock_request(POST=QueryDict('&'.join(
             ['action=merge_tags'] + [
                 '%s=%s' % (admin.ACTION_CHECKBOX_NAME, tag.pk)
                 for tag in tags
@@ -425,9 +445,16 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
             '<option %s' % opt.strip()
             for opt in options_raw.split('<option ') if opt
         ]
-        self.assertTrue(
-            '<option value="" selected="selected">---------</option>' in options
-        )
+        if django.VERSION < (1, 11):
+            self.assertTrue(
+                '<option value="" selected="selected">---------</option>' in options
+            )
+        else:
+            # Django 1.11 tidies the option tag
+            self.assertTrue(
+                '<option value="" selected>---------</option>' in options
+            )
+
         for tag in tags:
             self.assertContains(
                 options,
@@ -506,7 +533,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
         "Submit the form and check it succeeds and returns valid expected HTML"
         if params is None:
             params = []
-        request = MockRequest(POST=QueryDict('&'.join(
+        request = self.mock_request(POST=QueryDict('&'.join(
             [
                 # Submitting
                 'action=merge_tags',
@@ -536,7 +563,7 @@ class TagAdminTestManager(AdminTestManager, TagTestManager, TestCase):
 #   TagModel admin tools
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-class TagAdminTest(TagAdminTestManager):
+class TagAdminTest(TagAdminTestManager, TestRequestMixin):
     """
     Test TagModel admin tools
     """
@@ -567,6 +594,7 @@ class TagAdminTest(TagAdminTestManager):
     def test_merge_action(self):
         "Check merge_tags action exists"
         self.assertTrue('merge_tags' in self.ma.actions)
+        request = self.mock_request()
         actions = self.ma.get_actions(request)
         self.assertTrue('merge_tags' in actions)
         self.assertTrue(hasattr(actions['merge_tags'][0], '__call__'))
@@ -575,7 +603,7 @@ class TagAdminTest(TagAdminTestManager):
 
     def test_merge_form_empty(self):
         "Check the merge_tags action fails when no tags selected"
-        request = MockRequest(POST=QueryDict('action=merge_tags'))
+        request = self.mock_request(POST=QueryDict('action=merge_tags'))
         cl = self.get_changelist(request)
         response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
         msgs = list(messages.get_messages(request))
@@ -590,7 +618,7 @@ class TagAdminTest(TagAdminTestManager):
     def test_merge_form_one(self):
         "Check the merge_tags action fails when only one tag selected"
         self.populate()
-        request = MockRequest(POST=QueryDict(
+        request = self.mock_request(POST=QueryDict(
             'action=merge_tags&%s=%s' % (admin.ACTION_CHECKBOX_NAME, self.red.pk)
         ))
         cl = self.get_changelist(request)

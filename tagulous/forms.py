@@ -43,7 +43,7 @@ class TagWidgetBase(forms.TextInput):
     # tagulous.admin isn't used to register the admin model
     choices = None
 
-    def render(self, name, value, attrs={}):
+    def render(self, name, value, attrs={}, renderer=None):
         # Try to provide a URL for the autocomplete to load tags on demand
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:

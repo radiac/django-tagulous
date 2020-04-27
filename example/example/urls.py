@@ -25,7 +25,7 @@ from example import models
 
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(
         r'^api/skills/$',
         tagulous.views.autocomplete,

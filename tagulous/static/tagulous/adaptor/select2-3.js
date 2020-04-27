@@ -14,6 +14,7 @@
         oldGetVal = MultiSelect2.prototype.getVal,
         oldSetVal = MultiSelect2.prototype.setVal
     ;
+
     MultiSelect2.prototype.getVal = function () {
         /** Parse tag string into tags */
         if (this.select || !this.opts.quotedTags) {
@@ -72,15 +73,17 @@
             tags = parsed[0],
             raws = parsed[1],
             lastRaw = raws.slice(-1)[0],
-            i, token
+            i, j, token
         ;
 
         if (!tags.length) {
             return input;
         }
 
-        if (lastRaw === null) {
-            // Last tag wasn't completed
+        // Check for incomplete partial tag
+        // If more than one tag then raw was pasted - assume all complete
+        if (lastRaw === null && tags.length < 2) {
+            // Last tag wasn't completed - return it to input
             tags.pop();
             raws.pop();
             lastRaw = raws.slice(-1)[0];
@@ -92,8 +95,8 @@
             // De-dupe using select2 logic (without equal call)
             if (token !== undefined && token !== null && opts.id(token) !== undefined && opts.id(token) !== null) {
                 dupe = false;
-                for (i = 0, l = selection.length; i < l; i++) {
-                    if (opts.id(token) === opts.id(selection[i])) {
+                for (j = 0, l = selection.length; j < l; j++) {
+                    if (opts.id(token) === opts.id(selection[j])) {
                         dupe = true; break;
                     }
                 }

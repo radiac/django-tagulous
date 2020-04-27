@@ -383,9 +383,12 @@ class TaggedModel(models.Model):
                 # cls and fields from closure's scope
                 data = {}
                 for field in fields:
+                    # Workaround 'ManyToOneRel' object has no attribute 'contribute_to_class
+                    if isinstance(field, models.ManyToOneRel):
+                        continue
                     # Find fields which are either TagFields, or not M2Ms -
                     # anything which Deserializer will have stored data for
-                    if isinstance(field, TagField) or not (
+                    elif isinstance(field, TagField) or not (
                         (
                             django.VERSION < (1, 9)
                             and field.rel
@@ -405,7 +408,10 @@ class TaggedModel(models.Model):
 
         # Add fields to fake model
         for field in fields:
-            if isinstance(field, BaseTagField):
+            # Workaround 'ManyToOneRel' object has no attribute 'contribute_to_class
+            if isinstance(field, models.ManyToOneRel):
+                continue
+            elif isinstance(field, BaseTagField):
                 clone_field = models.Field(
                     blank=field.blank, null=field.null
                 )

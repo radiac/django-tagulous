@@ -217,3 +217,7 @@ class TagDescriptor(BaseTagDescriptor):
         else:
             # Unknown
             raise ValueError('Unexpected value assigned to TagField')
+
+    @property
+    def through(self):
+        return self.descriptor.through
