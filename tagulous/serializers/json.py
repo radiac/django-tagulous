@@ -13,6 +13,7 @@ class Serializer(base.SerializerMixin, json_serializer.Serializer):
     """
     JSON serializer with tag field support
     """
+
     pass
 
 

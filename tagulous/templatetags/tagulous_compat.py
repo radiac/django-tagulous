@@ -23,6 +23,7 @@ if django.VERSION < (1, 5):
 else:
     from django.template.defaulttags import url as django_url
 
+
 @register.tag
 def url(parser, token):
     """

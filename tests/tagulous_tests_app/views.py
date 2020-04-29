@@ -19,12 +19,14 @@ def null(request):
     "Null view for reversing"
     return None
 
+
 class MixedCreate(CreateView):
     model = models.SimpleMixedTest
-    fields = ['name', 'singletag', 'tags']
-    success_url = reverse_lazy('tagulous_tests_app-null')
+    fields = ["name", "singletag", "tags"]
+    success_url = reverse_lazy("tagulous_tests_app-null")
+
 
 class MixedUpdate(UpdateView):
     model = models.SimpleMixedTest
-    fields = ['name', 'singletag', 'tags']
-    success_url = reverse_lazy('tagulous_tests_app-null')
+    fields = ["name", "singletag", "tags"]
+    success_url = reverse_lazy("tagulous_tests_app-null")

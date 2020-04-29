@@ -13,30 +13,37 @@ import tagulous
 ####### Models for testing TagModel
 ###############################################################################
 
+
 class TagMetaAbstractModel(tagulous.models.TagModel):
     """
     An abstract tag model with TagMeta definition
     """
+
     class Meta:
         abstract = True
+
     class TagMeta:
-        initial = 'Adam, Brian, Chris'
+        initial = "Adam, Brian, Chris"
         force_lowercase = True
         max_count = 5
+
 
 class TagMetaModel(TagMetaAbstractModel):
     """
     A tag model which inherits from TagMetaAbstractModel, with new and changed
     TagMeta values
     """
+
     class TagMeta:
         max_count = 10
         case_sensitive = True
+
 
 class TagSlugShorterModel(tagulous.models.BaseTagModel):
     """
     A tag model with a slug field shorter than the name
     """
+
     name = models.CharField(max_length=20, unique=True)
     slug = models.SlugField(max_length=10)
 
@@ -45,14 +52,15 @@ class TagSlugShorterModel(tagulous.models.BaseTagModel):
     protected = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('name',)
-        unique_together = (('slug',),)
+        ordering = ("name",)
+        unique_together = (("slug",),)
 
 
 class TagMetaUser(models.Model):
     """
     A tagged model which uses the TagMetaModel
     """
+
     name = models.CharField(blank=True, max_length=100)
     two = tagulous.models.TagField(TagMetaModel, blank=True)
 
@@ -61,49 +69,62 @@ class TagMetaUser(models.Model):
 ####### Models for testing SingleTagField
 ###############################################################################
 
+
 class SingleTagFieldModel(models.Model):
     """
     For testing simple single tag fields
     """
+
     name = models.CharField(blank=True, max_length=100)
     title = tagulous.models.SingleTagField(blank=True, null=True)
+
 
 class SingleTagFieldConcreteInheritanceModel(SingleTagFieldModel):
     """
     Test concrete inheritance of a SingleTagField
     """
-    
+
+
 class SingleTagFieldAbstractInheritanceBase(models.Model):
     """
     Abstract base class for SingleTagFieldAbstractInheritanceModel
     """
+
     name = models.CharField(blank=True, max_length=100)
     title = tagulous.models.SingleTagField(blank=True, null=True)
 
     class Meta:
         abstract = True
 
+
 class SingleTagFieldAbstractInheritanceModel(SingleTagFieldAbstractInheritanceBase):
     """
     Test abstract inheritance of a SingleTagField
     """
 
-class SingleTagFieldAbstractInheritanceSecondModel(SingleTagFieldAbstractInheritanceBase):
+
+class SingleTagFieldAbstractInheritanceSecondModel(
+    SingleTagFieldAbstractInheritanceBase
+):
     """
     Test second abstract inheritance of a SingleTagField
     """
+
 
 class SingleTagFieldOptionalModel(models.Model):
     """
     Test optional single tag fields
     """
+
     name = models.CharField(blank=True, max_length=100)
     tag = tagulous.models.SingleTagField(blank=True, null=True)
+
 
 class SingleTagFieldRequiredModel(models.Model):
     """
     Test required single tag fields
     """
+
     name = models.CharField(blank=True, max_length=100)
     tag = tagulous.models.SingleTagField(blank=False, null=False)
 
@@ -112,6 +133,7 @@ class SingleTagFieldMultipleModel(models.Model):
     """
     For testing multiple single tag fields
     """
+
     name = models.CharField(blank=True, max_length=100)
     tag1 = tagulous.models.SingleTagField(blank=False, null=False)
     tag2 = tagulous.models.SingleTagField(blank=False, null=False)
@@ -122,264 +144,281 @@ class SingleTagFieldOptionsModel(models.Model):
     """
     For testing model and form SingleTagField options
     """
+
     name = models.CharField(blank=True, max_length=100)
     initial_string = tagulous.models.SingleTagField(
-        blank=True, null=True, initial='Mr, Mrs, Ms',
+        blank=True, null=True, initial="Mr, Mrs, Ms"
     )
     initial_list = tagulous.models.SingleTagField(
-        blank=True, null=True, initial=['Mr', 'Mrs', 'Ms'],
-        autocomplete_initial=True,
+        blank=True, null=True, initial=["Mr", "Mrs", "Ms"], autocomplete_initial=True
     )
     protect_initial_true = tagulous.models.SingleTagField(
-        blank=True, null=True, protect_initial=True, initial='Mr',
+        blank=True, null=True, protect_initial=True, initial="Mr"
     )
     protect_initial_false = tagulous.models.SingleTagField(
-        blank=True, null=True, protect_initial=False, initial='Mr',
+        blank=True, null=True, protect_initial=False, initial="Mr"
     )
     protect_all_true = tagulous.models.SingleTagField(
-        blank=True, null=True, protect_all=True,
+        blank=True, null=True, protect_all=True
     )
     protect_all_false = tagulous.models.SingleTagField(
-        blank=True, null=True, protect_all=False,
+        blank=True, null=True, protect_all=False
     )
     case_sensitive_true = tagulous.models.SingleTagField(
-        blank=True, null=True, case_sensitive=True, initial='Mr',
+        blank=True, null=True, case_sensitive=True, initial="Mr"
     )
     case_sensitive_false = tagulous.models.SingleTagField(
-        blank=True, null=True, case_sensitive=False, initial='Mr',
+        blank=True, null=True, case_sensitive=False, initial="Mr"
     )
     force_lowercase_true = tagulous.models.SingleTagField(
-        blank=True, null=True, force_lowercase=True,
+        blank=True, null=True, force_lowercase=True
     )
     force_lowercase_false = tagulous.models.SingleTagField(
-        blank=True, null=True, force_lowercase=False,
+        blank=True, null=True, force_lowercase=False
     )
     # max_count doesn't apply to SingleTagField
     autocomplete_view = tagulous.models.SingleTagField(
-        blank=True, null=True,
-        autocomplete_view='tagulous_tests_app-null',
+        blank=True, null=True, autocomplete_view="tagulous_tests_app-null"
     )
     autocomplete_limit = tagulous.models.SingleTagField(
-        blank=True, null=True,
+        blank=True,
+        null=True,
         autocomplete_limit=3,
         # Limit only takes effect when there's a view
-        autocomplete_view='tagulous_tests_app-null',
+        autocomplete_view="tagulous_tests_app-null",
     )
     autocomplete_settings = tagulous.models.SingleTagField(
-        blank=True, null=True, autocomplete_settings={
-            'setting1': 1,
-            'setting2': True,
-            'setting3': 'example',
-        }
+        blank=True,
+        null=True,
+        autocomplete_settings={"setting1": 1, "setting2": True, "setting3": "example"},
     )
+
     class Meta:
         # Must set a short verbose name - tagulous auto-generated model
         # verbose names will be too long otherwise
-        verbose_name = 'STFOM'
-        ordering = ('name',)
+        verbose_name = "STFOM"
+        ordering = ("name",)
 
 
 ###############################################################################
 ####### Models for testing TagField
 ###############################################################################
 
+
 class TagFieldModel(models.Model):
     """
     For testing basic tags
     """
+
     name = models.CharField(blank=True, max_length=100)
     tags = tagulous.models.TagField()
+
 
 class TagFieldConcreteInheritanceModel(TagFieldModel):
     """
     Test concrete inheritance of a TagField
     """
 
+
 class TagFieldAbstractInheritanceBase(models.Model):
     """
     Abstract base class for AbstractTagFieldModel
     """
+
     name = models.CharField(blank=True, max_length=100)
     tags = tagulous.models.TagField()
 
     class Meta:
         abstract = True
 
+
 class TagFieldAbstractInheritanceModel(TagFieldAbstractInheritanceBase):
     """
     Test abstract inheritance of a TagField
     """
+
 
 class TagFieldAbstractInheritanceSecondModel(TagFieldAbstractInheritanceBase):
     """
     Test second abstract inheritance of a TagField
     """
 
+
 class TagFieldOptionalModel(models.Model):
     """
     Test optional tag fields
     """
+
     name = models.CharField(blank=True, max_length=100)
     tag = tagulous.models.TagField(blank=True)
+
 
 class TagFieldRequiredModel(models.Model):
     """
     Test required tag fields
     """
+
     name = models.CharField(blank=True, max_length=100)
     tag = tagulous.models.TagField(blank=False, null=False)
+
 
 class TagFieldMultipleModel(models.Model):
     """
     For testing multiple tag fields
     """
+
     name = models.CharField(blank=True, max_length=100)
     tags1 = tagulous.models.TagField(blank=False, null=False)
     tags2 = tagulous.models.TagField(blank=False, null=False)
     tags3 = tagulous.models.TagField(blank=False, null=False)
 
+
 class TagFieldOptionsModel(models.Model):
     """
     For testing model and form TagField options
     """
+
     name = models.CharField(blank=True, max_length=100)
-    initial_string = tagulous.models.TagField(
-        blank=True, initial='Adam, Brian, Chris',
-    )
+    initial_string = tagulous.models.TagField(blank=True, initial="Adam, Brian, Chris")
     initial_list = tagulous.models.TagField(
-        blank=True, initial=['Adam', 'Brian', 'Chris'],
-        autocomplete_initial=True,
+        blank=True, initial=["Adam", "Brian", "Chris"], autocomplete_initial=True
     )
     protect_initial_true = tagulous.models.TagField(
-        blank=True, protect_initial=True, initial='Adam',
+        blank=True, protect_initial=True, initial="Adam"
     )
     protect_initial_false = tagulous.models.TagField(
-        blank=True, protect_initial=False, initial='Adam',
+        blank=True, protect_initial=False, initial="Adam"
     )
-    protect_all_true = tagulous.models.TagField(
-        blank=True, protect_all=True,
-    )
-    protect_all_false = tagulous.models.TagField(
-        blank=True, protect_all=False,
-    )
+    protect_all_true = tagulous.models.TagField(blank=True, protect_all=True)
+    protect_all_false = tagulous.models.TagField(blank=True, protect_all=False)
     case_sensitive_true = tagulous.models.TagField(
-        blank=True, case_sensitive=True, initial='Adam',
+        blank=True, case_sensitive=True, initial="Adam"
     )
     case_sensitive_false = tagulous.models.TagField(
-        blank=True, case_sensitive=False, initial='Adam',
+        blank=True, case_sensitive=False, initial="Adam"
     )
-    force_lowercase_true = tagulous.models.TagField(
-        blank=True, force_lowercase=True,
-    )
-    force_lowercase_false = tagulous.models.TagField(
-        blank=True, force_lowercase=False,
-    )
+    force_lowercase_true = tagulous.models.TagField(blank=True, force_lowercase=True)
+    force_lowercase_false = tagulous.models.TagField(blank=True, force_lowercase=False)
     # case_sensitive_true_force_lowercase_true - abbreviated to avoid problems
     # with databases that have field name length limits
     cs_true_fl_true = tagulous.models.TagField(
-        blank=True, case_sensitive=False, force_lowercase=True,
-        verbose_name_singular='case sensitive test',
-    )
-    max_count = tagulous.models.TagField(
-        blank=True, max_count=3,
-    )
-    autocomplete_view = tagulous.models.TagField(
         blank=True,
-        autocomplete_view='tagulous_tests_app-unlimited',
+        case_sensitive=False,
+        force_lowercase=True,
+        verbose_name_singular="case sensitive test",
+    )
+    max_count = tagulous.models.TagField(blank=True, max_count=3)
+    autocomplete_view = tagulous.models.TagField(
+        blank=True, autocomplete_view="tagulous_tests_app-unlimited"
     )
     autocomplete_limit = tagulous.models.TagField(
         blank=True,
         autocomplete_limit=3,
         # Limit only takes effect when there's a view
-        autocomplete_view='tagulous_tests_app-limited',
+        autocomplete_view="tagulous_tests_app-limited",
     )
     autocomplete_settings = tagulous.models.TagField(
-        blank=True, autocomplete_settings={
-            'setting1': 1,
-            'setting2': True,
-            'setting3': 'example',
-        }
+        blank=True,
+        autocomplete_settings={"setting1": 1, "setting2": True, "setting3": "example"},
     )
+
     class Meta:
         # Set a short verbose name for tagulous auto-generated verbose name
-        verbose_name = 'TFOM'
-        ordering = ('name',)
-
+        verbose_name = "TFOM"
+        ordering = ("name",)
 
 
 ###############################################################################
 ####### Models for testing a mix of fields
 ###############################################################################
 
+
 class SimpleMixedTest(models.Model):
     """
     For tests which need a SingleTagField and TagField
     """
+
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(blank=True)
     tags = tagulous.models.TagField(blank=True)
 
+
 class MixedTestTagModel(tagulous.models.TagModel):
     class TagMeta:
-        get_absolute_url = lambda self: 'url for %s' % self
+        get_absolute_url = lambda self: "url for %s" % self
+
 
 class MixedTest(models.Model):
     """
     For tests where it's useful for the SingleTagField and TagField to share
     a tag model
     """
+
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(
-        MixedTestTagModel, related_name='mixed_singletag',
-        blank=True,
+        MixedTestTagModel, related_name="mixed_singletag", blank=True
     )
     tags = tagulous.models.TagField(
-        MixedTestTagModel, related_name='mixed_tags',
-        blank=True,
+        MixedTestTagModel, related_name="mixed_tags", blank=True
     )
+
     class Meta:
-        ordering = ('name',)
+        ordering = ("name",)
+
 
 class MixedRefTest(models.Model):
     """
     Multiple models referencing tag tables
     """
+
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(
-        MixedTest.singletag.tag_model, related_name='mixed_ref_singletag',
-        blank=True,
+        MixedTest.singletag.tag_model, related_name="mixed_ref_singletag", blank=True
     )
     tags = tagulous.models.TagField(
-        MixedTest.tags.tag_model, related_name='mixed_ref_tags',
-        blank=True,
+        MixedTest.tags.tag_model, related_name="mixed_ref_tags", blank=True
     )
+
 
 class NonTagRefTest(models.Model):
     """
     ForeignKeys and ManyToManyFields directly referencing a tag model
     """
+
     name = models.CharField(max_length=10)
     fk = models.ForeignKey(
-        MixedTest.singletag.tag_model, related_name='non_tag_fk',
-        blank=True, on_delete=models.CASCADE,
+        MixedTest.singletag.tag_model,
+        related_name="non_tag_fk",
+        blank=True,
+        on_delete=models.CASCADE,
     )
     mm = models.ManyToManyField(
-        MixedTest.tags.tag_model, related_name='non_tag_mm',
-        blank=True,
+        MixedTest.tags.tag_model, related_name="non_tag_mm", blank=True
     )
 
 
 class MixedNonTagModel(tagulous.models.TagModel):
     pass
+
+
 class MixedNonTagRefTest(models.Model):
     """
     Tag fields and conventional relationships referencing a tag model
     """
+
     name = models.CharField(max_length=10)
-    singletag = tagulous.models.SingleTagField(MixedNonTagModel, blank=True, related_name='singletags')
-    tags = tagulous.models.TagField(MixedNonTagModel, blank=True, related_name='tags')
-    fk = models.ForeignKey(MixedNonTagModel, blank=True, null=True, related_name='fk', on_delete=models.CASCADE)
-    mm = models.ManyToManyField(MixedNonTagModel, blank=True, related_name='mm')
+    singletag = tagulous.models.SingleTagField(
+        MixedNonTagModel, blank=True, related_name="singletags"
+    )
+    tags = tagulous.models.TagField(MixedNonTagModel, blank=True, related_name="tags")
+    fk = models.ForeignKey(
+        MixedNonTagModel,
+        blank=True,
+        null=True,
+        related_name="fk",
+        on_delete=models.CASCADE,
+    )
+    mm = models.ManyToManyField(MixedNonTagModel, blank=True, related_name="mm")
 
 
 class MixedOrderTest(models.Model):
@@ -387,97 +426,117 @@ class MixedOrderTest(models.Model):
     For testing ordering of a SingleTagField and TagField when next to other
     M2M and non-M2M fields
     """
-    char1   = models.CharField(blank=True, max_length=10)
-    fk1     = models.ForeignKey(MixedTest, related_name="order_fk1", on_delete=models.CASCADE)
-    char2   = models.CharField(blank=True, max_length=10)
+
+    char1 = models.CharField(blank=True, max_length=10)
+    fk1 = models.ForeignKey(
+        MixedTest, related_name="order_fk1", on_delete=models.CASCADE
+    )
+    char2 = models.CharField(blank=True, max_length=10)
     single1 = tagulous.models.SingleTagField()
-    char3   = models.CharField(blank=True, max_length=10)
-    m2m1    = models.ManyToManyField(MixedTest, related_name="order_m2m1")
-    char4   = models.CharField(blank=True, max_length=10)
-    multi1  = tagulous.models.TagField()
-    char5   = models.CharField(blank=True, max_length=10)
-    m2m2    = models.ManyToManyField(MixedTest, related_name="order_m2m2")
-    char6   = models.CharField(blank=True, max_length=10)
-    fk2     = models.ForeignKey(MixedTest, related_name="order_fk2", on_delete=models.CASCADE)
-    char7   = models.CharField(blank=True, max_length=10)
+    char3 = models.CharField(blank=True, max_length=10)
+    m2m1 = models.ManyToManyField(MixedTest, related_name="order_m2m1")
+    char4 = models.CharField(blank=True, max_length=10)
+    multi1 = tagulous.models.TagField()
+    char5 = models.CharField(blank=True, max_length=10)
+    m2m2 = models.ManyToManyField(MixedTest, related_name="order_m2m2")
+    char6 = models.CharField(blank=True, max_length=10)
+    fk2 = models.ForeignKey(
+        MixedTest, related_name="order_fk2", on_delete=models.CASCADE
+    )
+    char7 = models.CharField(blank=True, max_length=10)
 
 
 class MixedStringTagModel(tagulous.models.TagModel):
     pass
+
+
 class MixedStringTo(models.Model):
     """
     A tagged model with fields which refers to a tag model by string, rather
     than by class
     """
+
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(
-        'MixedStringTagModel', related_name='tag_meta_string_singletag',
-        blank=True,
+        "MixedStringTagModel", related_name="tag_meta_string_singletag", blank=True
     )
     tags = tagulous.models.TagField(
-        'MixedStringTagModel', related_name='tag_meta_string_tags',
-        blank=True,
+        "MixedStringTagModel", related_name="tag_meta_string_tags", blank=True
     )
+
 
 class MixedSelfTo(tagulous.models.TagModel):
     """
     A tagged tag model, with tag fields which refers itself using 'self'
     """
-    alternate = tagulous.models.SingleTagField('self', blank=True)
-    related = tagulous.models.TagField('self', blank=True)
+
+    alternate = tagulous.models.SingleTagField("self", blank=True)
+    related = tagulous.models.TagField("self", blank=True)
+
     class TagMeta:
         force_lowercase = True
-
 
 
 class TreeTest(models.Model):
     """
     For testing tag trees
     """
+
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(tree=True, blank=True)
     tags = tagulous.models.TagField(tree=True, blank=True)
+
 
 class CustomTagTree(tagulous.models.TagTreeModel):
     """
     Custom tag tree model
     """
+
     pass
+
 
 class CustomTreeTest(models.Model):
     """
     For testing custom tag trees
     """
+
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(
-        'CustomTagTree', blank=True, related_name='custom_singletag',
+        "CustomTagTree", blank=True, related_name="custom_singletag"
     )
     tags = tagulous.models.TagField(
-        'CustomTagTree', blank=True, related_name='custom_tags',
+        "CustomTagTree", blank=True, related_name="custom_tags"
     )
+
 
 class ManyToOneTest(models.Model):
     """
     Add a reverse FK to MixedRefTest for serialization tests
     """
+
     name = models.CharField(max_length=10)
-    mixed_ref_test = models.ForeignKey(MixedRefTest, related_name='many_to_one', on_delete=models.CASCADE)
+    mixed_ref_test = models.ForeignKey(
+        MixedRefTest, related_name="many_to_one", on_delete=models.CASCADE
+    )
 
 
 class CustomTagBase(tagulous.models.TagModel):
     """
     For testing custom tag base models for auto-generated tag models
     """
+
     is_custom = True
 
     class Meta:
         abstract = True
 
+
 class CustomTagBaseTest(models.Model):
     """
     Test custom tag base model
     """
+
     name = models.CharField(max_length=10)
     singletag = tagulous.models.SingleTagField(
-        to_base=CustomTagBase, blank=True, related_name='custom_singletag',
+        to_base=CustomTagBase, blank=True, related_name="custom_singletag"
     )

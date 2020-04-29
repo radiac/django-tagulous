@@ -17,18 +17,22 @@ class FakeObject(object):
     Fake object to feed into the standard XML serializer, to trick it into
     serializing a tag field as a text field
     """
+
     def __init__(self, field_name, value):
         setattr(self, field_name, value)
         self.value = value
+
 
 class FakeField(object):
     """
     Fake field to feed into the standard XML serializer, to trick it into
     serializing a tag field as a text field
     """
+
     def __init__(self, name):
         self.name = name
-    get_internal_type = lambda self: 'TextField'
+
+    get_internal_type = lambda self: "TextField"
     value_to_string = lambda self, obj: obj.value
 
 
@@ -36,6 +40,7 @@ class Serializer(xml_serializer.Serializer):
     """
     XML serializer with tag field support
     """
+
     def handle_tagfield(self, obj, field):
         """
         Trick XML serializer into serializing this as text

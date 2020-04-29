@@ -31,6 +31,7 @@ def django_support():
     # We need them so the BaseTagModel metaclass can set up its options, and
     # so that tag model functionality is available in migrations.
     old_from_model = state.ModelState.from_model.__func__
+
     def from_model(cls, model, exclude_rels=False):
         base = None
         if issubclass(model, BaseTagTreeModel):
@@ -43,6 +44,7 @@ def django_support():
         if base is not None:
             modelstate.bases = (base,) + modelstate.bases
         return modelstate
+
     state.ModelState.from_model = classmethod(from_model)
 
 
@@ -56,10 +58,12 @@ if django_migrations is not None:
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 if django_migrations is not None:
+
     class ChangeModelBases(django_migrations.operations.base.Operation):
         """
         Change a Model's bases so it is correct for data migrations
         """
+
         def __init__(self, name, bases):
             self.name = name
             self.bases = bases
@@ -69,6 +73,7 @@ if django_migrations is not None:
 
         def database_forwards(self, *args, **kwargs):
             pass
+
         def database_backwards(self, *args, **kwargs):
             pass
 
@@ -129,8 +134,8 @@ def add_unique_field(model_name, name, field, preserve_default, set_fn):
         preserve_default    As django defines
         set_fn      Callback to set the field on each instance
     """
-    if django_migrations is None: # pragma: no cover
-        raise ValueError('Cannot use add_unique_column without Django migrations')
+    if django_migrations is None:  # pragma: no cover
+        raise ValueError("Cannot use add_unique_column without Django migrations")
 
     # Clone the field so it's not unique and can be null
     field_nullable = field.clone()
@@ -162,7 +167,7 @@ def add_unique_field(model_name, name, field, preserve_default, set_fn):
             set_fn(obj)
             if is_tag_model:
                 obj._save_direct()
-            else:   # pragma: no cover - no need, _save_direct() calls save()
+            else:  # pragma: no cover - no need, _save_direct() calls save()
                 obj.save()
 
     return [
@@ -172,10 +177,7 @@ def add_unique_field(model_name, name, field, preserve_default, set_fn):
             field=field_nullable,
             preserve_default=preserve_default,
         ),
-        RunPythonWithAppLabel(
-            set_unique_values,
-            reverse_code=lambda *a, **k: None
-        ),
+        RunPythonWithAppLabel(set_unique_values, reverse_code=lambda *a, **k: None),
         django_migrations.AlterField(
             model_name=model_name,
             name=name,
@@ -195,6 +197,7 @@ except ImportError:
     # South not installed
     south = None
 
+
 def south_support():
     from south import modelsinspector
     from south import orm
@@ -204,14 +207,16 @@ def south_support():
     # because South adds the fields when it's creating the model, and fields
     # can't be overridden in model subclasses.
     old_get_model_meta = modelsinspector.get_model_meta
+
     def get_model_meta(model):
         meta_def = old_get_model_meta(model)
-        if isinstance(getattr(model, 'tag_options', None), TagOptions):
+        if isinstance(getattr(model, "tag_options", None), TagOptions):
             if model.tag_options.tree:
-                meta_def['_bases'] = ['tagulous.models.BaseTagTreeModel']
+                meta_def["_bases"] = ["tagulous.models.BaseTagTreeModel"]
             else:
-                meta_def['_bases'] = ['tagulous.models.BaseTagModel']
+                meta_def["_bases"] = ["tagulous.models.BaseTagModel"]
         return meta_def
+
     modelsinspector.get_model_meta = get_model_meta
 
     # Monkey-patch South to make sure tagged models subclass TaggedModel.
@@ -223,22 +228,23 @@ def south_support():
     # to re-examine all modules South creates after it has fixed failed fields.
     if settings.ENHANCE_MODELS:
         old_retry_failed_fields = orm._FakeORM.retry_failed_fields
+
         def retry_failed_fields(self):
             old_retry_failed_fields(self)
             for modelkey, model in self.models.items():
                 TaggedModel.cast_class(model)
+
         orm._FakeORM.retry_failed_fields = retry_failed_fields
 
     # Build keyword arguments for south
     south_kwargs = {
         # Never want fk
-        'to_field':     ['south_supression', {'ignore_if': 'south_supression'}],
-        'rel_class':    ['south_supression', {'ignore_if': 'south_supression'}],
-
+        "to_field": ["south_supression", {"ignore_if": "south_supression"}],
+        "rel_class": ["south_supression", {"ignore_if": "south_supression"}],
         # Never want m2m
-        'db_table':     ['south_supression', {'ignore_if': 'south_supression'}],
-        'through':      ['south_supression', {'ignore_if': 'south_supression'}],
-        'symmetrical':  ['south_supression', {'ignore_if': 'south_supression'}],
+        "db_table": ["south_supression", {"ignore_if": "south_supression"}],
+        "through": ["south_supression", {"ignore_if": "south_supression"}],
+        "symmetrical": ["south_supression", {"ignore_if": "south_supression"}],
     }
 
     # Add tag options
@@ -246,39 +252,45 @@ def south_support():
         seek = key
 
         # Store initial as a string
-        if key == 'initial':
-            seek = 'initial_string'
+        if key == "initial":
+            seek = "initial_string"
 
         # Can't freeze callables - don't need to anyway
-        if key == 'get_absolute_url':
+        if key == "get_absolute_url":
             continue
 
-        south_kwargs[key] = ['tag_options.%s' % seek, {'default': value}]
+        south_kwargs[key] = ["tag_options.%s" % seek, {"default": value}]
 
     # Always store _set_tag_meta=True, so migrating tag fields can set tag
     # models' TagMeta during migrations
-    south_kwargs['_set_tag_meta'] = [True, {"is_value": True}]
+    south_kwargs["_set_tag_meta"] = [True, {"is_value": True}]
 
     # Add introspection rule for TagField
-    modelsinspector.add_introspection_rules([
-        (
-            [TagField],     # Class(es) these apply to
-            [],             # Positional arguments (not used)
-            south_kwargs,   # Keyword arguments
-        ),
-    ], ["^tagulous\.models\.fields\.TagField"])
+    modelsinspector.add_introspection_rules(
+        [
+            (
+                [TagField],  # Class(es) these apply to
+                [],  # Positional arguments (not used)
+                south_kwargs,  # Keyword arguments
+            )
+        ],
+        ["^tagulous\.models\.fields\.TagField"],
+    )
 
     # Create copy of south_kwargs without max_count
     single_south_kwargs = dict(
-        (k, v) for k, v in south_kwargs.items() if k != 'max_count'
+        (k, v) for k, v in south_kwargs.items() if k != "max_count"
     )
-    modelsinspector.add_introspection_rules([
-        (
-            [SingleTagField],     # Class(es) these apply to
-            [],                   # Positional arguments (not used)
-            single_south_kwargs,  # Keyword arguments
-        ),
-    ], ["^tagulous\.models\.fields\.SingleTagField"])
+    modelsinspector.add_introspection_rules(
+        [
+            (
+                [SingleTagField],  # Class(es) these apply to
+                [],  # Positional arguments (not used)
+                single_south_kwargs,  # Keyword arguments
+            )
+        ],
+        ["^tagulous\.models\.fields\.SingleTagField"],
+    )
 
 
 # Add Tagulous support to South migrations, if available
@@ -289,6 +301,7 @@ if south is not None:
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Helpers for South
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 
 def add_unique_column(self, db, model, column, set_fn, field_type, **kwargs):
     """
@@ -331,23 +344,15 @@ def add_unique_column(self, db, model, column, set_fn, field_type, **kwargs):
         field_type  String reference to Field object
         **kwargs    Arguments for Field object, excluding unique
     """
-    if south is None: # pragma: no cover
-        raise ValueError('Cannot use add_unique_column without south')
+    if south is None:  # pragma: no cover
+        raise ValueError("Cannot use add_unique_column without south")
 
     table = model._meta.db_table
 
     # Create the column as non-unique
     initial = kwargs.copy()
-    initial.update({
-        'blank':    True,
-        'null':     True,
-        'unique':   False,
-    })
-    db.add_column(
-        table, column,
-        self.gf(field_type)(**initial),
-        keep_default=False
-    )
+    initial.update({"blank": True, "null": True, "unique": False})
+    db.add_column(table, column, self.gf(field_type)(**initial), keep_default=False)
 
     # Set the fields
     if not db.dry_run:
@@ -357,13 +362,8 @@ def add_unique_column(self, db, model, column, set_fn, field_type, **kwargs):
             set_fn(obj)
             if is_tag_model:
                 obj._save_direct()
-            else:   # pragma: no cover - no need, _save_direct() calls save()
+            else:  # pragma: no cover - no need, _save_direct() calls save()
                 obj.save()
 
     # Change column to unique
-    db.alter_column(
-        table, column,
-        self.gf(field_type)(unique=True, **kwargs)
-    )
-
-
+    db.alter_column(table, column, self.gf(field_type)(unique=True, **kwargs))

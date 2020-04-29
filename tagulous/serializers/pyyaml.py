@@ -13,6 +13,7 @@ class Serializer(base.SerializerMixin, pyyaml_serializer.Serializer):
     """
     YAML serializer with tag field support
     """
+
     pass
 
 
