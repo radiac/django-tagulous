@@ -8,6 +8,7 @@ later and we're supporting back to 1.4, so we'll keep it in here for now.
 [1] https://docs.djangoproject.com/en/1.10/topics/signals/#connecting-receiver-functions
 """
 from django.db import models
+
 from tagulous import settings
 from tagulous.models.fields import SingleTagField, TagField
 from tagulous.models.tagged import TaggedModel

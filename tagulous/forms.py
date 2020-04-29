@@ -1,14 +1,13 @@
 from __future__ import unicode_literals
 
 from django import forms
-from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.validators import EMPTY_VALUES
 from django.db.models.query import QuerySet
 from django.utils import six
 from django.utils.encoding import force_text
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
+
 from tagulous import settings
 from tagulous.models import options
 from tagulous.models.models import BaseTagModel, TagModelQuerySet
@@ -298,9 +297,9 @@ class TagField(BaseTagField):
         return super(TagField, self).prepare_value(value)
 
 
-###############################################################################
-####### Inline tagged formset
-###############################################################################
+# ##############################################################################
+# ###### Inline tagged formset
+# ##############################################################################
 
 
 class TaggedInlineFormSet(forms.models.BaseInlineFormSet):

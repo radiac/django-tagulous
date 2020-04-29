@@ -4,10 +4,11 @@ Tagulous tag models
 from __future__ import unicode_literals
 
 import django
-import tagulous
 from django.db import IntegrityError, connection, models, router, transaction
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
+
+import tagulous
 from tagulous import constants, settings, utils
 from tagulous.models.options import TagOptions
 
@@ -53,9 +54,9 @@ else:
     with_metaclass = six.with_metaclass
 
 
-###############################################################################
-####### TagModel manager and queryset
-###############################################################################
+# ##############################################################################
+# ###### TagModel manager and queryset
+# ##############################################################################
 
 
 @python_2_unicode_compatible
@@ -133,9 +134,9 @@ class TagModelManager(models.Manager):
         return self.get_queryset().weight(*args, **kwargs)
 
 
-###############################################################################
-####### Abstract base class for all TagModel models
-###############################################################################
+# ##############################################################################
+# ###### Abstract base class for all TagModel models
+# ##############################################################################
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Metaclass for tag models
@@ -551,9 +552,9 @@ class TagModel(BaseTagModel):
         unique_together = (("slug",),)
 
 
-###############################################################################
-####### TagTreeModel manager and queryset
-###############################################################################
+# ##############################################################################
+# ###### TagTreeModel manager and queryset
+# ##############################################################################
 
 
 class TagTreeModelQuerySet(TagModelQuerySet):
@@ -629,9 +630,9 @@ class TagTreeModelManager(TagModelManager):
     rebuild.alters_data = True
 
 
-###############################################################################
-####### Abstract base class for all TagTreeModel models
-###############################################################################
+# ##############################################################################
+# ###### Abstract base class for all TagTreeModel models
+# ##############################################################################
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Metaclass for tag tree models

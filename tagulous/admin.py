@@ -6,13 +6,14 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.base import ModelBase
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+
 from tagulous import forms as tag_forms
 from tagulous import models as tag_models
 
 
-###############################################################################
-########################################################### Admin classes
-###############################################################################
+# ##############################################################################
+# ########################################################## Admin classes
+# ##############################################################################
 
 
 class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
@@ -134,9 +135,9 @@ class TagTreeModelAdmin(TagModelAdmin):
     exclude = ["count", "parent", "path", "label", "level"]
 
 
-###############################################################################
-########################################################### Admin registration
-###############################################################################
+# ##############################################################################
+# ########################################################## Admin registration
+# ##############################################################################
 
 # Give contrib.admin a default widget for tag fields
 admin.options.FORMFIELD_FOR_DBFIELD_DEFAULTS.update(

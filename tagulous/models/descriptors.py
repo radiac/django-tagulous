@@ -12,8 +12,8 @@ from __future__ import unicode_literals
 import collections
 
 import django
-from django.db import models
 from django.utils import six
+
 from tagulous.models.managers import (
     FakeTagRelatedManager,
     SingleTagManager,
@@ -21,9 +21,9 @@ from tagulous.models.managers import (
 )
 
 
-###############################################################################
-####### Base class for tag field descriptors
-###############################################################################
+# ##############################################################################
+# ###### Base class for tag field descriptors
+# ##############################################################################
 
 
 class BaseTagDescriptor(object):
@@ -67,9 +67,9 @@ class BaseTagDescriptor(object):
         return self.descriptor.field.formfield(*args, **kwargs)
 
 
-###############################################################################
-####### Descriptor for SingleTagField
-###############################################################################
+# ##############################################################################
+# ###### Descriptor for SingleTagField
+# ##############################################################################
 
 
 class SingleTagDescriptor(BaseTagDescriptor):
@@ -114,9 +114,9 @@ class SingleTagDescriptor(BaseTagDescriptor):
         return manager.get()
 
 
-###############################################################################
-####### Descriptor for TagField
-###############################################################################
+# ##############################################################################
+# ###### Descriptor for TagField
+# ##############################################################################
 
 
 class TagDescriptor(BaseTagDescriptor):

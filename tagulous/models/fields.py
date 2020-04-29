@@ -13,6 +13,7 @@ import django
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import capfirst
+
 from tagulous import constants, forms
 from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
 from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
@@ -25,9 +26,9 @@ except ImportError:
     ChecksWarning = None
 
 
-###############################################################################
-####### Mixin for model tag fields
-###############################################################################
+# ##############################################################################
+# ###### Mixin for model tag fields
+# ##############################################################################
 
 
 class BaseTagField(object):
@@ -324,9 +325,9 @@ class BaseTagField(object):
         return name, path, args, kwargs
 
 
-###############################################################################
-####### Single tag field
-###############################################################################
+# ##############################################################################
+# ###### Single tag field
+# ##############################################################################
 
 
 class SingleTagField(BaseTagField, models.ForeignKey):
@@ -396,9 +397,9 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         return super(SingleTagField, self).formfield(form_class=form_class, **kwargs)
 
 
-###############################################################################
-####### Tag field
-###############################################################################
+# ##############################################################################
+# ###### Tag field
+# ##############################################################################
 
 
 class TagField(BaseTagField, models.ManyToManyField):
@@ -546,9 +547,9 @@ class TagField(BaseTagField, models.ManyToManyField):
         getattr(instance, self.attname).save()
 
 
-###############################################################################
-####### Field util methods
-###############################################################################
+# ##############################################################################
+# ###### Field util methods
+# ##############################################################################
 
 
 def singletagfields_from_model(model):

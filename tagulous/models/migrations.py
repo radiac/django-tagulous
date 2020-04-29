@@ -3,7 +3,6 @@ Migration support for South and Django migrations
 """
 from __future__ import unicode_literals
 
-from django.utils import six
 from tagulous import constants, settings
 from tagulous.models.fields import SingleTagField, TagField
 from tagulous.models.models import BaseTagModel, BaseTagTreeModel
@@ -11,9 +10,9 @@ from tagulous.models.options import TagOptions
 from tagulous.models.tagged import TaggedModel
 
 
-###############################################################################
-############################################################ Django migrations
-###############################################################################
+# ##############################################################################
+# ########################################################### Django migrations
+# ##############################################################################
 
 # Check for migration frameworks
 try:
@@ -186,9 +185,9 @@ def add_unique_field(model_name, name, field, preserve_default, set_fn):
     ]
 
 
-###############################################################################
-############################################################ South migrations
-###############################################################################
+# ##############################################################################
+# ########################################################### South migrations
+# ##############################################################################
 
 try:
     import south
@@ -273,7 +272,7 @@ def south_support():
                 south_kwargs,  # Keyword arguments
             )
         ],
-        ["^tagulous\.models\.fields\.TagField"],
+        [r"^tagulous\.models\.fields\.TagField"],
     )
 
     # Create copy of south_kwargs without max_count
@@ -288,7 +287,7 @@ def south_support():
                 single_south_kwargs,  # Keyword arguments
             )
         ],
-        ["^tagulous\.models\.fields\.SingleTagField"],
+        [r"^tagulous\.models\.fields\.SingleTagField"],
     )
 
 

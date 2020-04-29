@@ -6,7 +6,6 @@ Override these by setting new values in your global settings file
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.utils import six
 
 
 #

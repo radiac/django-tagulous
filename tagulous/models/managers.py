@@ -8,16 +8,16 @@ For tag model manager, look in tagulous.models.models
 """
 from __future__ import unicode_literals
 
-import django
 from django.core import exceptions
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
+
 from tagulous.utils import parse_tags, render_tags
 
 
-###############################################################################
-####### Manager for SingleTagField
-###############################################################################
+# ##############################################################################
+# ###### Manager for SingleTagField
+# ##############################################################################
 
 
 class SingleTagManager(object):
@@ -220,10 +220,6 @@ class SingleTagManager(object):
         # Decrement the actual tag
         old_tag = self.get_actual()
         if old_tag:
-
-            #### TODO: This probalby shouldn't happen at all. Why is it happening?
-            #### decrement() must be getting called twice?
-
             try:
                 old_tag.decrement()
             except type(old_tag).DoesNotExist:
@@ -239,9 +235,9 @@ class SingleTagManager(object):
             self.changed = True
 
 
-###############################################################################
-####### Mixin for TagField manager
-###############################################################################
+# ##############################################################################
+# ###### Mixin for TagField manager
+# ##############################################################################
 
 
 @python_2_unicode_compatible

@@ -9,6 +9,7 @@ import unicodedata
 
 from django.utils import six
 from django.utils.encoding import force_text
+
 from tagulous.constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
 
 
@@ -18,9 +19,9 @@ except ImportError:  # pragma: no cover - tests simulate this
     unidecode = None
 
 
-###############################################################################
-####### Tag name parse and render
-###############################################################################
+# ##############################################################################
+# ###### Tag name parse and render
+# ##############################################################################
 
 
 def parse_tags(tag_string, max_count=0, space_delimiter=True):
@@ -247,9 +248,9 @@ def render_tags(tags):
     return ", ".join(sorted(names))
 
 
-###############################################################################
-####### Tree name split and join
-###############################################################################
+# ##############################################################################
+# ###### Tree name split and join
+# ##############################################################################
 
 
 def split_tree_name(name):
@@ -318,9 +319,9 @@ def clean_tree_name(name):
     return join_tree_name(split_tree_name(name))
 
 
-###############################################################################
-####### Other string operators
-###############################################################################
+# ##############################################################################
+# ###### Other string operators
+# ##############################################################################
 
 
 def unicode_to_ascii(raw):

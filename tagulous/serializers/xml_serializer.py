@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 from django.core.serializers import xml_serializer
 from django.utils import six
+
 from tagulous.models.fields import SingleTagField, TagField
 from tagulous.models.tagged import TaggedModel
 from tagulous.serializers import base
@@ -30,8 +31,11 @@ class FakeField(object):
     def __init__(self, name):
         self.name = name
 
-    get_internal_type = lambda self: "TextField"
-    value_to_string = lambda self, obj: obj.value
+    def get_internal_type(self):
+        return "TextField"
+
+    def value_to_string(self, obj):
+        return obj.value
 
 
 class Serializer(xml_serializer.Serializer):
