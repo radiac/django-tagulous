@@ -219,7 +219,15 @@ class SingleTagManager(object):
         # Decrement the actual tag
         old_tag = self.get_actual()
         if old_tag:
-            old_tag.decrement()
+
+            #### TODO: This probalby shouldn't happen at all. Why is it happening?
+            #### decrement() must be getting called twice?
+
+            try:
+                old_tag.decrement()
+            except type(old_tag).DoesNotExist:
+                # The object was deleted as part of this operation
+                pass
             self.set_actual(None)
 
             # If there is no new value, mark the old one as a new one,
@@ -656,4 +664,3 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
             tag.decrement()
         self.tags = []
     clear.alters_data = True
-

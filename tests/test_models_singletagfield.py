@@ -8,8 +8,7 @@ Modules tested:
     tagulous.models.fields.BaseTagField
     tagulous.models.fields.SingleTagField
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 from django.utils import six
 
@@ -221,9 +220,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 2,
         })
-        print('DEL expecting to del Mr >>>>>>>>')
         t2.delete()
-        print('<<<<<<<<<')
         self.assertInstanceEqual(t1, name='Test 1', title='Mr')
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
@@ -262,9 +259,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
             'Mr': 1,
             'Mrs': 1,
         })
-        print('DEL expecting to del Mr >>>>>>>>>')
         t1.delete()
-        print('<<<<<<<<<')
 
         # Check the original tag 'Mr' was decremented (and deleted)
         self.assertTagModel(self.tag_model, {
@@ -283,9 +278,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
-        print('DEL expecting to del Mr >>>>>>>>>>>>')
         t1.delete()
-        print('<<<<<<<<<<<<')
         self.assertTagModel(self.tag_model, {})
         t1.save()
         self.assertTagModel(self.tag_model, {
@@ -301,6 +294,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {
             'Mr': 1,
         })
+
         self.tag_model.objects.all().delete()
         self.assertTagModel(self.tag_model, {})
 
@@ -391,6 +385,59 @@ class ModelSingleTagFieldConcreteInheritanceTest(ModelSingleTagFieldTest):
         self.test_model = test_models.SingleTagFieldConcreteInheritanceModel
         self.tag_model = test_models.SingleTagFieldConcreteInheritanceModel.title.tag_model
         self.tag_field = test_models.SingleTagFieldConcreteInheritanceModel.title
+
+    def test_save_deleted_instance(self):
+        """
+        Disable this test as it doesn't make sense in the context of a concrete
+        subclass; when the subclass is deleted, it will delete the base model instance,
+        meaning when we go to save it again we'll get the error:
+        
+            save() prohibited to prevent data loss due to unsaved related object ..._ptr
+        
+        where ..._ptr is a OneToOneField to the base model. This is expected behaviour,
+        and out of scope for this package to address.
+        """
+
+
+###############################################################################
+#######  Test it works with abstract inheritance
+###############################################################################
+
+class ModelSingleTagFieldAbstractInheritanceTest(ModelSingleTagFieldConcreteInheritanceTest):
+    manage_models = [
+        test_models.SingleTagFieldAbstractInheritanceModel,
+    ]
+
+    def setUpExtra(self):
+        self.test_model = test_models.SingleTagFieldAbstractInheritanceModel
+        self.tag_model = test_models.SingleTagFieldAbstractInheritanceModel.title.tag_model
+        self.tag_field = test_models.SingleTagFieldAbstractInheritanceModel.title
+
+    def test_second_inheritance__tag_model_not_shared(self):
+        second_test_model = test_models.SingleTagFieldAbstractInheritanceSecondModel
+        second_tag_model = second_test_model.title.tag_model
+        self.assertNotEqual(self.tag_model, second_tag_model)
+
+    def test_second_inheritance__writes_update_shared_model(self):
+        second_test_model = test_models.SingleTagFieldAbstractInheritanceSecondModel
+        second_tag_model = second_test_model.title.tag_model
+
+        t1 = self.test_model(name="Test 1", title='Mr')
+        t1.save()
+
+        t2 = second_test_model(name="Test 2", title="Mrs")
+        t2.save()
+
+        self.assertEqual(t1.name, 'Test 1')
+        self.assertEqual(t1.title.name, 'Mr')
+        self.assertEqual(t2.name, 'Test 2')
+        self.assertEqual(t2.title.name, 'Mrs')
+        self.assertTagModel(self.tag_model, {
+            'Mr': 1,
+        })
+        self.assertTagModel(second_tag_model, {
+            'Mrs': 1,
+        })
 
 
 ###############################################################################

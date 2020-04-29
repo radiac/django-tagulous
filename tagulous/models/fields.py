@@ -161,18 +161,6 @@ class BaseTagField(object):
 
         # Create a new tag model if we need to
         if self.auto_tag_model:
-            # Make sure a TagField is only contributed once if the model is
-            # not explicitly set. This isn't normal for model fields, but in
-            # this case the name of the model (and therefore db) would depend
-            # on the load order, which could change. Rather than risk problems
-            # later, ban it outright to save developers from themselves.
-            # If it causes problems for anyone, they can explicitly set a tag
-            # model and avoid this being a problem.
-            if self.contributed:
-                raise AttributeError(
-                    "The tag field %r is already attached to a model" % self
-                )
-
             # Generate a list of attributes for the new tag model
             model_attrs = {
                 # Module should be the same as the main model
