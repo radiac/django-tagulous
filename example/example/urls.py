@@ -18,19 +18,18 @@ from __future__ import unicode_literals
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.utils import six
-import tagulous.views
 
-from example import views
-from example import models
+import tagulous.views
+from example import models, views
 
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r"^admin/", admin.site.urls),
     url(
-        r'^api/skills/$',
+        r"^api/skills/$",
         tagulous.views.autocomplete,
-        {'tag_model': models.Skill},
-        name='person_skills_autocomplete',
+        {"tag_model": models.Skill},
+        name="person_skills_autocomplete",
     ),
-    url(r'^$', views.index),
+    url(r"^$", views.index),
 ]

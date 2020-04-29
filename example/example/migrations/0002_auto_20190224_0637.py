@@ -7,18 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('example', '0001_initial'),
+        ("example", "0001_initial"),
     ]
 
     atomic = False
 
     operations = [
         migrations.RenameModel(
-            old_name='_Tagulous_Person_hobbies',
-            new_name='Tagulous_Person_hobbies',
+            old_name="_Tagulous_Person_hobbies", new_name="Tagulous_Person_hobbies",
         ),
         migrations.RenameModel(
-            old_name='_Tagulous_Person_title',
-            new_name='Tagulous_Person_title',
+            old_name="_Tagulous_Person_title", new_name="Tagulous_Person_title",
         ),
     ]

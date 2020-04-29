@@ -11,5 +11,5 @@ from example import models
 
 class PersonForm(forms.ModelForm):
     class Meta:
-        fields = ['name', 'title', 'skills', 'hobbies']
+        fields = ["name", "title", "skills", "hobbies"]
         model = models.Person
