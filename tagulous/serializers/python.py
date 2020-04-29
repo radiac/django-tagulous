@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 from django.core.serializers import python as python_serializer
 from django.utils import six
-
 from tagulous.serializers import base
 
 

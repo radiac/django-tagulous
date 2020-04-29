@@ -6,9 +6,14 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import EMPTY_VALUES
 from django.db.models.query import QuerySet
 from django.utils import six
-from django.utils.translation import ugettext as _
-from django.utils.html import escape
 from django.utils.encoding import force_text
+from django.utils.html import escape
+from django.utils.translation import ugettext as _
+from tagulous import settings
+from tagulous.models import options
+from tagulous.models.models import BaseTagModel, TagModelQuerySet
+from tagulous.utils import parse_tags, render_tags
+
 
 # Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:
@@ -21,11 +26,6 @@ try:
     from django.urls import reverse, NoReverseMatch
 except ImportError:
     from django.core.urlresolvers import reverse, NoReverseMatch
-
-from tagulous import settings
-from tagulous.models import options
-from tagulous.models.models import BaseTagModel, TagModelQuerySet
-from tagulous.utils import parse_tags, render_tags
 
 
 class TagWidgetBase(forms.TextInput):

@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
+from tagulous.models.initial import field_initialise_tags, model_initialise_tags
+
 
 # Abstract model lookup for django compatibility
 try:
@@ -15,9 +17,6 @@ else:
     get_app = apps.get_app_config
     get_models = lambda app: app.get_models() if app else apps.get_models()
     get_model = lambda app, model_name: app.get_model(model_name)
-
-
-from tagulous.models.initial import field_initialise_tags, model_initialise_tags
 
 
 class Command(BaseCommand):

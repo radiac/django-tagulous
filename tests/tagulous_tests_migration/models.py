@@ -3,15 +3,15 @@ Test models
 """
 from __future__ import unicode_literals
 
+import tagulous
 from django.db import models
 from django.utils import six
+
 
 try:
     import django.apps as django_apps
 except ImportError:
     django_apps = None
-
-import tagulous
 
 
 #

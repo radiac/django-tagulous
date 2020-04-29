@@ -6,6 +6,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpResponse
 from django.utils import six
 
+
 # Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:
     import json

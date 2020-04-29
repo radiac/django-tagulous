@@ -4,12 +4,12 @@ Tagulous test: View-related functionality
 Modules tested:
     tagulous.views
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
-from tests.lib import *
+from __future__ import absolute_import, unicode_literals
 
 from django.test import Client
 from django.utils import six
+from tests.lib import *
+
 
 # Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:

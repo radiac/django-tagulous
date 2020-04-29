@@ -4,7 +4,6 @@ Extensions for serializers to add tag field support
 from __future__ import unicode_literals
 
 from django.utils import six
-
 from tagulous.models.fields import SingleTagField, TagField
 from tagulous.models.tagged import TaggedModel
 

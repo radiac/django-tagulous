@@ -15,15 +15,15 @@ Modules tested:
 # This should be fixed in Django 1.9, at which point we can look at splitting
 # them again - see https://code.djangoproject.com/ticket/24558
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
+
 import os
 import tempfile
 
 from django.core import management, serializers
 from django.utils import six
-
 from tests.lib import *
+
 
 try:
     import yaml

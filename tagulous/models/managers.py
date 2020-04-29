@@ -12,7 +12,6 @@ import django
 from django.core import exceptions
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
-
 from tagulous.utils import parse_tags, render_tags
 
 

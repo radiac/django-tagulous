@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from django.utils import six
-
 from tagulous.models.fields import SingleTagField, TagField
 
 

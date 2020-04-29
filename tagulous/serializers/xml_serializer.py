@@ -5,10 +5,8 @@ from __future__ import unicode_literals
 
 from django.core.serializers import xml_serializer
 from django.utils import six
-
 from tagulous.models.fields import SingleTagField, TagField
 from tagulous.models.tagged import TaggedModel
-
 from tagulous.serializers import base
 
 

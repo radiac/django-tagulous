@@ -6,14 +6,11 @@ Will fail if settings.ENHANCE_MODELS is not True
 Modules tested:
     tagulous.models.tagged
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 from django.core.exceptions import MultipleObjectsReturned
 from django.utils import six
-
 from tagulous.models.tagged import _split_kwargs
-
 from tests.lib import *
 
 

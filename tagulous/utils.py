@@ -5,17 +5,17 @@ Loosely based on django-taggit and django-tagging
 """
 from __future__ import unicode_literals
 
+import unicodedata
+
 from django.utils import six
 from django.utils.encoding import force_text
+from tagulous.constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
 
-import unicodedata
 
 try:
     from unidecode import unidecode
 except ImportError:  # pragma: no cover - tests simulate this
     unidecode = None
-
-from tagulous.constants import COMMA, SPACE, QUOTE, DOUBLE_QUOTE, TREE
 
 
 ###############################################################################

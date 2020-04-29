@@ -4,22 +4,21 @@ Tagulous test: south migrations
 Modules tested:
     tagulous.models.migrations
 """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import absolute_import, print_function, unicode_literals
+
 import inspect
 import os
-import sys
 import shutil
+import sys
 import warnings
 
 from django.conf import settings
 from django.core.management import call_command
 from django.db import DatabaseError
 from django.utils import six
-
-from tests.lib import *
 from tests import tagulous_tests_migration
+from tests.lib import *
+
 
 try:
     import south

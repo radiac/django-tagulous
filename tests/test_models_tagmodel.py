@@ -8,12 +8,10 @@ Modules tested:
     tagulous.models.models.TagModelManager
     tagulous.models.models.TagModelQuerySet
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
-from django.utils import six
 import tagulous.settings as tagulous_settings
-
+from django.utils import six
 from tagulous.settings import SLUG_TRUNCATE_UNIQUE
 from tests.lib import *
 

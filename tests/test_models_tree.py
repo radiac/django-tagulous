@@ -4,13 +4,11 @@ Tagulous test: Tag Trees
 Modules tested:
     tagulous.models.tree
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
-from django.utils import six
-
-from tests.lib import *
 import tagulous.settings as tagulous_settings
+from django.utils import six
+from tests.lib import *
 
 
 class TagTreeTestManager(TagTestManager):

@@ -6,9 +6,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.base import ModelBase
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-
-from tagulous import models as tag_models
 from tagulous import forms as tag_forms
+from tagulous import models as tag_models
 
 
 ###############################################################################

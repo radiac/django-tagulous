@@ -13,17 +13,16 @@ import django
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import capfirst
+from tagulous import constants, forms
+from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
+from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
+from tagulous.models.options import TagOptions
+
 
 try:
     from django.core.checks import Warning as ChecksWarning
 except ImportError:
     ChecksWarning = None
-
-from tagulous import constants
-from tagulous import forms
-from tagulous.models.options import TagOptions
-from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
-from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
 
 
 ###############################################################################

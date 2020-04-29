@@ -4,9 +4,13 @@ Tagulous tag models
 from __future__ import unicode_literals
 
 import django
-from django.db import connection, models, router, transaction, IntegrityError
+import tagulous
+from django.db import IntegrityError, connection, models, router, transaction
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
+from tagulous import constants, settings, utils
+from tagulous.models.options import TagOptions
+
 
 try:
     from django.utils.text import slugify
@@ -14,11 +18,6 @@ except ImportError:
     # Django 1.4 or earlier
     from django.template.defaultfilters import slugify
 
-import tagulous
-from tagulous import constants
-from tagulous import settings
-from tagulous import utils
-from tagulous.models.options import TagOptions
 
 # Django 1.4 and 1.5 don't support transaction.atomic, but don't need it for
 # what we're doing here; fake it for the ``with`` statement.

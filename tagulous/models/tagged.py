@@ -5,13 +5,13 @@ These are all applied automatically when the TAGULOUS_ENHANCE_MODELS setting
 is enabled.
 """
 from __future__ import unicode_literals
+
 import copy
 
 import django
-from django.db import models
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import six
-
+from tagulous import settings, utils
 from tagulous.models.fields import (
     BaseTagField,
     SingleTagField,
@@ -19,8 +19,6 @@ from tagulous.models.fields import (
     singletagfields_from_model,
     tagfields_from_model,
 )
-from tagulous import settings
-from tagulous import utils
 
 
 def _split_kwargs(model, kwargs, lookups=False, with_fields=False):

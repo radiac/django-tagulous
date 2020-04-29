@@ -3,13 +3,12 @@ Migration support for South and Django migrations
 """
 from __future__ import unicode_literals
 
-from tagulous import constants
-from tagulous import settings
-from tagulous.models.models import BaseTagModel, BaseTagTreeModel
-from tagulous.models.tagged import TaggedModel
-from tagulous.models.options import TagOptions
-from tagulous.models.fields import SingleTagField, TagField
 from django.utils import six
+from tagulous import constants, settings
+from tagulous.models.fields import SingleTagField, TagField
+from tagulous.models.models import BaseTagModel, BaseTagTreeModel
+from tagulous.models.options import TagOptions
+from tagulous.models.tagged import TaggedModel
 
 
 ###############################################################################

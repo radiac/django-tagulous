@@ -4,27 +4,26 @@ Tagulous test: Admin
 Modules tested:
     tagulous.admin
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
-import re
+from __future__ import absolute_import, unicode_literals
+
 import copy
+import re
 
 import django
+from django.contrib import admin, messages
 from django.contrib.auth.models import User
-from django.contrib import admin
-from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
 from django.http import HttpRequest, QueryDict
 from django.utils import six
+from tests.lib import *
+
 
 # Django 1.10 deprecates urlresolvers
 try:
     from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse
-
-from tests.lib import *
 
 
 MOCK_PATH = "mock/path"

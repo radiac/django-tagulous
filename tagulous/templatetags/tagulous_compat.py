@@ -7,6 +7,7 @@ import django
 from django import template
 from django.utils import six
 
+
 register = template.Library()
 
 
