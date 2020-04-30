@@ -3,9 +3,9 @@ Test models
 """
 from __future__ import unicode_literals
 
-import tagulous
 from django.db import models
-from django.utils import six
+
+import tagulous
 
 
 class MixedModel(models.Model):

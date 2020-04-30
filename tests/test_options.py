@@ -7,8 +7,11 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
+from django.test import TestCase
 from django.utils import six
-from tests.lib import *
+
+from tagulous import constants as tag_constants
+from tagulous import models as tag_models
 
 
 class TagOptionsTest(TestCase):

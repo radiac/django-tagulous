@@ -14,9 +14,17 @@ from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
+from django.core import exceptions
 from django.http import HttpRequest, QueryDict
+from django.test import TestCase
 from django.utils import six
-from tests.lib import *
+
+from tagulous import admin as tag_admin
+from tagulous import forms as tag_forms
+from tests.lib import TagTestManager
+from tests.tagulous_tests_app import admin as test_admin
+from tests.tagulous_tests_app import models as test_models
+from tests.tagulous_tests_app import urls as test_urls
 
 
 # Django 1.10 deprecates urlresolvers
@@ -115,9 +123,9 @@ class AdminTestManager(object):
         test_urls.urlpatterns = self.old_urls
 
 
-###############################################################################
-####### Admin registration
-###############################################################################
+# ##############################################################################
+# ###### Admin registration
+# ##############################################################################
 
 
 class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
@@ -230,9 +238,9 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
 
 
-###############################################################################
-####### Tagged ModelAdmin
-###############################################################################
+# ##############################################################################
+# ###### Tagged ModelAdmin
+# ##############################################################################
 
 
 class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCase):
@@ -280,7 +288,7 @@ class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCa
         if not req:
             req = self.mock_request()
         self.get_changelist(req)
-        results = self.cl.get_results(req)
+        self.cl.get_results(req)
         return self.cl.result_list
 
     #
@@ -355,16 +363,18 @@ class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCa
         self.assertIsInstance(field_tags.widget, tag_forms.AdminTagWidget)
 
 
-###############################################################################
-####### Tag model admin tools
-###############################################################################
+# ##############################################################################
+# ###### Tag model admin tools
+# ##############################################################################
+
+
 class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, TestCase):
     """
     Test Admin registration of a tag model
     """
 
     def setUpModels(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def setUpExtra(self):
         self.setUpModels()
@@ -801,9 +811,9 @@ class TagTreeAdminTest(TagAdminTestManager):
         )
 
 
-###############################################################################
-####### Tagged inlines on tag ModelAdmin
-###############################################################################
+# ##############################################################################
+# ###### Tagged inlines on tag ModelAdmin
+# ##############################################################################
 
 
 class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):

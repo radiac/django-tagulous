@@ -8,13 +8,20 @@ Modules tested:
 from __future__ import absolute_import, unicode_literals
 
 from django import forms
+from django.test import TestCase
 from django.utils import six
-from tests.lib import *
+
+from tagulous import forms as tag_forms
+from tagulous import models as tag_models
+from tagulous import settings as tag_settings
+from tests.lib import TagTestManager, skip_if_mysql
+from tests.tagulous_tests_app import forms as test_forms
+from tests.tagulous_tests_app import models as test_models
 
 
-###############################################################################
-####### Test form SingleTagField
-###############################################################################
+# ##############################################################################
+# ###### Test form SingleTagField
+# ##############################################################################
 
 
 class FormSingleTagFieldTest(TagTestManager, TestCase):
@@ -151,9 +158,9 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         )
 
 
-###############################################################################
-####### Test ModelForm SingleTagField
-###############################################################################
+# ##############################################################################
+# ###### Test ModelForm SingleTagField
+# ##############################################################################
 
 
 class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
@@ -327,9 +334,9 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         self.assertEqual(t2.title, '"One, "Two"')
 
 
-###############################################################################
-#######  Test SingleTagField blank
-###############################################################################
+# ##############################################################################
+# ######  Test SingleTagField blank
+# ##############################################################################
 
 
 class ModelFormSingleTagFieldOptionalTest(TagTestManager, TestCase):
@@ -379,9 +386,9 @@ class ModelFormSingleTagFieldRequiredTest(TagTestManager, TestCase):
         self.assertEqual(form.errors["tag"][0], "This field is required.")
 
 
-###############################################################################
-####### Test form SingleTagField options
-###############################################################################
+# ##############################################################################
+# ###### Test form SingleTagField options
+# ##############################################################################
 
 
 class ModelFormSingleTagFieldOptionsTest(TagTestManager, TestCase):

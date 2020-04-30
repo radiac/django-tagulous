@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"ordering": ("name",), "abstract": False,},
+            options={"ordering": ("name",), "abstract": False},
             bases=(tagulous.models.models.BaseTagModel, models.Model),
         ),
         migrations.CreateModel(
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"ordering": ("name",), "abstract": False,},
+            options={"ordering": ("name",), "abstract": False},
             bases=(tagulous.models.models.BaseTagModel, models.Model),
         ),
         migrations.CreateModel(
@@ -101,7 +101,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"verbose_name_plural": "people",},
+            options={"verbose_name_plural": "people"},
         ),
         migrations.CreateModel(
             name="Skill",
@@ -156,7 +156,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"ordering": ("name",), "abstract": False,},
+            options={"ordering": ("name",), "abstract": False},
             bases=(tagulous.models.models.BaseTagTreeModel, models.Model),
         ),
         migrations.AddField(
@@ -187,12 +187,12 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterUniqueTogether(
-            name="_tagulous_person_title", unique_together=set([("slug",)]),
+            name="_tagulous_person_title", unique_together=set([("slug",)])
         ),
         migrations.AlterUniqueTogether(
-            name="_tagulous_person_hobbies", unique_together=set([("slug",)]),
+            name="_tagulous_person_hobbies", unique_together=set([("slug",)])
         ),
         migrations.AlterUniqueTogether(
-            name="skill", unique_together=set([("slug", "parent")]),
+            name="skill", unique_together=set([("slug", "parent")])
         ),
     ]

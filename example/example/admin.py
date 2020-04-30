@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from django.utils import six
 
 import tagulous.admin
 from example import models
@@ -18,6 +17,7 @@ tagulous.admin.register(models.Person, PersonAdmin)
 # Auto-gen the ModelAdmins for skills and hobbies
 tagulous.admin.register(models.Skill)
 tagulous.admin.register(models.Person.hobbies.tag_model)
+
 
 # Give the Title ModelAdmin the people as inlines
 class PersonInline(admin.TabularInline):

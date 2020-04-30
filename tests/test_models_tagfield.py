@@ -10,16 +10,22 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
+import unittest
+
+import django
+from django.db import models
+from django.test import TestCase, TransactionTestCase
 from django.utils import six
-from tests.lib import *
+
+from tagulous import models as tag_models
+from tests.lib import TagTestManager, skip_if_mysql
+from tests.tagulous_tests_app import models as test_models
 
 
 try:
     from django.core.checks import Warning as ChecksWarning
 except ImportError:
     ChecksWarning = None
-
-##########
 
 
 class ModelTagFieldTest(TagTestManager, TestCase):
@@ -581,9 +587,9 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertEqual(six.text_type(cm.exception), errmsg)
 
 
-###############################################################################
-#######  Test it works with concrete inheritance
-###############################################################################
+# ##############################################################################
+# ######  Test it works with concrete inheritance
+# ##############################################################################
 
 
 class ModelTagFieldConcreteInheritanceTest(ModelTagFieldTest):
@@ -595,9 +601,9 @@ class ModelTagFieldConcreteInheritanceTest(ModelTagFieldTest):
         self.tag_field = test_models.TagFieldConcreteInheritanceModel.tags
 
 
-###############################################################################
-#######  Test it works with abstract inheritance
-###############################################################################
+# ##############################################################################
+# ######  Test it works with abstract inheritance
+# ##############################################################################
 
 
 class ModelTagFieldAbstractInheritanceTest(ModelTagFieldConcreteInheritanceTest):
@@ -628,9 +634,9 @@ class ModelTagFieldAbstractInheritanceTest(ModelTagFieldConcreteInheritanceTest)
         self.assertTagModel(second_tag_model, {"green": 1, "yellow": 1})
 
 
-###############################################################################
-#######  Test invalid fields
-###############################################################################
+# ##############################################################################
+# ######  Test invalid fields
+# ##############################################################################
 
 
 class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
@@ -719,9 +725,9 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
         self.assertEqual(warnings[0].msg, "null has no effect on TagField.")
 
 
-###############################################################################
-####### Test tag counter
-###############################################################################
+# ##############################################################################
+# ###### Test tag counter
+# ##############################################################################
 
 
 class ModelTagFieldCountTest(TagTestManager, TestCase):
@@ -793,9 +799,9 @@ class ModelTagFieldCountTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {"green": 0})
 
 
-###############################################################################
-#######  Test model field blank=True
-###############################################################################
+# ##############################################################################
+# ######  Test model field blank=True
+# ##############################################################################
 
 
 class ModelTagFieldOptionalTest(TagTestManager, TestCase):
@@ -819,9 +825,9 @@ class ModelTagFieldOptionalTest(TagTestManager, TestCase):
         self.assertNotEqual(t1.pk, None)
 
 
-###############################################################################
-####### Test model field blank=False
-###############################################################################
+# ##############################################################################
+# ###### Test model field blank=False
+# ##############################################################################
 
 
 class ModelTagFieldRequiredTest(TagTestManager, TestCase):
@@ -865,9 +871,9 @@ class ModelTagFieldRequiredTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t1, name="Test", tag="")
 
 
-###############################################################################
-####### Test multiple TagFields on a model
-###############################################################################
+# ##############################################################################
+# ###### Test multiple TagFields on a model
+# ##############################################################################
 
 
 class ModelTagFieldMultipleTest(TagTestManager, TestCase):
@@ -971,9 +977,9 @@ class ModelTagFieldMultipleTest(TagTestManager, TestCase):
         )
 
 
-###############################################################################
-####### Test TagField with string references to tag model
-###############################################################################
+# ##############################################################################
+# ###### Test TagField with string references to tag model
+# ##############################################################################
 
 
 class ModelTagFieldStringTest(TagTestManager, TransactionTestCase):
@@ -1041,9 +1047,9 @@ class ModelTagFieldSelfTest(TagTestManager, TransactionTestCase):
         self.assertInstanceEqual(t1, name="Test 1", related="one, two")
 
 
-###############################################################################
-####### Test TagField options
-###############################################################################
+# ##############################################################################
+# ###### Test TagField options
+# ##############################################################################
 
 
 class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
@@ -1107,13 +1113,13 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
     @skip_if_mysql
     def test_case_sensitive_true(self):
         self.assertTagModel(self.test_model.case_sensitive_true, {"Adam": 0})
-        t1 = self.create(self.test_model, name="Test 1", case_sensitive_true="adam")
+        self.create(self.test_model, name="Test 1", case_sensitive_true="adam")
         self.assertTagModel(self.test_model.case_sensitive_true, {"Adam": 0, "adam": 1})
 
     @skip_if_mysql
     def test_case_sensitive_false(self):
         self.assertTagModel(self.test_model.case_sensitive_false, {"Adam": 0})
-        t1 = self.create(self.test_model, name="Test 1", case_sensitive_false="adam")
+        self.create(self.test_model, name="Test 1", case_sensitive_false="adam")
         self.assertTagModel(self.test_model.case_sensitive_false, {"Adam": 1})
 
     @skip_if_mysql
@@ -1157,11 +1163,11 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         self.assertNotEqual(t1.case_sensitive_false, "Chris")
 
     def test_force_lowercase_true(self):
-        t1 = self.create(self.test_model, name="Test 1", force_lowercase_true="Adam")
+        self.create(self.test_model, name="Test 1", force_lowercase_true="Adam")
         self.assertTagModel(self.test_model.force_lowercase_true, {"adam": 1})
 
     def test_force_lowercase_false(self):
-        t1 = self.create(self.test_model, name="Test 1", force_lowercase_false="Adam")
+        self.create(self.test_model, name="Test 1", force_lowercase_false="Adam")
         self.assertTagModel(self.test_model.force_lowercase_false, {"Adam": 1})
 
     def test_cmp_force_lowercase_true(self):
@@ -1209,14 +1215,14 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
 
     def test_max_count_create_above(self):
         with self.assertRaises(ValueError) as cm:
-            t1 = self.test_model.objects.create(
+            self.test_model.objects.create(
                 name="Test 1", max_count="Adam, Brian, Chris, David"
             )
         self.assertEqual(
             six.text_type(cm.exception), "Cannot set more than 3 tags on this field"
         )
         with self.assertRaises(self.test_model.DoesNotExist) as cm:
-            t2 = self.test_model.objects.get(name="Test 1")
+            self.test_model.objects.get(name="Test 1")
         self.assertTagModel(self.test_model.max_count, {})
 
     def test_max_count_assign_equal_replaces(self):

@@ -7,8 +7,10 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
-from django.utils import six
-from tests.lib import *
+from django.test import TestCase
+
+from tests.lib import TagTestManager
+from tests.tagulous_tests_app import models as test_models
 
 
 class ModelFieldOrderTest(TagTestManager, TestCase):

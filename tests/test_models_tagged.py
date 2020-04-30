@@ -9,14 +9,19 @@ Modules tested:
 from __future__ import absolute_import, unicode_literals
 
 from django.core.exceptions import MultipleObjectsReturned
+from django.db import models
+from django.test import TestCase
 from django.utils import six
+
+from tagulous import models as tag_models
 from tagulous.models.tagged import _split_kwargs
-from tests.lib import *
+from tests.lib import TagTestManager, skip_if_mysql
+from tests.tagulous_tests_app import models as test_models
 
 
-###############################################################################
-####### Test TaggedModel
-###############################################################################
+# ##############################################################################
+# ###### Test TaggedModel
+# ##############################################################################
 
 
 class ModelTaggedTest(TagTestManager, TestCase):
@@ -52,9 +57,9 @@ class ModelTaggedTest(TagTestManager, TestCase):
         self.assertEqual(six.text_type(t2.tags), "blue, red")
 
 
-###############################################################################
-####### Test _split_kwargs
-###############################################################################
+# ##############################################################################
+# ###### Test _split_kwargs
+# ##############################################################################
 
 
 class SplitKwargsText(TagTestManager, TestCase):
@@ -158,9 +163,9 @@ class SplitKwargsText(TagTestManager, TestCase):
         self.assertEqual(len(tag_fields), 0)
 
 
-###############################################################################
-####### Test TaggedManager and TaggedQuerySet
-###############################################################################
+# ##############################################################################
+# ###### Test TaggedManager and TaggedQuerySet
+# ##############################################################################
 
 
 class ModelTaggedQuerysetTest(TagTestManager, TestCase):
@@ -195,7 +200,7 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
     def test_object_get_by_singletag_multiple_raises(self):
         "Check that object.get singletag raises exception when multiple found"
         with self.assertRaises(MultipleObjectsReturned) as cm:
-            t1 = self.test_model.objects.get(singletag="Mr")
+            self.test_model.objects.get(singletag="Mr")
         self.assertTrue(
             six.text_type(cm.exception).startswith(
                 "get() returned more than one MixedTest -- it returned 2!"
@@ -211,7 +216,7 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
     def test_object_get_by_tags_multiple_raises(self):
         "Check that object.get tags raises exception when multiple found"
         with self.assertRaises(MultipleObjectsReturned) as cm:
-            t1 = self.test_model.objects.get(tags="red, green")
+            self.test_model.objects.get(tags="red, green")
         self.assertTrue(
             six.text_type(cm.exception).startswith(
                 "get() returned more than one MixedTest -- it returned 3!"
@@ -225,10 +230,10 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
 
     def test_object_get_by_tags_multiple_exact_raises(self):
         "Check that object.get tags raises exception when multiple found"
-        o4 = self.test_model.objects.create(name="Test 4", tags="yellow, purple")
-        o5 = self.test_model.objects.create(name="Test 5", tags="yellow, purple")
+        self.test_model.objects.create(name="Test 4", tags="yellow, purple")
+        self.test_model.objects.create(name="Test 5", tags="yellow, purple")
         with self.assertRaises(MultipleObjectsReturned) as cm:
-            t1 = self.test_model.objects.get(tags__exact="yellow, purple")
+            self.test_model.objects.get(tags__exact="yellow, purple")
         self.assertTrue(
             six.text_type(cm.exception).startswith(
                 "get() returned more than one MixedTest -- it returned 2!"
@@ -383,7 +388,7 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
 
     def test_object_tags_exclude_none(self):
         "Check that object.exclude returns objects with tags"
-        o4 = self.test_model.objects.create(name="Test 4", tags="")
+        self.test_model.objects.create(name="Test 4", tags="")
         qs1 = self.test_model.objects.exclude(tags=None)
         self.assertEqual(qs1.count(), 3)
         self.assertEqual(qs1[0].pk, self.o1.pk)
@@ -404,13 +409,13 @@ class ModelTaggedQuerysetOptionsSingleTest(TagTestManager, TestCase):
 
     def setUpExtra(self):
         self.test_model = test_models.SingleTagFieldOptionsModel
-        t1 = self.test_model.objects.create(
+        self.test_model.objects.create(
             name="Test 1", case_sensitive_true="Mr", case_sensitive_false="Mr"
         )
-        t2 = self.test_model.objects.create(
+        self.test_model.objects.create(
             name="Test 2", case_sensitive_true="mr", case_sensitive_false="mr"
         )
-        t3 = self.test_model.objects.create(
+        self.test_model.objects.create(
             name="Test 3", case_sensitive_true="Mr", case_sensitive_false="Mr"
         )
 
@@ -459,13 +464,13 @@ class ModelTaggedQuerysetOptionsTest(TagTestManager, TestCase):
 
     def setUpExtra(self):
         self.test_model = test_models.TagFieldOptionsModel
-        t1 = self.test_model.objects.create(
+        self.test_model.objects.create(
             name="Test 1", case_sensitive_true="Adam", case_sensitive_false="Adam"
         )
-        t2 = self.test_model.objects.create(
+        self.test_model.objects.create(
             name="Test 2", case_sensitive_true="adam", case_sensitive_false="adam"
         )
-        t3 = self.test_model.objects.create(
+        self.test_model.objects.create(
             name="Test 3", case_sensitive_true="Adam", case_sensitive_false="Adam"
         )
 

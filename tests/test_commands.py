@@ -7,17 +7,20 @@ Modules tested:
 from __future__ import absolute_import, print_function, unicode_literals
 
 from django.core.management import call_command
-from django.utils import six
-from tests.lib import *
+from django.test import TestCase
+
+from tests.lib import Capturing, TagTestManager
+from tests.tagulous_tests_app import models as test_models
+from tests.tagulous_tests_app2 import models as test_models2
 
 
 # If True, display output from call_command - use for debugging tests
 DISPLAY_CALL_COMMAND = False
 
 
-###############################################################################
-####### ./manage.py initial_tags
-###############################################################################
+# ##############################################################################
+# ###### ./manage.py initial_tags
+# ##############################################################################
 
 
 class InitialTagsTest(TagTestManager, TestCase):

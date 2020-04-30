@@ -19,10 +19,14 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 import tempfile
+import unittest
 
 from django.core import management, serializers
+from django.test import TestCase
 from django.utils import six
-from tests.lib import *
+
+from tests.lib import TagTestManager, testenv
+from tests.tagulous_tests_app import models as test_models
 
 
 try:
@@ -70,23 +74,16 @@ class DumpDataAssertMixin(object):
         else:
             command_output = new_io.getvalue().strip()
 
-        # Return early, do comparison externally
+        # Return early, do comparison outside this mixin
         return command_output
-
-        if format == "json":
-            self.assertJSONEqual(command_output, output)
-        elif format == "xml":
-            self.assertXMLEqual(command_output, output)
-        else:
-            self.assertEqual(command_output, output)
 
 
 fixture_root = os.path.join(os.path.dirname(__file__), "tagulous_tests_app", "fixtures")
 
 
-###############################################################################
-####### Test serialization of a tagged model
-###############################################################################
+# ##############################################################################
+# ###### Test serialization of a tagged model
+# ##############################################################################
 
 
 class SerializationTestMixin(DumpDataAssertMixin):
@@ -206,9 +203,9 @@ class XmlSerializationTest(SerializationTestMixin, TagTestManager, TestCase):
     fixture_format = "xml"
 
 
-###############################################################################
-####### Check serialization of tagged model with conventional FK and M2M fields
-###############################################################################
+# ##############################################################################
+# ###### Check serialization of tagged model with conventional FK and M2M fields
+# ##############################################################################
 
 
 class MixedTestMixin(SerializationTestMixin):
@@ -303,9 +300,9 @@ class MixedXmlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     fixture_format = "xml"
 
 
-###############################################################################
-####### Other serialization tests
-###############################################################################
+# ##############################################################################
+# ###### Other serialization tests
+# ##############################################################################
 
 
 class MixedTestMixin(TagTestManager, TestCase):

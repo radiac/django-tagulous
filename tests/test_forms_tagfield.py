@@ -9,13 +9,20 @@ from __future__ import absolute_import, unicode_literals
 
 import django
 from django import forms
+from django.test import TestCase
 from django.utils import six
-from tests.lib import *
+
+from tagulous import forms as tag_forms
+from tagulous import models as tag_models
+from tagulous import settings as tag_settings
+from tests.lib import TagTestManager, skip_if_mysql
+from tests.tagulous_tests_app import forms as test_forms
+from tests.tagulous_tests_app import models as test_models
 
 
-###############################################################################
-####### Test form TagField
-###############################################################################
+# ##############################################################################
+# ###### Test form TagField
+# ##############################################################################
 
 
 class FormTagFieldTest(TagTestManager, TestCase):
@@ -165,7 +172,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         with self.assertRaises(ValueError) as cm:
-            rendered = six.text_type(form["tag"])
+            six.text_type(form["tag"])
         if django.VERSION < (1, 11):
             self.assertTrue(
                 six.text_type(cm.exception).startswith(
@@ -228,9 +235,9 @@ class FormTagFieldTest(TagTestManager, TestCase):
         )
 
 
-###############################################################################
-####### Test ModelForm TagField
-###############################################################################
+# ##############################################################################
+# ###### Test ModelForm TagField
+# ##############################################################################
 
 
 class ModelFormTagFieldTest(TagTestManager, TestCase):
@@ -470,9 +477,9 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         )
 
 
-###############################################################################
-#######  Test TagField blank
-###############################################################################
+# ##############################################################################
+# ######  Test TagField blank
+# ##############################################################################
 
 
 class ModelFormTagFieldOptionalTest(TagTestManager, TestCase):
@@ -527,9 +534,9 @@ class ModelFormTagFieldRequiredTest(TagTestManager, TestCase):
         self.assertEqual(form.errors["tag"][0], "This field is required.")
 
 
-###############################################################################
-####### Test form TagField options
-###############################################################################
+# ##############################################################################
+# ###### Test form TagField options
+# ##############################################################################
 
 
 class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):

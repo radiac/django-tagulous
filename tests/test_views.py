@@ -6,9 +6,12 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
-from django.test import Client
-from django.utils import six
-from tests.lib import *
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+
+from tagulous import models as tag_models
+from tests.lib import TagTestManager, skip_if_mysql
+from tests.tagulous_tests_app import models as test_models
 
 
 # Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
@@ -26,9 +29,9 @@ except ImportError:
 client = Client()
 
 
-###############################################################################
-####### Test tag forms with CBVs
-###############################################################################
+# ##############################################################################
+# ###### Test tag forms with CBVs
+# ##############################################################################
 
 
 class TagFormCBVTest(TagTestManager, TestCase):
@@ -89,9 +92,9 @@ class TagFormCBVTest(TagTestManager, TestCase):
         self.assertTagModel(self.tags_model, {"blue": 1, "green": 1})
 
 
-###############################################################################
-####### Test autocomplete view
-###############################################################################
+# ##############################################################################
+# ###### Test autocomplete view
+# ##############################################################################
 
 
 def get_response_content(response):
@@ -222,7 +225,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(tag_model.objects.count(), 100)
 
         # Get them from view
-        user = User.objects.create_user("test", "test@example.com", "password")
+        User.objects.create_user("test", "test@example.com", "password")
         client.login(username="test", password="password")
         response = client.get(reverse("tagulous_tests_app-login"))
         client.logout()

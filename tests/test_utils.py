@@ -7,13 +7,23 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
+import unittest
+
+from django.test import TestCase
 from django.utils import six
-from tests.lib import *
+
+from tagulous import utils as tag_utils
 
 
-###############################################################################
-####### utils.strip_split()
-###############################################################################
+try:
+    from unidecode import unidecode
+except ImportError:
+    unidecode = None
+
+
+# ##############################################################################
+# ###### utils.strip_split()
+# ##############################################################################
 
 
 class UtilsSplitStripTest(TestCase):
@@ -38,9 +48,9 @@ class UtilsSplitStripTest(TestCase):
         self.assertEqual(split[1], "brian")
 
 
-###############################################################################
-####### utils.parse_tags
-###############################################################################
+# ##############################################################################
+# ###### utils.parse_tags
+# ##############################################################################
 
 
 class UtilsParseTagsTest(TestCase):
@@ -192,13 +202,13 @@ class UtilsParseTagsTest(TestCase):
 
     def test_limit(self):
         with self.assertRaises(ValueError) as cm:
-            x = tag_utils.parse_tags("adam,brian,chris", 1)
+            tag_utils.parse_tags("adam,brian,chris", 1)
         e = cm.exception
         self.assertEqual(six.text_type(e), "This field can only have 1 argument")
 
     def test_limit_quotes(self):
         with self.assertRaises(ValueError) as cm:
-            x = tag_utils.parse_tags('"adam","brian",chris', 2)
+            tag_utils.parse_tags('"adam","brian",chris', 2)
         e = cm.exception
         self.assertEqual(six.text_type(e), "This field can only have 2 arguments")
 
@@ -221,9 +231,9 @@ class UtilsParseTagsTest(TestCase):
         self.assertEqual(tags[1], "brian chris")
 
 
-###############################################################################
-####### utils.render_tags
-###############################################################################
+# ##############################################################################
+# ###### utils.render_tags
+# ##############################################################################
 
 
 class UtilsRenderTagsTest(TestCase):
@@ -262,9 +272,9 @@ class UtilsRenderTagsTest(TestCase):
         self.assertEqual(tagstr, tagstr2)
 
 
-###############################################################################
-####### Tree name split and join
-###############################################################################
+# ##############################################################################
+# ###### Tree name split and join
+# ##############################################################################
 
 
 class TagTreeSplitUtilTest(TestCase):
@@ -414,9 +424,9 @@ class TagTreeCleanUtilTest(TestCase):
         self.assertEqual(name, "//// one/two/three //")
 
 
-###############################################################################
-####### Other string operators
-###############################################################################
+# ##############################################################################
+# ###### Other string operators
+# ##############################################################################
 
 
 class UnicodeTestCase(TestCase):
@@ -481,12 +491,6 @@ class TagTreeFallbackUnicodeToAsciiTest(UnicodeTestCase):
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
         self.assertEqual(safe, "nino, ___, _______, garcon")
-
-
-try:
-    from unidecode import unidecode
-except ImportError:
-    unidecode = None
 
 
 @unittest.skipIf(unidecode is None, "optional unidecode not installed")

@@ -10,8 +10,15 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
+import django
+from django.core import exceptions
+from django.db import models
+from django.test import TestCase, TransactionTestCase
 from django.utils import six
-from tests.lib import *
+
+from tagulous import models as tag_models
+from tests.lib import TagTestManager, skip_if_mysql
+from tests.tagulous_tests_app import models as test_models
 
 
 class ModelSingleTagFieldTest(TagTestManager, TestCase):
@@ -303,9 +310,9 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertSequenceEqual(model.objects.all(), [t3])
 
 
-###############################################################################
-#######  Test it works with concrete inheritance
-###############################################################################
+# ##############################################################################
+# ######  Test it works with concrete inheritance
+# ##############################################################################
 
 
 class ModelSingleTagFieldConcreteInheritanceTest(ModelSingleTagFieldTest):
@@ -323,17 +330,17 @@ class ModelSingleTagFieldConcreteInheritanceTest(ModelSingleTagFieldTest):
         Disable this test as it doesn't make sense in the context of a concrete
         subclass; when the subclass is deleted, it will delete the base model instance,
         meaning when we go to save it again we'll get the error:
-        
+
             save() prohibited to prevent data loss due to unsaved related object ..._ptr
-        
+
         where ..._ptr is a OneToOneField to the base model. This is expected behaviour,
         and out of scope for this package to address.
         """
 
 
-###############################################################################
-#######  Test it works with abstract inheritance
-###############################################################################
+# ##############################################################################
+# ######  Test it works with abstract inheritance
+# ##############################################################################
 
 
 class ModelSingleTagFieldAbstractInheritanceTest(
@@ -371,9 +378,9 @@ class ModelSingleTagFieldAbstractInheritanceTest(
         self.assertTagModel(second_tag_model, {"Mrs": 1})
 
 
-###############################################################################
-#######  Test invalid fields
-###############################################################################
+# ##############################################################################
+# ######  Test invalid fields
+# ##############################################################################
 
 
 class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
@@ -440,9 +447,9 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
         self.assertEqual(field.value_from_object(t1), "")
 
 
-###############################################################################
-#######  Test model field blank=True
-###############################################################################
+# ##############################################################################
+# ######  Test model field blank=True
+# ##############################################################################
 
 
 class ModelSingleTagFieldOptionalTest(TagTestManager, TestCase):
@@ -466,9 +473,9 @@ class ModelSingleTagFieldOptionalTest(TagTestManager, TestCase):
         self.assertNotEqual(t1.pk, None)
 
 
-###############################################################################
-####### Test model field blank=False
-###############################################################################
+# ##############################################################################
+# ###### Test model field blank=False
+# ##############################################################################
 
 
 class ModelSingleTagFieldRequiredTest(TagTestManager, TestCase):
@@ -488,13 +495,13 @@ class ModelSingleTagFieldRequiredTest(TagTestManager, TestCase):
     def test_required_create_raises(self):
         "Check a required SingleTagField raises an exception in object.create"
         with self.assertRaises(exceptions.ValidationError) as cm:
-            t1 = test_models.SingleTagFieldRequiredModel.objects.create(name="Test")
+            test_models.SingleTagFieldRequiredModel.objects.create(name="Test")
         self.assertEqual(cm.exception.messages[0], "This field cannot be null.")
 
 
-###############################################################################
-####### Test multiple SingleTagFields on a model
-###############################################################################
+# ##############################################################################
+# ###### Test multiple SingleTagFields on a model
+# ##############################################################################
 
 
 class ModelSingleTagFieldMultipleTest(TagTestManager, TestCase):
@@ -557,9 +564,9 @@ class ModelSingleTagFieldMultipleTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t3, name="Test 3", tag1="Ms", tag2="red", tag3="chris")
 
 
-###############################################################################
-####### Test SingleTagField with string references to tag model
-###############################################################################
+# ##############################################################################
+# ###### Test SingleTagField with string references to tag model
+# ##############################################################################
 
 
 class ModelSingleTagFieldStringTest(TagTestManager, TransactionTestCase):
@@ -627,9 +634,9 @@ class ModelSingleTagFieldSelfTest(TagTestManager, TransactionTestCase):
         self.assertInstanceEqual(t1, name="Test 1", alternate="mr")
 
 
-###############################################################################
-####### Test SingleTagField options
-###############################################################################
+# ##############################################################################
+# ###### Test SingleTagField options
+# ##############################################################################
 
 
 class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
@@ -691,19 +698,19 @@ class ModelSingleTagFieldOptionsTest(TagTestManager, TestCase):
     @skip_if_mysql
     def test_case_sensitive_true(self):
         self.assertTagModel(self.test_model.case_sensitive_true, {"Mr": 0})
-        t1 = self.create(self.test_model, name="Test 1", case_sensitive_true="mr")
+        self.create(self.test_model, name="Test 1", case_sensitive_true="mr")
         self.assertTagModel(self.test_model.case_sensitive_true, {"Mr": 0, "mr": 1})
 
     @skip_if_mysql
     def test_case_sensitive_false(self):
         self.assertTagModel(self.test_model.case_sensitive_false, {"Mr": 0})
-        t1 = self.create(self.test_model, name="Test 1", case_sensitive_false="mr")
+        self.create(self.test_model, name="Test 1", case_sensitive_false="mr")
         self.assertTagModel(self.test_model.case_sensitive_false, {"Mr": 1})
 
     def test_force_lowercase_true(self):
-        t1 = self.create(self.test_model, name="Test 1", force_lowercase_true="Mr")
+        self.create(self.test_model, name="Test 1", force_lowercase_true="Mr")
         self.assertTagModel(self.test_model.force_lowercase_true, {"mr": 1})
 
     def test_force_lowercase_false(self):
-        t1 = self.create(self.test_model, name="Test 1", force_lowercase_false="Mr")
+        self.create(self.test_model, name="Test 1", force_lowercase_false="Mr")
         self.assertTagModel(self.test_model.force_lowercase_false, {"Mr": 1})

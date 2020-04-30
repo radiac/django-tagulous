@@ -7,22 +7,11 @@ import sys
 import unittest
 
 import django
-from django.contrib.auth.models import User
-from django.core import exceptions
 from django.db import connection, models
-from django.test import TestCase, TransactionTestCase, testcases
+from django.test import testcases
 from django.utils import six
-from tagulous import admin as tag_admin
-from tagulous import constants as tag_constants
-from tagulous import forms as tag_forms
+
 from tagulous import models as tag_models
-from tagulous import settings as tag_settings
-from tagulous import utils as tag_utils
-from tests.tagulous_tests_app import admin as test_admin
-from tests.tagulous_tests_app import forms as test_forms
-from tests.tagulous_tests_app import models as test_models
-from tests.tagulous_tests_app import urls as test_urls
-from tests.tagulous_tests_app2 import models as test_models2
 
 
 if six.PY3:

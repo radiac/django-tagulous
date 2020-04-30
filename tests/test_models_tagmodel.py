@@ -10,10 +10,18 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
-import tagulous.settings as tagulous_settings
+import unittest
+
+import django
+from django.test import TestCase
 from django.utils import six
+
+import tagulous.settings as tagulous_settings
+from tagulous import models as tag_models
+from tagulous import utils as tag_utils
 from tagulous.settings import SLUG_TRUNCATE_UNIQUE
-from tests.lib import *
+from tests.lib import TagTestManager
+from tests.tagulous_tests_app import models as test_models
 
 
 class TagModelTest(TagTestManager, TestCase):
@@ -79,7 +87,7 @@ class TagModelTest(TagTestManager, TestCase):
             tagulous_settings.NAME_MAX_LENGTH,
         )
 
-    def test_name_field_length(self):
+    def test_slug_field_length(self):
         """
         Value is initialized in setup.py runtests() settings
         """
@@ -432,7 +440,6 @@ class TagModelTest(TagTestManager, TestCase):
         name_length = TestModel._meta.get_field("name").max_length
         slug_length = TestModel._meta.get_field("slug").max_length
         self.assertLess(slug_length, name_length)
-        long_name = "x" * name_length
         t1a = TestModel.objects.create(name="x" * name_length)
         self.assertEqual(t1a.name, "x" * name_length)
         self.assertEqual(t1a.slug, "x" * slug_length)
@@ -443,7 +450,6 @@ class TagModelTest(TagTestManager, TestCase):
         name_length = TestModel._meta.get_field("name").max_length
         slug_length = TestModel._meta.get_field("slug").max_length
         self.assertLess(slug_length, name_length)
-        long_name = "x" * name_length
         ln1 = "{}{}".format("x" * (name_length - 1), "1")
         ln2 = "{}{}".format("x" * (name_length - 1), "2")
         t1a = TestModel.objects.create(name=ln1)
@@ -455,9 +461,9 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t2a.slug, slug2)
 
 
-###############################################################################
-####### Test TagMeta in tag model
-###############################################################################
+# ##############################################################################
+# ###### Test TagMeta in tag model
+# ##############################################################################
 
 
 class TagMetaTest(TagTestManager, TestCase):
@@ -500,9 +506,9 @@ class TagMetaTest(TagTestManager, TestCase):
         self.assertEqual(opt.case_sensitive, True)
 
 
-###############################################################################
-####### Test unicode in tag model
-###############################################################################
+# ##############################################################################
+# ###### Test unicode in tag model
+# ##############################################################################
 
 
 class TagModelUnicodeTest(TagTestManager, TestCase):
@@ -635,9 +641,9 @@ class TagModelUnicodeUnidecodeTest(TagTestManager, TestCase):
         self.assertEqual(t1.slug, "nan-nozi")
 
 
-###############################################################################
-####### Test tag merging
-###############################################################################
+# ##############################################################################
+# ###### Test tag merging
+# ##############################################################################
 
 
 class TagModelMergeTest(TagTestManager, TestCase):
@@ -764,9 +770,9 @@ class TagModelMergeTest(TagTestManager, TestCase):
         self.assertInstanceEqual(t2, tags="blue")
 
 
-###############################################################################
-####### Test tag model manager and queryset
-###############################################################################
+# ##############################################################################
+# ###### Test tag model manager and queryset
+# ##############################################################################
 
 
 class TagModelQuerySetTest(TagTestManager, TestCase):
@@ -883,9 +889,9 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
         self.assertEqual(six.text_type(self.o1.initial_list), "David, Eric")
 
 
-###############################################################################
-####### Test tag model with custom to_base
-###############################################################################
+# ##############################################################################
+# ###### Test tag model with custom to_base
+# ##############################################################################
 
 
 class TagModelToBaseTest(TestCase):

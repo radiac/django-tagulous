@@ -9,13 +9,17 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
+from django.test import TestCase
 from django.utils import six
-from tests.lib import *
+
+from tests.lib import TagTestManager
+from tests.tagulous_tests_app import forms as test_forms
+from tests.tagulous_tests_app import models as test_models
 
 
-###############################################################################
-####### Test mixed form
-###############################################################################
+# ##############################################################################
+# ###### Test mixed form
+# ##############################################################################
 
 
 class FormMixedNonTagRefTest(TagTestManager, TestCase):
@@ -114,9 +118,9 @@ class FormMixedNonTagRefTest(TagTestManager, TestCase):
         )
 
 
-###############################################################################
-####### Test inline formsets
-###############################################################################
+# ##############################################################################
+# ###### Test inline formsets
+# ##############################################################################
 
 
 class SingleInlineFormsetTest(TagTestManager, TestCase):
@@ -162,7 +166,7 @@ class SingleInlineFormsetTest(TagTestManager, TestCase):
     def test_edit_pk(self):
         "Check that edit formset forms refer to the tag pk, not its name"
         obj1 = self.model.objects.create(name="Test 1", singletag="Mr")
-        obj2 = self.model.objects.create(name="Test 2", singletag="Mr")
+        self.model.objects.create(name="Test 2", singletag="Mr")
         tag1 = obj1.singletag
         self.assertTagModel(self.tag_model, {"Mr": 2})
         self.assertEqual(self.model.objects.count(), 2)

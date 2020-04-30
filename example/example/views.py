@@ -7,7 +7,6 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils import six
 
 from example import forms, models
 

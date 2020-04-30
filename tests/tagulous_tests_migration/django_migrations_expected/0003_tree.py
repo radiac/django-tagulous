@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import tagulous.models.fields
-import tagulous.models.migrations
 from django.db import migrations, models
 from django.utils import six
+
+import tagulous.models.fields
+import tagulous.models.migrations
 
 
 class Migration(migrations.Migration):

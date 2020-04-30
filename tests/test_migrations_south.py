@@ -1,3 +1,5 @@
+# flake8: noqa
+# This is no longer tested by any automated tests, and will be removed soon.
 """
 Tagulous test: south migrations
 
@@ -16,6 +18,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.db import DatabaseError
 from django.utils import six
+
 from tests import tagulous_tests_migration
 from tests.lib import *
 

@@ -8,8 +8,9 @@ Usage:
 from __future__ import unicode_literals
 
 import django
-import tagulous.views
 from django.conf.urls import include, url
+
+import tagulous.views
 from tests.tagulous_tests_app import models, views
 
 
@@ -17,9 +18,14 @@ from tests.tagulous_tests_app import models, views
 if django.VERSION < (1, 8):
     from django.conf.urls import patterns
 
-    mk_urlpatterns = lambda *urls: patterns("", *urls)
+    def mk_urlpatterns(*urls):
+        return patterns("", *urls)
+
+
 else:
-    mk_urlpatterns = lambda *urls: list(urls)
+
+    def mk_urlpatterns(*urls):
+        return list(urls)
 
 
 tagged_model = models.TagFieldOptionsModel

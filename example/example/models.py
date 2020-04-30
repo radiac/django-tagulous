@@ -7,7 +7,6 @@ Based on the usage examples in the documentation:
 from __future__ import unicode_literals
 
 from django.db import models
-from django.utils import six
 
 import tagulous.models
 
@@ -36,7 +35,7 @@ class Person(models.Model):
         on_delete=models.CASCADE,
     )
     skills = tagulous.models.TagField(
-        Skill, help_text="This field does not split on spaces",
+        Skill, help_text="This field does not split on spaces"
     )
     hobbies = tagulous.models.TagField(
         initial="eating, coding, gaming",

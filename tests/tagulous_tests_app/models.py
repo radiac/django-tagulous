@@ -3,14 +3,14 @@ Test models
 """
 from __future__ import unicode_literals
 
-import tagulous
 from django.db import models
-from django.utils import six
+
+import tagulous
 
 
-###############################################################################
-####### Models for testing TagModel
-###############################################################################
+# ##############################################################################
+# ###### Models for testing TagModel
+# ##############################################################################
 
 
 class TagMetaAbstractModel(tagulous.models.TagModel):
@@ -64,9 +64,9 @@ class TagMetaUser(models.Model):
     two = tagulous.models.TagField(TagMetaModel, blank=True)
 
 
-###############################################################################
-####### Models for testing SingleTagField
-###############################################################################
+# ##############################################################################
+# ###### Models for testing SingleTagField
+# ##############################################################################
 
 
 class SingleTagFieldModel(models.Model):
@@ -199,9 +199,9 @@ class SingleTagFieldOptionsModel(models.Model):
         ordering = ("name",)
 
 
-###############################################################################
-####### Models for testing TagField
-###############################################################################
+# ##############################################################################
+# ###### Models for testing TagField
+# ##############################################################################
 
 
 class TagFieldModel(models.Model):
@@ -327,9 +327,9 @@ class TagFieldOptionsModel(models.Model):
         ordering = ("name",)
 
 
-###############################################################################
-####### Models for testing a mix of fields
-###############################################################################
+# ##############################################################################
+# ###### Models for testing a mix of fields
+# ##############################################################################
 
 
 class SimpleMixedTest(models.Model):
@@ -344,7 +344,8 @@ class SimpleMixedTest(models.Model):
 
 class MixedTestTagModel(tagulous.models.TagModel):
     class TagMeta:
-        get_absolute_url = lambda self: "url for %s" % self
+        def get_absolute_url(self):
+            return "url for %s" % self
 
 
 class MixedTest(models.Model):
