@@ -1,5 +1,3 @@
-# flake8: noqa
-# This is no longer tested by any automated tests, and will be removed soon.
 """
 Tagulous test: south migrations
 
@@ -12,15 +10,19 @@ import inspect
 import os
 import shutil
 import sys
+import unittest
 import warnings
 
+import django
 from django.conf import settings
 from django.core.management import call_command
 from django.db import DatabaseError
+from django.test import TransactionTestCase
 from django.utils import six
 
+from tagulous import models as tag_models
 from tests import tagulous_tests_migration
-from tests.lib import *
+from tests.lib import Capturing, TagTestManager, testenv
 
 
 try:
@@ -431,7 +433,7 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         self.assertTrue(issubclass(model_tagged, tag_models.tagged.TaggedModel))
 
         # Run schemamigration --auto
-        with Capturing() as output:
+        with Capturing():
             call_command(
                 "schemamigration",
                 app_name,  # app to migrate
@@ -449,8 +451,9 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         self.assertMigrationExpected("0002_tagged")
 
         # Check they apply correctly
-        output = migrate_app()
+        migrate_app()
         """
+        output = migrate_app()
         self.assertSequenceEqual(output, [
             'Running migrations for tagulous_tests_migration:',
             ' - Migrating forwards to 0002_tagged.',
@@ -519,8 +522,9 @@ class SouthMigrationTest(TagTestManager, TransactionTestCase):
         self.assertEqual(migrations[2], "%s:0003_tree" % app_name)
 
         # Check they apply correctly
-        output = migrate_app()
+        migrate_app()
         """
+        output = migrate_app()
         self.assertSequenceEqual(output, [
             'Running migrations for tagulous_tests_migration:',
             ' - Migrating forwards to 0003_tree.',
