@@ -22,3 +22,4 @@ from tagulous.models.fields import (
 from tagulous.models import initial
 from tagulous.models import migrations
 from tagulous.models.tagged import TaggedModel, TaggedManager, TaggedQuerySet
+from tagulous.models import signals  # NOQA

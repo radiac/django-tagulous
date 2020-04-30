@@ -8,18 +8,19 @@ Modules tested:
     tagulous.models.fields.BaseTagField
     tagulous.models.fields.TagField
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 from django.utils import six
+
+from tests.lib import *
+
 
 try:
     from django.core.checks import Warning as ChecksWarning
 except ImportError:
     ChecksWarning = None
 
-from tests.lib import *
-
+##########
 
 class ModelTagFieldTest(TagTestManager, TestCase):
     """
@@ -30,6 +31,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
     ]
 
     def setUpExtra(self):
+        self.test_model = test_models.TagFieldModel
         self.tag_model = test_models.TagFieldModel.tags.tag_model
         self.tag_field = test_models.TagFieldModel.tags
 
@@ -53,7 +55,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_empty_value(self):
         "Check the descriptor returns a TagRelatedManager"
-        t1 = self.create(test_models.TagFieldModel, name="Test")
+        t1 = self.create(self.test_model, name="Test")
         self.assertInstanceEqual(t1, name="Test")
 
         # Check the TagDescriptor is returning a TagRelatedManager
@@ -67,14 +69,14 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         Check a tag string can be assigned to an instance which hasn't yet
         been saved
         """
-        t1 = test_models.TagFieldModel(name="Test")
+        t1 = self.test_model(name="Test")
         t1.tags = 'blue, red'
         self.assertEqual(t1.tags.get_tag_string(), 'blue, red')
         self.assertTagModel(self.tag_model, {})
 
     def test_tag_assign_in_constructor(self):
         "Check a tag string can be set in the constructor"
-        t1 = test_models.TagFieldModel(name="Test", tags='blue, red')
+        t1 = self.test_model(name="Test", tags='blue, red')
 
         # Returned before save
         self.assertEqual(t1.tags.get_tag_string(), 'blue, red')
@@ -90,7 +92,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_tag_assign_by_list_in_constructor(self):
         "Check a list of strings can be set in the constructor"
-        t1 = test_models.TagFieldModel(name="Test", tags=['blue', 'red'])
+        t1 = self.test_model(name="Test", tags=['blue', 'red'])
 
         # Returned before save
         self.assertEqual(t1.tags.get_tag_string(), 'blue, red')
@@ -106,7 +108,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_tag_assign_in_object_create(self):
         "Check a tag string can be set in object.create"
-        t1 = test_models.TagFieldModel.objects.create(
+        t1 = self.test_model.objects.create(
             name="Test", tags='blue, red',
         )
         self.assertInstanceEqual(t1, name='Test', tags='blue, red')
@@ -117,7 +119,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_tag_assign_by_list_in_object_create(self):
         "Check a list of strings can be set in object.create"
-        t1 = test_models.TagFieldModel.objects.create(
+        t1 = self.test_model.objects.create(
             name="Test", tags=['blue', 'red']
         )
         self.assertInstanceEqual(t1, name='Test', tags='blue, red')
@@ -130,7 +132,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         "Check a list of strings can be set in object.create"
         self.tag_model.objects.create(name='blue')
         self.tag_model.objects.create(name='red')
-        t1 = test_models.TagFieldModel.objects.create(
+        t1 = self.test_model.objects.create(
             name="Test", tags=self.tag_model.objects.all()
         )
         self.assertInstanceEqual(t1, name='Test', tags='blue, red')
@@ -144,7 +146,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         Check a tag string can be passed in object.get_or_create, when object
         does not exist
         """
-        t1, state = test_models.TagFieldModel.objects.get_or_create(
+        t1, state = self.test_model.objects.get_or_create(
             name='Test', tags='blue, red',
         )
         self.assertEqual(state, True)
@@ -160,13 +162,13 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         Check a tag string can be passed in object.get_or_create, when object
         does exist
         """
-        t1 = test_models.TagFieldModel.objects.create(
+        t1 = self.test_model.objects.create(
             name="Test", tags='blue, red',
         )
-        t2 = test_models.TagFieldModel.objects.create(
+        t2 = self.test_model.objects.create(
             name="Test", tags='green',
         )
-        t3, state = test_models.TagFieldModel.objects.get_or_create(
+        t3, state = self.test_model.objects.get_or_create(
             name='Test', tags='blue, red',
         )
         self.assertEqual(state, False)
@@ -187,7 +189,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
         Checks TagRelatedManager post_save listener
         """
-        t1 = self.create(test_models.TagFieldModel, name="Test 1")
+        t1 = self.create(self.test_model, name="Test 1")
         t1.tags = 'red, blue'
 
         # Returned before save
@@ -199,12 +201,12 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {})
 
         # Check db hasn't changed
-        t2 = test_models.TagFieldModel.objects.get(name='Test 1')
+        t2 = self.test_model.objects.get(name='Test 1')
         self.assertEqual(six.text_type(t2.tags), '')
 
         # Returned after save
         t1.save()
-        t1 = test_models.TagFieldModel.objects.get(name='Test 1')
+        t1 = self.test_model.objects.get(name='Test 1')
         self.assertEqual(t1.tags.get_tag_string(), 'blue, red')
         self.assertEqual(six.text_type(t1.tags), t1.tags.get_tag_string())
         self.assertEqual(len(t1.tags.get_tag_list()), 2)
@@ -222,7 +224,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
         Checks TagRelatedManager.save
         """
-        t1 = self.create(test_models.TagFieldModel, name="Test 1")
+        t1 = self.create(self.test_model, name="Test 1")
         t1.tags = 'red, blue'
 
         # Returned before save
@@ -230,7 +232,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {})
 
         # Check db hasn't changed
-        t2 = test_models.TagFieldModel.objects.get(name='Test 1')
+        t2 = self.test_model.objects.get(name='Test 1')
         self.assertEqual(six.text_type(t2.tags), '')
 
         # Returned after save
@@ -243,7 +245,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_assign_list_strings(self):
         "Check tags can be set with a list of strings"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1")
+        t1 = self.create(self.test_model, name="Test 1")
         t1.tags = ['red', 'blue']
 
         # Returned before save
@@ -251,7 +253,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {})
 
         # Check db hasn't changed
-        t2 = test_models.TagFieldModel.objects.get(name='Test 1')
+        t2 = self.test_model.objects.get(name='Test 1')
         self.assertEqual(six.text_type(t2.tags), '')
 
         # Returned after save
@@ -264,7 +266,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_assign_list_objs(self):
         "Check tags can be set with a list of strings"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1")
+        t1 = self.create(self.test_model, name="Test 1")
         t1.tags = [
             self.tag_model.objects.create(name='blue'),
             self.tag_model.objects.create(name='red')
@@ -278,7 +280,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         })
 
         # Check db hasn't changed
-        t2 = test_models.TagFieldModel.objects.get(name='Test 1')
+        t2 = self.test_model.objects.get(name='Test 1')
         self.assertEqual(six.text_type(t2.tags), '')
 
         # Returned after save
@@ -291,7 +293,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_assign_queryset(self):
         "Check tags can be set with a queryset of tags"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1")
+        t1 = self.create(self.test_model, name="Test 1")
         self.tag_model.objects.create(name='blue')
         self.tag_model.objects.create(name='red')
         t1.tags = self.tag_model.objects.all()
@@ -313,7 +315,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_tag_assign_string_empty(self):
         "Check setting an empty string clears tags"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,
@@ -336,7 +338,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_assign_list_empty(self):
         "Check setting an empty list clears tags"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,
@@ -352,7 +354,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         })
 
         # Check db hasn't changed
-        t2 = test_models.TagFieldModel.objects.get(name='Test 1')
+        t2 = self.test_model.objects.get(name='Test 1')
         self.assertEqual(six.text_type(t2.tags), 'blue, red')
 
         # Returned after save
@@ -362,7 +364,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_assign_none(self):
         "Check setting None clears tags"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,
@@ -378,7 +380,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         })
 
         # Check db hasn't changed
-        t2 = test_models.TagFieldModel.objects.get(name='Test 1')
+        t2 = self.test_model.objects.get(name='Test 1')
         self.assertEqual(six.text_type(t2.tags), 'blue, red')
 
         # Returned after save
@@ -388,17 +390,17 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_assign_unknown(self):
         "Check assigning an unknown value raises an exception"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1")
+        t1 = self.create(self.test_model, name="Test 1")
         with self.assertRaises(ValueError) as cm:
             # Assign the descriptor to itself, because why not.
-            t1.tags = test_models.TagFieldModel.tags
+            t1.tags = self.test_model.tags
         self.assertEqual(
             six.text_type(cm.exception), 'Unexpected value assigned to TagField'
         )
 
     def test_contains(self):
         "Check __contains__ using strings and Tag objects"
-        t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
+        t1 = self.create(self.test_model, name="1", tags='blue, red')
 
         # String matches
         self.assertTrue('blue' in t1.tags, 'blue not found')
@@ -419,12 +421,12 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_len(self):
         "Check manager count method returns the number of tags"
-        t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
+        t1 = self.create(self.test_model, name="1", tags='blue, red')
         self.assertEqual(t1.tags.count(), 2)
 
     def test_eq(self):
         "Check __eq__ correctly determines equality"
-        t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
+        t1 = self.create(self.test_model, name="1", tags='blue, red')
         self.assertEqual(t1.tags, 'blue, red')
         self.assertEqual(t1.tags, 'red, blue')
         self.assertEqual(t1.tags, ['red', 'blue'])
@@ -434,19 +436,19 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertEqual(t1.tags, tags)
 
         # Test another TagRelatedManager
-        t2 = self.create(test_models.TagFieldModel, name="2", tags='blue, red')
+        t2 = self.create(self.test_model, name="2", tags='blue, red')
         self.assertEqual(t1.tags, t2.tags)
 
     def test_ne(self):
         "Check __ne__ correctly determines falsity"
-        t1 = self.create(test_models.TagFieldModel, name="1", tags='blue, red')
+        t1 = self.create(self.test_model, name="1", tags='blue, red')
         self.assertNotEqual(t1.tags, 'red')
         self.assertNotEqual(t1.tags, 'blue')
         self.assertNotEqual(t1.tags, ['red', 'green'])
         self.assertNotEqual(t1.tags, 'green')
 
         # Test another TagRelatedManager
-        t2 = self.create(test_models.TagFieldModel, name="2", tags='red, green')
+        t2 = self.create(self.test_model, name="2", tags='red, green')
         self.assertNotEqual(t1.tags, t2.tags)
 
         # Test queryset
@@ -456,9 +458,9 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_multiple_instances(self):
         "Check multiple tagged instances work without interference"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
-        t2 = self.create(test_models.TagFieldModel, name="Test 2", tags='green, red')
-        t3 = self.create(test_models.TagFieldModel, name="Test 3", tags='blue, green')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, red')
+        t2 = self.create(self.test_model, name="Test 2", tags='green, red')
+        t3 = self.create(self.test_model, name="Test 3", tags='blue, green')
 
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertInstanceEqual(t2, name='Test 2', tags='green, red')
@@ -471,7 +473,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_change_string_add(self):
         "Add a tag by changing tag string"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue')
         self.assertTagModel(self.tag_model, {
             'blue':     1,
@@ -490,7 +492,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_m2m_set_by_string(self):
         "Set a tag directly using M2M .set(string)"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'blue':     1,
@@ -509,7 +511,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_m2m_add_by_obj(self):
         "Add a tag directly using M2M .add(obj)"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue')
         self.assertTagModel(self.tag_model, {
             'blue':     1,
@@ -526,7 +528,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_m2m_add_by_string(self):
         "Add a tag directly using M2M .add(str)"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue')
         self.assertTagModel(self.tag_model, {
             'blue':     1,
@@ -541,8 +543,8 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_m2m_add_by_string_existing(self):
         "Add a tag directly using M2M .add(str) when the tag already exists"
-        test_models.TagFieldModel.tags.tag_model.objects.create(name='green')
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue')
+        self.test_model.tags.tag_model.objects.create(name='green')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue')
         self.assertTagModel(self.tag_model, {
             'blue':     1,
@@ -558,8 +560,8 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_change_string_remove(self):
         "Remove a tag by changing tag string"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, green')
-        t2 = self.create(test_models.TagFieldModel, name="Test 2", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, green')
+        t2 = self.create(self.test_model, name="Test 2", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, green')
         self.assertInstanceEqual(t2, name='Test 2', tags='blue, red')
         self.assertTagModel(self.tag_model, {
@@ -585,8 +587,8 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_m2m_remove_by_obj(self):
         "Remove a tag directly using M2M .remove(obj)"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, green')
-        t2 = self.create(test_models.TagFieldModel, name="Test 2", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, green')
+        t2 = self.create(self.test_model, name="Test 2", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, green')
         self.assertInstanceEqual(t2, name='Test 2', tags='blue, red')
         self.assertTagModel(self.tag_model, {
@@ -609,8 +611,8 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_m2m_remove_by_str(self):
         "Remove a tag directly using M2M .remove(str)"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, green')
-        t2 = self.create(test_models.TagFieldModel, name="Test 2", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, green')
+        t2 = self.create(self.test_model, name="Test 2", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, green')
         self.assertInstanceEqual(t2, name='Test 2', tags='blue, red')
         self.assertTagModel(self.tag_model, {
@@ -631,8 +633,8 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_m2m_remove_not_set(self):
         "Remove a tag which exists but isn't set"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, green')
-        t2 = self.create(test_models.TagFieldModel, name="Test 2", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, green')
+        t2 = self.create(self.test_model, name="Test 2", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, green')
         self.assertInstanceEqual(t2, name='Test 2', tags='blue, red')
         self.assertTagModel(self.tag_model, {
@@ -652,14 +654,14 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
     def test_m2m_remove_missing(self):
         "Remove a tag which doesn't exist (and isn't set)"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, red')
         t1.tags.remove('green')
         self.assertEqual(t1.tags, 'blue, red')
 
     def test_m2m_clear(self):
         "Clear all tags from an item with manager.clear"
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
-        t2 = self.create(test_models.TagFieldModel, name="Test 2", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, red')
+        t2 = self.create(self.test_model, name="Test 2", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      2,
@@ -679,7 +681,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
     def test_fake_manager_after_delete(self):
         "Check fake manager steps in to store tags when the item is deleted"
         # Create the item
-        t1 = self.create(test_models.TagFieldModel, name="Test 1", tags='blue, red')
+        t1 = self.create(self.test_model, name="Test 1", tags='blue, red')
         self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
         self.assertTagModel(self.tag_model, {
             'red':      1,
@@ -705,17 +707,18 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         "Check that the FakeTagRelatedManager doesn't do databases"
         if django.VERSION < (2, 0):
             errmsg = (
-                '"<TagFieldModel: TagFieldModel object>" needs to be '
+                '"<{model_name}: {model_name} object>" needs to be '
                 'saved before TagField can use the database'
             )
         else:
             # Django 2.0 adds primary key to model __str__ and __repr__
             errmsg = (
-                '"<TagFieldModel: TagFieldModel object (None)>" needs to be '
+                '"<{model_name}: {model_name} object (None)>" needs to be '
                 'saved before TagField can use the database'
             )
+        errmsg = errmsg.format(model_name=self.test_model._meta.object_name)
 
-        t1 = test_models.TagFieldModel(name="Test 1", tags='blue, red')
+        t1 = self.test_model(name="Test 1", tags='blue, red')
 
         with self.assertRaises(ValueError) as cm:
             t1.tags.save()
@@ -736,6 +739,65 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         with self.assertRaises(ValueError) as cm:
             t1.tags.clear()
         self.assertEqual(six.text_type(cm.exception), errmsg)
+
+
+###############################################################################
+#######  Test it works with concrete inheritance
+###############################################################################
+
+class ModelTagFieldConcreteInheritanceTest(ModelTagFieldTest):
+    manage_models = [
+        test_models.TagFieldConcreteInheritanceModel,
+    ]
+
+    def setUpExtra(self):
+        self.test_model = test_models.TagFieldConcreteInheritanceModel
+        self.tag_model = test_models.TagFieldConcreteInheritanceModel.tags.tag_model
+        self.tag_field = test_models.TagFieldConcreteInheritanceModel.tags
+
+
+###############################################################################
+#######  Test it works with abstract inheritance
+###############################################################################
+
+class ModelTagFieldAbstractInheritanceTest(ModelTagFieldConcreteInheritanceTest):
+    manage_models = [
+        test_models.TagFieldAbstractInheritanceModel,
+    ]
+
+    def setUpExtra(self):
+        self.test_model = test_models.TagFieldAbstractInheritanceModel
+        self.tag_model = test_models.TagFieldAbstractInheritanceModel.tags.tag_model
+        self.tag_field = test_models.TagFieldAbstractInheritanceModel.tags
+
+    def test_second_inheritance__tag_model_not_shared(self):
+        second_test_model = test_models.TagFieldAbstractInheritanceSecondModel
+        second_tag_model = second_test_model.tags.tag_model
+
+        self.assertNotEqual(self.tag_model, second_tag_model)
+
+    def test_second_inheritance__writes_update_shared_model(self):
+        second_test_model = test_models.TagFieldAbstractInheritanceSecondModel
+        second_tag_model = second_test_model.tags.tag_model
+
+        t1 = self.test_model.objects.create(
+            name="Test 1", tags='blue, red',
+        )
+        t2 = second_test_model.objects.create(
+            name="Test 2", tags='green, yellow',
+        )
+
+        self.assertInstanceEqual(t1, name='Test 1', tags='blue, red')
+        self.assertTagModel(self.tag_model, {
+            'red':  1,
+            'blue': 1,
+        })
+
+        self.assertInstanceEqual(t2, name='Test 2', tags='green, yellow')
+        self.assertTagModel(second_tag_model, {
+            'green':  1,
+            'yellow': 1,
+        })
 
 
 ###############################################################################
@@ -778,17 +840,6 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
         # Set force_lowercase back ready for future tests - unittest won't fix
         test_models.TagMetaModel.tag_options.force_lowercase = True
         self.assertTrue(test_models.TagMetaModel.tag_options.force_lowercase)
-
-    def test_contribute_only_once(self):
-        "Check that a field can't be contributed more than once"
-        field = test_models.TagFieldModel._meta.get_field('tags')
-        with self.assertRaises(AttributeError) as cm:
-            field.contribute_to_class(test_models.TagFieldModel, 'new_tags')
-        self.assertEqual(
-            six.text_type(cm.exception),
-            "The tag field <tagulous.models.fields.TagField: tags> is already "
-            "attached to a model"
-        )
 
     def test_invalid_to_model(self):
         "Check that the to model has to be a TagModel subclass"

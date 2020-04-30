@@ -339,14 +339,15 @@ class TaggedModel(models.Model):
         # See if there are tag fields on this model
         tag_fields = singletagfields_from_model(model) + tagfields_from_model(model)
 
-        # If there are no tag fields, or it's already a TaggedModel, skip
-        if not tag_fields or issubclass(model, TaggedModel):
+        # If there are no tag fields skip
+        if not tag_fields:
             return
 
-        # Make the model subclass TaggedModel
-        model.__bases__ = (TaggedModel,) + model.__bases__
+        # Ensure the model subclasses TaggedModel
+        if not issubclass(model, TaggedModel):
+            model.__bases__ = (TaggedModel,) + model.__bases__
 
-        # Make the managers subclass TaggedManager
+        # Ensure the manager subclasses TaggedManager
         if (
             hasattr(model, 'objects')
             and not issubclass(model.objects.__class__, TaggedManager)
@@ -423,17 +424,3 @@ class TaggedModel(models.Model):
 
     class Meta:
         abstract = True
-
-
-###############################################################################
-# Start automatic enhancement
-###############################################################################
-
-if settings.ENHANCE_MODELS:
-    def class_prepared_listener(sender, **kwargs):
-        """
-        Listen to the class_prepared signal and subclass any model with tag
-        fields
-        """
-        TaggedModel.cast_class(sender)
-    models.signals.class_prepared.connect(class_prepared_listener, weak=False)

@@ -68,6 +68,31 @@ class SingleTagFieldModel(models.Model):
     name = models.CharField(blank=True, max_length=100)
     title = tagulous.models.SingleTagField(blank=True, null=True)
 
+class SingleTagFieldConcreteInheritanceModel(SingleTagFieldModel):
+    """
+    Test concrete inheritance of a SingleTagField
+    """
+    
+class SingleTagFieldAbstractInheritanceBase(models.Model):
+    """
+    Abstract base class for SingleTagFieldAbstractInheritanceModel
+    """
+    name = models.CharField(blank=True, max_length=100)
+    title = tagulous.models.SingleTagField(blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+class SingleTagFieldAbstractInheritanceModel(SingleTagFieldAbstractInheritanceBase):
+    """
+    Test abstract inheritance of a SingleTagField
+    """
+
+class SingleTagFieldAbstractInheritanceSecondModel(SingleTagFieldAbstractInheritanceBase):
+    """
+    Test second abstract inheritance of a SingleTagField
+    """
+
 class SingleTagFieldOptionalModel(models.Model):
     """
     Test optional single tag fields
@@ -164,6 +189,31 @@ class TagFieldModel(models.Model):
     """
     name = models.CharField(blank=True, max_length=100)
     tags = tagulous.models.TagField()
+
+class TagFieldConcreteInheritanceModel(TagFieldModel):
+    """
+    Test concrete inheritance of a TagField
+    """
+
+class TagFieldAbstractInheritanceBase(models.Model):
+    """
+    Abstract base class for AbstractTagFieldModel
+    """
+    name = models.CharField(blank=True, max_length=100)
+    tags = tagulous.models.TagField()
+
+    class Meta:
+        abstract = True
+
+class TagFieldAbstractInheritanceModel(TagFieldAbstractInheritanceBase):
+    """
+    Test abstract inheritance of a TagField
+    """
+
+class TagFieldAbstractInheritanceSecondModel(TagFieldAbstractInheritanceBase):
+    """
+    Test second abstract inheritance of a TagField
+    """
 
 class TagFieldOptionalModel(models.Model):
     """
