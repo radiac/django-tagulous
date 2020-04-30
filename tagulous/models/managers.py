@@ -218,24 +218,26 @@ class SingleTagManager(object):
         """
         # Decrement the actual tag
         old_tag = self.get_actual()
-        if old_tag:
+        if not old_tag:
+            return
+        
+        # Try to update the old tag
+        try:
+            old_tag.decrement()
+        except type(old_tag).DoesNotExist:
+            # The tag was just deleted along with the model in the same operation - most
+            # likely a cascade delete originated on the tag model
+            pass
 
-            #### TODO: This probalby shouldn't happen at all. Why is it happening?
-            #### decrement() must be getting called twice?
+        # Clear the tag on this instance so we don't leave a reference
+        self.set_actual(None)
 
-            try:
-                old_tag.decrement()
-            except type(old_tag).DoesNotExist:
-                # The object was deleted as part of this operation
-                pass
-            self.set_actual(None)
-
-            # If there is no new value, mark the old one as a new one,
-            # so the database will be updated if the instance is saved again
-            if not self.changed:
-                self.tag_name = old_tag.name
-            self.tag_cache = None
-            self.changed = True
+        # If there is no new value, mark the old one as a new one,
+        # so the database will be updated if the instance is saved again
+        if not self.changed:
+            self.tag_name = old_tag.name
+        self.tag_cache = None
+        self.changed = True
 
 
 ###############################################################################
