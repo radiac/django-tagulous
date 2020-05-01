@@ -5,21 +5,20 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.models.fields.TagField
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
-from django.utils import six
+from django.test import TestCase
 
-from tests.lib import *
+from tests.lib import TagTestManager
+from tests.tagulous_tests_app import models as test_models
 
 
 class ModelFieldOrderTest(TagTestManager, TestCase):
     """
     Test model SingleTagField order
     """
-    manage_models = [
-        test_models.MixedOrderTest,
-    ]
+
+    manage_models = [test_models.MixedOrderTest]
 
     def test_order_correct(self):
         """
@@ -31,17 +30,28 @@ class ModelFieldOrderTest(TagTestManager, TestCase):
         # Django 1.4 and 1.5 don't have concrete_fields in meta Options.
         # Django 1.8 states that it's an internal function and shouldn't be
         # used directly, but using it anyway to keep code simple.
-        if hasattr(opts, 'concrete_fields'):
+        if hasattr(opts, "concrete_fields"):
             concrete_fields = opts.concrete_fields
         else:
             concrete_fields = [f for f in opts.fields if f.column is not None]
         local_fields = sorted(concrete_fields + opts.many_to_many)
         expected_fields = [
             # Auto pk 'id'
-            'id',
+            "id",
             # Defined fields
-            'char1', 'fk1', 'char2', 'single1', 'char3', 'm2m1', 'char4',
-            'multi1', 'char5', 'm2m2', 'char6', 'fk2', 'char7',
+            "char1",
+            "fk1",
+            "char2",
+            "single1",
+            "char3",
+            "m2m1",
+            "char4",
+            "multi1",
+            "char5",
+            "m2m2",
+            "char6",
+            "fk2",
+            "char7",
         ]
         self.assertEqual(len(local_fields), len(expected_fields))
         for i in range(len(local_fields)):

@@ -7,33 +7,33 @@ from django.db.models.base import ModelBase
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from tagulous import models as tag_models
 from tagulous import forms as tag_forms
+from tagulous import models as tag_models
 
 
-###############################################################################
-########################################################### Admin classes
-###############################################################################
+# ##############################################################################
+# ########################################################## Admin classes
+# ##############################################################################
+
 
 class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
     """
     Mixin for BaseModelAdmin subclasses which are for tagged models
     """
+
     def formfield_for_dbfield(self, db_field, **kwargs):
         """
         Remove the RelatedFieldWidgetWrapper from tag fields, so they don't
         display popup buttons
         """
-        formfield = super(
-            TaggedBaseModelAdminMixin, self
-        ).formfield_for_dbfield(db_field, request=kwargs.pop('request', None), **kwargs)
+        formfield = super(TaggedBaseModelAdminMixin, self).formfield_for_dbfield(
+            db_field, request=kwargs.pop("request", None), **kwargs
+        )
 
         if (
             isinstance(db_field, (tag_models.SingleTagField, tag_models.TagField))
-            and
-            isinstance(formfield.widget, admin.widgets.RelatedFieldWidgetWrapper)
-            and
-            isinstance(formfield.widget.widget, tag_forms.AdminTagWidget)
+            and isinstance(formfield.widget, admin.widgets.RelatedFieldWidgetWrapper)
+            and isinstance(formfield.widget.widget, tag_forms.AdminTagWidget)
         ):
             formfield.widget = formfield.widget.widget
         return formfield
@@ -43,6 +43,7 @@ class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
 #   ModelAdmin for Tagged models
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
 class TaggedModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
     pass
 
@@ -51,11 +52,12 @@ class TaggedModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
 #   ModelAdmin for TagModel models
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
 class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
-    list_display = ['name', 'count', 'protected']
-    list_filter = ['protected']
-    exclude = ['count']
-    actions = ['merge_tags']
+    list_display = ["name", "count", "protected"]
+    list_filter = ["protected"]
+    exclude = ["count"]
+    actions = ["merge_tags"]
     prepopulated_fields = {"slug": ("name",)}
 
     def merge_tags(self, request, queryset):
@@ -67,6 +69,7 @@ class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
 
         # Create a form
         is_tree = issubclass(self.model, tag_models.TagTreeModel)
+
         class MergeForm(forms.Form):
             # Keep selected items in same field, admin.ACTION_CHECKBOX_NAME
             _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
@@ -74,31 +77,30 @@ class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
             merge_to = forms.ModelChoiceField(queryset)
 
         if is_tree:
+
             class MergeForm(MergeForm):
                 # Allow to merge recursively
                 merge_children = forms.BooleanField(required=False)
 
-        if 'merge' in request.POST:
+        if "merge" in request.POST:
             merge_form = MergeForm(request.POST)
             if merge_form.is_valid():
                 # Merge - with children if set
-                merge_to = merge_form.cleaned_data['merge_to']
+                merge_to = merge_form.cleaned_data["merge_to"]
                 kwargs = {}
-                if is_tree and merge_form.cleaned_data['merge_children']:
-                    kwargs['children'] = True
+                if is_tree and merge_form.cleaned_data["merge_children"]:
+                    kwargs["children"] = True
                 merge_to.merge_tags(queryset, **kwargs)
 
                 # Django 1.4 doesn't support level=messages.SUCCESS
-                self.message_user(request, 'Tags merged')
+                self.message_user(request, "Tags merged")
                 return HttpResponseRedirect(request.get_full_path())
 
         else:
             tag_pks = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
             if len(tag_pks) < 2:
                 # Django 1.4 doesn't support level=messages.SUCCESS
-                self.message_user(
-                    request, 'You must select at least two tags to merge',
-                )
+                self.message_user(request, "You must select at least two tags to merge")
                 return HttpResponseRedirect(request.get_full_path())
 
             merge_form = MergeForm(
@@ -106,44 +108,55 @@ class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
                     admin.ACTION_CHECKBOX_NAME: request.POST.getlist(
                         admin.ACTION_CHECKBOX_NAME
                     ),
-                    'merge_children': True,
+                    "merge_children": True,
                 }
             )
 
-        return render(request, 'tagulous/admin/merge_tags.html', {
-            'title': 'Merge tags',
-            'opts': self.model._meta,
-            'merge_form': merge_form,
-            'tags': queryset,
-        })
-    merge_tags.short_description = 'Merge selected tags...'
+        return render(
+            request,
+            "tagulous/admin/merge_tags.html",
+            {
+                "title": "Merge tags",
+                "opts": self.model._meta,
+                "merge_form": merge_form,
+                "tags": queryset,
+            },
+        )
+
+    merge_tags.short_description = "Merge selected tags..."
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #   ModelAdmin for TagTreeModel models
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
 class TagTreeModelAdmin(TagModelAdmin):
-    exclude = ['count', 'parent', 'path', 'label', 'level']
+    exclude = ["count", "parent", "path", "label", "level"]
 
 
-###############################################################################
-########################################################### Admin registration
-###############################################################################
+# ##############################################################################
+# ########################################################## Admin registration
+# ##############################################################################
 
 # Give contrib.admin a default widget for tag fields
-admin.options.FORMFIELD_FOR_DBFIELD_DEFAULTS.update({
-    tag_models.SingleTagField:  {'widget': tag_forms.AdminTagWidget},
-    tag_models.TagField:        {'widget': tag_forms.AdminTagWidget},
-})
+admin.options.FORMFIELD_FOR_DBFIELD_DEFAULTS.update(
+    {
+        tag_models.SingleTagField: {"widget": tag_forms.AdminTagWidget},
+        tag_models.TagField: {"widget": tag_forms.AdminTagWidget},
+    }
+)
+
 
 def _create_display(field):
     """
     ModelAdmin display function factory
     """
+
     def display(self, obj):
         return getattr(obj, field).get_tag_string()
-    display.short_description = field.replace('_', ' ')
+
+    display.short_description = field.replace("_", " ")
     return display
 
 
@@ -174,7 +187,6 @@ def enhance(model, admin_class):
         tag_fields[field.name] = field
         tag_field_names.append(field.name)
 
-
     #
     # Ensure any tag fields in list_display are rendered by functions
     #
@@ -187,18 +199,18 @@ def enhance(model, admin_class):
     # strings showing in the table, but the column would be sortable which
     # would cause problems for TagFields, and the display function would never
     # get called, which would be unexpected for anyone maintaining this code.
-    if hasattr(admin_class, 'list_display'):
+    if hasattr(admin_class, "list_display"):
         # Make sure we're working with a list
         if isinstance(admin_class.list_display, tuple):
             admin_class.list_display = list(admin_class.list_display)
 
         for i, field in enumerate(admin_class.list_display):
             # If the field's not a callable, and not in the admin class already
-            if not hasattr(field, '__call__') and not hasattr(admin_class, field):
+            if not hasattr(field, "__call__") and not hasattr(admin_class, field):
                 # Only TagFields (admin can already handle SingleTagField FKs)
                 if field in tag_fields:
                     # Create new field name and replace in list_display
-                    display_name = '_tagulous_display_%s' % field
+                    display_name = "_tagulous_display_%s" % field
                     admin_class.list_display[i] = display_name
 
                     # Add display function to admin class
@@ -208,10 +220,7 @@ def enhance(model, admin_class):
     # If admin is for a tag model, ensure any inlines for tagged models are
     # subclasses of TaggedInlineFormSet.
     #
-    if (
-        issubclass(model, tag_models.BaseTagModel)
-        and hasattr(admin_class, 'inlines')
-    ):
+    if issubclass(model, tag_models.BaseTagModel) and hasattr(admin_class, "inlines"):
         for inline_cls in admin_class.inlines:
             # Make sure inline class uses TaggedBaseModelAdminMixin
             if not issubclass(inline_cls, TaggedBaseModelAdminMixin):
@@ -220,14 +229,12 @@ def enhance(model, admin_class):
                 ) + inline_cls.__bases__
 
             # Make sure inlines used TaggedInlineFormSet
-            if (
-                issubclass(inline_cls.model, tag_models.TaggedModel)
-                and not
-                issubclass(inline_cls.formset, tag_forms.TaggedInlineFormSet)
+            if issubclass(inline_cls.model, tag_models.TaggedModel) and not issubclass(
+                inline_cls.formset, tag_forms.TaggedInlineFormSet
             ):
                 orig_cls = inline_cls.formset
                 inline_cls.formset = type(
-                    str('Tagged%s' % orig_cls.__name__),
+                    str("Tagged%s" % orig_cls.__name__),
                     (tag_forms.TaggedInlineFormSet, orig_cls),
                     {},
                 )
@@ -263,7 +270,7 @@ def register(model, admin_class=None, site=None, **options):
 
     elif not isinstance(model, ModelBase):
         raise ImproperlyConfigured(
-            'Tagulous can only register a single model with admin.'
+            "Tagulous can only register a single model with admin."
         )
 
     # Ensure we have a valid admin site
@@ -300,16 +307,17 @@ def register(model, admin_class=None, site=None, **options):
         cls_bases += [admin_class]
         # Update options with anything the new subclasses could have overidden
         # in a custom ModelAdmin - unless they're already overridden in options
-        options['__module__'] = __name__
+        options["__module__"] = __name__
         if admin_class != admin.ModelAdmin:
-            options.update(dict(
-                (k, v) for k, v in admin_class.__dict__.items()
-                if k in ['list_display', 'list_filter', 'exclude', 'actions']
-                and k not in options
-            ))
-        admin_class = type(
-            str("%sAdmin" % model.__name__), tuple(cls_bases), options,
-        )
+            options.update(
+                dict(
+                    (k, v)
+                    for k, v in admin_class.__dict__.items()
+                    if k in ["list_display", "list_filter", "exclude", "actions"]
+                    and k not in options
+                )
+            )
+        admin_class = type(str("%sAdmin" % model.__name__), tuple(cls_bases), options)
 
     # Enhance the model admin class
     enhance(model, admin_class)

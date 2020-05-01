@@ -5,19 +5,21 @@ These are all applied automatically when the TAGULOUS_ENHANCE_MODELS setting
 is enabled.
 """
 from __future__ import unicode_literals
+
 import copy
 
 import django
-from django.db import models
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import six
 
-from tagulous.models.fields import (
-    BaseTagField, SingleTagField, TagField,
-    singletagfields_from_model, tagfields_from_model,
-)
-from tagulous import settings
 from tagulous import utils
+from tagulous.models.fields import (
+    BaseTagField,
+    SingleTagField,
+    TagField,
+    singletagfields_from_model,
+    tagfields_from_model,
+)
 
 
 def _split_kwargs(model, kwargs, lookups=False, with_fields=False):
@@ -44,12 +46,12 @@ def _split_kwargs(model, kwargs, lookups=False, with_fields=False):
     field_lookup = {}
     for field_name, val in kwargs.items():
         # Check for lookup
-        if lookups and '__' in field_name:
+        if lookups and "__" in field_name:
             orig_field_name = field_name
-            field_name, lookup = field_name.split('__', 1)
+            field_name, lookup = field_name.split("__", 1)
 
             # Only one known lookup
-            if lookup == 'exact':
+            if lookup == "exact":
                 try:
                     field = model._meta.get_field(field_name)
                 except models.fields.FieldDoesNotExist:
@@ -99,15 +101,16 @@ def _split_kwargs(model, kwargs, lookups=False, with_fields=False):
     return safe_fields, singletag_fields, tag_fields
 
 
+# ##############################################################################
+# ############################################################## TaggedQuerySet
+# ##############################################################################
 
-###############################################################################
-############################################################### TaggedQuerySet
-###############################################################################
 
 class TaggedQuerySet(models.query.QuerySet):
     """
     A QuerySet with support for Tagulous tag fields
     """
+
     def _filter_or_exclude(self, negate, *args, **kwargs):
         """
         Custom lookups for tag fields
@@ -122,9 +125,9 @@ class TaggedQuerySet(models.query.QuerySet):
         for field_name, val in singletag_fields.items():
             query_field_name = field_name
             if isinstance(val, six.string_types):
-                query_field_name += '__name'
+                query_field_name += "__name"
                 if not field_lookup[field_name].tag_options.case_sensitive:
-                    query_field_name += '__iexact'
+                    query_field_name += "__iexact"
             safe_fields[query_field_name] = val
 
         # Query as normal
@@ -149,9 +152,7 @@ class TaggedQuerySet(models.query.QuerySet):
                 continue
 
             # Parse the tag string
-            tags = utils.parse_tags(
-                val, space_delimiter=tag_options.space_delimiter,
-            )
+            tags = utils.parse_tags(val, space_delimiter=tag_options.space_delimiter)
 
             # Prep the subquery
             subqs = qs
@@ -160,16 +161,16 @@ class TaggedQuerySet(models.query.QuerySet):
 
             # To get an exact match, filter this queryset to only include
             # items with a tag count that matches the number of specified tags
-            if lookup == 'exact':
-                count_name = '_tagulous_count_%s' % field_name
-                subqs = subqs.annotate(
-                    **{count_name: models.Count(field_name)}
-                ).filter(**{count_name: len(tags)})
+            if lookup == "exact":
+                count_name = "_tagulous_count_%s" % field_name
+                subqs = subqs.annotate(**{count_name: models.Count(field_name)}).filter(
+                    **{count_name: len(tags)}
+                )
 
             # Prep the field name
-            query_field_name = field_name + '__name'
+            query_field_name = field_name + "__name"
             if not tag_options.case_sensitive:
-                query_field_name += '__iexact'
+                query_field_name += "__iexact"
 
             # Now chain the filters for each tag
             #
@@ -182,7 +183,7 @@ class TaggedQuerySet(models.query.QuerySet):
             # Fold subquery back into main query
             if negate:
                 # Exclude on matched ID
-                qs = qs.exclude(pk__in=subqs.values('pk'))
+                qs = qs.exclude(pk__in=subqs.values("pk"))
             else:
                 # A filter op can just replace the main query
                 qs = subqs
@@ -199,7 +200,7 @@ class TaggedQuerySet(models.query.QuerySet):
         # SingleTagFields are safe
         safe_fields.update(singletag_fields)
 
-        if hasattr(transaction, 'atomic'):
+        if hasattr(transaction, "atomic"):
             transaction_atomic = transaction.atomic
         else:
             transaction_atomic = transaction.commit_on_success
@@ -247,20 +248,21 @@ class TaggedQuerySet(models.query.QuerySet):
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = queryset.__class__
         queryset.__class__ = type(
-            str('CastTagged%s' % orig_cls.__name__), (cls, orig_cls), {},
+            str("CastTagged%s" % orig_cls.__name__), (cls, orig_cls), {}
         )
         return queryset
 
 
-###############################################################################
-############################################################### TaggedManager
-###############################################################################
+# ##############################################################################
+# ############################################################## TaggedManager
+# ##############################################################################
 
 
 class TaggedManager(models.Manager):
     """
     A manager with support for Tagulous tag fields
     """
+
     # The class of a tag-enabled queryset. Here so a custom TaggedManager can
     # replace it with a custom TaggedQuerySet subclass.
     tagulous_queryset = TaggedQuerySet
@@ -299,19 +301,21 @@ class TaggedManager(models.Manager):
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = manager.__class__
         manager.__class__ = type(
-            str('CastTagged%s' % orig_cls.__name__), (cls, orig_cls), {},
+            str("CastTagged%s" % orig_cls.__name__), (cls, orig_cls), {}
         )
         return manager
 
 
-###############################################################################
-############################################################### TaggedModel
-###############################################################################
+# ##############################################################################
+# ############################################################## TaggedModel
+# ##############################################################################
+
 
 class TaggedModel(models.Model):
     """
     An abstract model base class with support for Tagulous tag fields
     """
+
     def __init__(self, *args, **kwargs):
         safe_fields, singletag_fields, tag_fields = _split_kwargs(self, kwargs)
 
@@ -348,9 +352,8 @@ class TaggedModel(models.Model):
             model.__bases__ = (TaggedModel,) + model.__bases__
 
         # Ensure the manager subclasses TaggedManager
-        if (
-            hasattr(model, 'objects')
-            and not issubclass(model.objects.__class__, TaggedManager)
+        if hasattr(model, "objects") and not issubclass(
+            model.objects.__class__, TaggedManager
         ):
             TaggedManager.cast_class(model.objects)
 
@@ -367,7 +370,7 @@ class TaggedModel(models.Model):
         safe.
         """
         # Get fields on this model
-        if hasattr(cls._meta, 'get_fields'):
+        if hasattr(cls._meta, "get_fields"):
             # Django 1.8
             fields = cls._meta.get_fields()
         else:
@@ -393,7 +396,8 @@ class TaggedModel(models.Model):
                             django.VERSION < (1, 9)
                             and field.rel
                             and isinstance(field.rel, models.ManyToManyRel)
-                        ) or (
+                        )
+                        or (
                             django.VERSION >= (1, 9)
                             and field.remote_field
                             and isinstance(field.remote_field, models.ManyToManyRel)
@@ -412,9 +416,7 @@ class TaggedModel(models.Model):
             if isinstance(field, models.ManyToOneRel):
                 continue
             elif isinstance(field, BaseTagField):
-                clone_field = models.Field(
-                    blank=field.blank, null=field.null
-                )
+                clone_field = models.Field(blank=field.blank, null=field.null)
             else:
                 clone_field = copy.deepcopy(field)
             clone_field.contribute_to_class(FakeTaggedModel, field.name)

@@ -8,25 +8,29 @@ Their main purposes is to act as getter/setters and pass data to and from
 manager instances.
 """
 from __future__ import unicode_literals
+
 import collections
 
 import django
-from django.db import models
 from django.utils import six
 
 from tagulous.models.managers import (
-    SingleTagManager, TagRelatedManagerMixin, FakeTagRelatedManager
+    FakeTagRelatedManager,
+    SingleTagManager,
+    TagRelatedManagerMixin,
 )
 
 
-###############################################################################
-####### Base class for tag field descriptors
-###############################################################################
+# ##############################################################################
+# ###### Base class for tag field descriptors
+# ##############################################################################
+
 
 class BaseTagDescriptor(object):
     """
     Base TagDescriptor class
     """
+
     def __init__(self, descriptor):
         # Store original FK/M2M descriptor and tag options
         self.descriptor = descriptor
@@ -42,6 +46,7 @@ class BaseTagDescriptor(object):
         if django.VERSION < (1, 9):
             return self.field.remote_field.to
         return self.field.remote_field.model
+
     tag_model = property(_get_tag_model)
     tag_options = property(lambda self: self.field.tag_options)
 
@@ -51,9 +56,9 @@ class BaseTagDescriptor(object):
         Be prepared to receive a DatabaseError if the model has not been synced
         """
         for tag_name in self.tag_options.initial:
-            self.tag_model.objects.get_or_create(name=tag_name, defaults={
-                'protected': self.tag_options.protect_initial,
-            })
+            self.tag_model.objects.get_or_create(
+                name=tag_name, defaults={"protected": self.tag_options.protect_initial}
+            )
 
     def formfield(self, *args, **kwargs):
         """
@@ -62,10 +67,10 @@ class BaseTagDescriptor(object):
         return self.descriptor.field.formfield(*args, **kwargs)
 
 
+# ##############################################################################
+# ###### Descriptor for SingleTagField
+# ##############################################################################
 
-###############################################################################
-####### Descriptor for SingleTagField
-###############################################################################
 
 class SingleTagDescriptor(BaseTagDescriptor):
     """
@@ -73,10 +78,11 @@ class SingleTagDescriptor(BaseTagDescriptor):
     Wraps the ReverseSingleRelatedObjectDescriptor and passes set and get
     requests through to the SingleTagManager
     """
+
     def __set__(self, instance, value):
         # Check we've actually got an instance. No practical way this could
         # happen, but Django does it, so we will too
-        if instance is None: # pragma: no cover
+        if instance is None:  # pragma: no cover
             raise AttributeError("Manager must be accessed via instance")
 
         # Otherwise set on the manager
@@ -108,9 +114,10 @@ class SingleTagDescriptor(BaseTagDescriptor):
         return manager.get()
 
 
-###############################################################################
-####### Descriptor for TagField
-###############################################################################
+# ##############################################################################
+# ###### Descriptor for TagField
+# ##############################################################################
+
 
 class TagDescriptor(BaseTagDescriptor):
     """
@@ -119,6 +126,7 @@ class TagDescriptor(BaseTagDescriptor):
     This will use a RelatedManager which we cannot customise
     This will intercept calls for the RelatedManager, and add the tag functions
     """
+
     def get_manager(self, instance, instance_type=None):
         """
         Get the Manager instance for this field on this model instance.
@@ -172,9 +180,7 @@ class TagDescriptor(BaseTagDescriptor):
 
         # Add in the mixin
         manager.__class__ = type(
-            str('TagRelatedManager'),
-            (TagRelatedManagerMixin, manager.__class__),
-            {}
+            str("TagRelatedManager"), (TagRelatedManagerMixin, manager.__class__), {}
         )
 
         # Manager is already instantiated; initialise tagulous in it
@@ -194,7 +200,7 @@ class TagDescriptor(BaseTagDescriptor):
     def __set__(self, instance, value):
         # Check we've actually got an instance. No practical way this could
         # happen, but Django does it, so we will too
-        if instance is None: # pragma: no cover
+        if instance is None:  # pragma: no cover
             raise AttributeError("Manager must be accessed via instance")
 
         # Get the manager
@@ -203,7 +209,7 @@ class TagDescriptor(BaseTagDescriptor):
         # Set value
         if not value:
             # Clear
-            manager.set_tag_string('')
+            manager.set_tag_string("")
 
         elif isinstance(value, six.string_types):
             # If it's a string, it must be a tag string
@@ -216,7 +222,7 @@ class TagDescriptor(BaseTagDescriptor):
 
         else:
             # Unknown
-            raise ValueError('Unexpected value assigned to TagField')
+            raise ValueError("Unexpected value assigned to TagField")
 
     @property
     def through(self):

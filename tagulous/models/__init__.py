@@ -3,23 +3,27 @@ Tagulous models
 
 Make important functions and classes available on tagulous.models
 """
-from tagulous.models.options import TagOptions
-from tagulous.models.models import (
-    BaseTagModel, TagModel, BaseTagTreeModel, TagTreeModel,
-    TagModelQuerySet, TagModelManager,
+from tagulous.models import initial, migrations, signals  # noqa
+from tagulous.models.descriptors import (  # noqa
+    BaseTagDescriptor,
+    SingleTagDescriptor,
+    TagDescriptor,
 )
-from tagulous.models.managers import (
-    SingleTagManager, TagRelatedManagerMixin,
+from tagulous.models.fields import (  # noqa
+    BaseTagField,
+    SingleTagField,
+    TagField,
+    singletagfields_from_model,
+    tagfields_from_model,
 )
-from tagulous.models.descriptors import (
-    BaseTagDescriptor, SingleTagDescriptor, TagDescriptor,
+from tagulous.models.managers import SingleTagManager, TagRelatedManagerMixin  # noqa
+from tagulous.models.models import (  # noqa
+    BaseTagModel,
+    BaseTagTreeModel,
+    TagModel,
+    TagModelManager,
+    TagModelQuerySet,
+    TagTreeModel,
 )
-from tagulous.models.fields import (
-    BaseTagField, SingleTagField, TagField,
-    singletagfields_from_model, tagfields_from_model,
-)
-
-from tagulous.models import initial
-from tagulous.models import migrations
-from tagulous.models.tagged import TaggedModel, TaggedManager, TaggedQuerySet
-from tagulous.models import signals  # NOQA
+from tagulous.models.options import TagOptions  # noqa
+from tagulous.models.tagged import TaggedManager, TaggedModel, TaggedQuerySet  # noqa

@@ -4,49 +4,60 @@ Tagulous tag models
 from __future__ import unicode_literals
 
 import django
-from django.db import connection, models, router, transaction, IntegrityError
+from django.db import IntegrityError, connection, models, router, transaction
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
+
+import tagulous
+from tagulous import constants, settings, utils
+from tagulous.models.options import TagOptions
+
+
 try:
     from django.utils.text import slugify
 except ImportError:
     # Django 1.4 or earlier
     from django.template.defaultfilters import slugify
 
-import tagulous
-from tagulous import constants
-from tagulous import settings
-from tagulous import utils
-from tagulous.models.options import TagOptions
 
 # Django 1.4 and 1.5 don't support transaction.atomic, but don't need it for
 # what we're doing here; fake it for the ``with`` statement.
-if hasattr(transaction, 'atomic'):
+if hasattr(transaction, "atomic"):
     transaction_atomic = transaction.atomic
 else:
+
     class transaction_atomic(object):
-        def __enter__(self): pass
-        def __exit__(self, type, value, traceback): pass
+        def __enter__(self):
+            pass
+
+        def __exit__(self, type, value, traceback):
+            pass
+
 
 # Fix for with_metaclass in Django 1.5
 # 1.4.2 and 1.6 use the same code, but it's different in 1.5 and we lose _meta
 # This is the fn from 1.6, adapted to work with unicode_literals
 if django.VERSION < (1, 6):
-    tmp_cls_name = 'temporary_class'
+    tmp_cls_name = "temporary_class"
     if six.PY2:
         tmp_cls_name = bytes(tmp_cls_name)
+
     def with_metaclass(meta, *bases):
         class metaclass(meta):
             def __new__(cls, name, this_bases, d):
                 return meta(name, bases, d)
+
         return type.__new__(metaclass, tmp_cls_name, (), {})
+
+
 else:
     with_metaclass = six.with_metaclass
 
 
-###############################################################################
-####### TagModel manager and queryset
-###############################################################################
+# ##############################################################################
+# ###### TagModel manager and queryset
+# ##############################################################################
+
 
 @python_2_unicode_compatible
 class TagModelQuerySet(models.query.QuerySet):
@@ -65,8 +76,8 @@ class TagModelQuerySet(models.query.QuerySet):
         who added them, but you also want them to see the initial default tags.
         """
         return self.filter(
-            models.Q(*args, **kwargs) |
-            models.Q(name__in=self.model.tag_options.initial)
+            models.Q(*args, **kwargs)
+            | models.Q(name__in=self.model.tag_options.initial)
         )
 
     def weight(self, min=settings.WEIGHT_MIN, max=settings.WEIGHT_MAX):
@@ -81,23 +92,23 @@ class TagModelQuerySet(models.query.QuerySet):
 
         # Build SQL
         template = (
-            '%(floor)s((count*%(upper)d)/'
-            '(SELECT MAX(count) FROM %(table)s)'
-            ')+%(lower)d'
+            "%(floor)s((count*%(upper)d)/"
+            "(SELECT MAX(count) FROM %(table)s)"
+            ")+%(lower)d"
         )
         data = {
-            'floor': 'FLOOR',
-            'upper': max-min,
-            'lower': min,
-            'table': self.model._meta.db_table,
+            "floor": "FLOOR",
+            "upper": max - min,
+            "lower": min,
+            "table": self.model._meta.db_table,
         }
 
         # Sqlite doesn't support FLOOR, but that's ok because it does it anyway
-        if connection.vendor == 'sqlite':
-            data['floor'] = ''
+        if connection.vendor == "sqlite":
+            data["floor"] = ""
 
         # Perform query and add it as `weight`
-        return self.extra(select={'weight': template % data})
+        return self.extra(select={"weight": template % data})
 
     def __str__(self):
         return utils.render_tags(self)
@@ -107,6 +118,7 @@ class TagModelQuerySet(models.query.QuerySet):
 class TagModelManager(models.Manager):
     def get_queryset(self):
         return TagModelQuerySet(self.model, using=self._db)
+
     get_query_set = get_queryset
 
     def __str__(self):
@@ -122,13 +134,14 @@ class TagModelManager(models.Manager):
         return self.get_queryset().weight(*args, **kwargs)
 
 
-###############################################################################
-####### Abstract base class for all TagModel models
-###############################################################################
+# ##############################################################################
+# ###### Abstract base class for all TagModel models
+# ##############################################################################
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Metaclass for tag models
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 
 class TagModelBase(models.base.ModelBase):
     def __new__(cls, name, bases, attrs):
@@ -137,21 +150,22 @@ class TagModelBase(models.base.ModelBase):
 
         # TagMeta takes priority for the model
         new_tag_options = None
-        if 'TagMeta' in attrs:
+        if "TagMeta" in attrs:
             tag_meta = {}
             tag_meta = dict(
-                (key, val) for key, val in attrs['TagMeta'].__dict__.items()
+                (key, val)
+                for key, val in attrs["TagMeta"].__dict__.items()
                 if key in constants.OPTION_DEFAULTS
             )
-            if 'tree' in tag_meta:
-                raise ValueError('Cannot set tree option in TagMeta')
+            if "tree" in tag_meta:
+                raise ValueError("Cannot set tree option in TagMeta")
 
             new_tag_options = TagOptions(**tag_meta)
 
         # Failing that, look for a direct tag_options setting
         # It will probably have been passed by BaseTagField.contribute_to_class
-        elif 'tag_options' in attrs:
-            new_tag_options = attrs['tag_options']
+        elif "tag_options" in attrs:
+            new_tag_options = attrs["tag_options"]
 
         # Otherwise start a new one
         else:
@@ -159,7 +173,7 @@ class TagModelBase(models.base.ModelBase):
 
         # See if there's anything to inherit
         # This also means that tag_options will be available on abstract models
-        if hasattr(new_cls, 'tag_options'):
+        if hasattr(new_cls, "tag_options"):
             # Inherit by setting missing values in place
             new_tag_options.set_missing(new_cls.tag_options)
 
@@ -171,7 +185,7 @@ class TagModelBase(models.base.ModelBase):
 
         for field in fields:
             # Can't test for subclass of field here - would be circular import
-            if hasattr(field, 'tag_model') and field.tag_model == new_cls:
+            if hasattr(field, "tag_model") and field.tag_model == new_cls:
                 # This method is being called after the tag field's
                 # contribute_to_class and _process_deferred_options. This means
                 # that the field is using tag_options from the inherited model.
@@ -185,6 +199,7 @@ class TagModelBase(models.base.ModelBase):
 #       Empty abstract model
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
 @python_2_unicode_compatible
 class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
     """
@@ -192,6 +207,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
 
     This is used when dynamically building models, eg by South in migrations
     """
+
     objects = TagModelManager()
 
     class Meta:
@@ -234,12 +250,12 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         In Django 1.7 it will be a list RelatedObjects.
         """
         meta = cls._meta
-        if hasattr(meta, 'get_fields'):
+        if hasattr(meta, "get_fields"):
             # Django 1.8 uses new meta API
             related_fields = [
-                f for f in meta.get_fields()
-                if (f.many_to_many or f.one_to_many or f.one_to_one)
-                and f.auto_created
+                f
+                for f in meta.get_fields()
+                if (f.many_to_many or f.one_to_many or f.one_to_one) and f.auto_created
             ]
         else:
             related_fields = meta.get_all_related_objects()
@@ -247,16 +263,18 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         if include_standard:
             return related_fields
         return [
-            f for f in related_fields
-            if isinstance(f.field, (
-                tagulous.models.fields.SingleTagField,
-                tagulous.models.fields.TagField,
-            ))
+            f
+            for f in related_fields
+            if isinstance(
+                f.field,
+                (
+                    tagulous.models.fields.SingleTagField,
+                    tagulous.models.fields.TagField,
+                ),
+            )
         ]
 
-    def get_related_objects(
-        self, flat=False, distinct=False, include_standard=False,
-    ):
+    def get_related_objects(self, flat=False, distinct=False, include_standard=False):
         """
         Get any instances of other models which refer to this tag instance
 
@@ -290,9 +308,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
 
             objs = related_model._base_manager.using(
                 router.db_for_write(self.tag_model)
-            ).filter(
-                **{"%s" % related.field.name: self}
-            )
+            ).filter(**{"%s" % related.field.name: self})
             if not objs:
                 continue
             if flat:
@@ -311,6 +327,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         self.count = len(self.get_related_objects(flat=True))
         self.save()
         self.try_delete()
+
     update_count.alters_data = True
 
     def increment(self):
@@ -318,6 +335,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         Increase the count by one
         """
         self._change_count(1)
+
     increment.alters_data = True
 
     def decrement(self):
@@ -325,6 +343,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         Decrease the count by one, then try to delete
         """
         self._change_count(-1)
+
     decrement.alters_data = True
 
     def _change_count(self, amount):
@@ -332,13 +351,13 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         Change count by amount
         """
         self.__class__.objects.filter(pk=self.pk).update(
-            count=models.F('count') + amount
+            count=models.F("count") + amount
         )
 
         # Reload count
         # Use DB for write because we just updated the value
         using = router.db_for_write(self.tag_model, instance=self)
-        if hasattr(self, 'refresh_from_db'):
+        if hasattr(self, "refresh_from_db"):
             self.refresh_from_db(using=using)
         else:
             # Django 1.7 or earlier
@@ -358,9 +377,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         if not is_protected:
             # Before we delete, check for any standard relationships
             # This will catch if the tag is in a tree with children
-            true_count = len(
-                self.get_related_objects(flat=True, include_standard=True)
-            )
+            true_count = len(self.get_related_objects(flat=True, include_standard=True))
             if true_count > 0:
                 # ForeignKeys or ManyToManyFields refer to it
                 # We can't delete (we'll break things)
@@ -375,6 +392,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
             # If a tree, parent node may now be empty - try to delete it
             if self.tag_options.tree and self.parent:
                 self.parent.try_delete()
+
     try_delete.alters_data = True
 
     def _prep_merge_tags(self, tags):
@@ -385,7 +403,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         # Ensure tags is a list of tag instances
         if isinstance(tags, six.string_types):
             tags = utils.parse_tags(
-                tags, space_delimiter=self.tag_options.space_delimiter,
+                tags, space_delimiter=self.tag_options.space_delimiter
             )
         if not isinstance(tags, models.query.QuerySet):
             tags = self.tag_model.objects.filter(name__in=tags)
@@ -410,9 +428,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
 
             objs = related_model._base_manager.using(
                 router.db_for_write(self.tag_model, instance=self)
-            ).filter(
-                **{"%s__in" % related.field.name: tags}
-            )
+            ).filter(**{"%s__in" % related.field.name: tags})
 
             # Switch the tags
             # Referring via tagulous to avoid circular import
@@ -425,6 +441,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
                 for obj in objs:
                     getattr(obj, related.field.name).remove(*tags)
                     getattr(obj, related.field.name).add(self)
+
     merge_tags.alters_data = True
 
     def _update_extra(self):
@@ -463,17 +480,15 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         # Set the slug using the label if possible (for TagTreeModel), else
         # the tag name. Run it through unicode_to_ascii because slugify will
         # cry if the label contains unicode characters
-        label = getattr(self, 'label', self.name)
-        slug_max_length = self.__class__._meta.get_field('slug').max_length
+        label = getattr(self, "label", self.name)
+        slug_max_length = self.__class__._meta.get_field("slug").max_length
         slug_base = slugify(six.text_type(utils.unicode_to_ascii(label)))
         self.slug = slug_base[:slug_max_length]
         self._update_extra()
 
         # Make sure we're using the same db at all times
         cls = self.__class__
-        kwargs['using'] = kwargs.get('using') or router.db_for_write(
-            cls, instance=self
-        )
+        kwargs["using"] = kwargs.get("using") or router.db_for_write(cls, instance=self)
 
         # Try saving the slug - it'll probably be fine
         try:
@@ -488,21 +503,22 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         # Integrity error - something is probably not unique.
         # Assume it was the slug - make it unique by appending a number.
         # See which numbers have been used
-        slug_base = slug_base[:slug_max_length - settings.SLUG_TRUNCATE_UNIQUE]
+        slug_base = slug_base[: slug_max_length - settings.SLUG_TRUNCATE_UNIQUE]
         try:
-            last = cls.objects.filter(
-                slug__regex="^%s_[0-9]+$" % slug_base
-            ).latest('slug')
+            last = cls.objects.filter(slug__regex="^%s_[0-9]+$" % slug_base).latest(
+                "slug"
+            )
         except cls.DoesNotExist:
             # No numbered version of the slug exists
             number = 1
         else:
-            slug_base, number = last.slug.rsplit('_', 1)
+            slug_base, number = last.slug.rsplit("_", 1)
             number = int(number) + 1
 
-        self.slug = '%s_%d' % (slug_base, number)
+        self.slug = "%s_%d" % (slug_base, number)
         self._update_extra()
         return super(BaseTagModel, self).save(*args, **kwargs)
+
     save.alters_data = True
 
     # For consistency with SingleTagField, provide .tag_model attribute
@@ -513,38 +529,32 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
 #       Abstract model with fields
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
 class TagModel(BaseTagModel):
     """
     Abstract base class for tag models
     """
-    name = models.CharField(
-        unique=True, max_length=settings.NAME_MAX_LENGTH,
-    )
-    slug = models.SlugField(
-        unique=False, max_length=settings.SLUG_MAX_LENGTH,
-    )
+
+    name = models.CharField(unique=True, max_length=settings.NAME_MAX_LENGTH)
+    slug = models.SlugField(unique=False, max_length=settings.SLUG_MAX_LENGTH)
     count = models.IntegerField(
-        default=0,
-        help_text="Internal counter of how many times this tag is in use"
+        default=0, help_text="Internal counter of how many times this tag is in use"
     )
     protected = models.BooleanField(
-        default=False,
-        help_text="Will not be deleted when the count reaches 0"
+        default=False, help_text="Will not be deleted when the count reaches 0"
     )
 
     class Meta:
         abstract = True
-        ordering = ('name',)
+        ordering = ("name",)
         # Slug field must be unique, but manage it with unique_together
         # so that subclasses can override
-        unique_together = (
-            ('slug',),
-        )
+        unique_together = (("slug",),)
 
 
-###############################################################################
-####### TagTreeModel manager and queryset
-###############################################################################
+# ##############################################################################
+# ###### TagTreeModel manager and queryset
+# ##############################################################################
 
 
 class TagTreeModelQuerySet(TagModelQuerySet):
@@ -552,12 +562,9 @@ class TagTreeModelQuerySet(TagModelQuerySet):
         """
         Return a clean copy of this class
         """
-        kwargs = {
-            'model':    self.model,
-            'using':    self._db,
-        }
-        if hasattr(self, '_hints'):
-            kwargs['hints'] = self._hints
+        kwargs = {"model": self.model, "using": self._db}
+        if hasattr(self, "_hints"):
+            kwargs["hints"] = self._hints
         return self.__class__(**kwargs)
 
     def with_ancestors(self):
@@ -566,11 +573,11 @@ class TagTreeModelQuerySet(TagModelQuerySet):
         """
         # Build list of all paths of all ancestors (and self)
         paths = []
-        for path in self.values_list('path', flat=True):
+        for path in self.values_list("path", flat=True):
             parts = utils.split_tree_name(path)
             paths += [path] + [
-                utils.join_tree_name(parts[:i]) # Join parts up to i (misses last)
-                for i in range(1, len(parts))   # Skip first (empty)
+                utils.join_tree_name(parts[:i])  # Join parts up to i (misses last)
+                for i in range(1, len(parts))  # Skip first (empty)
             ]
         return self._clean().filter(path__in=set(paths))
 
@@ -580,11 +587,9 @@ class TagTreeModelQuerySet(TagModelQuerySet):
         """
         # Build query of all matching paths, and all their sub-paths
         query = models.Q()
-        for path in self.values_list('path', flat=True):
-            query = query | models.Q(
-                path=path,
-            ) | models.Q(
-                path__startswith='%s/' % path
+        for path in self.values_list("path", flat=True):
+            query = (
+                query | models.Q(path=path) | models.Q(path__startswith="%s/" % path)
             )
         return self._clean().filter(query)
 
@@ -593,7 +598,7 @@ class TagTreeModelQuerySet(TagModelQuerySet):
         Add selected tags' siblings to current queryset
         """
         # Get all unique parent pks, except None
-        parent_ids = set(self.values_list('parent_id', flat=True))
+        parent_ids = set(self.values_list("parent_id", flat=True))
         has_none = None in parent_ids
         if has_none:
             parent_ids.remove(None)
@@ -609,6 +614,7 @@ class TagTreeModelQuerySet(TagModelQuerySet):
 class TagTreeModelManager(TagModelManager):
     def get_queryset(self):
         return TagTreeModelQuerySet(self.model, using=self._db)
+
     get_query_set = get_queryset
 
     def rebuild(self):
@@ -620,16 +626,18 @@ class TagTreeModelManager(TagModelManager):
             # If it hasn't, it'll just end up re-creating the same one
             tag.slug = None
             tag.save()
+
     rebuild.alters_data = True
 
 
-###############################################################################
-####### Abstract base class for all TagTreeModel models
-###############################################################################
+# ##############################################################################
+# ###### Abstract base class for all TagTreeModel models
+# ##############################################################################
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Metaclass for tag tree models
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 
 class TagTreeModelBase(TagModelBase):
     def __new__(cls, name, bases, attrs):
@@ -646,12 +654,14 @@ class TagTreeModelBase(TagModelBase):
 #       Empty abstract model
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
 class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
     """
     Empty abstract base class for tag models with tree
 
     This is used when dynamically building models, eg by South in migrations
     """
+
     objects = TagTreeModelManager()
 
     class Meta:
@@ -663,19 +673,17 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
     # properties replaced by caching fields.
     def _get_descendant_count(self):
         "The sum of the counts of all descendants"
-        return self.get_descendants().aggregate(
-            models.Sum('count')
-        )['count__sum'] or 0
+        return self.get_descendants().aggregate(models.Sum("count"))["count__sum"] or 0
+
     descendant_count = property(
-        _get_descendant_count,
-        doc=_get_descendant_count.__doc__,
+        _get_descendant_count, doc=_get_descendant_count.__doc__
     )
 
     def _get_family_count(self):
         "The count of self plus all its descendants"
         return self.descendant_count + self.count
-    family_count = property(_get_family_count, doc=_get_family_count.__doc__)
 
+    family_count = property(_get_family_count, doc=_get_family_count.__doc__)
 
     def __init__(self, *args, **kwargs):
         """
@@ -729,6 +737,7 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
             # Notify parent that it may now be empty
             if old_parent:
                 old_parent.update_count()
+
     save.alters_data = True
 
     def _update_extra(self):
@@ -737,9 +746,10 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
         """
         # Update the path
         if self.parent:
-            self.path = '/'.join([self.parent.path, self.slug])
+            self.path = "/".join([self.parent.path, self.slug])
         else:
             self.path = self.slug
+
     _update_extra.alters_data = True
 
     def merge_tags(self, tags, children=False):
@@ -757,7 +767,7 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
             for tag in tags:
                 for child in tag.children.all():
                     # Find merge target on this tree
-                    new_child_name = '/'.join([self.name, child.label])
+                    new_child_name = "/".join([self.name, child.label])
                     try:
                         my_child = cls.objects.get(name=new_child_name)
                     except cls.DoesNotExist:
@@ -773,6 +783,7 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
 
         # Merge self
         super(BaseTagTreeModel, self).merge_tags(tags)
+
     merge_tags.alters_data = True
 
     def get_ancestors(self):
@@ -786,8 +797,8 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
         # Get all ancestor paths from this path
         parts = utils.split_tree_name(self.path)
         paths = [
-            utils.join_tree_name(parts[:i]) # Join parts up to i (misses last)
-            for i in range(1, len(parts))   # Skip first (empty)
+            utils.join_tree_name(parts[:i])  # Join parts up to i (misses last)
+            for i in range(1, len(parts))  # Skip first (empty)
         ]
 
         # Look up ancestors by path, already ordered by name for deepest last
@@ -799,7 +810,7 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
         """
         # Look up by path, already ordered by name for deepest last
         cls = self.__class__
-        return cls.objects.filter(path__startswith='%s/' % self.path)
+        return cls.objects.filter(path__startswith="%s/" % self.path)
 
     def get_siblings(self):
         """
@@ -818,27 +829,29 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
 #       Abstract model with fields
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
 class TagTreeModel(BaseTagTreeModel, TagModel):
     """
     Abstract base class for tag models with tree
     """
+
     # These fields are all generated automatically on save
-    parent      = models.ForeignKey(
-        'self', null=True, blank=True, related_name='children',
-        on_delete=models.CASCADE, db_index=True,
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        related_name="children",
+        on_delete=models.CASCADE,
+        db_index=True,
     )
-    path        = models.TextField()
-    label       = models.CharField(
+    path = models.TextField()
+    label = models.CharField(
         max_length=settings.LABEL_MAX_LENGTH,
-        help_text='The name of the tag, without ancestors',
+        help_text="The name of the tag, without ancestors",
     )
-    level       = models.IntegerField(
-        default=1, help_text='The level of the tag in the tree',
-    )
+    level = models.IntegerField(default=1, help_text="The level of the tag in the tree")
 
     class Meta:
         abstract = True
-        ordering = ('name',)
-        unique_together = (
-            ('slug', 'parent'),
-        )
+        ordering = ("name",)
+        unique_together = (("slug", "parent"),)

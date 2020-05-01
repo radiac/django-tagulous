@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 import django
 from django import template
-from django.utils import six
+
 
 register = template.Library()
 
@@ -22,6 +22,7 @@ if django.VERSION < (1, 5):
     from django.templatetags.future import url as django_url
 else:
     from django.template.defaulttags import url as django_url
+
 
 @register.tag
 def url(parser, token):
