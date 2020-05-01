@@ -4,6 +4,13 @@ Upgrading
 
 For an overview of what has changed between versions, see the :ref:`changelog`.
 
+.. note::
+
+  Version >=2.0 supports Django 2.2 onwards, Python 3.5 onwards.
+
+  Version <2.0 supports Django 1.4.2 to 2.2, on Python 2.7 and 3.2 to 3.8, and it should
+  be considered unsupported.
+
 
 Instructions
 ============
@@ -24,6 +31,14 @@ Instructions
    For example, to upgrade from 0.8.0, the earliest instructions relevant to
    you are for 0.8.0 or later. 0.7.0 is an earlier version than yours, so you
    don't need to follow those steps.
+
+
+.. _upgrade_0-14-1:
+
+Upgrading from 0.14.1
+---------------------
+
+TBC
 
 
 .. _upgrade_0-14-0:
@@ -284,17 +299,37 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+1.0.0, 2020-
+------------------
+
+Bugfix:
+
+* Tag fields work with abstract and concrete inheritance (#8)
+
+
+Internal:
+
+* Signals have been refactored to global handlers (instead of multiple independent
+  handlers bound to descriptors)
+* Code linting improved; project now uses black and isort, and flake8 pases
+
+
 0.14.1, 2019-09-04
 ------------------
 
 Feature:
+
 * Add Django 2.2 support (closes #71)
 * Upgrade example project to Django 2.2 on Python 3.7
 
+
 Bugfix:
+
 * Correct issue with multiple databases (#72)
 
+
 Thanks to:
+
 * Dmitry Ivanchenko (ivanchenkodmitry) for multiple database fix (#72)
 
 
@@ -302,13 +337,18 @@ Thanks to:
 ------------------
 
 Feature:
+
 * Add Django 2.0 support (fixes #48, #65)
 * Add Django 2.1 support (fixes #56, #58)
 
+
 Bugfix:
+
 * Fix example project (fixes #64)
 
+
 Thanks to:
+
 * Diego Ubirajara (dubirajara) for Widget.render() fix (#58)
 
 
@@ -316,6 +356,7 @@ Thanks to:
 ------------------
 
 Feature:
+
 * Tag fields now support the argument :ref:`argument_to_base`
 
 
@@ -325,10 +366,13 @@ Feature:
 See :ref:`upgrade instructions <upgrade_0-13-0>`
 
 Bugfix:
-* ``TagField(null=...)`` now raises a warning about the ``TagField``, rather
-  than the parent ``ManyToManyField``.
+
+* ``TagField(null=...)`` now raises a warning about the ``TagField``, rather than the
+  parent ``ManyToManyField``.
+
 
 Changes:
+
 * Reduce support for Python 3.3
 
 
@@ -338,20 +382,27 @@ Changes:
 See :ref:`upgrade instructions <upgrade_0-12-0>`
 
 Feature:
+
 * Add Django 1.11 support (fixes #28)
 
+
 Changes:
+
 * Reduce support for Django 1.4 and Python 3.2
 * Remove deprecated ``TagField`` manager's ``__len__`` (#10, fixes #9)
 
+
 Bugfix:
+
 * Fix failed search in select2 v3 widget when pasting multiple tags (fixes #26)
 * Fix potential race condition when creating new tags (#31)
-* Temporarily disabled some migration tests which only failed under Python 2.7
-  with Django 1.9+ due to logic issues in the tests.
+* Temporarily disabled some migration tests which only failed under Python 2.7 with
+  Django 1.9+ due to logic issues in the tests.
 * Fix deserialization exception for model with ``ManyToOneRel`` (fixes #14)
 
+
 Thanks to:
+
 * Martín R. Guerrero (slackmart) for removing ``__len__`` method (#9, #10)
 * Mark London for select2 v3 widget fix when pasting tags (#26)
 * Peter Baumgartner (ipmb) for fixing race condition (#31)
@@ -360,25 +411,29 @@ Thanks to:
 
 0.12.0, 2017-02-26
 ------------------
+
 See :ref:`upgrade instructions <upgrade_0-11-1>`
 
 Feature:
+
 * Add Django 1.10 support (fixes #18, #20)
 
 Bugfix:
+
 * Remove ``unique=True`` from tag tree models' ``path`` field (fixes #1)
 * Implement slug field truncation (fixes #3)
 * Correct MySQL slug clash detection in tag model save
 * Correct ``.weight(..)`` to always return floored integers instead of decimals
-* Correct max length calculation when adding and removing a value through
-  assignment
+* Correct max length calculation when adding and removing a value through assignment
 * `TagDescriptor` now has a `through` attribute to match `ManyToManyDescriptor`
 
 Deprecates:
-* `TagField` manager's `__len__` method is now deprecated and will be removed
-  in 0.13
+
+* `TagField` manager's `__len__` method is now deprecated and will be removed in 0.13
+
 
 Thanks to:
+
 * Pamela McA'Nulty (PamelaM) for MySQL fixes (#1)
 * Mary (minidietcoke) for max count fix (#16)
 * James Pic (jpic) for documentation corrections (#13)
@@ -390,6 +445,7 @@ Thanks to:
 ------------------
 
 Internal:
+
 * Fix package configuration in setup.py
 
 
@@ -397,21 +453,25 @@ Internal:
 ------------------
 
 Feature:
+
 * Add support for Python 3.2 to 3.5
 
 Internal:
-* Change ``tagulous.models.initial.field_initialise_tags`` and
-  ``model_initialise_tags`` to take a file handle as ``report``.
+
+* Change ``tagulous.models.initial.field_initialise_tags`` and ``model_initialise_tags``
+  to take a file handle as ``report``.
 
 
 0.10.0, 2015-09-28
 ------------------
+
 See :ref:`upgrade instructions <upgrade_0-9-0>`
 
 Feature:
+
 * Add fields ``level`` and ``label`` to :ref:`tagtreemodel` (were properties)
 * Add ``TagTreeModel.get_siblings()``
-* Add :ref:`tagtreemodel_queryset`` methods ``with_ancestors()``,
+* Add :ref:`tagtreemodel_queryset` methods ``with_ancestors()``,
   ``with_descendants()`` and ``with_siblings()``
 * Add :ref:`option_space_delimiter` tag option to disable space as a delimiter
 * Tagulous available from pypi as ``django-tagulous``
@@ -420,13 +480,17 @@ Feature:
   recursively with new argument ``children=True``
 * Support for recursively merging tree tags in admin site
 
+
 Internal:
+
 * Add support for Django 1.9a1
 * ``TagTreeModel.tag_options.tree`` will now always be ``True``
 * JavaScript ``parseTags`` arguments have changed
 * Added example project to github repository
 
+
 Bugfix:
+
 * ``TagRelatedManager`` instances can be compared to each other
 * Admin inlines now correctly suppress popup buttons
 * Select2 adaptor correctly parses ajax response
@@ -436,35 +500,49 @@ Bugfix:
 
 0.9.0, 2015-09-14
 -----------------
+
 See :ref:`upgrade instructions <upgrade_0-8-0>`
 
 Internal:
+
 * Add support for Django 1.7 and 1.8
 
+
 Removed:
+
 * ``tagulous.admin.tag_model`` has been removed
 
+
 Bugfix:
+
 * Using a tag field with a non-tag model raises exception
 
 
 0.8.0, 2015-08-22
 -----------------
+
 See :ref:`upgrade instructions <upgrade_0-7-0>`
 
 Feature:
+
 * Tag cloud support
 * Improved admin.register
 * Added tag-aware serializers
 
+
 Deprecated:
+
 * ``tagulous.admin.tag_model`` will be removed in the next version
 
+
 Bugfix:
+
 * Setting tag options twice raises exception
 * Tagged inline formsets work correctly
 
+
 Internal:
+
 * South migration support improved
 * Tests moved to top level, tox support added
 * Many small code improvements and bug fixes
@@ -474,6 +552,7 @@ Internal:
 -----------------
 
 Feature:
+
 * Added tree support
 
 
@@ -481,4 +560,5 @@ Feature:
 -----------------
 
 Feature:
+
 * Initial public preview
