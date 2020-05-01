@@ -4,18 +4,19 @@ from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import QuerySet
 from django.http import HttpResponse
-from django.utils import six
+
 
 # Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:
     import json
-except ImportError: # pragma: no cover
-   from django.utils import simplejson as json
+except ImportError:  # pragma: no cover
+    from django.utils import simplejson as json
 
 
 @login_required
 def autocomplete_login(*args, **kwargs):
     return autocomplete(*args, **kwargs)
+
 
 def autocomplete(request, tag_model):
     """
@@ -44,8 +45,8 @@ def autocomplete(request, tag_model):
     options = tag_model.tag_options
 
     # Get query string
-    query = request.GET.get('q', '')
-    page = int(request.GET.get('p', 1))
+    query = request.GET.get("q", "")
+    page = int(request.GET.get("p", 1))
 
     # Perform search
     if query:
@@ -64,14 +65,10 @@ def autocomplete(request, tag_model):
         start = options.autocomplete_limit * (page - 1)
         end = options.autocomplete_limit * page
         more = results.count() > end
-        results = results.order_by('name')[start:end]
+        results = results.order_by("name")[start:end]
 
     # Build response
-    response = {
-        'results':  [tag.name for tag in results],
-        'more':     more,
-    }
+    response = {"results": [tag.name for tag in results], "more": more}
     return HttpResponse(
-        json.dumps(response, cls=DjangoJSONEncoder),
-        content_type='application/json',
+        json.dumps(response, cls=DjangoJSONEncoder), content_type="application/json"
     )

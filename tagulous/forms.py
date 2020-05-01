@@ -1,26 +1,12 @@
 from __future__ import unicode_literals
 
 from django import forms
-from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.validators import EMPTY_VALUES
 from django.db.models.query import QuerySet
 from django.utils import six
-from django.utils.translation import ugettext as _
-from django.utils.html import escape
 from django.utils.encoding import force_text
-
-# Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
-try:
-    import json
-except ImportError: # pragma: no cover
-   from django.utils import simplejson as json
-
-# Django 1.10 deprecates urlresolvers
-try:
-    from django.urls import reverse, NoReverseMatch
-except ImportError:
-    from django.core.urlresolvers import reverse, NoReverseMatch
+from django.utils.html import escape
+from django.utils.translation import ugettext as _
 
 from tagulous import settings
 from tagulous.models import options
@@ -28,10 +14,24 @@ from tagulous.models.models import BaseTagModel, TagModelQuerySet
 from tagulous.utils import parse_tags, render_tags
 
 
+# Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
+try:
+    import json
+except ImportError:  # pragma: no cover
+    from django.utils import simplejson as json
+
+# Django 1.10 deprecates urlresolvers
+try:
+    from django.urls import reverse, NoReverseMatch
+except ImportError:
+    from django.core.urlresolvers import reverse, NoReverseMatch
+
+
 class TagWidgetBase(forms.TextInput):
     """
     Base class for tag widgets
     """
+
     # Attributes that subclasses must set
     autocomplete_settings = None
 
@@ -43,14 +43,14 @@ class TagWidgetBase(forms.TextInput):
     # tagulous.admin isn't used to register the admin model
     choices = None
 
-    def render(self, name, value, attrs={}):
+    def render(self, name, value, attrs={}, renderer=None):
         # Try to provide a URL for the autocomplete to load tags on demand
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:
             try:
-                attrs['data-tag-url'] = reverse(autocomplete_view)
+                attrs["data-tag-url"] = reverse(autocomplete_view)
             except NoReverseMatch as e:
-                raise ValueError('Invalid autocomplete view: %s' % e)
+                raise ValueError("Invalid autocomplete view: %s" % e)
 
         # Otherwise embed them, if provided
         elif self.autocomplete_tags is not None:
@@ -60,39 +60,37 @@ class TagWidgetBase(forms.TextInput):
             if isinstance(autocomplete_tags, QuerySet):
                 autocomplete_tags = autocomplete_tags.all()
 
-            attrs['data-tag-list'] = escape(force_text(
-                json.dumps(
-                    # Call str rather than tag.name directly, in case
-                    # we've been given a list of tag strings
-                    [six.text_type(tag) for tag in autocomplete_tags],
-                    cls=DjangoJSONEncoder,
-                ),
-            ))
+            attrs["data-tag-list"] = escape(
+                force_text(
+                    json.dumps(
+                        # Call str rather than tag.name directly, in case
+                        # we've been given a list of tag strings
+                        [six.text_type(tag) for tag in autocomplete_tags],
+                        cls=DjangoJSONEncoder,
+                    )
+                )
+            )
 
         # Merge default autocomplete settings into tag options
         tag_options = self.tag_options.form_items(with_defaults=False)
         if self.default_autocomplete_settings is not None:
             autocomplete_settings = self.default_autocomplete_settings.copy()
-            autocomplete_settings.update(
-                tag_options.get('autocomplete_settings', {})
-            )
-            tag_options['autocomplete_settings'] = autocomplete_settings
+            autocomplete_settings.update(tag_options.get("autocomplete_settings", {}))
+            tag_options["autocomplete_settings"] = autocomplete_settings
 
         # Inject extra settings
-        tag_options.update({
-            'required': self.is_required,
-        })
+        tag_options.update({"required": self.is_required})
 
         # Store tag options
-        attrs['data-tag-options'] = escape(force_text(
-            json.dumps(tag_options, cls=DjangoJSONEncoder)
-        ))
+        attrs["data-tag-options"] = escape(
+            force_text(json.dumps(tag_options, cls=DjangoJSONEncoder))
+        )
 
         # Mark it for the javascript to find
-        attrs['data-tagulous'] = 'true'
+        attrs["data-tagulous"] = "true"
 
         # Turn off browser's autocomplete
-        attrs['autocomplete'] = 'off'
+        attrs["autocomplete"] = "off"
 
         # Render value
         return super(TagWidgetBase, self).render(name, value, attrs)
@@ -102,7 +100,9 @@ class TagWidget(TagWidgetBase):
     """
     Tag widget for public-facing forms
     """
+
     default_autocomplete_settings = settings.AUTOCOMPLETE_SETTINGS
+
     class Media:
         css = settings.AUTOCOMPLETE_CSS
         js = settings.AUTOCOMPLETE_JS
@@ -112,7 +112,9 @@ class AdminTagWidget(TagWidgetBase):
     """
     Tag widget for admin forms
     """
+
     default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
+
     class Media:
         css = settings.ADMIN_AUTOCOMPLETE_CSS
         js = settings.ADMIN_AUTOCOMPLETE_JS
@@ -126,6 +128,7 @@ class BaseTagField(forms.CharField):
     """
     Base class for form tag fields
     """
+
     # Use the tag widget
     widget = TagWidget
 
@@ -153,7 +156,7 @@ class BaseTagField(forms.CharField):
         """
         # Catch no value (empty form for add)
         if not value:
-            tag_string = ''
+            tag_string = ""
 
         # Will normally get a string
         elif isinstance(value, six.string_types):
@@ -175,20 +178,25 @@ class BaseTagField(forms.CharField):
     # in the widget, in the same way ModelChoiceField mirrors its queryset
     def _get_tag_options(self):
         return self._tag_options
+
     def _prepare_tag_options(self, tag_options):
         "Clone tag options"
         return tag_options + options.TagOptions()
+
     def _set_tag_options(self, tag_options):
         tag_options = self._prepare_tag_options(tag_options)
         self._tag_options = tag_options
         self.widget.tag_options = tag_options
+
     tag_options = property(_get_tag_options, _set_tag_options)
 
     def _get_autocomplete_tags(self):
         return self._autocomplete_tags
+
     def _set_autocomplete_tags(self, autocomplete_tags):
         self._autocomplete_tags = autocomplete_tags
         self.widget.autocomplete_tags = autocomplete_tags
+
     autocomplete_tags = property(_get_autocomplete_tags, _set_autocomplete_tags)
 
     def widget_attrs(self, widget):
@@ -219,11 +227,10 @@ class BaseTagField(forms.CharField):
 
         try:
             return parse_tags(
-                value, self.tag_options.max_count,
-                self.tag_options.space_delimiter,
+                value, self.tag_options.max_count, self.tag_options.space_delimiter
             )
         except ValueError as e:
-            raise forms.ValidationError(_('%s' % e))
+            raise forms.ValidationError(_("%s" % e))
 
 
 class SingleTagField(BaseTagField):
@@ -232,6 +239,7 @@ class SingleTagField(BaseTagField):
 
     For parsing purposes, a single tag field wraps the contents in quotes
     """
+
     def prepare_value(self, value):
         """
         Prepare the value by stripping quotes
@@ -246,9 +254,7 @@ class SingleTagField(BaseTagField):
         """
         Force max_count to 1
         """
-        return tag_options + options.TagOptions(
-            max_count=1,
-        )
+        return tag_options + options.TagOptions(max_count=1)
 
     def widget_attrs(self, widget):
         """
@@ -257,9 +263,7 @@ class SingleTagField(BaseTagField):
         Field.
         """
         attrs = super(SingleTagField, self).widget_attrs(widget)
-        attrs.update({
-            'data-tag-type': 'single',
-        })
+        attrs.update({"data-tag-type": "single"})
         return attrs
 
     def clean(self, value):
@@ -277,17 +281,15 @@ class TagField(BaseTagField):
     """
     Form tag field
     """
+
     def prepare_value(self, value):
         """
         Prepare the value
         """
         # Could receive iterable of tags from a form's initial object
-        if (
-            isinstance(value, TagModelQuerySet)
-            or (
-                hasattr(value, '__getitem__')
-                and all(isinstance(tag, BaseTagModel) for tag in value)
-            )
+        if isinstance(value, TagModelQuerySet) or (
+            hasattr(value, "__getitem__")
+            and all(isinstance(tag, BaseTagModel) for tag in value)
         ):
             value = render_tags(value)
 
@@ -295,9 +297,10 @@ class TagField(BaseTagField):
         return super(TagField, self).prepare_value(value)
 
 
-###############################################################################
-####### Inline tagged formset
-###############################################################################
+# ##############################################################################
+# ###### Inline tagged formset
+# ##############################################################################
+
 
 class TaggedInlineFormSet(forms.models.BaseInlineFormSet):
     """
@@ -316,6 +319,7 @@ class TaggedInlineFormSet(forms.models.BaseInlineFormSet):
     the original field's value_from_object, in this case will be the tag name.
     This formset corrects this back to use the fk's pk.
     """
+
     def save(self, *args, **kwargs):
         """Saves and updates the tag count, if parent model is a tag model"""
         obj = super(TaggedInlineFormSet, self).save(*args, **kwargs)
@@ -329,9 +333,6 @@ class TaggedInlineFormSet(forms.models.BaseInlineFormSet):
 
         # SingleTagField will have broken the pk - fix it by clearing and
         # letting BoundField.value() use the field's initial value
-        if (
-            isinstance(self.instance, BaseTagModel)
-            and self.fk.name in form.initial
-        ):
+        if isinstance(self.instance, BaseTagModel) and self.fk.name in form.initial:
             del form.initial[self.fk.name]
         return form

@@ -33,20 +33,20 @@ and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
         )
 
 * This will create two new models at runtime to store the tags,
-  ``_Tagulous_Person_title`` and ``_Tagulous_Person_skills``.
+  ``Tagulous_Person_title`` and ``Tagulous_Person_skills``.
 * These models will act like normal models, and can be managed in the database
   using South or Django migrations (or ``syncdb`` before Django 1.7).
 * ``Person.title`` will now act as a ``ForeignKey`` to
-  ``_Tagulous_Person_title``
+  ``Tagulous_Person_title``
 * ``Person.skills`` will now act as a ``ManyToManyField`` to
-  ``_Tagulous_Person_skills``
+  ``Tagulous_Person_skills``
 
 Initial tags need to be loaded into the database with the
 :ref:`command_initial_tags` management command.
 
 You can use the fields to assign and query values::
 
-    # Person.skills.tag_model == _Tagulous_Person_skills
+    # Person.skills.tag_model == Tagulous_Person_skills
 
     # Set tags on an instance with a string
     instance = Person()

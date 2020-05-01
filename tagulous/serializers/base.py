@@ -14,6 +14,7 @@ class SerializerMixin(object):
     Mixin for any Serializer which doesn't define its own handle_fk_field or
     handle_m2m_field, to add tag support
     """
+
     def handle_fk_field(self, obj, field):
         if isinstance(field, SingleTagField):
             self._current[field.name] = six.text_type(getattr(obj, field.name))
@@ -35,9 +36,10 @@ def _deserialize_obj(obj):
     """
     # Convert any tag fields from m2m to string assignments
     Model = obj.object.__class__
-    if hasattr(Model, '_retag_to_original'):
+    if hasattr(Model, "_retag_to_original"):
         obj.object = obj.object._retag_to_original()
     return obj
+
 
 def DeserializerWrapper(deserializer, doc=None):
     """
@@ -46,6 +48,7 @@ def DeserializerWrapper(deserializer, doc=None):
     Given a deserializer, it modifies the DeserializedObjects which would
     normally be returned so tag fields are deserialized correctly.
     """
+
     def wrapper(object_list, **options):
         # Call normal deserializer, get generator of DeserializedObjects
         obj_generator = deserializer(object_list, **options)
@@ -63,6 +66,7 @@ def monkeypatch_get_model(serializer):
     which case return a temporary fake model to get it serialized.
     """
     old_get_model = serializer._get_model
+
     def _get_model(model_identifier):
         RealModel = old_get_model(model_identifier)
 
@@ -72,4 +76,5 @@ def monkeypatch_get_model(serializer):
             Model = RealModel
 
         return Model
+
     serializer._get_model = _get_model

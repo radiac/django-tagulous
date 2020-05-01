@@ -37,16 +37,13 @@ The ``SingleTagField`` supports most standard ``ForeignKey`` arguments, except
 for ``to_field`` and ``rel_class``.
 
 The ``TagField`` supports most normal ``ManyToManyField`` arguments, except
-for ``db_table``, ``through`` and ``symmetrical``. Also note that ``null`` and
-``blank`` have no effect at the database level, they are just used for form
-validation - as is the case with a normal ``ManyToManyField``.
+for ``db_table``, ``through`` and ``symmetrical``. Also note that ``blank`` has
+no effect at the database level, it is just used for form validation - as is
+the case with a normal ``ManyToManyField``.
 
 The ``related_name`` will default to ``<field>_set``, as is normal for a
 ``ForeignKey`` or ``ManyToManyField``. If using the same tag table on multiple
 fields, you will need to set this to something else to avoid clashes.
-
-Tag fields obey standard ``null`` and ``blank`` options; to make an optional
-model tag field set ``null=True`` and ``blank=True``.
 
 
 .. _field_auto_model:
@@ -57,10 +54,14 @@ Auto-generating a tag model
 If the :ref:`to argument <argument_to>` is not set, a tag model will be
 auto-generated for you. It will be given a class name based on the names of
 the tagged model and tag field; for example, the class name of the
-auto-generated model for ``MyModel.tags`` would be ``_Tagulous_MyModel_tags``.
+auto-generated model for ``MyModel.tags`` would be ``Tagulous_MyModel_tags``.
 
 When auto-generating a model, any :ref:`model option <model_options>` can be
 passed as a field argument - see the :ref:`example_auto_tagmodel` example.
+
+If you want to override the default base class, for convenience you can specify
+a custom base class for the auto tag model - see the :ref:`argument_to_base`
+argument for details.
 
 
 .. _field_explicit_model:
@@ -76,6 +77,7 @@ You can specify the tag model for the tag field to use with the
 
 ``to=MyTagModel`` (or first unnamed argument)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Manually specify a tag model for this tag field. This can either be a
 reference to the tag model class, or string reference to it in the format
 ``app.model``.
@@ -90,7 +92,7 @@ confident that ``MyOtherModel`` will always be defined first.
 It can also be a string containing the name of the tag model, eg
 ``to='MyTagModel'``. However, this is resolved using Django's standard model
 name resolution, so you have to reference auto-generated models by their class
-name, not via the field - eg ``to='otherapp._Tagulous_MyOtherModel_tags'``.
+name, not via the field - eg ``to='otherapp.Tagulous_MyOtherModel_tags'``.
 
 If the tagged model for this field is also a custom tag model, you can
 specify a recursive relationship as normal, using ``'self'``.
@@ -103,7 +105,24 @@ details.
 This argument is optional; if omitted, a tag model will be
 :ref:`auto-generated <field_auto_model>` for you.
 
-Default: ``_Tagulous_<ModelName>_<FieldName>`` (auto-generated)
+Default: ``Tagulous_<ModelName>_<FieldName>`` (auto-generated)
+
+
+.. _argument_to_base:
+
+``to_base=MyTagModelBase``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can specify a base class to use for an auto-generated tag model, instead of
+using ``TagModel``.
+
+This can be useful on complex sites where multiple auto-generated tag models
+need to share common custom functionality - for example, tracking and filtering
+by user who creates the tags. This argument will allow you to define one base
+class and re-use it across your project with less boilerplate than defining
+many empty custom tag models.
+
+Default: ``tagulous.models.TagModel``
 
 
 .. _model_singletagfield:
@@ -304,26 +323,6 @@ is determined by the options :ref:`option_case_sensitive` and
 
     if 'Judo' in person.skills and kung_fu_tag in person.skills:
         candidates.append(person)
-
-
-``__len__``
-~~~~~~~~~~~
-
-.. warning::
-
-    This method is deprecated in Tagulous 0.12, and will be removed in 0.13.
-
-    You should use the `count` manager method instead, eg::
-
-        person.skills = 'judo, "kung fu", karate'
-        person.skills.count() == 3
-
-
-Return the number of tags set for this instance.
-::
-
-    person.skills = 'judo, "kung fu", karate'
-    len(person.skills) == 3
 
 
 ``reload()``

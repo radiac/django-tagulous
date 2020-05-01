@@ -14,25 +14,32 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import capfirst
 
-from tagulous import constants
-from tagulous import forms
-from tagulous.models.options import TagOptions
-from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
+from tagulous import constants, forms
 from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
+from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
+from tagulous.models.options import TagOptions
 
 
-###############################################################################
-####### Mixin for model tag fields
-###############################################################################
+try:
+    from django.core.checks import Warning as ChecksWarning
+except ImportError:
+    ChecksWarning = None
+
+
+# ##############################################################################
+# ###### Mixin for model tag fields
+# ##############################################################################
+
 
 class BaseTagField(object):
     """
     Mixin for TagField and SingleTagField
     """
+
     # List of fields which are forbidden from __init__
     forbidden_fields = ()
 
-    def __init__(self, to=None, **kwargs):
+    def __init__(self, to=None, to_base=None, **kwargs):
         """
         Initialise the tag options and store
 
@@ -44,8 +51,9 @@ class BaseTagField(object):
         a ``to`` tag model is specified. However, this is intended for internal
         use only (when migrating), so if you must use it, use it with care.
         """
-        # Save tag model
+        # Save tag model data
         self.tag_model = to
+        self.tag_model_base = to_base
 
         # Extract options from kwargs
         options = {}
@@ -55,7 +63,7 @@ class BaseTagField(object):
                 options[key] = kwargs.pop(key)
 
         # Detect if _set_tag_meta is set
-        set_tag_meta = kwargs.pop('_set_tag_meta', False)
+        set_tag_meta = kwargs.pop("_set_tag_meta", False)
 
         # Detect whether we need to automatically generate a tag model
         if self.tag_model:
@@ -77,7 +85,7 @@ class BaseTagField(object):
         # We'll therefore use the string '-'; Django will not do anything about
         # resolving it until contribute_to_class, at which point we'll replace
         # it with a reference to the real tag model.
-        kwargs['to'] = self.tag_model if self.tag_model else '-'
+        kwargs["to"] = self.tag_model if self.tag_model else "-"
 
         # Call super __init__
         super(BaseTagField, self).__init__(**kwargs)
@@ -108,7 +116,7 @@ class BaseTagField(object):
 
         # Check class type of tag model
         if not issubclass(self.tag_model, BaseTagModel):
-            raise ValueError('Tag model must be a subclass of TagModel')
+            raise ValueError("Tag model must be a subclass of TagModel")
 
         # Process the deferred options
         self._process_deferred_options(is_to_self=self.tag_model == cls)
@@ -136,9 +144,8 @@ class BaseTagField(object):
                 self.tag_model.tag_options.update(options)
             else:
                 raise ValueError(
-                    'Cannot set tag options on explicit tag model %r' % (
-                        self.tag_model,
-                    )
+                    "Cannot set tag options on explicit tag model %r"
+                    % (self.tag_model,)
                 )
 
         # Link to model options by reference in case they get updated later
@@ -155,35 +162,29 @@ class BaseTagField(object):
 
         # Create a new tag model if we need to
         if self.auto_tag_model:
-            # Make sure a TagField is only contributed once if the model is
-            # not explicitly set. This isn't normal for model fields, but in
-            # this case the name of the model (and therefore db) would depend
-            # on the load order, which could change. Rather than risk problems
-            # later, ban it outright to save developers from themselves.
-            # If it causes problems for anyone, they can explicitly set a tag
-            # model and avoid this being a problem.
-            if self.contributed:
-                raise AttributeError(
-                    "The tag field %r is already attached to a model" % self
-                )
-
             # Generate a list of attributes for the new tag model
             model_attrs = {
                 # Module should be the same as the main model
-                '__module__': cls.__module__,
-
+                "__module__": cls.__module__,
                 # Give it access to the options
-                'tag_options': self.tag_options,
+                "tag_options": self.tag_options,
             }
 
             # Build new tag model
-            # Name is _Tagulous_MODELNAME_FIELDNAME
+            # Name is Tagulous_MODELNAME_FIELDNAME
             model_name = "%s_%s_%s" % (
-                constants.MODEL_PREFIX, cls._meta.object_name, name,
+                constants.MODEL_PREFIX,
+                cls._meta.object_name,
+                name,
             )
-            model_cls = TagModel
-            if self.tag_options.tree:
+
+            if self.tag_model_base is not None:
+                model_cls = self.tag_model_base
+            elif self.tag_options.tree:
                 model_cls = TagTreeModel
+            else:
+                model_cls = TagModel
+
             self.tag_model = type(str(model_name), (model_cls,), model_attrs)
 
             # Give it a verbose name, for admin filters
@@ -192,26 +193,25 @@ class BaseTagField(object):
             )
             verbose_name_plural = self.tag_options.verbose_name_plural
             if not verbose_name_plural:
-                verbose_name_plural = (
-                    verbose_name_singular or self.verbose_name or name
-                )
-                if not verbose_name_plural.endswith('s'):
-                    verbose_name_plural += 's'
+                verbose_name_plural = verbose_name_singular or self.verbose_name or name
+                if not verbose_name_plural.endswith("s"):
+                    verbose_name_plural += "s"
 
             # Get object verbose name
             object_name = cls._meta.verbose_name
-            self.tag_model._meta.verbose_name = '%s %s' % (
-                object_name, verbose_name_singular,
+            self.tag_model._meta.verbose_name = "%s %s" % (
+                object_name,
+                verbose_name_singular,
             )
-            self.tag_model._meta.verbose_name_plural = '%s %s' % (
-                object_name, verbose_name_plural,
+            self.tag_model._meta.verbose_name_plural = "%s %s" % (
+                object_name,
+                verbose_name_plural,
             )
 
             # Make no attempt to enforce max length of verbose_name - no good
             # automatic solution, and the limit may change, see
             #   https://code.djangoproject.com/ticket/17763
             # If it's a problem, contrib.auth will raise a ValidationError
-
 
         #
         # Build the tag field
@@ -234,13 +234,13 @@ class BaseTagField(object):
         Common actions for TagField and SingleTagField to set up a formfield
         """
         required = not self.blank
-        if hasattr(self, 'required'):
+        if hasattr(self, "required"):
             required = self.required
 
         # Update tag options, if necessary
         tag_options = self.tag_options
-        if 'tag_options' in kwargs:
-            new_options = kwargs.pop('tag_options')
+        if "tag_options" in kwargs:
+            new_options = kwargs.pop("tag_options")
             if not isinstance(new_options, TagOptions):
                 new_options = TagOptions(**new_options)
             tag_options += new_options
@@ -251,22 +251,21 @@ class BaseTagField(object):
             "label": capfirst(self.verbose_name),
             "help_text": self.help_text,
             "required": required,
-
             # Also pass tag options
-            "tag_options": tag_options
+            "tag_options": tag_options,
         }
 
         # Update with kwargs
         options.update(kwargs)
 
         # Add in list of tags for autocomplete, if appropriate
-        if 'autocomplete_tags' in kwargs:
-            options['autocomplete_tags'] = kwargs['autocomplete_tags']
+        if "autocomplete_tags" in kwargs:
+            options["autocomplete_tags"] = kwargs["autocomplete_tags"]
         elif not tag_options.autocomplete_view:
             tags = self.tag_model.objects.all()
             if tag_options.autocomplete_initial:
                 tags = tags.initial()
-            options['autocomplete_tags'] = tags
+            options["autocomplete_tags"] = tags
 
         # Create the field instance
         return form_class(**options)
@@ -290,8 +289,8 @@ class BaseTagField(object):
             items = self.tag_options.items(with_defaults=False)
 
             # Freeze initial as a string, not array
-            if 'initial' in items:
-                items['initial'] = self.tag_options.initial_string
+            if "initial" in items:
+                items["initial"] = self.tag_options.initial_string
 
         elif self._deferred_options is not None:
             # When deconstruct is called on a ModelState field, the options
@@ -299,9 +298,9 @@ class BaseTagField(object):
             set_tag_meta, options = self._deferred_options
             items = options
 
-        else: # pragma: no cover
+        else:  # pragma: no cover
             # It should never get here - raise an exception so we can debug
-            raise ValueError('Unexpected state')
+            raise ValueError("Unexpected state")
 
         # Add tag model options to kwargs
         kwargs.update(items)
@@ -310,35 +309,37 @@ class BaseTagField(object):
         # level of a module, but there's no easy way to differentiate. For
         # safety and consistency, strip callable arguments and mention in
         # documentation.
-        if 'get_absolute_url' in kwargs:
-            del kwargs['get_absolute_url']
+        if "get_absolute_url" in kwargs:
+            del kwargs["get_absolute_url"]
 
         # Remove forbidden fields
         # This shouldn't be needed, but strip them just in case
-        for forbidden in self.forbidden_fields: # pragma: no cover
+        for forbidden in self.forbidden_fields:  # pragma: no cover
             if forbidden in kwargs:
                 del kwargs[forbidden]
 
         # Always store _set_tag_meta=True, so migrating tag fields can set tag
         # models' TagMeta
-        kwargs['_set_tag_meta'] = True
+        kwargs["_set_tag_meta"] = True
 
         return name, path, args, kwargs
 
 
-###############################################################################
-####### Single tag field
-###############################################################################
+# ##############################################################################
+# ###### Single tag field
+# ##############################################################################
+
 
 class SingleTagField(BaseTagField, models.ForeignKey):
     """
     Build the tag model and register the TagForeignKey
     Not actually a field - syntactic sugar for creating tag fields
     """
-    description = 'A single tag field'
+
+    description = "A single tag field"
 
     # List of fields which are forbidden from __init__
-    forbidden_fields = ('to_field', 'rel_class', 'max_count')
+    forbidden_fields = ("to_field", "rel_class", "max_count")
 
     def __init__(self, *args, **kwargs):
         """
@@ -349,20 +350,18 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         # Forbid certain ForeignKey arguments
         for forbidden in self.forbidden_fields:
             if forbidden in kwargs:
-                raise ValueError(
-                    "Invalid argument '%s' for SingleTagField" % forbidden
-                )
+                raise ValueError("Invalid argument '%s' for SingleTagField" % forbidden)
 
         # TagFields will need to be nulled in the database when deleting,
         # regardless of whether we want to allow them to be null or not.
         # Make a note of whether this is required.
-        self.required = not kwargs.pop('blank', False)
-        kwargs['blank'] = True
-        kwargs['null'] = True
+        self.required = not kwargs.pop("blank", False)
+        kwargs["blank"] = True
+        kwargs["null"] = True
 
         # Set default on_delete
-        if 'on_delete' not in kwargs:
-            kwargs['on_delete'] = models.CASCADE
+        if "on_delete" not in kwargs:
+            kwargs["on_delete"] = models.CASCADE
 
         # Create the tag field
         super(SingleTagField, self).__init__(*args, **kwargs)
@@ -388,21 +387,20 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         tag = getattr(obj, self.name)
         if tag:
             return tag.name
-        return ''
+        return ""
 
     def formfield(self, form_class=forms.SingleTagField, **kwargs):
         """
         Create the form field
         For arguments see forms.TagField
         """
-        return super(SingleTagField, self).formfield(
-            form_class=form_class, **kwargs
-        )
+        return super(SingleTagField, self).formfield(form_class=form_class, **kwargs)
 
 
-###############################################################################
-####### Tag field
-###############################################################################
+# ##############################################################################
+# ###### Tag field
+# ##############################################################################
+
 
 class TagField(BaseTagField, models.ManyToManyField):
     """
@@ -410,10 +408,11 @@ class TagField(BaseTagField, models.ManyToManyField):
     Not actually a field - syntactic sugar for creating tag fields
     Will not allow a through table
     """
-    description = 'A tag field'
+
+    description = "A tag field"
 
     # List of fields which are forbidden from __init__
-    forbidden_fields = ('db_table', 'through', 'symmetrical')
+    forbidden_fields = ("db_table", "through", "symmetrical")
 
     def __init__(self, *args, **kwargs):
         """
@@ -424,17 +423,41 @@ class TagField(BaseTagField, models.ManyToManyField):
         # Forbid certain ManyToManyField arguments
         for forbidden in self.forbidden_fields:
             if forbidden in kwargs:
-                raise ValueError(
-                    "Invalid argument '%s' for TagField" % forbidden
-                )
+                raise ValueError("Invalid argument '%s' for TagField" % forbidden)
 
         # Note things we'll need to restore after __init__
-        help_text = kwargs.pop('help_text', '')
+        help_text = kwargs.pop("help_text", "")
+        null = kwargs.pop("null", False)
 
         super(TagField, self).__init__(*args, **kwargs)
 
         # Change default help text
-        self.help_text = help_text or 'Enter a comma-separated tag string'
+        self.help_text = help_text or "Enter a comma-separated tag string"
+        self.null = null
+
+    def _check_ignored_options(self, **kwargs):
+        warnings = []
+
+        # Django 1.9 introduces this, but later version remove has_null_arg
+        if ChecksWarning and (
+            getattr(self, "has_null_arg", False) or getattr(self, "null", False)
+        ):
+            warnings.append(
+                ChecksWarning(
+                    "null has no effect on TagField.",
+                    hint=None,
+                    obj=self,
+                    id="fields.W340",
+                )
+            )
+            self.has_null_arg = False
+            self.null = None
+
+        # Essentially a hack for tests in Django 1.7
+        if not hasattr(super(TagField, self), "_check_ignored_options"):
+            return warnings
+
+        return warnings + super(TagField, self)._check_ignored_options(**kwargs)
 
     def contribute_to_class(self, cls, name):
         """
@@ -465,11 +488,13 @@ class TagField(BaseTagField, models.ManyToManyField):
         where the pk attribute is the tag string - a bit of a hack, but avoids
         monkey-patching Django.
         """
+
         @python_2_unicode_compatible
         class FakeObject(object):
             """
             FakeObject so m2d can check obj.pk (django <= 1.4)
             """
+
             def __init__(self, value):
                 self.pk = value
 
@@ -481,6 +506,7 @@ class TagField(BaseTagField, models.ManyToManyField):
             FakeQuerySet so m2d can call qs.values_list() (django >= 1.5)
             Only contains one FakeObject instance
             """
+
             def __init__(self, obj):
                 self.obj = obj
                 self._result_cache = None
@@ -503,18 +529,14 @@ class TagField(BaseTagField, models.ManyToManyField):
                 """
                 return [self.obj.pk]
 
-        return FakeQuerySet(FakeObject(
-            getattr(obj, self.attname).get_tag_string()
-        ))
+        return FakeQuerySet(FakeObject(getattr(obj, self.attname).get_tag_string()))
 
     def formfield(self, form_class=forms.TagField, **kwargs):
         """
         Create the form field
         For arguments see forms.TagField
         """
-        return super(TagField, self).formfield(
-            form_class=form_class, **kwargs
-        )
+        return super(TagField, self).formfield(form_class=form_class, **kwargs)
 
     def save_form_data(self, instance, data):
         """
@@ -525,22 +547,18 @@ class TagField(BaseTagField, models.ManyToManyField):
         getattr(instance, self.attname).save()
 
 
-###############################################################################
-####### Field util methods
-###############################################################################
+# ##############################################################################
+# ###### Field util methods
+# ##############################################################################
+
 
 def singletagfields_from_model(model):
     """
     Get a list of SingleTagField fields from a model class
     """
-    return [
-        field for field in model._meta.fields
-        if isinstance(field, SingleTagField)
-    ]
+    return [field for field in model._meta.fields if isinstance(field, SingleTagField)]
+
 
 def tagfields_from_model(model):
     """Get a list of TagField fields from a model class"""
-    return [
-        field for field in model._meta.many_to_many
-        if isinstance(field, TagField)
-    ]
+    return [field for field in model._meta.many_to_many if isinstance(field, TagField)]

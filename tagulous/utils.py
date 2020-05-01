@@ -5,25 +5,24 @@ Loosely based on django-taggit and django-tagging
 """
 from __future__ import unicode_literals
 
+import unicodedata
+
 from django.utils import six
 from django.utils.encoding import force_text
 
-import unicodedata
+from tagulous.constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
+
+
 try:
     from unidecode import unidecode
-except ImportError: # pragma: no cover - tests simulate this
+except ImportError:  # pragma: no cover - tests simulate this
     unidecode = None
 
-from tagulous.constants import COMMA, SPACE, QUOTE, DOUBLE_QUOTE, TREE
 
+# ##############################################################################
+# ###### Tag name parse and render
+# ##############################################################################
 
-class RemovedInTagulous013Warning(DeprecationWarning):
-    pass
-
-
-###############################################################################
-####### Tag name parse and render
-###############################################################################
 
 def parse_tags(tag_string, max_count=0, space_delimiter=True):
     """
@@ -51,7 +50,7 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
 
     # Prep variables for the parser
     tags = []
-    tag = ''
+    tag = ""
     delimiter = SPACE
     in_quote = None
     chars = False
@@ -105,9 +104,9 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
 
                 # Add back escaped start/end quotes
                 tag = (
-                    QUOTE * int(left_quote_count / 2)
-                ) + tag + (
-                    QUOTE * int(right_quote_count / 2)
+                    (QUOTE * int(left_quote_count / 2))
+                    + tag
+                    + (QUOTE * int(right_quote_count / 2))
                 )
 
                 # Add back insignificant unescaped quotes.
@@ -124,16 +123,15 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
                 if right_quote_count % 2 == 1 and left_quote_count % 2 == 0:
                     tag += QUOTE
 
-
             # Found end of tag
             if char == delimiter:
                 tag = tag.rstrip()
                 if tag:
                     tags.append(tag)
-                    tag = ''
+                    tag = ""
                 # Following tested manually due to coverage bug
                 #   See https://bitbucket.org/ned/coveragepy/issues/198
-                continue # pragma: no cover
+                continue  # pragma: no cover
 
             # If tag is empty, ignore whitespace
             if not tag and char == SPACE:
@@ -183,7 +181,7 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
                             # Spaces are insignificant during whitespace
                             # Tag may continue, keep checking chars
                             # Following tested manually due to coverage bug
-                            continue # pragma: no cover
+                            continue  # pragma: no cover
                     elif c2 == COMMA:
                         # Quotes closed; tag will end next loop
                         # Delimiter doesn't matter, comma always wins
@@ -209,15 +207,15 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
 
     # Check the count
     if max_count and len(tags) > max_count:
-        raise ValueError('This field can only have %s argument%s' % (
-            max_count,
-            '' if max_count == 1 else 's',
-        ))
+        raise ValueError(
+            "This field can only have %s argument%s"
+            % (max_count, "" if max_count == 1 else "s")
+        )
 
     return tags
 
 
-def split_strip(string, delimiter=','):
+def split_strip(string, delimiter=","):
     """
     Splits ``string`` on ``delimiter``, stripping each resulting string
     and returning a list of non-empty strings.
@@ -247,12 +245,13 @@ def render_tags(tags):
             names.append('"%s"' % name)
         else:
             names.append(name)
-    return ', '.join(sorted(names))
+    return ", ".join(sorted(names))
 
 
-###############################################################################
-####### Tree name split and join
-###############################################################################
+# ##############################################################################
+# ###### Tree name split and join
+# ##############################################################################
+
 
 def split_tree_name(name):
     """
@@ -276,21 +275,19 @@ def split_tree_name(name):
 
         elif split:
             # Previous character was a valid delimiter
-            parts.append(name[start:index - 1].strip())
+            parts.append(name[start : index - 1].strip())
             start = index
             split = False
 
     if split:
         # Trailing slash - shouldn't happen if sanitised, but handle anyway
-        parts += [name[start:index].strip(), '']
+        parts += [name[start:index].strip(), ""]
 
     elif start < index:
         # If string not empty, add everything after last slash
         parts.append(name[start:].strip())
 
-    return [
-        part.replace(TREE + TREE, TREE) for part in parts
-    ]
+    return [part.replace(TREE + TREE, TREE) for part in parts]
 
 
 def join_tree_name(parts):
@@ -299,9 +296,7 @@ def join_tree_name(parts):
 
     A slash in a part will be escaped by double slash, ie //
     """
-    return TREE.join(
-        part.replace(TREE, TREE + TREE) for part in parts
-    )
+    return TREE.join(part.replace(TREE, TREE + TREE) for part in parts)
 
 
 def clean_tree_name(name):
@@ -324,9 +319,10 @@ def clean_tree_name(name):
     return join_tree_name(split_tree_name(name))
 
 
-###############################################################################
-####### Other string operators
-###############################################################################
+# ##############################################################################
+# ###### Other string operators
+# ##############################################################################
+
 
 def unicode_to_ascii(raw):
     """
@@ -341,8 +337,8 @@ def unicode_to_ascii(raw):
     if unidecode is not None:
         return six.text_type(unidecode(six.text_type(raw)))
 
-    return ''.join(
-        c if ord(c) < 128 else '_'
-        for c in unicodedata.normalize('NFD', six.text_type(raw))
-        if unicodedata.category(c) != 'Mn'
+    return "".join(
+        c if ord(c) < 128 else "_"
+        for c in unicodedata.normalize("NFD", six.text_type(raw))
+        if unicodedata.category(c) != "Mn"
     )

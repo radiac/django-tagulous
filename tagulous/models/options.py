@@ -13,6 +13,7 @@ class TagOptions(object):
     """
     Simple class container for tag options
     """
+
     def __init__(self, **kwargs):
         """
         Set up tag options using defaults, overridden by keyword arguments
@@ -61,18 +62,18 @@ class TagOptions(object):
         """
         Only allow an option to be set if it's valid
         """
-        if name == 'initial':
+        if name == "initial":
             # Store as a list of strings, with the tag string available on
             # initial_string for migrations
             if value is None:
-                self.__dict__['initial_string'] = ''
-                self.__dict__['initial'] = []
+                self.__dict__["initial_string"] = ""
+                self.__dict__["initial"] = []
             elif isinstance(value, six.string_types):
-                self.__dict__['initial_string'] = value
-                self.__dict__['initial'] = parse_tags(value)
+                self.__dict__["initial_string"] = value
+                self.__dict__["initial"] = parse_tags(value)
             else:
-                self.__dict__['initial_string'] = render_tags(value)
-                self.__dict__['initial'] = value
+                self.__dict__["initial_string"] = render_tags(value)
+                self.__dict__["initial"] = value
 
         elif name in constants.OPTION_DEFAULTS:
             self.__dict__[name] = value
@@ -86,10 +87,10 @@ class TagOptions(object):
         Requests for locally-defined properties will be fielded directly by
         __dict__
         """
-        if name == 'initial_string':
+        if name == "initial_string":
             # If here, there is no initial set in the __dict__
             # There is nothing in defaults to fall back to either
-            return ''
+            return ""
         if name not in constants.OPTION_DEFAULTS:
             raise AttributeError(name)
         return self.__dict__.get(name, constants.OPTION_DEFAULTS[name])
@@ -99,15 +100,16 @@ class TagOptions(object):
         Return a dict of options specified in keys, with defaults if required
         """
         if with_defaults:
-            return dict([
-                (name, self.__dict__.get(name, constants.OPTION_DEFAULTS[name]))
-                for name in keys
-            ])
+            return dict(
+                [
+                    (name, self.__dict__.get(name, constants.OPTION_DEFAULTS[name]))
+                    for name in keys
+                ]
+            )
 
-        return dict([
-            (name, value) for name, value in self.__dict__.items()
-            if name in keys
-        ])
+        return dict(
+            [(name, value) for name, value in self.__dict__.items() if name in keys]
+        )
 
     def items(self, with_defaults=True):
         """

@@ -7,19 +7,18 @@ the tags.
 For tag model manager, look in tagulous.models.models
 """
 from __future__ import unicode_literals
-import warnings
 
-import django
 from django.core import exceptions
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
 
-from tagulous.utils import parse_tags, render_tags, RemovedInTagulous013Warning
+from tagulous.utils import parse_tags, render_tags
 
 
-###############################################################################
-####### Manager for SingleTagField
-###############################################################################
+# ##############################################################################
+# ###### Manager for SingleTagField
+# ##############################################################################
+
 
 class SingleTagManager(object):
     """
@@ -29,6 +28,7 @@ class SingleTagManager(object):
     normal FK descriptor to hold in-memory changes of the SingleTagField before
     passing them up to the normal FK descriptor on the pre-save signal.
     """
+
     def __init__(self, descriptor, instance):
         # The SingleTagDescriptor and instance this manages
         self.descriptor = descriptor
@@ -61,9 +61,15 @@ class SingleTagManager(object):
 
         Must be called after all
         """
-        cache_name = self.field.get_cache_name()
-        if hasattr(self.instance, cache_name):
-            delattr(self.instance, cache_name)
+        # Django 2.0 changes cache management
+        if hasattr(self.field, "get_cached_value"):
+            if self.field.is_cached(self.instance):
+                self.field.delete_cached_value(self.instance)
+        else:
+            # Django <2.0
+            cache_name = self.field.get_cache_name()
+            if hasattr(self.instance, cache_name):
+                delattr(self.instance, cache_name)
 
     def get_actual(self):
         """
@@ -146,7 +152,7 @@ class SingleTagManager(object):
         Set the current tag
         """
         if not value:
-            tag_name = ''
+            tag_name = ""
 
         elif isinstance(value, six.string_types):
             # Force tag to lowercase
@@ -176,7 +182,7 @@ class SingleTagManager(object):
 
         # Logic check to replace standard null/blank model field validation
         if not new_tag and self.field.required:
-            raise exceptions.ValidationError(self.field.error_messages['null'])
+            raise exceptions.ValidationError(self.field.error_messages["null"])
 
         # Only need to go further if there has been a change
         if not self.changed:
@@ -213,21 +219,32 @@ class SingleTagManager(object):
         """
         # Decrement the actual tag
         old_tag = self.get_actual()
-        if old_tag:
+        if not old_tag:
+            return
+
+        # Try to update the old tag
+        try:
             old_tag.decrement()
-            self.set_actual(None)
+        except type(old_tag).DoesNotExist:
+            # The tag was just deleted along with the model in the same operation - most
+            # likely a cascade delete originated on the tag model
+            pass
 
-            # If there is no new value, mark the old one as a new one,
-            # so the database will be updated if the instance is saved again
-            if not self.changed:
-                self.tag_name = old_tag.name
-            self.tag_cache = None
-            self.changed = True
+        # Clear the tag on this instance so we don't leave a reference
+        self.set_actual(None)
+
+        # If there is no new value, mark the old one as a new one,
+        # so the database will be updated if the instance is saved again
+        if not self.changed:
+            self.tag_name = old_tag.name
+        self.tag_cache = None
+        self.changed = True
 
 
-###############################################################################
-####### Mixin for TagField manager
-###############################################################################
+# ##############################################################################
+# ###### Mixin for TagField manager
+# ##############################################################################
+
 
 @python_2_unicode_compatible
 class BaseTagRelatedManager(object):
@@ -236,6 +253,7 @@ class BaseTagRelatedManager(object):
 
     Provides methods to managed cached tags
     """
+
     def init_tagulous(self, descriptor):
         """
         Called directly after the mixin is added to the instantiated manager
@@ -264,13 +282,6 @@ class BaseTagRelatedManager(object):
             return item_str in [tag.name for tag in self.tags]
         return item_str in [tag.name.lower() for tag in self.tags]
 
-    def __len__(self):
-        warnings.warn(
-            "`len(<tagfield>)` is deprecated, use `<tagfield>.count()` instead",
-            RemovedInTagulous013Warning, 2,
-        )
-        return len(self.tags)
-
     def __eq__(self, other):
         """
         Compare a tag string or iterable of tags to the tags on this manager
@@ -292,7 +303,7 @@ class BaseTagRelatedManager(object):
 
             # Parse other_str into list of tags
             other_tags = parse_tags(
-                other_str, space_delimiter=self.tag_options.space_delimiter,
+                other_str, space_delimiter=self.tag_options.space_delimiter
             )
 
         else:
@@ -335,7 +346,6 @@ class BaseTagRelatedManager(object):
         self.changed = manager.changed
         self.tags = manager.tags
 
-
     #
     # Functions for getting and setting tag cache
     #
@@ -358,11 +368,12 @@ class BaseTagRelatedManager(object):
         """
         # Get all tag names
         tag_names = parse_tags(
-            tag_string, space_delimiter=self.tag_options.space_delimiter,
+            tag_string, space_delimiter=self.tag_options.space_delimiter
         )
 
         # Pass on to set_tag_list
         return self.set_tag_list(tag_names)
+
     set_tag_string.alters_data = True
 
     def set_tag_list(self, tag_names):
@@ -372,8 +383,8 @@ class BaseTagRelatedManager(object):
         """
         if self.tag_options.max_count and len(tag_names) > self.tag_options.max_count:
             raise ValueError(
-                "Cannot set more than %d tags on this field" %
-                self.tag_options.max_count
+                "Cannot set more than %d tags on this field"
+                % self.tag_options.max_count
             )
 
         # Force tag_names to strings, in case it's a list of tags or a queryset
@@ -388,18 +399,12 @@ class BaseTagRelatedManager(object):
         # old_tags      = { cmp_name: tag }
         # cmp_new_names = { cmp_name: cased_name }
         if self.tag_options.case_sensitive:
-            old_tags = dict(
-                [(tag.name, tag) for tag in self.tags]
-            )
+            old_tags = dict([(tag.name, tag) for tag in self.tags])
             cmp_new_names = dict([(n, n) for n in tag_names])
         else:
             # Not case sensitive - need to compare on lowercase
-            old_tags = dict(
-                [(tag.name.lower(), tag) for tag in self.tags]
-            )
-            cmp_new_names = dict(
-                [(name.lower(), name) for name in tag_names]
-            )
+            old_tags = dict([(tag.name.lower(), tag) for tag in self.tags])
+            cmp_new_names = dict([(name.lower(), name) for name in tag_names])
 
         # See which tags are staying
         new_tags = []
@@ -430,8 +435,8 @@ class BaseTagRelatedManager(object):
 
         # Store in internal tag cache
         self.tags = new_tags
-    set_tag_list.alters_data = True
 
+    set_tag_list.alters_data = True
 
 
 class FakeTagRelatedManager(BaseTagRelatedManager):
@@ -440,6 +445,7 @@ class FakeTagRelatedManager(BaseTagRelatedManager):
 
     For use with an unsaved model instance
     """
+
     _needs_db = '"%r" needs to be saved before TagField can use the database'
 
     def __init__(self, descriptor, instance, instance_type):
@@ -478,6 +484,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
     This holds in-memory changes of the TagField before committing them to the
     database on the post-save signal.
     """
+
     def reload(self):
         """
         Get the actual tags
@@ -485,7 +492,37 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         # Convert to a list to force it to load now, and so we can change it
         self.tags = list(self.all())
         self.changed = False
+
     reload.alters_data = True
+
+    def post_save_handler(self):
+        """
+        When the model has saved, save related tags
+
+        Called by the signal handler
+        """
+        self.save()
+
+    def pre_delete_handler(self):
+        """
+        Safely clear the M2M tag field, persisting tags on the manager
+
+        When deleting an instance, Django does not call the add/remove of the
+        M2M manager, so tag counts would be too high. Related to:
+          https://code.djangoproject.com/ticket/6707
+        We need to clear the M2M manually to update tag counts
+
+        Called by the signal handler
+        """
+        # Get tags so we can make them available to the fake manager later
+        self.reload()
+        tags = self.tags
+
+        # Clear the object
+        self.clear()
+
+        # Put the tags back on the manager
+        self.tags = tags
 
     def save(self, force=False):
         """
@@ -511,6 +548,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
                 self.remove(old_tag)
         self.tags = new_tags
         self.changed = False
+
     save.alters_data = True
 
     def _ensure_tags_in_db(self, tags):
@@ -524,15 +562,13 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
                 db_tag = tag
             else:
                 # Not in DB - get or create
-                try:
-                    if self.tag_options.case_sensitive:
-                        db_tag = self.tag_model.objects.get(name=tag.name)
-                    else:
-                        db_tag = self.tag_model.objects.get(name__iexact=tag.name)
-                except self.tag_model.DoesNotExist:
-                    db_tag = self.tag_model.objects.create(
-                        name=tag.name, protected=False,
-                    )
+                field_lookup = "name"
+                if not self.tag_options.case_sensitive:
+                    field_lookup += "__iexact"
+                db_tag, __ = self.tag_model.objects.get_or_create(
+                    defaults={"name": tag.name, "protected": False},
+                    **{field_lookup: tag.name}
+                )
             db_tags.append(db_tag)
         return db_tags
 
@@ -549,7 +585,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
 
         Takes on internal argument, _enforce_max_count - don't use in your code
         """
-        enforce_max_count = kwargs.pop('_enforce_max_count', True)
+        enforce_max_count = kwargs.pop("_enforce_max_count", True)
         if kwargs:
             raise TypeError("add() got an unexpected keyword argument")
 
@@ -565,19 +601,15 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         self.reload()
 
         # Reduce tags to ones not already loaded
-        new_tags = [
-            tag for tag in new_tags
-            if tag not in self.tags
-        ]
+        new_tags = [tag for tag in new_tags if tag not in self.tags]
 
         # Enforce max_count
         if enforce_max_count and self.tag_options.max_count:
             current_count = len(self.tags)
             if current_count + len(new_tags) > self.tag_options.max_count:
                 raise ValueError(
-                    "Cannot set more than %s tags on this field; it already has %s" % (
-                        self.tag_options.max_count, current_count,
-                    )
+                    "Cannot set more than %s tags on this field; it already has %s"
+                    % (self.tag_options.max_count, current_count)
                 )
 
         # Ensure tags exist
@@ -588,6 +620,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         for tag in new_tags:
             self.tags.append(tag)
             tag.increment()
+
     add.alters_data = True
 
     def remove(self, *objs):
@@ -606,19 +639,16 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         self.reload()
 
         # Cut tags back to only ones already set
-        rm_tags = [
-            tag for tag in self.tags if tag in rm_tags
-        ]
+        rm_tags = [tag for tag in self.tags if tag in rm_tags]
 
         # Remove from cache
         self.tags = [tag for tag in self.tags if tag not in rm_tags]
 
         # Remove from db and decrement
-        super(TagRelatedManagerMixin, self).remove(
-            *self._ensure_tags_in_db(rm_tags)
-        )
+        super(TagRelatedManagerMixin, self).remove(*self._ensure_tags_in_db(rm_tags))
         for tag in rm_tags:
             tag.decrement()
+
     remove.alters_data = True
 
     def clear(self):
@@ -630,5 +660,5 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         for tag in self.tags:
             tag.decrement()
         self.tags = []
-    clear.alters_data = True
 
+    clear.alters_data = True

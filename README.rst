@@ -25,7 +25,11 @@ Features
 * Supports trees of nested tags, for detailed categorisation
 * Admin support for managing tags and tagged models
 
-Version 0.12.0; supports Django 1.4.2 to 1.10, on Python 2.7 to 3.5.
+Version 0.14.1; supports Django 1.4.2 to 2.2, on Python 2.7 and 3.2 to 3.7.
+
+**Note**: The next release will be 1.0, the final release to support Django <2.2. This
+will be followed by version 2.0 which will drop support for Django prior to 2.2.
+
 
 See the `Documentation <http://radiac.net/projects/django-tagulous/documentation/>`_
 for details of how Tagulous works; in particular:

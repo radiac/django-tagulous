@@ -5,24 +5,34 @@ Tagulous test: Utils
 Modules tested:
     tagulous.utils
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
+import unittest
+
+from django.test import TestCase
 from django.utils import six
 
-from tests.lib import *
+from tagulous import utils as tag_utils
 
 
-###############################################################################
-####### utils.strip_split()
-###############################################################################
+try:
+    from unidecode import unidecode
+except ImportError:
+    unidecode = None
+
+
+# ##############################################################################
+# ###### utils.strip_split()
+# ##############################################################################
+
 
 class UtilsSplitStripTest(TestCase):
     "Test utils.split_strip"
+
     def test_empty(self):
         split = tag_utils.split_strip(None)
         self.assertEqual(split, [])
-        split = tag_utils.split_strip('')
+        split = tag_utils.split_strip("")
         self.assertEqual(split, [])
 
     def test_spaceless(self):
@@ -38,12 +48,14 @@ class UtilsSplitStripTest(TestCase):
         self.assertEqual(split[1], "brian")
 
 
-###############################################################################
-####### utils.parse_tags
-###############################################################################
+# ##############################################################################
+# ###### utils.parse_tags
+# ##############################################################################
+
 
 class UtilsParseTagsTest(TestCase):
     "Test utils.parse_tags"
+
     def test_commas(self):
         tags = tag_utils.parse_tags("adam,brian,chris")
         self.assertEqual(len(tags), 3)
@@ -132,7 +144,7 @@ class UtilsParseTagsTest(TestCase):
         tags = tag_utils.parse_tags('adam "one", brian two')
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], 'adam "one"')
-        self.assertEqual(tags[1], 'brian two')
+        self.assertEqual(tags[1], "brian two")
 
     def test_quotes_dont_delimit(self):
         tags = tag_utils.parse_tags('adam"brian,chris dave')
@@ -169,7 +181,7 @@ class UtilsParseTagsTest(TestCase):
         tags = tag_utils.parse_tags('adam, br""ian, ""chris, dave""')
         self.assertEqual(len(tags), 4)
         self.assertEqual(tags[0], '"chris')
-        self.assertEqual(tags[1], 'adam')
+        self.assertEqual(tags[1], "adam")
         self.assertEqual(tags[2], 'br"ian')
         self.assertEqual(tags[3], 'dave"')
 
@@ -180,7 +192,7 @@ class UtilsParseTagsTest(TestCase):
         tags = tag_utils.parse_tags('""adam"" brian"", chris')
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], '"adam" brian"')
-        self.assertEqual(tags[1], 'chris')
+        self.assertEqual(tags[1], "chris")
 
     def test_empty_tag(self):
         tags = tag_utils.parse_tags('"adam" , , brian , ')
@@ -190,15 +202,15 @@ class UtilsParseTagsTest(TestCase):
 
     def test_limit(self):
         with self.assertRaises(ValueError) as cm:
-            x = tag_utils.parse_tags("adam,brian,chris", 1)
+            tag_utils.parse_tags("adam,brian,chris", 1)
         e = cm.exception
-        self.assertEqual(six.text_type(e), 'This field can only have 1 argument')
+        self.assertEqual(six.text_type(e), "This field can only have 1 argument")
 
     def test_limit_quotes(self):
         with self.assertRaises(ValueError) as cm:
-            x = tag_utils.parse_tags('"adam","brian",chris', 2)
+            tag_utils.parse_tags('"adam","brian",chris', 2)
         e = cm.exception
-        self.assertEqual(six.text_type(e), 'This field can only have 2 arguments')
+        self.assertEqual(six.text_type(e), "This field can only have 2 arguments")
 
     def test_spaces_false_commas(self):
         tags = tag_utils.parse_tags("adam,brian,chris", space_delimiter=False)
@@ -219,32 +231,34 @@ class UtilsParseTagsTest(TestCase):
         self.assertEqual(tags[1], "brian chris")
 
 
-###############################################################################
-####### utils.render_tags
-###############################################################################
+# ##############################################################################
+# ###### utils.render_tags
+# ##############################################################################
+
 
 class UtilsRenderTagsTest(TestCase):
     "Test utils.render_tags"
+
     def test_simple(self):
-        tagstr = tag_utils.render_tags(['adam', 'brian', 'chris'])
-        self.assertEqual(tagstr, 'adam, brian, chris')
+        tagstr = tag_utils.render_tags(["adam", "brian", "chris"])
+        self.assertEqual(tagstr, "adam, brian, chris")
 
     def test_escapes_quotes(self):
         tagstr = tag_utils.render_tags(['ad"am', '"brian', 'chris"', '"dave"'])
         self.assertEqual(tagstr, '""brian, ""dave"", ad""am, chris""')
 
     def test_quotes_commas_and_spaces(self):
-        tagstr = tag_utils.render_tags(['adam brian', 'chris, dave', 'ed'])
+        tagstr = tag_utils.render_tags(["adam brian", "chris, dave", "ed"])
         self.assertEqual(tagstr, '"adam brian", "chris, dave", ed')
 
     def test_parse_renders_tags(self):
-        tagstr = 'adam, brian, chris'
+        tagstr = "adam, brian, chris"
         tags = tag_utils.parse_tags(tagstr)
         tagstr2 = tag_utils.render_tags(tags)
         self.assertEqual(len(tags), 3)
-        self.assertEqual(tags[0], 'adam')
-        self.assertEqual(tags[1], 'brian')
-        self.assertEqual(tags[2], 'chris')
+        self.assertEqual(tags[0], "adam")
+        self.assertEqual(tags[1], "brian")
+        self.assertEqual(tags[2], "chris")
         self.assertEqual(tagstr, tagstr2)
 
     def test_parse_renders_tags_complex(self):
@@ -253,19 +267,21 @@ class UtilsRenderTagsTest(TestCase):
         tagstr2 = tag_utils.render_tags(tags)
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], '"adam brian", "chris, dave')
-        self.assertEqual(tags[1], 'ed, frank')
-        self.assertEqual(tags[2], 'gary')
+        self.assertEqual(tags[1], "ed, frank")
+        self.assertEqual(tags[2], "gary")
         self.assertEqual(tagstr, tagstr2)
 
 
-###############################################################################
-####### Tree name split and join
-###############################################################################
+# ##############################################################################
+# ###### Tree name split and join
+# ##############################################################################
+
 
 class TagTreeSplitUtilTest(TestCase):
     """
     Test split_tree_name
     """
+
     def test_split_tree_none(self):
         parts = tag_utils.split_tree_name("")
         self.assertEqual(len(parts), 0)
@@ -340,6 +356,7 @@ class TagTreeJoinUtilTest(TestCase):
     """
     Test join_tree_name
     """
+
     def test_join_tree_none(self):
         name = tag_utils.join_tree_name([])
         self.assertEqual(name, "")
@@ -377,6 +394,7 @@ class TagTreeCleanUtilTest(TestCase):
     """
     Test clean_tree_name
     """
+
     def test_clean_tree_one(self):
         name = tag_utils.clean_tree_name("one")
         self.assertEqual(name, "one")
@@ -406,9 +424,10 @@ class TagTreeCleanUtilTest(TestCase):
         self.assertEqual(name, "//// one/two/three //")
 
 
-###############################################################################
-####### Other string operators
-###############################################################################
+# ##############################################################################
+# ###### Other string operators
+# ##############################################################################
+
 
 class UnicodeTestCase(TestCase):
     def assertUnicodeAscii(self, raw):
@@ -422,6 +441,7 @@ class TagTreeFallbackUnicodeToAsciiTest(UnicodeTestCase):
     """
     Test unicode_to_ascii - forced to not use unidecode, even if available
     """
+
     def setUp(self):
         # Disable unidecode support
         self.unidecode_status = tag_utils.unidecode
@@ -432,7 +452,7 @@ class TagTreeFallbackUnicodeToAsciiTest(UnicodeTestCase):
 
     def test_unicode_ascii(self):
         "Unicode with ASCII characters"
-        raw = 'cake'
+        raw = "cake"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
@@ -440,52 +460,48 @@ class TagTreeFallbackUnicodeToAsciiTest(UnicodeTestCase):
 
     def test_unicode_extended_ascii(self):
         "Unicode with extended ascii characters"
-        raw = 'niño, garçon'
+        raw = "niño, garçon"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
-        self.assertEqual(safe, 'nino, garcon')
+        self.assertEqual(safe, "nino, garcon")
 
     def test_unicode_japanese(self):
         "Unicode with Japanese characters above extended ascii"
-        raw = '男の子'
+        raw = "男の子"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
         # Discrepancy in length of thai string is because there were Mn chars
-        self.assertEqual(safe, '___')
+        self.assertEqual(safe, "___")
 
     def test_unicode_thai(self):
         "Unicode with Thai characters above extended ascii"
-        raw = 'เด็กผู้ชาย'
+        raw = "เด็กผู้ชาย"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
         # Discrepancy in length of string because some chars were Mn category
-        self.assertEqual(safe, '_______')
+        self.assertEqual(safe, "_______")
 
     def test_unicode_mix(self):
         "Unicode string with mix of characters"
-        raw = 'niño, 男の子, เด็กผู้ชาย, garçon'
+        raw = "niño, 男の子, เด็กผู้ชาย, garçon"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
-        self.assertEqual(safe, 'nino, ___, _______, garcon')
+        self.assertEqual(safe, "nino, ___, _______, garcon")
 
 
-try:
-    from unidecode import unidecode
-except ImportError:
-    unidecode = None
-
-@unittest.skipIf(unidecode is None, 'optional unidecode not installed')
+@unittest.skipIf(unidecode is None, "optional unidecode not installed")
 class TagTreeUnicodeToAsciiTest(UnicodeTestCase):
     """
     Test the unidecode part of unicode_to_ascii
     """
+
     def test_unicode_ascii(self):
         "Unicode with ASCII characters"
-        raw = 'cake'
+        raw = "cake"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
@@ -493,34 +509,34 @@ class TagTreeUnicodeToAsciiTest(UnicodeTestCase):
 
     def test_unicode_extended_ascii(self):
         "Unicode with extended ascii characters"
-        raw = 'niño, garçon'
+        raw = "niño, garçon"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
-        self.assertEqual(safe, 'nino, garcon')
+        self.assertEqual(safe, "nino, garcon")
 
     def test_unicode_japanese(self):
         "Unicode with Japanese characters above extended ascii"
-        raw = '男の子'
+        raw = "男の子"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
-        self.assertEqual(safe, 'Nan noZi ')
+        self.assertEqual(safe, "Nan noZi ")
 
     def test_unicode_thai(self):
         "Unicode with Thai characters above extended ascii"
-        raw = 'เด็กผู้ชาย'
+        raw = "เด็กผู้ชาย"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
-        self.assertEqual(safe, 'edkphuuchaay')
+        self.assertEqual(safe, "edkphuuchaay")
 
     def test_unicode_mix(self):
         "Unicode string with mix of characters"
-        raw = 'niño, 男の子, เด็กผู้ชาย, garçon'
+        raw = "niño, 男の子, เด็กผู้ชาย, garçon"
         self.assertIsInstance(raw, six.string_types)
         safe = tag_utils.unicode_to_ascii(raw)
         self.assertUnicodeAscii(safe)
         # Note trailing space after Japanese because unidecode can sometimes
         # return trailing spaces. This is fine, will be handled by slugify.
-        self.assertEqual(safe, 'nino, Nan noZi , edkphuuchaay, garcon')
+        self.assertEqual(safe, "nino, Nan noZi , edkphuuchaay, garcon")
