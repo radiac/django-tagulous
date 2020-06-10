@@ -5,8 +5,10 @@ from setuptools import setup, find_packages
 
 VERSION = "0.14.2"
 
+
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
 
 def runtests(args):
     "Run tests"
@@ -158,18 +160,18 @@ if len(sys.argv) > 1 and sys.argv[1] == 'test':
     sys.exit()
 
 setup(
-    name = "django-tagulous",
-    version = VERSION,
-    author = "Richard Terry",
-    author_email = "code@radiac.net",
-    description = ("Fabulous Tagging for Django"),
-    license = "BSD",
-    keywords = "django tagging",
-    url = "http://radiac.net/projects/django-tagulous/",
+    name="django-tagulous",
+    version=VERSION,
+    author="Richard Terry",
+    author_email="code@radiac.net",
+    description=("Fabulous Tagging for Django"),
+    license="BSD",
+    keywords="django tagging",
+    url="http://radiac.net/projects/django-tagulous/",
     long_description=read('README.rst'),
     classifiers=[
         'Development Status :: 4 - Beta',
-        #'Development Status :: 5 - Production/Stable',
+        # 'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
@@ -196,7 +198,8 @@ setup(
         'Framework :: Django :: 2.1',
         'Framework :: Django :: 2.2',
     ],
-    extras_require = {
+    install_requires=['six'],
+    extras_require={
         'dev': ['tox', 'jasmine'],
         'devdb': ['psycopg2', 'mysqlclient'],
         'i18n': ['unidecode'],

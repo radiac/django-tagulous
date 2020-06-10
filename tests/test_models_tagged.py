@@ -10,7 +10,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from django.core.exceptions import MultipleObjectsReturned
-from django.utils import six
+import six
 
 from tagulous.models.tagged import _split_kwargs
 

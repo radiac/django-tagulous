@@ -16,7 +16,7 @@ from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
 from django.http import HttpRequest, QueryDict
-from django.utils import six
+import six
 
 # Django 1.10 deprecates urlresolvers
 try:

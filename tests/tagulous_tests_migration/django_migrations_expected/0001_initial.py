@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-from django.utils import six
+import six
 
 
 class Migration(migrations.Migration):

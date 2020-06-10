@@ -12,7 +12,7 @@ import collections
 
 import django
 from django.db import models
-from django.utils import six
+import six
 
 from tagulous.models.managers import (
     SingleTagManager, TagRelatedManagerMixin, FakeTagRelatedManager

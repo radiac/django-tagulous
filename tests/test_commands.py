@@ -9,7 +9,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.core.management import call_command
-from django.utils import six
+import six
 
 from tests.lib import *
 

@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 
 import django
 from django import forms
-from django.utils import six
+import six
 
 from tests.lib import *
 

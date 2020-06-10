@@ -9,7 +9,7 @@ import warnings
 import django
 from django.conf import settings
 from django.core.management import call_command
-from django.utils import six
+import six
 
 
 # Load all tests, if necessary

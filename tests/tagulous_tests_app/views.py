@@ -3,7 +3,7 @@ Tagulous test app views
 """
 from __future__ import unicode_literals
 
-from django.utils import six
+import six
 from django.views.generic.edit import CreateView, UpdateView
 
 # Django 1.10 deprecates urlresolvers

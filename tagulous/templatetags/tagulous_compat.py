@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 import django
 from django import template
-from django.utils import six
+import six
 
 register = template.Library()
 

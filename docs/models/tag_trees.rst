@@ -209,7 +209,7 @@ required:
 
    2. When using Django migrations::
 
-        from django.utils import six
+        import six
         import tagulous.models.migrations
         ...
 
@@ -239,7 +239,7 @@ required:
             # replace ``Tagulous_MyModel_tags`` with your tag model name
 
             from tagulous.models.migrations import add_unique_column
-            from django.utils import six
+            import six
 
             # Adding field 'Tagulous_MyModel_tags.path'
             add_unique_column(

@@ -21,7 +21,7 @@ import os
 import tempfile
 
 from django.core import management, serializers
-from django.utils import six
+import six
 
 from tests.lib import *
 

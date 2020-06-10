@@ -7,7 +7,7 @@ Modules tested:
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from django.utils import six
+import six
 
 from tests.lib import *
 import tagulous.settings as tagulous_settings

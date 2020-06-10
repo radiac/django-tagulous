@@ -16,7 +16,7 @@ import warnings
 from django.conf import settings
 from django.core.management import call_command
 from django.db import DatabaseError
-from django.utils import six
+import six
 
 from tests.lib import *
 from tests import tagulous_tests_migration

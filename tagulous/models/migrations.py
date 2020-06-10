@@ -9,7 +9,7 @@ from tagulous.models.models import BaseTagModel, BaseTagTreeModel
 from tagulous.models.tagged import TaggedModel
 from tagulous.models.options import TagOptions
 from tagulous.models.fields import SingleTagField, TagField
-from django.utils import six
+import six
 
 
 ###############################################################################

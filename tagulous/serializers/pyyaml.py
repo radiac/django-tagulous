@@ -4,7 +4,7 @@ YAML serializer with Tagulous support
 from __future__ import unicode_literals
 
 from django.core.serializers import pyyaml as pyyaml_serializer
-from django.utils import six
+import six
 
 from tagulous.serializers import base
 

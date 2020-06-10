@@ -11,7 +11,7 @@ Modules tested:
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from django.utils import six
+import six
 import tagulous.settings as tagulous_settings
 
 from tagulous.settings import SLUG_TRUNCATE_UNIQUE

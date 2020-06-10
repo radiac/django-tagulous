@@ -12,7 +12,7 @@ from django.db import connection, models
 from django.contrib.auth.models import User
 from django.core import exceptions
 from django.test import TestCase, TransactionTestCase, testcases
-from django.utils import six
+import six
 
 from tagulous import constants as tag_constants
 from tagulous import models as tag_models

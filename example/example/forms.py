@@ -4,7 +4,7 @@ Forms for example Tagulous app
 from __future__ import unicode_literals
 
 from django import forms
-from django.utils import six
+import six
 
 from example import models
 

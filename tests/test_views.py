@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 from tests.lib import *
 
 from django.test import Client
-from django.utils import six
+import six
 
 # Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
 try:
