@@ -15,5 +15,6 @@ urlpatterns = [
         {"tag_model": models.Skill},
         name="person_skills_autocomplete",
     ),
-    url(r"^$", views.index),
+    url(r"^$", views.index, name="index"),
+    url(r"^(?P<person_pk>\d+)/$", views.index, name="edit"),
 ]

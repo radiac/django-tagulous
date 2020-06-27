@@ -24,7 +24,7 @@
     {% csrf_token %}
     <table>
     {{ person_form.as_table }}
-    <tr><td></td><td><input type="submit" value="Add" /></td></tr>
+    <tr><td></td><td><input type="submit" value="{{ submit_label }}" /></td></tr>
     </table>
 </form>
 
@@ -60,6 +60,7 @@
                 <td>{{ person.title }}</td>
                 <td>{{ person.skills }}</td>
                 <td>{{ person.hobbies }}</td>
+                <td><a href="{% url "edit" person_pk=person.pk %}">Edit</a></td>
             </tr>
         {% endfor %}
     </tbody>

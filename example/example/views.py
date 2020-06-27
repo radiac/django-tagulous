@@ -11,7 +11,7 @@ from django.urls import reverse
 from example import forms, models
 
 
-def index(request):
+def index(request, person_pk=None):
     """
     Main demo page
     """
@@ -20,14 +20,21 @@ def index(request):
     skills = models.Skill.objects.all()
     hobbies = models.Person.hobbies.tag_model.objects.all()
 
+    if person_pk:
+        person = models.Person.objects.get(pk=person_pk)
+        submit_label = "Update"
+    else:
+        person = None
+        submit_label = "Add"
+
     if request.POST:
-        person_form = forms.PersonForm(request.POST)
+        person_form = forms.PersonForm(request.POST, instance=person)
         if person_form.is_valid():
             person = person_form.save()
             messages.success(request, "Form saved as Person %d" % person.pk)
             return HttpResponseRedirect(reverse(index))
     else:
-        person_form = forms.PersonForm()
+        person_form = forms.PersonForm(instance=person)
 
     return render(
         request,
@@ -44,5 +51,6 @@ def index(request):
             "skills": skills,
             "person_form": person_form,
             "form_media": person_form.media,
+            "submit_label": submit_label,
         },
     )
