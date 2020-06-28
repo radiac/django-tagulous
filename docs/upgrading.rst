@@ -313,6 +313,8 @@ Feature:
 Bugfix:
 
 * Tag fields work with abstract and concrete inheritance (#8)
+* The admin site in Django 2.2+ now uses the Django vendored versions of jQuery and
+  select2 (#76)
 
 
 Internal:

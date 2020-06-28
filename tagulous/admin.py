@@ -38,6 +38,22 @@ class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
             formfield.widget = formfield.widget.widget
         return formfield
 
+    def get_autocomplete_fields(self, request):
+        """
+        Ensure TagFields aren't listed in Django's autocomplete_fields - they don't
+        play well with Django's autocomplete, and will use their own
+        """
+        autocomplete_fields = super().get_autocomplete_fields(request)
+        safe_fields = [
+            field
+            for field in autocomplete_fields
+            if not isinstance(
+                self.opts.get_field(field),
+                (tag_models.SingleTagField, tag_models.TagField),
+            )
+        ]
+        return safe_fields
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #   ModelAdmin for Tagged models
@@ -53,9 +69,10 @@ class TaggedModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
+class TagModelAdmin(admin.ModelAdmin):
     list_display = ["name", "count", "protected"]
     list_filter = ["protected"]
+    search_fields = ["name"]
     exclude = ["count"]
     actions = ["merge_tags"]
     prepopulated_fields = {"slug": ("name",)}

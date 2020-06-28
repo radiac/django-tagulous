@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import django
 from django import forms
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import QuerySet
@@ -108,20 +109,48 @@ class TagWidget(TagWidgetBase):
         js = settings.AUTOCOMPLETE_JS
 
 
-class AdminTagWidget(TagWidgetBase):
-    """
-    Tag widget for admin forms
-    """
+# For Django 2.2 we switch to use select2 v4
+if django.VERSION >= (2, 2):
+    from django.contrib.admin.widgets import AutocompleteMixin
 
-    default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
+    class AdminTagWidget(TagWidgetBase):
+        """
+        Tag widget for admin forms
+        """
 
-    class Media:
-        css = settings.ADMIN_AUTOCOMPLETE_CSS
-        js = settings.ADMIN_AUTOCOMPLETE_JS
+        default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
 
-    # Admin will be expecting this to have a choices attribute
-    # Set this so the admin will behave as expected
-    choices = None
+        @property
+        def media(self):
+            # Get the media from the AutocompleteMixin - this will give us Django's
+            # vendored jQuery and select2
+            media = AutocompleteMixin.media.fget(None)
+
+            return media + forms.Media(
+                js=settings.ADMIN_AUTOCOMPLETE_JS, css=settings.ADMIN_AUTOCOMPLETE_CSS,
+            )
+
+        # Admin will be expecting this to have a choices attribute
+        # Set this so the admin will behave as expected
+        choices = None
+
+
+else:
+
+    class AdminTagWidget(TagWidgetBase):
+        """
+        Tag widget for admin forms
+        """
+
+        default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
+
+        class Media:
+            css = settings.ADMIN_AUTOCOMPLETE_CSS
+            js = settings.ADMIN_AUTOCOMPLETE_JS
+
+        # Admin will be expecting this to have a choices attribute
+        # Set this so the admin will behave as expected
+        choices = None
 
 
 class BaseTagField(forms.CharField):
