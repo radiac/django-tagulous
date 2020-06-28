@@ -123,9 +123,5 @@ Roadmap
 1.0
 
 * Resolve open bugs
-
-
-2.0
-
 * Remove support for Django prior to 2.2
 * Add support for Django 3.0+

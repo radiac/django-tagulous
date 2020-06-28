@@ -4,13 +4,6 @@ Upgrading
 
 For an overview of what has changed between versions, see the :ref:`changelog`.
 
-.. note::
-
-  Version >=2.0 supports Django 2.2 onwards, Python 3.5 onwards.
-
-  Version <2.0 supports Django 1.4.2 to 2.2, on Python 2.7 and 3.2 to 3.8, and it should
-  be considered unsupported.
-
 
 Instructions
 ============
