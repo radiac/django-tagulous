@@ -28,7 +28,7 @@ SLUG_TRUNCATE_UNIQUE = getattr(settings, "TAGULOUS_SLUG_TRUNCATE_UNIQUE", 5)
 
 DEFAULT_AUTOCOMPLETE_JS = (
     "tagulous/lib/jquery.js",
-    "tagulous/lib/select2-4/js/select2.full.js",
+    "tagulous/lib/select2-4/js/select2.full.min.js",
     "tagulous/tagulous.js",
     "tagulous/adaptor/select2-4.js",
 )
