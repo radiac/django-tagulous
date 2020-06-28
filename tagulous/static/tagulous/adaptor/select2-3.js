@@ -1,4 +1,4 @@
-/** Tagulous adaptor for Select2 */
+/** Tagulous adaptor for Select2 v3 */
 (function ($) {
     if (!window.Select2 || !window.Tagulous) {
         return;

@@ -4,13 +4,6 @@ Upgrading
 
 For an overview of what has changed between versions, see the :ref:`changelog`.
 
-.. note::
-
-  Version >=2.0 supports Django 2.2 onwards, Python 3.5 onwards.
-
-  Version <2.0 supports Django 1.4.2 to 2.2, on Python 2.7 and 3.2 to 3.8, and it should
-  be considered unsupported.
-
 
 Instructions
 ============
@@ -38,7 +31,12 @@ Instructions
 Upgrading from 0.14.1
 ---------------------
 
-TBC
+Tagulous 0.14.1 was the last version to support Django 1.10 and earlier.
+Tagulous 0.15.0 requires Django 1.11 or later, and Python 2.7 or 3.5 or later.
+
+Tagulous 0.15.0 changes the default JavaScript adaptor to use select2 v4. This may
+necessitate some styling changes on your user-facing pages if you have overridden the
+default styles.
 
 
 .. _upgrade_0-14-0:
@@ -299,12 +297,25 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-1.0.0, 2020-
+
+0.15.0, 2020-
 ------------------
+
+Feature:
+
+* Added adaptor for Select2 v4 and set as default for Django 2.2+ (#11, #12, #90)
+
+
+Changes:
+
+* Drops support for Django 1.8 and earlier
+
 
 Bugfix:
 
 * Tag fields work with abstract and concrete inheritance (#8)
+* The admin site in Django 2.2+ now uses the Django vendored versions of jQuery and
+  select2 (#76)
 
 
 Internal:

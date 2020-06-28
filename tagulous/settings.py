@@ -5,6 +5,7 @@ Override these by setting new values in your global settings file
 """
 from __future__ import unicode_literals
 
+import django
 from django.conf import settings
 
 
@@ -25,29 +26,37 @@ SLUG_TRUNCATE_UNIQUE = getattr(settings, "TAGULOUS_SLUG_TRUNCATE_UNIQUE", 5)
 # Autocomplete settings
 #
 
-AUTOCOMPLETE_JS = getattr(
-    settings,
-    "TAGULOUS_AUTOCOMPLETE_JS",
-    (
-        "tagulous/lib/jquery.js",
-        "tagulous/lib/select2-3/select2.min.js",
-        "tagulous/tagulous.js",
-        "tagulous/adaptor/select2-3.js",
-    ),
+DEFAULT_AUTOCOMPLETE_JS = (
+    "tagulous/lib/jquery.js",
+    "tagulous/lib/select2-4/js/select2.full.min.js",
+    "tagulous/tagulous.js",
+    "tagulous/adaptor/select2-4.js",
 )
+DEFAULT_AUTOCOMPLETE_CSS = {"all": ["tagulous/lib/select2-4/css/select2.min.css"]}
+
+AUTOCOMPLETE_JS = getattr(settings, "TAGULOUS_AUTOCOMPLETE_JS", DEFAULT_AUTOCOMPLETE_JS)
 AUTOCOMPLETE_CSS = getattr(
-    settings,
-    "TAGULOUS_AUTOCOMPLETE_CSS",
-    {"all": ["tagulous/lib/select2-3/select2.css"]},
+    settings, "TAGULOUS_AUTOCOMPLETE_CSS", DEFAULT_AUTOCOMPLETE_CSS
 )
 AUTOCOMPLETE_SETTINGS = getattr(settings, "TAGULOUS_AUTOCOMPLETE_SETTINGS", None)
 
 # Admin overrides
+DEFAULT_ADMIN_AUTOCOMPLETE_JS = AUTOCOMPLETE_JS
+DEFAULT_ADMIN_AUTOCOMPLETE_CSS = AUTOCOMPLETE_CSS
+
+# Use Django 2.2+ vendored jquery and select2
+if django.VERSION >= (2, 2):
+    DEFAULT_ADMIN_AUTOCOMPLETE_JS = (
+        "tagulous/tagulous.js",
+        "tagulous/adaptor/select2-4.js",
+    )
+    DEFAULT_ADMIN_AUTOCOMPLETE_CSS = {}
+
 ADMIN_AUTOCOMPLETE_JS = getattr(
-    settings, "TAGULOUS_ADMIN_AUTOCOMPLETE_JS", AUTOCOMPLETE_JS
+    settings, "TAGULOUS_ADMIN_AUTOCOMPLETE_JS", DEFAULT_ADMIN_AUTOCOMPLETE_JS
 )
 ADMIN_AUTOCOMPLETE_CSS = getattr(
-    settings, "TAGULOUS_ADMIN_AUTOCOMPLETE_CSS", AUTOCOMPLETE_CSS
+    settings, "TAGULOUS_ADMIN_AUTOCOMPLETE_CSS", DEFAULT_ADMIN_AUTOCOMPLETE_CSS
 )
 ADMIN_AUTOCOMPLETE_SETTINGS = getattr(
     settings, "TAGULOUS_ADMIN_AUTOCOMPLETE_SETTINGS", AUTOCOMPLETE_SETTINGS
