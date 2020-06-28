@@ -19,4 +19,5 @@ __credits__ = [
     "Peter Baumgartner (ipmb)",
     "Raniere Silva (rgaics)",
     "Dmitry Ivanchenko (ivanchenkodmitry)",
+    "Frank Lanitz (frlan)",
 ]

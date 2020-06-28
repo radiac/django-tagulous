@@ -316,6 +316,7 @@ Bugfix:
 * Tag fields work with abstract and concrete inheritance (#8)
 * The admin site in Django 2.2+ now uses the Django vendored versions of jQuery and
   select2 (#76)
+* Corrected documentation for adding registering tagged models in admin (#83)
 
 
 Internal:
@@ -323,6 +324,11 @@ Internal:
 * Signals have been refactored to global handlers (instead of multiple independent
   handlers bound to descriptors)
 * Code linting improved; project now uses black and isort, and flake8 pases
+
+
+Thanks to:
+
+* Frank Lanitz (frlan) for admin documentation fix (#83)
 
 
 0.14.1, 2019-09-04
