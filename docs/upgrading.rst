@@ -38,6 +38,9 @@ Instructions
 Upgrading from 0.14.1
 ---------------------
 
+Tagulous 0.14.1 was the last version to support Django 1.10 and earlier.
+Tagulous 0.15.0 requires Django 1.11 or later, and Python 2.7 or 3.5 or later.
+
 Tagulous 0.15.0 changes the default JavaScript adaptor to use select2 v4. This may
 necessitate some styling changes on your user-facing pages if you have overridden the
 default styles.
@@ -308,6 +311,11 @@ are available by installing the master branch from github (see
 Feature:
 
 * Added adaptor for Select2 v4 and set as default for Django 2.2+ (#11, #12, #90)
+
+
+Changes:
+
+* Drops support for Django 1.8 and earlier
 
 
 Bugfix:
