@@ -38,7 +38,9 @@ Instructions
 Upgrading from 0.14.1
 ---------------------
 
-TBC
+Tagulous 0.15.0 changes the default JavaScript adaptor to use select2 v4. This may
+necessitate some styling changes on your user-facing pages if you have overridden the
+default styles.
 
 
 .. _upgrade_0-14-0:
@@ -300,8 +302,13 @@ are available by installing the master branch from github (see
 
 
 
-1.0.0, 2020-
+0.15.0, 2020-
 ------------------
+
+Feature:
+
+* Added adaptor for Select2 v4 and set as default for Django 2.2+ (#11, #12, #90)
+
 
 Bugfix:
 

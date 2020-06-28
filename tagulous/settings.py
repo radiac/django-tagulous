@@ -30,15 +30,15 @@ AUTOCOMPLETE_JS = getattr(
     "TAGULOUS_AUTOCOMPLETE_JS",
     (
         "tagulous/lib/jquery.js",
-        "tagulous/lib/select2-3/select2.min.js",
+        "tagulous/lib/select2-4/js/select2.full.js",
         "tagulous/tagulous.js",
-        "tagulous/adaptor/select2-3.js",
+        "tagulous/adaptor/select2-4.js",
     ),
 )
 AUTOCOMPLETE_CSS = getattr(
     settings,
     "TAGULOUS_AUTOCOMPLETE_CSS",
-    {"all": ["tagulous/lib/select2-3/select2.css"]},
+    {"all": ["tagulous/lib/select2-4/css/select2.min.css"]},
 )
 AUTOCOMPLETE_SETTINGS = getattr(settings, "TAGULOUS_AUTOCOMPLETE_SETTINGS", None)
 
