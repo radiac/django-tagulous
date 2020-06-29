@@ -316,8 +316,8 @@ Bugfix:
 * Tag fields work with abstract and concrete inheritance (#8)
 * The admin site in Django 2.2+ now uses the Django vendored versions of jQuery and
   select2 (#76)
-* Corrected documentation for adding registering tagged models in admin (#83)
-
+* Fix support for single character tags in trees (#82)
+* Fix documentation for adding registering tagged models in admin (#83)
 
 Internal:
 
@@ -328,6 +328,7 @@ Internal:
 
 Thanks to:
 
+* Michael Röttger (mcrot) for single character tag fix (#81, #82)
 * Frank Lanitz (frlan) for admin documentation fix (#83)
 
 

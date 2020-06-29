@@ -20,4 +20,5 @@ __credits__ = [
     "Raniere Silva (rgaics)",
     "Dmitry Ivanchenko (ivanchenkodmitry)",
     "Frank Lanitz (frlan)",
+    "Michael Röttger (mcrot)",
 ]
