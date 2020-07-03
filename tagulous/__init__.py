@@ -21,4 +21,5 @@ __credits__ = [
     "Dmitry Ivanchenko (ivanchenkodmitry)",
     "Frank Lanitz (frlan)",
     "Michael Röttger (mcrot)",
+    "hagsteel",
 ]
