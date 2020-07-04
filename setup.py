@@ -37,6 +37,7 @@ def runtests(args):
                 "tests",
                 "tests.tagulous_tests_app",
                 "tests.tagulous_tests_app2",
+                "tests.tagulousTestsApp3",
                 "tests.tagulous_tests_migration",
             ],
             MIDDLEWARE=[
