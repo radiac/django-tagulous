@@ -22,4 +22,5 @@ __credits__ = [
     "Frank Lanitz (frlan)",
     "Michael Röttger (mcrot)",
     "hagsteel",
+    "Erik Van Kelst (4levels)",
 ]

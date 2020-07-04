@@ -319,6 +319,9 @@ Bugfix:
   select2 (#76)
 * Fix support for single character tags in trees (#82)
 * Fix documentation for adding registering tagged models in admin (#83)
+* Fix division by zero in weight() (#59, #61)
+* Fix support for capitalised table name in PostgreSQL (#60, #61)
+
 
 Internal:
 
@@ -329,6 +332,8 @@ Internal:
 
 Thanks to:
 
+* Erik Van Kelst (4levels) for division by zero and capitalised table fixes (#60, #61,
+  #62)
 * hagsteel for weighted values fix (#70)
 * Michael Röttger (mcrot) for single character tag fix (#81, #82)
 * Frank Lanitz (frlan) for admin documentation fix (#83)
