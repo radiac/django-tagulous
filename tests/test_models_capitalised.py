@@ -18,8 +18,8 @@ class CapitalisedModelTest(TagTestManager, TestCase):
 
     def setUpExtra(self):
         self.test_model = test_models.CapitalisedTest
-        self.single_tag_model = test_models.CapitalisedTest.title.tag_model
-        self.single_tag_field = test_models.CapitalisedTest.title
+        self.single_tag_model = test_models.CapitalisedTest.singletag.tag_model
+        self.single_tag_field = test_models.CapitalisedTest.singletag
         self.tag_model = test_models.CapitalisedTest.tags.tag_model
         self.tag_field = test_models.CapitalisedTest.tags
 
@@ -31,7 +31,7 @@ class CapitalisedModelTest(TagTestManager, TestCase):
         )
         self.assertEqual(
             self.single_tag_model._meta.db_table,
-            "tagulousTestsApp3_tagulous_capitalisedtest_title",
+            "tagulousTestsApp3_tagulous_capitalisedtest_singletag",
         )
         self.assertEqual(
             self.tag_model._meta.db_table,
@@ -40,7 +40,7 @@ class CapitalisedModelTest(TagTestManager, TestCase):
 
     def test_tag_basics(self):
         "Check a tag string can be set and get"
-        t1 = self.model.objects.create(
+        t1 = self.test_model.objects.create(
             name="Test 1", singletag="single1", tags="tag1, tag2"
         )
         self.assertInstanceEqual(
@@ -50,12 +50,17 @@ class CapitalisedModelTest(TagTestManager, TestCase):
     def test_weight(self):
         "Test weight()"
         # Copy of test_models_tagmodel.TagModelQuerySetTest.test_weight_scale_up
-        self.o1 = self.model.objects.create(
+        self.o1 = self.test_model.objects.create(
             name="Test 1", singletag="single1", tags="David, Eric"
         )
-        self.o2 = self.model.objects.create(
+        self.o2 = self.test_model.objects.create(
             name="Test 2", singletag="single1", tags="Eric, Frank"
         )
+
+        # Mimic initial from TagFieldOptionsModel
+        self.tag_model.objects.create(name="Adam")
+        self.tag_model.objects.create(name="Brian")
+        self.tag_model.objects.create(name="Chris")
 
         # Scale them to 2+2n: 0=2, 1=4, 2=6
         weighted = self.tag_model.objects.weight(min=2, max=6)
