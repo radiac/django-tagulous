@@ -896,6 +896,15 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
         weighted = self.tag_model.objects.weight(0, 6)
         self.assertEqual(list(weighted.values_list("weight")), [])
 
+    def test_weight_zero_initial_tags(self):
+        "Test weight() when there are tags but they have no count"
+        self.assertEqual(self.tag_model.objects.count(), 6)
+
+        weighted = self.tag_model.objects.weight(0, 6)
+        self.assertEqual(
+            list(weighted.values_list("weight", flat=True)), [0, 0, 0, 3, 6, 3]
+        )
+
     def test_to_string(self):
         "Check manager and queryset can be converted to a tag string"
         self.assertEqual(
