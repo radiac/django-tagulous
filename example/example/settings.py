@@ -41,7 +41,6 @@ INSTALLED_APPS = (
     "django.contrib.staticfiles",
     "tagulous",
     "example",
-    "tests.tagulousTestsApp3",
 )
 
 MIDDLEWARE = (
