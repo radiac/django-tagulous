@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import django
 from django.db import IntegrityError, connection, models, router, transaction
+from django.db.models import F, Max
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -54,6 +55,13 @@ else:
     with_metaclass = six.with_metaclass
 
 
+# Django 2.2 adds Floor model function
+try:
+    from django.db.models.functions import Floor
+except ImportError:
+    Floor = None
+
+
 # ##############################################################################
 # ###### TagModel manager and queryset
 # ##############################################################################
@@ -89,30 +97,44 @@ class TagModelQuerySet(models.query.QuerySet):
         """
         # Ignoring PEP 8 intentionally regarding conflict of min/max keywords -
         # concerns are outweighed by clarity of function argument names.
+        max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 0
 
-        # Build SQL
-        template = (
-            "%(floor)s((count*%(upper)d)/"
-            "(SELECT NULLIF(MAX(count), 0) FROM %(table)s)"
-            ")+%(lower)d"
-        )
-        data = {
-            "floor": "FLOOR",
-            "upper": int(max - min),
-            "lower": int(min),
-            "table": '"%s"' % self.model._meta.db_table,
-        }
+        # Weight is the count scaled to the min/max bounds
+        # weight = ( (count * (max - min)) / max_count ) + min
+        scale = int(max) - int(min)
 
-        # Sqlite doesn't support FLOOR, but that's ok because it does it anyway
-        if connection.vendor == "sqlite":
-            data["floor"] = ""
+        if Floor is not None:
+            # Django 2.2
+            qs = self.annotate(
+                weight=(Floor(F("count") * scale) / max_count) + int(min)
+            )
 
-        # MySQL doesn't support double quoted tablenames, use backticks instead
-        if connection.vendor == "mysql":
-            data["table"] = "`%s`" % self.model._meta.db_table
+        else:
+            # Build SQL
+            template = (
+                "%(floor)s((count*%(upper)d)/"
+                "(SELECT NULLIF(MAX(count), 0) FROM %(table)s)"
+                ")+%(lower)d"
+            )
+            data = {
+                "floor": "FLOOR",
+                "upper": int(max - min),
+                "lower": int(min),
+                "table": '"%s"' % self.model._meta.db_table,
+            }
 
-        # Perform query and add it as `weight`
-        return self.extra(select={"weight": template % data})
+            # Sqlite doesn't support FLOOR, but that's ok because it does it anyway
+            if connection.vendor == "sqlite":
+                data["floor"] = ""
+
+            # MySQL doesn't support double quoted tablenames, use backticks instead
+            if connection.vendor == "mysql":
+                data["table"] = "`%s`" % self.model._meta.db_table
+
+            # Perform query and add it as `weight`
+            qs = self.extra(select={"weight": template % data})
+
+        return qs
 
     def __str__(self):
         return utils.render_tags(self)
