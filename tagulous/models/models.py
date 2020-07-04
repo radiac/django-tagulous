@@ -97,13 +97,15 @@ class TagModelQuerySet(models.query.QuerySet):
         """
         # Ignoring PEP 8 intentionally regarding conflict of min/max keywords -
         # concerns are outweighed by clarity of function argument names.
-        max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 0
 
-        # Weight is the count scaled to the min/max bounds
-        # weight = ( (count * (max - min)) / max_count ) + min
-        scale = int(max) - int(min)
-
+        # Django 2.2 supports Floor
         if Floor is not None:
+            # Weight is the count scaled to the min/max bounds
+            # weight = ( (count * (max - min)) / max_count ) + min
+            scale = int(max) - int(min)
+
+            max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 0
+
             # Django 2.2
             qs = self.annotate(
                 weight=(Floor(F("count") * scale) / max_count) + int(min)
