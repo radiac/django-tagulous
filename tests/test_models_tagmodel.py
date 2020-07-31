@@ -513,7 +513,8 @@ class TagMetaTest(TagTestManager, TestCase):
 
 class TagModelUnicodeTest(TagTestManager, TestCase):
     """
-    Test unicode tags - forced to not use unidecode, even if available
+    Test unicode tags - with unicode slugs disabled, and forced to not use unidecode,
+    even if available
     """
 
     manage_models = [test_models.MixedTest]
@@ -581,17 +582,17 @@ class TagModelUnicodeTest(TagTestManager, TestCase):
     # Check slugs
 
     def test_slug_ascii(self):
-        "Check unicode tag name slugified when ascii"
+        "Check ascii tag name slugified to ascii"
         t1 = self.tag_model.objects.get(name="boy")
         self.assertEqual(t1.slug, "boy")
 
     def test_slug_extended_ascii(self):
-        "Check unicode tag name slugified when ascii"
+        "Check extended ascii tag name slugified to ascii"
         t1 = self.tag_model.objects.get(name="niño")
         self.assertEqual(t1.slug, "nino")
 
     def test_slug_japanese(self):
-        "Check unicode tag name slugified when ascii"
+        "Check unicode tag name slugified to ascii"
         t1 = self.tag_model.objects.get(name="男の子")
         self.assertEqual(t1.slug, "___")
 
@@ -626,19 +627,62 @@ class TagModelUnicodeUnidecodeTest(TagTestManager, TestCase):
     # unidecode only affects slugs
 
     def test_slug_ascii(self):
-        "Check unicode tag name slugified when ascii"
+        "Check ascii tag name slugified to ascii"
         t1 = self.tag_model.objects.get(name="boy")
         self.assertEqual(t1.slug, "boy")
 
     def test_slug_extended_ascii(self):
-        "Check unicode tag name slugified when ascii"
+        "Check extended ascii tag name slugified to ascii"
         t1 = self.tag_model.objects.get(name="niño")
         self.assertEqual(t1.slug, "nino")
 
     def test_slug_japanese(self):
-        "Check unicode tag name slugified when ascii"
+        "Check unicode tag name slugified to ascii"
         t1 = self.tag_model.objects.get(name="男の子")
         self.assertEqual(t1.slug, "nan-nozi")
+
+
+class TagModelUnicodeTest(TagTestManager, TestCase):
+    """
+    Test unicode tags, with unicode enabled
+
+    This only affects slugs
+    """
+
+    manage_models = [test_models.MixedTest]
+
+    def setUpExtra(self):
+        # Disable unicode support
+        self.unicode_status = tagulous_settings.SLUG_ALLOW_UNICODE
+        tagulous_settings.SLUG_ALLOW_UNICODE = True
+
+        self.model = test_models.MixedTest
+        self.tag_model = test_models.MixedTestTagModel
+        self.o1 = self.create(
+            self.model, name="Test", singletag="男の子", tags="boy, niño, 男の子"
+        )
+
+    def tearDownExtra(self):
+        tagulous_settings.SLUG_ALLOW_UNICODE = self.unicode_status
+
+    def test_setup(self):
+        "Check setup created tags as expected"
+        self.assertTagModel(self.tag_model, {"boy": 1, "niño": 1, "男の子": 2})
+
+    def test_slug_ascii(self):
+        "Check ascii tag name slugified to ascii"
+        t1 = self.tag_model.objects.get(name="boy")
+        self.assertEqual(t1.slug, "boy")
+
+    def test_slug_extended_ascii(self):
+        "Check extended ascii tag name slugified to ascii"
+        t1 = self.tag_model.objects.get(name="niño")
+        self.assertEqual(t1.slug, "niño")
+
+    def test_slug_japanese(self):
+        "Check unicode tag name slugified to ascii"
+        t1 = self.tag_model.objects.get(name="男の子")
+        self.assertEqual(t1.slug, "男の子")
 
 
 # ##############################################################################

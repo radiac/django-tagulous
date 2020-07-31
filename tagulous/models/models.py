@@ -510,7 +510,10 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         # cry if the label contains unicode characters
         label = getattr(self, "label", self.name)
         slug_max_length = self.__class__._meta.get_field("slug").max_length
-        slug_base = slugify(six.text_type(utils.unicode_to_ascii(label)))
+        if settings.SLUG_ALLOW_UNICODE:
+            slug_base = slugify(label, allow_unicode=True)
+        else:
+            slug_base = slugify(six.text_type(utils.unicode_to_ascii(label)))
         self.slug = slug_base[:slug_max_length]
         self._update_extra()
 

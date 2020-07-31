@@ -304,6 +304,7 @@ are available by installing the master branch from github (see
 Feature:
 
 * Added adaptor for Select2 v4 and set as default for Django 2.2+ (#11, #12, #90)
+* Support full unicode slugs with new ``TAGULOUS_SLUG_ALLOW_UNICODE`` setting (#22)
 
 
 Changes:
@@ -314,7 +315,7 @@ Changes:
 Bugfix:
 
 * Tag fields work with abstract and concrete inheritance (#8)
-* Ensure weighted values are integers not floats (#70)
+* Ensure weighted values are integers not floats (#69, #70)
 * The admin site in Django 2.2+ now uses the Django vendored versions of jQuery and
   select2 (#76)
 * Fix support for single character tags in trees (#82)
@@ -334,7 +335,7 @@ Thanks to:
 
 * Erik Van Kelst (4levels) for division by zero and capitalised table fixes (#60, #61,
   #62)
-* hagsteel for weighted values fix (#70)
+* hagsteel for weighted values fix (#69, #70)
 * Michael Röttger (mcrot) for single character tag fix (#81, #82)
 * Frank Lanitz (frlan) for admin documentation fix (#83)
 

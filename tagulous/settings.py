@@ -21,6 +21,9 @@ LABEL_MAX_LENGTH = getattr(settings, "TAGULOUS_LABEL_MAX_LENGTH", NAME_MAX_LENGT
 # slug will be truncated by up to 5 characters to allow for a suffix of _9999
 SLUG_TRUNCATE_UNIQUE = getattr(settings, "TAGULOUS_SLUG_TRUNCATE_UNIQUE", 5)
 
+# Set to false to generate ASCII slugs
+SLUG_ALLOW_UNICODE = getattr(settings, "TAGULOUS_SLUG_ALLOW_UNICODE", False)
+
 
 #
 # Autocomplete settings

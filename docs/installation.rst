@@ -120,6 +120,14 @@ Settings
 
     Default: ``5``
 
+``TAGULOUS_SLUG_ALLOW_UNICODE``
+    If ``True`` unicode will be allowed in slugs. If ``False`` tag slugs will be forced
+    to ASCII.
+
+    As with Django's ``slugify``, this is off by default.
+
+    Default: ``False``
+
 ``TAGULOUS_AUTOCOMPLETE_JS``
     List of paths under ``STATIC_URL`` for any JavaScript files which are
     required for Tagulous autocomplete. These will be added to the form media
