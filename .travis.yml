@@ -1,7 +1,6 @@
-language: python
-python: '3.7'
-sudo: required
+os: linux
 dist: xenial
+language: python
 install:
 - pip install --upgrade pip wheel setuptools
 - pip install virtualenv tox
@@ -17,25 +16,12 @@ before_script:
   EXISTS tagulous_tests'; fi"
 script:
 - tox
-env:
-  matrix:
-  - TOXENV=py27-django1.11
-  - TOXENV=py35-django1.11
-  - TOXENV=py36-django1.11
-  - TOXENV=py27-django1.11 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py27-django1.11 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
-  - TOXENV=py35-django2.0
-  - TOXENV=py36-django2.0
-  - TOXENV=py35-django2.1
-  - TOXENV=py36-django2.1
-  - TOXENV=py37-django2.1
-  - TOXENV=py35-django2.2
-  - TOXENV=py36-django2.2
-  - TOXENV=py37-django2.2
-  - TOXENV=py37-django2.2 DATABASE_ENGINE=mysql DATABASE_USER=travis
-  - TOXENV=py37-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
-matrix:
-  include:
+
+jobs:
+
+  - python: '2.7'
+    env: TOXENV=py27-django1.11
+
   - python: '3.5'
     env: TOXENV=py35-django1.11
   - python: '3.5'
@@ -44,6 +30,7 @@ matrix:
     env: TOXENV=py35-django2.1
   - python: '3.5'
     env: TOXENV=py35-django2.2
+
   - python: '3.6'
     env: TOXENV=py36-django1.11
   - python: '3.6'
@@ -52,23 +39,23 @@ matrix:
     env: TOXENV=py36-django2.1
   - python: '3.6'
     env: TOXENV=py36-django2.2
-  exclude:
+
   - python: '3.7'
-    env: TOXENV=py35-django1.11
+    env: TOXENV=py37-django2.1
   - python: '3.7'
-    env: TOXENV=py35-django2.0
-  - python: '3.7'
-    env: TOXENV=py35-django2.1
-  - python: '3.7'
-    env: TOXENV=py35-django2.2
-  - python: '3.7'
-    env: TOXENV=py36-django1.11
-  - python: '3.7'
-    env: TOXENV=py36-django2.0
-  - python: '3.7'
-    env: TOXENV=py36-django2.1
-  - python: '3.7'
-    env: TOXENV=py36-django2.2
+    env: TOXENV=py37-django2.2
+
+  - python: '3.8'
+    env: TOXENV=py38-django2.2 DEPLOY=true
+  - python: '3.8'
+    env: TOXENV=py38-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+    services:
+      - postgresql
+  - python: '3.8'
+    env: TOXENV=py38-django2.2 DATABASE_ENGINE=mysql DATABASE_USER=travis
+    services:
+      - mysql
+
 deploy:
   provider: pypi
   user: radiac
@@ -78,4 +65,4 @@ deploy:
     tags: true
     distributions: sdist bdist_wheel
     repo: radiac/django-tagulous
-    condition: '$TOXENV = py35-django1.11'
+    condition: "$DEPLOY = true"
