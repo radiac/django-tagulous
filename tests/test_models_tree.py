@@ -6,6 +6,7 @@ Modules tested:
 """
 from __future__ import absolute_import, unicode_literals
 
+from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
 from django.utils import six
 
@@ -92,6 +93,14 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         "Check tag tree model is used as a base when TagField tree=True"
         self.assertTrue(issubclass(self.tag_model, tag_models.TagTreeModel))
 
+    def test_empty_name_raises_integrity_error(self):
+        with self.assertRaises(IntegrityError) as cm:
+            self.tag_model.objects.create(name=None)
+        self.assertEqual(
+            six.text_type(cm.exception),
+            "NOT NULL constraint failed: tagulous_tests_app_tagulous_treetest_tags.name",
+        )
+
     def test_level_1(self):
         "Check level 1 node created correctly"
         t1 = self.tag_model.objects.create(name="One")
@@ -99,9 +108,9 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
 
     def test_level_1_single_character(self):
         "Check level 1 node created correctly if only one character"
-        t1 = self.tag_model.objects.create(name='O')
+        t1 = self.tag_model.objects.create(name="O")
         self.assertTreeTag(
-            t1, name='O', label='O', slug='o', path='o', level=1,
+            t1, name="O", label="O", slug="o", path="o", level=1,
         )
 
     def test_level_2_existing_l1(self):

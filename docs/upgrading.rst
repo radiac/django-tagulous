@@ -324,7 +324,8 @@ Bugfix:
 * Fix support for capitalised table name in PostgreSQL (#60, #61)
 * Tag fields are stripped before parsing, preventing whitespace tags in SingleTagFields
   (#29)
-
+* Fix documentation for quickstart (#41)
+* Correctly raise an ``IntegrityError`` when saving a tree tag without a name (#50)
 
 Internal:
 

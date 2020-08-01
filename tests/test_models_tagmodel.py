@@ -13,6 +13,7 @@ from __future__ import absolute_import, unicode_literals
 import unittest
 
 import django
+from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import six
 
@@ -94,6 +95,14 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(
             self.tag_model._meta.get_field("slug").max_length,
             tagulous_settings.SLUG_MAX_LENGTH,
+        )
+
+    def test_empty_name_raises_integrity_error(self):
+        with self.assertRaises(IntegrityError) as cm:
+            self.tag_model.objects.create(name=None)
+        self.assertEqual(
+            six.text_type(cm.exception),
+            "NOT NULL constraint failed: tagulous_tests_app_mixedtesttagmodel.name",
         )
 
     def assertRelatedExists(self, related_fields, match_model, field_name):

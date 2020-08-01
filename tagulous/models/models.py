@@ -738,6 +738,10 @@ class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
         Set the parent and path cache
         """
         # Make sure name is valid
+        if self.name is None or not self.name.strip():
+            raise IntegrityError(
+                "NOT NULL constraint failed: {}.name".format(self._meta.db_table)
+            )
         self.name = utils.clean_tree_name(self.name)
 
         # Find the parent, or create it if missing
