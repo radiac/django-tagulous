@@ -63,6 +63,22 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data["singletag"], "Mr")
 
+    def test_whitespace_in_required__fails(self):
+        "Test whitespace is stripped and required field fails"
+        form = test_forms.SingleTagFieldForm(data={"singletag": " "})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {"singletag": ["This field is required."]})
+
+    def test_whitespace_in_optional__is_none(self):
+        "Test whitespace is stripped and optional field returns None"
+
+        class LocalTestForm(forms.Form):
+            tag = tag_forms.SingleTagField(required=False)
+
+        form = LocalTestForm(data={"tag": " "})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["tag"], None)
+
     def test_render_basics(self):
         "Check widget renders default settings (not required)"
 

@@ -236,6 +236,13 @@ class BaseTagField(forms.CharField):
         """
         return {}
 
+    def to_python(self, value):
+        # Tags shouldn't be whitespace. Strip here for ``required`` validation
+        if isinstance(value, six.string_types):
+            value = value.strip()
+
+        return super().to_python(value)
+
     def clean(self, value, single=False):
         """
         Clean the form value

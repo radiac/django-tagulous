@@ -322,6 +322,8 @@ Bugfix:
 * Fix documentation for adding registering tagged models in admin (#83)
 * Fix division by zero in weight() (#59, #61)
 * Fix support for capitalised table name in PostgreSQL (#60, #61)
+* Tag fields are stripped before parsing, preventing whitespace tags in SingleTagFields
+  (#29)
 
 
 Internal:
