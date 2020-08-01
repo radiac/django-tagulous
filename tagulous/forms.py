@@ -241,7 +241,7 @@ class BaseTagField(forms.CharField):
         if isinstance(value, six.string_types):
             value = value.strip()
 
-        return super().to_python(value)
+        return super(BaseTagField, self).to_python(value)
 
     def clean(self, value, single=False):
         """
