@@ -56,7 +56,7 @@ Instructions
         'tagulous',
     )
 
-   In the same file, tell Django to use the Tagulous serialization modules, so
+3. In the same file, tell Django to use the Tagulous serialization modules, so
    that Django can serialize tag fields (for fixtures etc)::
 
     SERIALIZATION_MODULES = {

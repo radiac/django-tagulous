@@ -49,7 +49,8 @@ Quickstart
 ==========
 
 Install with ``pip install django-tagulous``, add ``tagulous`` to Django's
-``INSTALLED_APPS``, then start adding tag fields to your model::
+``INSTALLED_APPS`` and `define the serializers`__, then start adding tag fields to your
+model::
 
     from django.db import models
     import tagulous
@@ -79,3 +80,5 @@ complex queries are simple::
 As well as this you also get autocompletion in public and admin forms,
 automatic slug generation, unicode support, you can build tag clouds easily,
 and can nest tags for more complex categorisation.
+
+__ http://radiac.net/projects/django-tagulous/documentation/installation/
