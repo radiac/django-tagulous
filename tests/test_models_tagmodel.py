@@ -100,10 +100,9 @@ class TagModelTest(TagTestManager, TestCase):
     def test_empty_name_raises_integrity_error(self):
         with self.assertRaises(IntegrityError) as cm:
             self.tag_model.objects.create(name=None)
-        self.assertEqual(
-            six.text_type(cm.exception),
-            "NOT NULL constraint failed: tagulous_tests_app_mixedtesttagmodel.name",
-        )
+        err = six.text_type(cm.exception).lower()
+        self.assertTrue("name" in err)
+        self.assertTrue("null" in err)
 
     def assertRelatedExists(self, related_fields, match_model, field_name):
         """
