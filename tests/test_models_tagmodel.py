@@ -650,7 +650,7 @@ class TagModelUnicodeUnidecodeTest(TagTestManager, TestCase):
         self.assertEqual(t1.slug, "nan-nozi")
 
 
-class TagModelUnicodeTest(TagTestManager, TestCase):
+class TagModelFullUnicodeTest(TagTestManager, TestCase):
     """
     Test unicode tags, with unicode enabled
 

@@ -325,6 +325,7 @@ Bugfix:
 * Tag fields are stripped before parsing, preventing whitespace tags in SingleTagFields
   (#29)
 * Fix documentation for quickstart (#41)
+* Fix ``prefetch_related()`` on tag fields (#42)
 * Correctly raise an ``IntegrityError`` when saving a tree tag without a name (#50)
 
 Internal:
@@ -336,6 +337,7 @@ Internal:
 
 Thanks to:
 
+* Khoa Pham (phamk) for ``prefetch_related()`` fix (#42, #87)
 * Erik Van Kelst (4levels) for division by zero and capitalised table fixes (#60, #61,
   #62)
 * hagsteel for weighted values fix (#69, #70)
