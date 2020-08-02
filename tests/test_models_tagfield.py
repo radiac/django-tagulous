@@ -587,14 +587,11 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertEqual(six.text_type(cm.exception), errmsg)
 
     def test_prefetch_related(self):
-        t1 = self.create(self.test_model, name="Test 1", tags="blue, green")
-        t2 = self.create(self.test_model, name="Test 2", tags="blue, red")
-        t3 = self.create(self.test_model, name="Test 3", tags="blue, red")
+        self.create(self.test_model, name="Test 1", tags="blue, green")
+        self.create(self.test_model, name="Test 2", tags="blue, red")
+        self.create(self.test_model, name="Test 3", tags="blue, red")
         with self.assertNumQueries(2):
-            tags = [
-                obj.tags
-                for obj in self.test_model.objects.all().prefetch_related("tags")
-            ]
+            [obj.tags for obj in self.test_model.objects.all().prefetch_related("tags")]
 
 
 # ##############################################################################
