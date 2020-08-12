@@ -378,7 +378,10 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
             POST=QueryDict(
                 "&".join(
                     ["action=merge_tags"]
-                    + ["%s=%s" % (admin.ACTION_CHECKBOX_NAME, tag.pk) for tag in tags]
+                    + [
+                        "%s=%s" % (admin.helpers.ACTION_CHECKBOX_NAME, tag.pk)
+                        for tag in tags
+                    ]
                 )
             )
         )
@@ -507,7 +510,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
                     ]
                     + [
                         # These were selected on the changelist, the ones we're merging
-                        "%s=%s" % (admin.ACTION_CHECKBOX_NAME, tag.pk)
+                        "%s=%s" % (admin.helpers.ACTION_CHECKBOX_NAME, tag.pk)
                         for tag in tags
                     ]
                     + [
@@ -591,7 +594,8 @@ class TagAdminTest(TagAdminTestManager, TestRequestMixin):
         self.populate()
         request = self.mock_request(
             POST=QueryDict(
-                "action=merge_tags&%s=%s" % (admin.ACTION_CHECKBOX_NAME, self.red.pk)
+                "action=merge_tags&%s=%s"
+                % (admin.helpers.ACTION_CHECKBOX_NAME, self.red.pk)
             )
         )
         cl = self.get_changelist(request)
