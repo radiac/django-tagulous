@@ -32,11 +32,13 @@ Upgrading from 0.14.1
 ---------------------
 
 Tagulous 0.14.1 was the last version to support Django 1.10 and earlier.
-Tagulous 0.15.0 requires Django 1.11 or later, and Python 2.7 or 3.5 or later.
+Tagulous 1.0.0 requires Django 1.11 or later, and Python 2.7 or 3.5 or later.
 
-Tagulous 0.15.0 changes the default JavaScript adaptor to use select2 v4. This may
+Tagulous 1.0.0 changes the default JavaScript adaptor to use select2 v4. This may
 necessitate some styling changes on your user-facing pages if you have overridden the
 default styles.
+
+Tagulous 1.0.0 no longer allows whitespace tags in ``SingleTagField``.
 
 
 .. _upgrade_0-14-0:
@@ -45,7 +47,7 @@ Upgrading from 0.14.0
 ---------------------
 
 Tagulous 0.14.0 was the last version to officially support Django 1.10 or
-earlier. From version 0.15.0 tests will only be run for Django 1.11 or later.
+earlier.
 
 
 .. _upgrade_0-13-0:
@@ -298,8 +300,8 @@ are available by installing the master branch from github (see
 
 
 
-0.15.0, 2020-
-------------------
+1.0.0, 2020-10-08
+-----------------
 
 Feature:
 
@@ -327,6 +329,7 @@ Bugfix:
 * Fix documentation for quickstart (#41)
 * Fix ``prefetch_related()`` on tag fields (#42)
 * Correctly raise an ``IntegrityError`` when saving a tree tag without a name (#50)
+
 
 Internal:
 
