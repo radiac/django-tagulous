@@ -32,11 +32,6 @@ migrations_name = "migrations_%s" % testenv
 migrations_module = "tests.%s.%s" % (app_name, migrations_name)
 migrations_path = None
 
-# Django 1.8, 1.9 have extra lines
-if django.VERSION >= (1, 8) and django.VERSION < (1, 10):
-    RENDERING_MODEL_STATES = ["  Rendering model states... DONE"]
-else:
-    RENDERING_MODEL_STATES = []
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #       Util functions
@@ -179,11 +174,8 @@ def migrate_app(target=None):
         raise
 
     # Ensure caught warnings are expected
-    if django.VERSION < (1, 6):
-        assert len(cw) == 0
-    else:
-        for w in cw:
-            assert issubclass(w.category, PendingDeprecationWarning)
+    for w in cw:
+        assert issubclass(w.category, PendingDeprecationWarning)
 
     if DISPLAY_CALL_COMMAND:
         print("\n".join(output))
@@ -197,14 +189,6 @@ def migrate_app(target=None):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-@unittest.skipIf(
-    django.VERSION < (1, 7), "Django migration tests not run for Django 1.6 or older"
-)
-@unittest.skipIf(
-    django.VERSION >= (1, 9) and sys.version_info.major == 2,
-    "Migrations temporarily tested manually; automated tests fail in "
-    "py2.7 with dj1.9+ due to test logic",
-)
 class DjangoMigrationTest(TagTestManager, TransactionTestCase):
     """
     Test django migrations
@@ -310,7 +294,6 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
                 "  Apply all migrations: tagulous_tests_migration",
                 "Running migrations:",
             ]
-            + RENDERING_MODEL_STATES
             + ["  Applying tagulous_tests_migration.0001_initial... OK"],
         )
 
@@ -347,7 +330,6 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
                 "  Apply all migrations: tagulous_tests_migration",
                 "Running migrations:",
             ]
-            + RENDERING_MODEL_STATES
             + ["  Applying tagulous_tests_migration.0002_tagged... OK"],
         )
 
@@ -401,7 +383,6 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
                 "  Apply all migrations: tagulous_tests_migration",
                 "Running migrations:",
             ]
-            + RENDERING_MODEL_STATES
             + ["  Applying tagulous_tests_migration.0003_tree... OK"],
         )
 
@@ -478,7 +459,6 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
                 "  Apply all migrations: tagulous_tests_migration",
                 "Running migrations:",
             ]
-            + RENDERING_MODEL_STATES
             + ["  Applying tagulous_tests_migration.0004_data... OK"],
         )
 

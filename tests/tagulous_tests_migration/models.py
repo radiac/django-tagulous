@@ -89,8 +89,7 @@ def set_model_tagged():
             "__module__": "tests.tagulous_tests_migration.models",
             "name": models.CharField(max_length=10),
             "singletag": tagulous.models.SingleTagField(blank=True, null=True),
-            # Django 1.4 hates unicode intermediary table name
-            str("tags"): tagulous.models.TagField(),
+            "tags": tagulous.models.TagField(),
         },
     )
 

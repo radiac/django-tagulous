@@ -17,42 +17,55 @@ before_script:
 script:
 - tox
 
-jobs:
+matrix:
+  include:
 
-  - python: '2.7'
-    env: TOXENV=py27-django1.11
-
-  - python: '3.5'
-    env: TOXENV=py35-django1.11
-  - python: '3.5'
-    env: TOXENV=py35-django2.0
-  - python: '3.5'
-    env: TOXENV=py35-django2.1
   - python: '3.5'
     env: TOXENV=py35-django2.2
 
   - python: '3.6'
-    env: TOXENV=py36-django1.11
-  - python: '3.6'
-    env: TOXENV=py36-django2.0
-  - python: '3.6'
-    env: TOXENV=py36-django2.1
-  - python: '3.6'
     env: TOXENV=py36-django2.2
+  - python: '3.6'
+    env: TOXENV=py36-django3.0
+  - python: '3.6'
+    env: TOXENV=py36-django3.1
 
-  - python: '3.7'
-    env: TOXENV=py37-django2.1
   - python: '3.7'
     env: TOXENV=py37-django2.2
+  - python: '3.7'
+    env: TOXENV=py37-django3.0
+  - python: '3.7'
+    env: TOXENV=py37-django3.1
 
   - python: '3.8'
-    env: TOXENV=py38-django2.2 DEPLOY=true
+    env: TOXENV=py37-django2.2
   - python: '3.8'
-    env: TOXENV=py38-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+    env: TOXENV=py37-django3.0
+  - python: '3.8'
+    env: TOXENV=py37-django3.1
+
+    # Test all DBs on latest LTS
+  - python: '3.9'
+    env: TOXENV=py39-django2.2
+  - python: '3.9'
+    env: TOXENV=py39-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
     services:
       - postgresql
-  - python: '3.8'
-    env: TOXENV=py38-django2.2 DATABASE_ENGINE=mysql DATABASE_USER=travis
+  - python: '3.9'
+    env: TOXENV=py39-django2.2 DATABASE_ENGINE=mysql DATABASE_USER=travis
+    services:
+      - mysql
+  - python: '3.9'
+    env: TOXENV=py39-django3.0
+    # Test all DBs on latest release
+  - python: '3.9'
+    env: TOXENV=py39-django3.1
+  - python: '3.9'
+    env: TOXENV=py39-django3.1 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+    services:
+      - postgresql
+  - python: '3.9'
+    env: TOXENV=py39-django3.1 DATABASE_ENGINE=mysql DATABASE_USER=travis
     services:
       - mysql
 
@@ -61,8 +74,8 @@ deploy:
   user: radiac
   password:
     secure: UlOAJbdXXcdNci9gcfpLLldDxQJNWzQMnaTlN29CyH4MWvP+F1dGl8yl7RffzIb805EKVMOi4tLY+oA3x6ZS/Lis1QjpOC8erqgU0pMEHtF3ghR9qcd75GLz25AaDiX8G7SXdSwyedS8m+lxaiemGganGMhIKsme2lQV20iticTI8gb9I4dYBnSKcG8MfLcsU91usFyhadOP5EHqooG4+p+cF36Vk8ff0hW53/gttXrMoDs7zbfX7iJIXQPQp7fSg/g1KLgjcQQTNFSxpqCbqLPdFOKeCmhn2UlwIUWAxYHK3gNO2uyBiuAhle323AnB4ifWv+urG6Zw7712NPoJ53FVlxZ5+yf329aw2yCRFTgwfl4WV15ZWuvVgI//jUhlK47P/mjFb7RZjYu0c+9VqyzXccvXyuSM6fuyHQAzWYlz8Z26x5hSmAi5paQbGieoI5jOeWJ94YSUeWPRfW/7VVvx1nUztq8O2FNmMt3rYih1FiElWFpkSQ4WdEjXxbW6wgQL8v5PJy2puBS9jwTv7SrQ9aKAtwcxnn8U46+EKILuKdqalrRTIZbVthylaxl5yNO5To6z0Sou/mXQURvWUavGHAp05bRkr4XaL0ZWedivNSXsGQuHA8qmh5eiely4hr+6FMSBe8KvJv8JDryv+aCIHamTJjljU7AgEchIOrk=
+  skip_existing: true
   on:
     tags: true
     distributions: sdist bdist_wheel
     repo: radiac/django-tagulous
-    condition: "$DEPLOY = true"

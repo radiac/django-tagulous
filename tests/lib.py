@@ -186,9 +186,7 @@ class TagTestManager(object):
         """
         # Add backwards compatibility for HTML 5 "required"
         REQUIRED = "{{required}}"
-        required = ""
-        if django.VERSION >= (1, 10):
-            required = " required "
+        required = " required "
         if REQUIRED in html1:
             html1 = html1.replace(REQUIRED, required)
         if REQUIRED in html2:

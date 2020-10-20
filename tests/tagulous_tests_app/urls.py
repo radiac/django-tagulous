@@ -14,27 +14,13 @@ import tagulous.views
 from tests.tagulous_tests_app import models, views
 
 
-# Django 1.8 removes patterns
-if django.VERSION < (1, 8):
-    from django.conf.urls import patterns
-
-    def mk_urlpatterns(*urls):
-        return patterns("", *urls)
-
-
-else:
-
-    def mk_urlpatterns(*urls):
-        return list(urls)
-
-
 tagged_model = models.TagFieldOptionsModel
 
-urlpatterns = mk_urlpatterns(
+urlpatterns = [
     url(
         r"^tagulous_tests_app/",
         include(
-            mk_urlpatterns(
+            [
                 # CBV with tagged forms
                 url(r"views/$", views.null, name="tagulous_tests_app-null"),
                 url(
@@ -94,7 +80,7 @@ urlpatterns = mk_urlpatterns(
                     {"tag_model": tagged_model.case_sensitive_true.tag_model},
                     name="tagulous_tests_app-case_sensitive_true",
                 ),
-            )
+            ]
         ),
     )
-)
+]

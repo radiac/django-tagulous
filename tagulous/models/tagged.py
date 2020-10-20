@@ -392,16 +392,8 @@ class TaggedModel(models.Model):
                     # Find fields which are either TagFields, or not M2Ms -
                     # anything which Deserializer will have stored data for
                     elif isinstance(field, TagField) or not (
-                        (
-                            django.VERSION < (1, 9)
-                            and field.rel
-                            and isinstance(field.rel, models.ManyToManyRel)
-                        )
-                        or (
-                            django.VERSION >= (1, 9)
-                            and field.remote_field
-                            and isinstance(field.remote_field, models.ManyToManyRel)
-                        )
+                        field.remote_field
+                        and isinstance(field.remote_field, models.ManyToManyRel)
                     ):
                         # Get data from object
                         data[field.name] = getattr(self, field.name)

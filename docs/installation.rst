@@ -5,18 +5,11 @@ Installation
 Requirements
 ============
 
-These packages are required:
-
-* `Django <https://www.djangoproject.com/>`_ 1.4.2 to 1.11, on Python 2.7 and
-  3.3 to 3.6.
-
 These packages are recommended, but optional:
 
 * `unidecode <https://pypi.python.org/pypi/Unidecode>`_
 * `django-compressor <https://github.com/django-compressor/django-compressor>`_
   or similar, to optimise static files
-* `South <https://pypi.python.org/pypi/South>`_ 1.0.2 or later, to manage
-  database migrations (if using Django 1.6 or earlier)
 
 If you are replacing an existing tagging solution, follow the
 :ref:`installation_instructions`, then read :ref:`converting_to_tagulous`.

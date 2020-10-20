@@ -3,63 +3,22 @@ Tagulous tag models
 """
 from __future__ import unicode_literals
 
-import django
-from django.db import IntegrityError, connection, models, router, transaction
+from django.db import IntegrityError, models, router, transaction
 from django.db.models import F, Max
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils.text import slugify
 
 import tagulous
 from tagulous import constants, settings, utils
 from tagulous.models.options import TagOptions
 
 
-try:
-    from django.utils.text import slugify
-except ImportError:
-    # Django 1.4 or earlier
-    from django.template.defaultfilters import slugify
+# TODO
+with_metaclass = six.with_metaclass
 
 
-# Django 1.4 and 1.5 don't support transaction.atomic, but don't need it for
-# what we're doing here; fake it for the ``with`` statement.
-if hasattr(transaction, "atomic"):
-    transaction_atomic = transaction.atomic
-else:
-
-    class transaction_atomic(object):
-        def __enter__(self):
-            pass
-
-        def __exit__(self, type, value, traceback):
-            pass
-
-
-# Fix for with_metaclass in Django 1.5
-# 1.4.2 and 1.6 use the same code, but it's different in 1.5 and we lose _meta
-# This is the fn from 1.6, adapted to work with unicode_literals
-if django.VERSION < (1, 6):
-    tmp_cls_name = "temporary_class"
-    if six.PY2:
-        tmp_cls_name = bytes(tmp_cls_name)
-
-    def with_metaclass(meta, *bases):
-        class metaclass(meta):
-            def __new__(cls, name, this_bases, d):
-                return meta(name, bases, d)
-
-        return type.__new__(metaclass, tmp_cls_name, (), {})
-
-
-else:
-    with_metaclass = six.with_metaclass
-
-
-# Django 2.2 adds Floor model function
-try:
-    from django.db.models.functions import Floor
-except ImportError:
-    Floor = None
+from django.db.models.functions import Floor
 
 
 # ##############################################################################
@@ -98,44 +57,11 @@ class TagModelQuerySet(models.query.QuerySet):
         # Ignoring PEP 8 intentionally regarding conflict of min/max keywords -
         # concerns are outweighed by clarity of function argument names.
 
-        # Django 2.2 supports Floor
-        if Floor is not None:
-            # Weight is the count scaled to the min/max bounds
-            # weight = ( (count * (max - min)) / max_count ) + min
-            scale = int(max) - int(min)
-
-            max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 0
-
-            # Django 2.2
-            qs = self.annotate(
-                weight=(Floor(F("count") * scale) / max_count) + int(min)
-            )
-
-        else:
-            # Build SQL
-            template = (
-                "%(floor)s((count*%(upper)d)/"
-                "(SELECT NULLIF(MAX(count), 0) FROM %(table)s)"
-                ")+%(lower)d"
-            )
-            data = {
-                "floor": "FLOOR",
-                "upper": int(max - min),
-                "lower": int(min),
-                "table": '"%s"' % self.model._meta.db_table,
-            }
-
-            # Sqlite doesn't support FLOOR, but that's ok because it does it anyway
-            if connection.vendor == "sqlite":
-                data["floor"] = ""
-
-            # MySQL doesn't support double quoted tablenames, use backticks instead
-            if connection.vendor == "mysql":
-                data["table"] = "`%s`" % self.model._meta.db_table
-
-            # Perform query and add it as `weight`
-            qs = self.extra(select={"weight": template % data})
-
+        # Weight is the count scaled to the min/max bounds
+        # weight = ( (count * (max - min)) / max_count ) + min
+        scale = int(max) - int(min)
+        max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 0
+        qs = self.annotate(weight=(Floor(F("count") * scale) / max_count) + int(min))
         return qs
 
     def __str__(self):
@@ -329,10 +255,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         """
         data = []
         for related in self.get_related_fields(include_standard=include_standard):
-            if django.VERSION < (1, 8):
-                related_model = related.model
-            else:
-                related_model = related.related_model
+            related_model = related.related_model
 
             objs = related_model._base_manager.using(
                 router.db_for_write(self.tag_model)
@@ -449,10 +372,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         for related in related_fields:
             # Get the instances of the related models which refer to the tag
             # instances being merged
-            if django.VERSION < (1, 8):
-                related_model = related.model
-            else:
-                related_model = related.related_model
+            related_model = related.related_model
 
             objs = related_model._base_manager.using(
                 router.db_for_write(self.tag_model, instance=self)
@@ -526,7 +446,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
             # If transaction supports atomic, we need to wrap the save call -
             # otherwise if save throws an exception it'll cause any current
             # queries to roll back
-            with transaction_atomic():
+            with transaction.atomic():
                 return super(BaseTagModel, self).save(*args, **kwargs)
         except IntegrityError:
             pass

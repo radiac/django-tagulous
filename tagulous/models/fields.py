@@ -96,9 +96,6 @@ class BaseTagField(object):
         # This attribute will let us tell South to supress undesired M2M fields
         self.south_supression = True
 
-    if django.VERSION < (1, 9):
-        remote_field = property(lambda self: self.rel)
-
     def do_related_class(self, other, cls):
         """
         Process tag model now it has been resolved if it was a string
@@ -107,12 +104,7 @@ class BaseTagField(object):
         super(BaseTagField, self).do_related_class(other, cls)
 
         # Make sure tag model is the related model, in case it was a string
-        if django.VERSION < (1, 8):
-            # Django 1.7 or earlier
-            self.tag_model = self.related.parent_model
-        else:
-            # Django 1.8 or later
-            self.tag_model = self.remote_field.model
+        self.tag_model = self.remote_field.model
 
         # Check class type of tag model
         if not issubclass(self.tag_model, BaseTagModel):
@@ -218,12 +210,7 @@ class BaseTagField(object):
         #
 
         # Update the rel on the field
-        if django.VERSION < (1, 9):
-            # Django 1.8 or earlier
-            self.remote_field.to = self.tag_model
-        else:
-            # Django 1.9 and later
-            self.remote_field.model = self.tag_model
+        self.remote_field.model = self.tag_model
 
         # Contribute to class
         super(BaseTagField, self).contribute_to_class(cls, name)
@@ -492,7 +479,7 @@ class TagField(BaseTagField, models.ManyToManyField):
         @python_2_unicode_compatible
         class FakeObject(object):
             """
-            FakeObject so m2d can check obj.pk (django <= 1.4)
+            FakeObject so m2d can check obj.pk
             """
 
             def __init__(self, value):
@@ -503,7 +490,7 @@ class TagField(BaseTagField, models.ManyToManyField):
 
         class FakeQuerySet(object):
             """
-            FakeQuerySet so m2d can call qs.values_list() (django >= 1.5)
+            FakeQuerySet so m2d can call qs.values_list()
             Only contains one FakeObject instance
             """
 
@@ -513,7 +500,7 @@ class TagField(BaseTagField, models.ManyToManyField):
 
             def __iter__(self):
                 """
-                Iterable so m2d can use in list comprehension (django <= 1.4)
+                Iterable so m2d can use in list comprehension
                 """
                 yield self.obj
 

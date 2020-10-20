@@ -81,25 +81,6 @@ def runtests(args):
         else:
             SETTINGS["SERIALIZATION_MODULES"]["yaml"] = "tagulous.serializers.pyyaml"
 
-        # If south is required and available, add to installed apps
-        if django.VERSION < (1, 7):
-            try:
-                import south  # noqa
-            except ImportError:
-                import warnings
-
-                warnings.warn(
-                    "south not installed, needed for tests for Django %s"
-                    % (".".join(str(v) for v in django.VERSION)),
-                    ImportWarning,
-                )
-            else:
-                SETTINGS["INSTALLED_APPS"] += ["south"]
-
-        # Backwards compatibility for middleware
-        if django.VERSION < (1, 10):
-            SETTINGS["MIDDLEWARE_CLASSES"] = SETTINGS["MIDDLEWARE"]
-
         # Build database settings
         DATABASE = {
             "ENGINE": "django.db.backends.sqlite3",
@@ -114,15 +95,9 @@ def runtests(args):
                 DATABASE["ENGINE"] = "django.db.backends.mysql"
 
                 # Make sure test DB is going to be UTF8
-                if django.VERSION < (1, 7):
-                    DATABASE_TEST = {
-                        "TEST_CHARSET": "utf8",
-                        "TEST_COLLATION": "utf8_general_ci",
-                    }
-                else:
-                    DATABASE_TEST = {
-                        "TEST": {"CHARSET": "utf8", "COLLATION": "utf8_general_ci"}
-                    }
+                DATABASE_TEST = {
+                    "TEST": {"CHARSET": "utf8", "COLLATION": "utf8_general_ci"}
+                }
                 DATABASE.update(DATABASE_TEST)
 
             else:
@@ -177,28 +152,23 @@ setup(
     url="http://radiac.net/projects/django-tagulous/",
     long_description=read("README.rst"),
     classifiers=[
-        "Development Status :: 4 - Beta",
-        # 'Development Status :: 5 - Production/Stable',
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Framework :: Django",
-        "Framework :: Django :: 1.11",
-        "Framework :: Django :: 2.0",
-        "Framework :: Django :: 2.1",
         "Framework :: Django :: 2.2",
+        "Framework :: Django :: 3.0",
+        "Framework :: Django :: 3.1",
     ],
-    install_requires=["Django>=1.11"],
+    install_requires=["Django>=2.2"],
     extras_require={
         "dev": ["tox", "jasmine"],
         "devdb": ["psycopg2", "mysqlclient"],

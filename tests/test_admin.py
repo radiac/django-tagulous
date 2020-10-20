@@ -17,6 +17,7 @@ from django.contrib.messages.storage.fallback import CookieStorage
 from django.core import exceptions
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
+from django.urls import get_resolver, reverse
 from django.utils import six
 
 from tagulous import admin as tag_admin
@@ -27,35 +28,7 @@ from tests.tagulous_tests_app import models as test_models
 from tests.tagulous_tests_app import urls as test_urls
 
 
-# Django 1.10 deprecates urlresolvers
-try:
-    from django.urls import reverse
-except ImportError:
-    from django.core.urlresolvers import reverse
-
-
 MOCK_PATH = "mock/path"
-
-
-def _monkeypatch_modeladmin():
-    """
-    ModelAdmin changes between django versions.
-
-    Monkeypatch it where necessary to allow tests to function, without making
-    any changes to ModelAdmin which would affect the code being tested.
-    """
-    # Django 1.4 ModelAdmin doesn't have get_list_filter
-    # Monkeypatch in; only used to simplify tests
-    if not hasattr(admin.ModelAdmin, "get_list_filter"):
-        if django.VERSION >= (1, 5):
-            raise AttributeError(
-                "Only old versions of django are expected to be missing "
-                "ModelAdmin.get_list_filter"
-            )
-        admin.ModelAdmin.get_list_filter = lambda self, request: self.list_filter
-
-
-_monkeypatch_modeladmin()
 
 
 class TestRequestMixin(object):
@@ -85,34 +58,17 @@ class AdminTestManager(object):
             return
 
         # Try to clear the resolver cache
-        if django.VERSION < (1, 7):
-            # Django 1.4 - 1.6
-            from django.core.urlresolvers import _resolver_cache
-
-            _resolver_cache.clear()
-        else:
-            if django.VERSION < (1, 10):
-                from django.core.urlresolvers import get_resolver
-            else:
-                from django.urls import get_resolver
-            if hasattr(get_resolver, "cache_clear"):
-                get_resolver.cache_clear()
+        if hasattr(get_resolver, "cache_clear"):
+            get_resolver.cache_clear()
 
         # Store the old urls and make a copy
         self.old_urls = test_urls.urlpatterns
         test_urls.urlpatterns = copy.copy(test_urls.urlpatterns)
 
         # Add the site to the copy
-        from django.conf.urls import include, url
+        from django.conf.urls import url
 
-        def safe_include(urls):
-            if django.VERSION < (1, 9):
-                return include(urls)
-            return urls
-
-        test_urls.urlpatterns += test_urls.mk_urlpatterns(
-            url(r"^tagulous_tests_app/admin/", safe_include(self.site.urls))
-        )
+        test_urls.urlpatterns += [url(r"^tagulous_tests_app/admin/", self.site.urls)]
 
     def tearDown(self):
         super(AdminTestManager, self).tearDown()
@@ -278,9 +234,8 @@ class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCa
             self.ma.list_max_show_all,
             self.ma.list_editable,
             self.ma,
+            self.ma.get_sortable_by(req),
         ]
-        if django.VERSION >= (2, 1):
-            changelist_args.append(self.ma.get_sortable_by(req))
         self.cl = ChangeList(*changelist_args)
         return self.cl
 
@@ -403,9 +358,8 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
             self.ma.list_max_show_all,
             self.ma.list_editable,
             self.ma,
+            self.ma.get_sortable_by(req),
         ]
-        if django.VERSION >= (2, 1):
-            changelist_args.append(self.ma.get_sortable_by(req))
         self.cl = ChangeList(*changelist_args)
         return self.cl
 
@@ -465,13 +419,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
         options = [
             "<option %s" % opt.strip() for opt in options_raw.split("<option ") if opt
         ]
-        if django.VERSION < (1, 11):
-            self.assertTrue(
-                '<option value="" selected="selected">---------</option>' in options
-            )
-        else:
-            # Django 1.11 tidies the option tag
-            self.assertTrue('<option value="" selected>---------</option>' in options)
+        self.assertTrue('<option value="" selected>---------</option>' in options)
 
         for tag in tags:
             self.assertContains(

@@ -111,12 +111,7 @@ class TagModelTest(TagTestManager, TestCase):
         """
         match_field = match_model._meta.get_field(field_name)
         for related in related_fields:
-            if django.VERSION < (1, 8):
-                rel_model = related.model
-            else:
-                rel_model = related.related_model
-
-            if rel_model == match_model and related.field == match_field:
+            if related.related_model == match_model and related.field == match_field:
                 return related
         self.fail("Expected related field not found")
 

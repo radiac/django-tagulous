@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.base import ModelBase
 from django.http import HttpResponseRedirect
@@ -109,15 +109,17 @@ class TagModelAdmin(admin.ModelAdmin):
                     kwargs["children"] = True
                 merge_to.merge_tags(queryset, **kwargs)
 
-                # Django 1.4 doesn't support level=messages.SUCCESS
-                self.message_user(request, "Tags merged")
+                self.message_user(request, "Tags merged", messages.SUCCESS)
                 return HttpResponseRedirect(request.get_full_path())
 
         else:
             tag_pks = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
             if len(tag_pks) < 2:
-                # Django 1.4 doesn't support level=messages.SUCCESS
-                self.message_user(request, "You must select at least two tags to merge")
+                self.message_user(
+                    request,
+                    "You must select at least two tags to merge",
+                    messages.ERROR,
+                )
                 return HttpResponseRedirect(request.get_full_path())
 
             merge_form = MergeForm(

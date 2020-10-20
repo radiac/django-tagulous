@@ -43,17 +43,12 @@ AUTOCOMPLETE_CSS = getattr(
 )
 AUTOCOMPLETE_SETTINGS = getattr(settings, "TAGULOUS_AUTOCOMPLETE_SETTINGS", None)
 
-# Admin overrides
-DEFAULT_ADMIN_AUTOCOMPLETE_JS = AUTOCOMPLETE_JS
-DEFAULT_ADMIN_AUTOCOMPLETE_CSS = AUTOCOMPLETE_CSS
-
-# Use Django 2.2+ vendored jquery and select2
-if django.VERSION >= (2, 2):
-    DEFAULT_ADMIN_AUTOCOMPLETE_JS = (
-        "tagulous/tagulous.js",
-        "tagulous/adaptor/select2-4.js",
-    )
-    DEFAULT_ADMIN_AUTOCOMPLETE_CSS = {}
+# Use vendored jquery and select2 for admin
+DEFAULT_ADMIN_AUTOCOMPLETE_JS = (
+    "tagulous/tagulous.js",
+    "tagulous/adaptor/select2-4.js",
+)
+DEFAULT_ADMIN_AUTOCOMPLETE_CSS = {}
 
 ADMIN_AUTOCOMPLETE_JS = getattr(
     settings, "TAGULOUS_ADMIN_AUTOCOMPLETE_JS", DEFAULT_ADMIN_AUTOCOMPLETE_JS
