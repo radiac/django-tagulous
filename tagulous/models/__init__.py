@@ -3,7 +3,7 @@ Tagulous models
 
 Make important functions and classes available on tagulous.models
 """
-from tagulous.models import initial, migrations, signals  # noqa
+from tagulous.models import initial, migrations  # noqa
 from tagulous.models.descriptors import (  # noqa
     BaseTagDescriptor,
     SingleTagDescriptor,
@@ -27,3 +27,7 @@ from tagulous.models.models import (  # noqa
 )
 from tagulous.models.options import TagOptions  # noqa
 from tagulous.models.tagged import TaggedManager, TaggedModel, TaggedQuerySet  # noqa
+from tagulous.signals.pre import register_pre_signals
+
+
+register_pre_signals()

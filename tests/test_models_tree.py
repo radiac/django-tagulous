@@ -4,8 +4,6 @@ Tagulous test: Tag Trees
 Modules tested:
     tagulous.models.tree
 """
-from __future__ import absolute_import, unicode_literals
-
 from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
 from django.utils import six

@@ -1,14 +1,12 @@
 """
 Views for Tagulous example app
 """
-from __future__ import unicode_literals
-
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from example import forms, models
+from . import forms, models
 
 
 def index(request, person_pk=None):

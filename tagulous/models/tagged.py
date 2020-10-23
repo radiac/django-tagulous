@@ -4,11 +4,8 @@ Tagulous extensions for models which use tag fields (tagged models)
 These are all applied automatically when the TAGULOUS_ENHANCE_MODELS setting
 is enabled.
 """
-from __future__ import unicode_literals
-
 import copy
 
-import django
 from django.db import models, transaction
 from django.utils import six
 
@@ -278,13 +275,6 @@ class TaggedManager(models.Manager):
         Get the original queryset and then enhance it
         """
         qs = super(TaggedManager, self).get_queryset(*args, **kwargs)
-        return self._enhance_queryset(qs)
-
-    def get_query_set(self, *args, **kwargs):
-        """
-        Get the original queryset and then enhance it (Django 1.5 or earlier)
-        """
-        qs = super(TaggedManager, self).get_query_set(*args, **kwargs)
         return self._enhance_queryset(qs)
 
     @classmethod

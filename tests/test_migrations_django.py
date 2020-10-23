@@ -4,16 +4,12 @@ Tagulous test: django migrations
 Modules tested:
     tagulous.models.migrations
 """
-from __future__ import absolute_import, print_function, unicode_literals
-
 import os
 import shutil
 import sys
-import unittest
 import warnings
 from importlib import import_module
 
-import django
 from django.core.management import call_command
 from django.db import DatabaseError
 from django.test import TransactionTestCase

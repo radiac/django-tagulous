@@ -4,12 +4,9 @@ Tagulous test: Admin
 Modules tested:
     tagulous.admin
 """
-from __future__ import absolute_import, unicode_literals
-
 import copy
 import re
 
-import django
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -17,7 +14,7 @@ from django.contrib.messages.storage.fallback import CookieStorage
 from django.core import exceptions
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
-from django.urls import get_resolver, reverse
+from django.urls import get_resolver, re_path, reverse
 from django.utils import six
 
 from tagulous import admin as tag_admin
@@ -66,9 +63,9 @@ class AdminTestManager(object):
         test_urls.urlpatterns = copy.copy(test_urls.urlpatterns)
 
         # Add the site to the copy
-        from django.conf.urls import url
-
-        test_urls.urlpatterns += [url(r"^tagulous_tests_app/admin/", self.site.urls)]
+        test_urls.urlpatterns += [
+            re_path(r"^tagulous_tests_app/admin/", self.site.urls)
+        ]
 
     def tearDown(self):
         super(AdminTestManager, self).tearDown()
@@ -392,7 +389,6 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
         msgs = list(messages.get_messages(request))
 
         # Check response is appropriate
-        # Django 1.4 doesn't support assertInHTML, so have to do it manually
         self.assertEqual(len(msgs), 0)
         content = response.content.decode("utf-8")
         content_form = content[content.index("<form ") : content.index("</form>") + 7]

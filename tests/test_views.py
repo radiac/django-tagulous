@@ -4,8 +4,6 @@ Tagulous test: View-related functionality
 Modules tested:
     tagulous.views
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 
 from django.contrib.auth.models import User

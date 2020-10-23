@@ -7,9 +7,7 @@ necessary tag models, and add the descriptors back onto the model.
 
 They are also responsible for preparing form fields.
 """
-from __future__ import unicode_literals
-
-import django
+from django.core.checks import Warning as ChecksWarning
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import capfirst
@@ -18,12 +16,6 @@ from tagulous import constants, forms
 from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
 from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
 from tagulous.models.options import TagOptions
-
-
-try:
-    from django.core.checks import Warning as ChecksWarning
-except ImportError:
-    ChecksWarning = None
 
 
 # ##############################################################################
@@ -426,9 +418,7 @@ class TagField(BaseTagField, models.ManyToManyField):
         warnings = []
 
         # Django 1.9 introduces this, but later version remove has_null_arg
-        if ChecksWarning and (
-            getattr(self, "has_null_arg", False) or getattr(self, "null", False)
-        ):
+        if getattr(self, "null", False):
             warnings.append(
                 ChecksWarning(
                     "null has no effect on TagField.",

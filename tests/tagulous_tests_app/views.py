@@ -1,8 +1,6 @@
 """
 Tagulous test app views
 """
-from __future__ import unicode_literals
-
 from django.views.generic.edit import CreateView, UpdateView
 
 from tests.tagulous_tests_app import models

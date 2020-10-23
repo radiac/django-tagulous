@@ -5,8 +5,6 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.models.fields.TagField
 """
-from __future__ import absolute_import, unicode_literals
-
 from django.test import TestCase
 
 from tests.lib import TagTestManager

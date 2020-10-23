@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ImproperlyConfigured
@@ -7,8 +5,8 @@ from django.db.models.base import ModelBase
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from tagulous import forms as tag_forms
-from tagulous import models as tag_models
+from . import forms as tag_forms
+from . import models as tag_models
 
 
 # ##############################################################################

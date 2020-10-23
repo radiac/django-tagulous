@@ -4,19 +4,12 @@ Tagulous test of serializers, dumpdata and loaddata
 Modules tested:
     tagulous.serializers.*
 """
-# There were originally separate tests for loaddata and dumpdata, but have been
-# combined because in Django 1.4-1.8 serializer order is not deterministic, ie
-# order of keys in dicts can change, causing output order to change and
-# comparisons to fail on values which are effectively the same. Testing
-# dumpdata and loaddata in the same place isn't ideal, but the only other way
-# is to implement non-deterministic comparisons for json, pyyaml and xml;
-# patches welcome.
+# There were originally separate tests for loaddata and dumpdata, but these were
+# combined because in Django <1.8 serializer order was not deterministic.
 #
-# This should be fixed in Django 1.9, at which point we can look at splitting
-# them again - see https://code.djangoproject.com/ticket/24558
-
-from __future__ import absolute_import, unicode_literals
-
+# This has been addressed, so we can look at splitting them again when these tests need
+# refactoring
+#
 import os
 import tempfile
 import unittest
@@ -314,11 +307,9 @@ class MixedTestMixin(TagTestManager, TestCase):
             name="test", singletag="test", tags="test"
         )
         rfk1 = test_models.ManyToOneTest.objects.create(name="rfk1", mixed_ref_test=t1)
-        # Django 1.7 and earlier don't support refresh_from_db
-        t1 = test_models.MixedRefTest.objects.get(pk=t1.pk)
+        t1.refresh_from_db()
         self.assertEqual(t1.many_to_one.count(), 1)
-        # Django 1.5 and earlier don't support .first
-        self.assertEqual(t1.many_to_one.all()[0], rfk1)
+        self.assertEqual(t1.many_to_one.first(), rfk1)
 
         serialized = serializers.serialize(
             "xml", test_models.MixedRefTest.objects.all()
@@ -328,5 +319,4 @@ class MixedTestMixin(TagTestManager, TestCase):
         obj = deserialized[0].object
         self.assertInstanceEqual(obj, name="test", singletag="test", tags="test")
         self.assertEqual(obj.many_to_one.count(), 1)
-        # Django 1.5 and earlier don't support .first
-        self.assertEqual(obj.many_to_one.all()[0].name, "rfk1")
+        self.assertEqual(obj.many_to_one.first().name, "rfk1")

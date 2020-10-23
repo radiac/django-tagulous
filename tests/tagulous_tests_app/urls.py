@@ -5,9 +5,6 @@ Usage:
     class MyTestCase(TestCase):
         urls = 'tests.tagulous_tests_app.urls'
 """
-from __future__ import unicode_literals
-
-import django
 from django.conf.urls import include, url
 
 import tagulous.views

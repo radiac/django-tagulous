@@ -1,24 +1,19 @@
 """
 Tagulous tag models
 """
-from __future__ import unicode_literals
-
 from django.db import IntegrityError, models, router, transaction
 from django.db.models import F, Max
+from django.db.models.functions import Floor
 from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import slugify
 
-import tagulous
-from tagulous import constants, settings, utils
-from tagulous.models.options import TagOptions
+from .. import constants, settings, utils
+from .options import TagOptions
 
 
 # TODO
 with_metaclass = six.with_metaclass
-
-
-from django.db.models.functions import Floor
 
 
 # ##############################################################################
@@ -203,6 +198,9 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
 
         In Django 1.7 it will be a list RelatedObjects.
         """
+        # Avoid circular import
+        from .fields import SingleTagField, TagField
+
         meta = cls._meta
         if hasattr(meta, "get_fields"):
             # Django 1.8 uses new meta API
@@ -219,13 +217,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         return [
             f
             for f in related_fields
-            if isinstance(
-                f.field,
-                (
-                    tagulous.models.fields.SingleTagField,
-                    tagulous.models.fields.TagField,
-                ),
-            )
+            if isinstance(f.field, (SingleTagField, TagField,),)
         ]
 
     def get_related_objects(self, flat=False, distinct=False, include_standard=False):
@@ -366,6 +358,9 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         """
         Merge the specified tags into this tag
         """
+        # Avoid circular import
+        from .fields import SingleTagField, TagField
+
         related_fields = self.tag_model.get_related_fields()
         tags = self._prep_merge_tags(tags)
 
@@ -379,13 +374,12 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
             ).filter(**{"%s__in" % related.field.name: tags})
 
             # Switch the tags
-            # Referring via tagulous to avoid circular import
-            if isinstance(related.field, tagulous.models.SingleTagField):
+            if isinstance(related.field, SingleTagField):
                 for obj in objs:
                     setattr(obj, related.field.name, self)
                     obj.save()
 
-            elif isinstance(related.field, tagulous.models.TagField):
+            elif isinstance(related.field, TagField):
                 for obj in objs:
                     getattr(obj, related.field.name).remove(*tags)
                     getattr(obj, related.field.name).add(self)

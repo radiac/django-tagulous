@@ -7,11 +7,8 @@ descriptors during the ``contribute_to_class`` phase.
 Their main purposes is to act as getter/setters and pass data to and from
 manager instances.
 """
-from __future__ import unicode_literals
-
 import collections
 
-import django
 from django.utils import six
 
 from tagulous.models.managers import (

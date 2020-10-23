@@ -1,8 +1,6 @@
 """
 JSON serializer with Tagulous support
 """
-from __future__ import unicode_literals
-
 from django.core.serializers import json as json_serializer
 
 from tagulous.serializers import base

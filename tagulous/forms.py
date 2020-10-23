@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import json
 
 from django import forms
@@ -12,10 +10,10 @@ from django.utils.encoding import force_text
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
 
-from tagulous import settings
-from tagulous.models import options
-from tagulous.models.models import BaseTagModel, TagModelQuerySet
-from tagulous.utils import parse_tags, render_tags
+from . import settings
+from .models import options
+from .models.models import BaseTagModel, TagModelQuerySet
+from .utils import parse_tags, render_tags
 
 
 class TagWidgetBase(forms.TextInput):

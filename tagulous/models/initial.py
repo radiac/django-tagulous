@@ -1,6 +1,4 @@
-from __future__ import unicode_literals
-
-from tagulous.models.fields import SingleTagField, TagField
+from .fields import SingleTagField, TagField
 
 
 #

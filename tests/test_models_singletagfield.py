@@ -8,9 +8,6 @@ Modules tested:
     tagulous.models.fields.BaseTagField
     tagulous.models.fields.SingleTagField
 """
-from __future__ import absolute_import, unicode_literals
-
-import django
 from django.core import exceptions
 from django.db import models
 from django.test import TestCase, TransactionTestCase

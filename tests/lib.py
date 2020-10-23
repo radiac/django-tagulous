@@ -1,6 +1,3 @@
-from __future__ import absolute_import, print_function, unicode_literals
-
-import json
 import os
 import re
 import sys
@@ -224,29 +221,9 @@ class TagTestManager(object):
                 % (dom_path, json1[dom_path].keys(), json2[dom_path].keys()),
             )
             for attr_name in json1[dom_path].keys():
-                # Django 1.4 doesn't support assertJSONEqual
-                # For now, just have a copy of it from 1.5
-                try:
-                    json1_val = json.loads(json1[dom_path][attr_name])
-                except ValueError:
-                    self.fail(
-                        "%s %s test result is not valid JSON: %r"
-                        % (dom_path, attr_name, json1[dom_path][attr_name])
-                    )
-                else:
-                    try:
-                        json2_val = json.loads(json2[dom_path][attr_name])
-                    except ValueError:
-                        self.fail(
-                            "%s %s expected is not valid JSON: %r"
-                            % (dom_path, attr_name, json2[dom_path][attr_name])
-                        )
-                    else:
-                        self.assertEqual(
-                            json1_val,
-                            json2_val,
-                            msg="%s %s JSON does not match" % (dom_path, attr_name),
-                        )
+                self.assertJSONEqual(
+                    json1[dom_path][attr_name], json2[dom_path][attr_name]
+                )
 
     def debugTagModel(self, model):
         """
