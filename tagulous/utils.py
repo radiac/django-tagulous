@@ -5,7 +5,7 @@ Loosely based on django-taggit and django-tagging
 """
 import unicodedata
 
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 from .constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
 
@@ -43,7 +43,7 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
     if not tag_string:
         return []
 
-    tag_string = force_text(tag_string)
+    tag_string = force_str(tag_string)
 
     # Prep variables for the parser
     tags = []

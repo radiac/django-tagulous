@@ -14,6 +14,7 @@ from tests.tagulous_tests_app import models, views
 tagged_model = models.TagFieldOptionsModel
 
 urlpatterns = [
+    # We don't include the admin site here - that's added by AdminTestManager
     url(
         r"^tagulous_tests_app/",
         include(
@@ -79,5 +80,5 @@ urlpatterns = [
                 ),
             ]
         ),
-    )
+    ),
 ]

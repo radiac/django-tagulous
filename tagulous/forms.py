@@ -5,9 +5,9 @@ from django.contrib.admin.widgets import AutocompleteMixin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import QuerySet
 from django.urls import NoReverseMatch, reverse
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.html import escape
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from . import settings
 from .models import options
@@ -49,7 +49,7 @@ class TagWidgetBase(forms.TextInput):
                 autocomplete_tags = autocomplete_tags.all()
 
             attrs["data-tag-list"] = escape(
-                force_text(
+                force_str(
                     json.dumps(
                         # Call str rather than tag.name directly, in case
                         # we've been given a list of tag strings
@@ -71,7 +71,7 @@ class TagWidgetBase(forms.TextInput):
 
         # Store tag options
         attrs["data-tag-options"] = escape(
-            force_text(json.dumps(tag_options, cls=DjangoJSONEncoder))
+            force_str(json.dumps(tag_options, cls=DjangoJSONEncoder))
         )
 
         # Mark it for the javascript to find

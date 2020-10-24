@@ -55,7 +55,13 @@ class AdminTestManager(object):
 
         # Try to clear the resolver cache
         if hasattr(get_resolver, "cache_clear"):
+            # Django 2.2
             get_resolver.cache_clear()
+        else:
+            # Django 3.0+
+            from django.urls.resolvers import _get_cached_resolver
+
+            _get_cached_resolver.cache_clear()
 
         # Store the old urls and make a copy
         self.old_urls = test_urls.urlpatterns
