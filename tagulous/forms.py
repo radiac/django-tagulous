@@ -5,7 +5,6 @@ from django.contrib.admin.widgets import AutocompleteMixin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import QuerySet
 from django.urls import NoReverseMatch, reverse
-from django.utils import six
 from django.utils.encoding import force_text
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
@@ -54,7 +53,7 @@ class TagWidgetBase(forms.TextInput):
                     json.dumps(
                         # Call str rather than tag.name directly, in case
                         # we've been given a list of tag strings
-                        [six.text_type(tag) for tag in autocomplete_tags],
+                        [str(tag) for tag in autocomplete_tags],
                         cls=DjangoJSONEncoder,
                     )
                 )
@@ -154,7 +153,7 @@ class BaseTagField(forms.CharField):
             tag_string = ""
 
         # Will normally get a string
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             tag_string = value
 
         # Otherwise will be given by the model's TagField.value_from_object().
@@ -204,7 +203,7 @@ class BaseTagField(forms.CharField):
 
     def to_python(self, value):
         # Tags shouldn't be whitespace. Strip here for ``required`` validation
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             value = value.strip()
 
         return super(BaseTagField, self).to_python(value)

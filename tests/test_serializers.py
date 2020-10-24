@@ -13,10 +13,10 @@ Modules tested:
 import os
 import tempfile
 import unittest
+from io import StringIO
 
 from django.core import management, serializers
 from django.test import TestCase
-from django.utils import six
 
 from tests.lib import TagTestManager, testenv
 from tests.tagulous_tests_app import models as test_models
@@ -42,7 +42,7 @@ class DumpDataAssertMixin(object):
         exclude_list=[],
         primary_keys="",
     ):
-        new_io = six.StringIO()
+        new_io = StringIO()
         if filename:
             filename = os.path.join(tempfile.gettempdir(), filename)
         management.call_command(

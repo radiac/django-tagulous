@@ -7,9 +7,7 @@ descriptors during the ``contribute_to_class`` phase.
 Their main purposes is to act as getter/setters and pass data to and from
 manager instances.
 """
-import collections
-
-from django.utils import six
+from collections.abc import Iterable
 
 from tagulous.models.managers import (
     FakeTagRelatedManager,
@@ -203,11 +201,11 @@ class TagDescriptor(BaseTagDescriptor):
             # Clear
             manager.set_tag_string("")
 
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             # If it's a string, it must be a tag string
             manager.set_tag_string(value)
 
-        elif isinstance(value, collections.Iterable):
+        elif isinstance(value, Iterable):
             # An iterable goes in as a list of things that are, or can be
             # converted to, strings
             manager.set_tag_list(value)

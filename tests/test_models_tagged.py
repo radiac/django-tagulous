@@ -9,7 +9,6 @@ Modules tested:
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.test import TestCase
-from django.utils import six
 
 from tagulous import models as tag_models
 from tagulous.models.tagged import _split_kwargs
@@ -51,8 +50,8 @@ class ModelTaggedTest(TagTestManager, TestCase):
         t1 = self.test_model(name="Test 1", singletag="Mr", tags="red, blue")
         t1.save()
         t2 = self.test_model.objects.get(name="Test 1")
-        self.assertEqual(six.text_type(t2.singletag), "Mr")
-        self.assertEqual(six.text_type(t2.tags), "blue, red")
+        self.assertEqual(str(t2.singletag), "Mr")
+        self.assertEqual(str(t2.tags), "blue, red")
 
 
 # ##############################################################################
@@ -200,7 +199,7 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         with self.assertRaises(MultipleObjectsReturned) as cm:
             self.test_model.objects.get(singletag="Mr")
         self.assertTrue(
-            six.text_type(cm.exception).startswith(
+            str(cm.exception).startswith(
                 "get() returned more than one MixedTest -- it returned 2!"
             )
         )
@@ -216,7 +215,7 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         with self.assertRaises(MultipleObjectsReturned) as cm:
             self.test_model.objects.get(tags="red, green")
         self.assertTrue(
-            six.text_type(cm.exception).startswith(
+            str(cm.exception).startswith(
                 "get() returned more than one MixedTest -- it returned 3!"
             )
         )
@@ -233,7 +232,7 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         with self.assertRaises(MultipleObjectsReturned) as cm:
             self.test_model.objects.get(tags__exact="yellow, purple")
         self.assertTrue(
-            six.text_type(cm.exception).startswith(
+            str(cm.exception).startswith(
                 "get() returned more than one MixedTest -- it returned 2!"
             )
         )
@@ -260,14 +259,14 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         self.assertTagModel(self.test_model.singletag, {"Mr": 1})
         t1.name = "Test 4"
         t1.save()
-        self.assertEqual(six.text_type(t1.singletag), "Mr")
+        self.assertEqual(str(t1.singletag), "Mr")
 
         # Get
         t2, created = self.test_model.objects.get_or_create(singletag="Mr")
         self.assertEqual(created, False)
         self.assertTagModel(self.test_model.singletag, {"Mr": 1})
         self.assertEqual(t2.name, "Test 4")
-        self.assertEqual(six.text_type(t2.singletag), "Mr")
+        self.assertEqual(str(t2.singletag), "Mr")
 
         self.assertEqual(t1.pk, t2.pk)
 
@@ -284,14 +283,14 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         self.assertTagModel(self.test_model.tags, {"red": 1, "blue": 1})
         t1.name = "Test 4"
         t1.save()
-        self.assertEqual(six.text_type(t1.tags), "blue, red")
+        self.assertEqual(str(t1.tags), "blue, red")
 
         # Get
         t2, created = self.test_model.objects.get_or_create(tags="red, blue")
         self.assertEqual(created, False)
         self.assertTagModel(self.test_model.tags, {"red": 1, "blue": 1})
         self.assertEqual(t2.name, "Test 4")
-        self.assertEqual(six.text_type(t1.tags), "blue, red")
+        self.assertEqual(str(t1.tags), "blue, red")
 
         self.assertEqual(t1.pk, t2.pk)
 
@@ -426,22 +425,22 @@ class ModelTaggedQuerysetOptionsSingleTest(TagTestManager, TestCase):
         "Check case sensitive matches"
         qs1 = self.test_model.objects.filter(case_sensitive_true="Mr")
         self.assertEqual(qs1.count(), 2)
-        self.assertEqual(six.text_type(qs1[0].name), "Test 1")
-        self.assertEqual(six.text_type(qs1[1].name), "Test 3")
+        self.assertEqual(str(qs1[0].name), "Test 1")
+        self.assertEqual(str(qs1[1].name), "Test 3")
 
     def test_case_sensitive_exclude_matches(self):
         "Check case sensitive excludes"
         qs1 = self.test_model.objects.exclude(case_sensitive_true="Mr")
         self.assertEqual(qs1.count(), 1)
-        self.assertEqual(six.text_type(qs1[0].name), "Test 2")
+        self.assertEqual(str(qs1[0].name), "Test 2")
 
     def test_case_insensitive_filter(self):
         "Check case insensitive matches"
         qs1 = self.test_model.objects.filter(case_sensitive_false="mr")
         self.assertEqual(qs1.count(), 3)
-        self.assertEqual(six.text_type(qs1[0].name), "Test 1")
-        self.assertEqual(six.text_type(qs1[1].name), "Test 2")
-        self.assertEqual(six.text_type(qs1[2].name), "Test 3")
+        self.assertEqual(str(qs1[0].name), "Test 1")
+        self.assertEqual(str(qs1[1].name), "Test 2")
+        self.assertEqual(str(qs1[2].name), "Test 3")
 
     def test_case_insensitive_exclude(self):
         "Check case insensitive matches"
@@ -481,22 +480,22 @@ class ModelTaggedQuerysetOptionsTest(TagTestManager, TestCase):
         "Check case sensitive matches"
         qs1 = self.test_model.objects.filter(case_sensitive_true="Adam")
         self.assertEqual(qs1.count(), 2)
-        self.assertEqual(six.text_type(qs1[0].name), "Test 1")
-        self.assertEqual(six.text_type(qs1[1].name), "Test 3")
+        self.assertEqual(str(qs1[0].name), "Test 1")
+        self.assertEqual(str(qs1[1].name), "Test 3")
 
     def test_case_sensitive_exclude_matches(self):
         "Check case sensitive excludes"
         qs1 = self.test_model.objects.exclude(case_sensitive_true="Adam")
         self.assertEqual(qs1.count(), 1)
-        self.assertEqual(six.text_type(qs1[0].name), "Test 2")
+        self.assertEqual(str(qs1[0].name), "Test 2")
 
     def test_case_insensitive_filter(self):
         "Check case insensitive matches"
         qs1 = self.test_model.objects.filter(case_sensitive_false="adam")
         self.assertEqual(qs1.count(), 3)
-        self.assertEqual(six.text_type(qs1[0].name), "Test 1")
-        self.assertEqual(six.text_type(qs1[1].name), "Test 2")
-        self.assertEqual(six.text_type(qs1[2].name), "Test 3")
+        self.assertEqual(str(qs1[0].name), "Test 1")
+        self.assertEqual(str(qs1[1].name), "Test 2")
+        self.assertEqual(str(qs1[2].name), "Test 3")
 
     def test_case_insensitive_exclude(self):
         "Check case insensitive matches"

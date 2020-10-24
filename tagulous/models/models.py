@@ -4,16 +4,11 @@ Tagulous tag models
 from django.db import IntegrityError, models, router, transaction
 from django.db.models import F, Max
 from django.db.models.functions import Floor
-from django.utils import six
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import slugify
 
 from .. import constants, settings, utils
 from .options import TagOptions
-
-
-# TODO
-with_metaclass = six.with_metaclass
 
 
 # ##############################################################################
@@ -71,7 +66,7 @@ class TagModelManager(models.Manager):
     get_query_set = get_queryset
 
     def __str__(self):
-        return six.text_type(self.get_queryset())
+        return str(self.get_queryset())
 
     def initial(self):
         return self.get_queryset().initial()
@@ -150,7 +145,7 @@ class TagModelBase(models.base.ModelBase):
 
 
 @python_2_unicode_compatible
-class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
+class BaseTagModel(models.Model, metaclass=TagModelBase):
     """
     Empty abstract base class for tag models
 
@@ -163,14 +158,14 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         abstract = True
 
     def __str__(self):
-        return six.text_type(self.name)
+        return str(self.name)
 
     def __eq__(self, obj):
         """
         If comparing to a string, is equal if string value matches
         Otherwise compares normally
         """
-        if isinstance(obj, six.string_types):
+        if isinstance(obj, str):
             return self.name == obj
         return super(BaseTagModel, self).__eq__(obj)
 
@@ -195,25 +190,21 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         If include_standard=False (default), only SingleTagFields and
         TagFields will be returned. If True, it will also include ForeignKeys
         and ManyToManyFields.
-
-        In Django 1.7 it will be a list RelatedObjects.
         """
         # Avoid circular import
         from .fields import SingleTagField, TagField
 
         meta = cls._meta
-        if hasattr(meta, "get_fields"):
-            # Django 1.8 uses new meta API
-            related_fields = [
-                f
-                for f in meta.get_fields()
-                if (f.many_to_many or f.one_to_many or f.one_to_one) and f.auto_created
-            ]
-        else:
-            related_fields = meta.get_all_related_objects()
-            related_fields += meta.get_all_related_many_to_many_objects()
+
+        related_fields = [
+            f
+            for f in meta.get_fields()
+            if (f.many_to_many or f.one_to_many or f.one_to_one) and f.auto_created
+        ]
+
         if include_standard:
             return related_fields
+
         return [
             f
             for f in related_fields
@@ -300,11 +291,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         # Reload count
         # Use DB for write because we just updated the value
         using = router.db_for_write(self.tag_model, instance=self)
-        if hasattr(self, "refresh_from_db"):
-            self.refresh_from_db(using=using)
-        else:
-            # Django 1.7 or earlier
-            self.count = self.__class__.objects.using(using).get(pk=self.pk).count
+        self.refresh_from_db(using=using)
 
         self.try_delete()
 
@@ -344,7 +331,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         excluding self
         """
         # Ensure tags is a list of tag instances
-        if isinstance(tags, six.string_types):
+        if isinstance(tags, str):
             tags = utils.parse_tags(
                 tags, space_delimiter=self.tag_options.space_delimiter
             )
@@ -427,7 +414,7 @@ class BaseTagModel(with_metaclass(TagModelBase, models.Model)):
         if settings.SLUG_ALLOW_UNICODE:
             slug_base = slugify(label, allow_unicode=True)
         else:
-            slug_base = slugify(six.text_type(utils.unicode_to_ascii(label)))
+            slug_base = slugify(str(utils.unicode_to_ascii(label)))
         self.slug = slug_base[:slug_max_length]
         self._update_extra()
 
@@ -600,7 +587,7 @@ class TagTreeModelBase(TagModelBase):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class BaseTagTreeModel(with_metaclass(TagTreeModelBase, BaseTagModel)):
+class BaseTagTreeModel(BaseTagModel, metaclass=TagTreeModelBase):
     """
     Empty abstract base class for tag models with tree
 

@@ -32,22 +32,12 @@ def clear_django():
         "migrationtestmodel_tags",
     ]
 
-    if django_apps:
-        # Django 1.7 or later
-        # Clear the get_models LRU cache
-        django_apps.apps.clear_cache()
+    # Clear the get_models LRU cache
+    django_apps.apps.clear_cache()
 
-        # Find dict container for app models cache
-        app_config = django_apps.apps.get_app_config(app_name)
-        app_models = app_config.models
-
-    else:
-        # Django 1.6 or earlier
-        # Clear loading cache so they'll be reloaded for next get_models call
-        models.loading.cache._get_models_cache.clear()
-
-        # Find dict container for app models cache
-        app_models = models.loading.cache.app_models.get(app_name, {})
+    # Find dict container for app models cache
+    app_config = django_apps.apps.get_app_config(app_name)
+    app_models = app_config.models
 
     # Clear the named models from the app models cache
     for lower_name in model_names:

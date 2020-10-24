@@ -15,7 +15,6 @@ from django.core import exceptions
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from django.urls import get_resolver, re_path, reverse
-from django.utils import six
 
 from tagulous import admin as tag_admin
 from tagulous import forms as tag_forms
@@ -120,8 +119,7 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         with self.assertRaises(exceptions.ImproperlyConfigured) as cm:
             tag_admin.register([self.model, self.model], self.admin, site=self.site)
         self.assertEqual(
-            six.text_type(cm.exception),
-            "Tagulous can only register a single model with admin.",
+            str(cm.exception), "Tagulous can only register a single model with admin.",
         )
         self.assertFalse(self.model in self.site._registry)
 
@@ -360,12 +358,6 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
         self.cl = ChangeList(*changelist_args)
         return self.cl
 
-    def get_cl_queryset(self, cl, request):
-        "Because ModelAdmin.get_query_set is deprecated in 1.6"
-        if hasattr(cl, "get_queryset"):
-            return cl.get_queryset(request)
-        return cl.get_query_set(request)
-
     def assertContains(self, content, *seeks):
         for seek in seeks:
             self.assertTrue(seek in content, msg="Missing %s" % seek)
@@ -385,7 +377,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
             )
         )
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, cl.get_queryset(request))
         msgs = list(messages.get_messages(request))
 
         # Check response is appropriate
@@ -522,7 +514,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
             )
         )
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, cl.get_queryset(request))
         msgs = list(messages.get_messages(request))
 
         # Check response is appropriate
@@ -575,7 +567,7 @@ class TagAdminTest(TagAdminTestManager, TestRequestMixin):
         "Check the merge_tags action fails when no tags selected"
         request = self.mock_request(POST=QueryDict("action=merge_tags"))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, cl.get_queryset(request))
         msgs = list(messages.get_messages(request))
 
         self.assertEqual(len(msgs), 1)
@@ -597,7 +589,7 @@ class TagAdminTest(TagAdminTestManager, TestRequestMixin):
             )
         )
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, cl.get_queryset(request))
         msgs = list(messages.get_messages(request))
 
         self.assertEqual(len(msgs), 1)

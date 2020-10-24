@@ -1,8 +1,6 @@
 """
 Tag options
 """
-from django.utils import six
-
 from tagulous import constants
 from tagulous.utils import parse_tags, render_tags
 
@@ -66,7 +64,7 @@ class TagOptions(object):
             if value is None:
                 self.__dict__["initial_string"] = ""
                 self.__dict__["initial"] = []
-            elif isinstance(value, six.string_types):
+            elif isinstance(value, str):
                 self.__dict__["initial_string"] = value
                 self.__dict__["initial"] = parse_tags(value)
             else:

@@ -2,19 +2,14 @@ import os
 import re
 import sys
 import unittest
+from io import StringIO
 
 import django
 from django.db import connection, models
 from django.test import testcases
-from django.utils import six
 
 from tagulous import models as tag_models
 
-
-if six.PY3:
-    from io import StringIO
-else:
-    from cStringIO import StringIO
 
 # Detect test environment
 # This is used when creating files (migrations and fixtures) to ensure that
@@ -94,7 +89,7 @@ class TagTestManager(object):
 
     def assertRegex(self, text, expected_regex, msg="Regex didn't match"):
         # Implement python 3.2's assertRegex for all
-        if isinstance(text, six.string_types):
+        if isinstance(text, str):
             expected_regex = re.compile(expected_regex)
         self.assertTrue(expected_regex.search(text), msg=msg)
 
@@ -108,8 +103,8 @@ class TagTestManager(object):
                 if isinstance(
                     instance.__class__._meta.get_field(field_name),
                     (tag_models.SingleTagField, tag_models.TagField),
-                ) and isinstance(val, six.string_types):
-                    self.assertEqual(six.text_type(getattr(instance, field_name)), val)
+                ) and isinstance(val, str):
+                    self.assertEqual(str(getattr(instance, field_name)), val)
                 elif isinstance(
                     instance.__class__._meta.get_field(field_name),
                     models.ManyToManyField,
@@ -152,7 +147,7 @@ class TagTestManager(object):
     def _extract_json(self, dom, path=""):
         "Recursively break out json from a django.utils.html_parser dom object"
         jsons = {}
-        if isinstance(dom, six.string_types):
+        if isinstance(dom, str):
             return dom, {}
         el_name = path + "." + dom.name
 
@@ -205,9 +200,7 @@ class TagTestManager(object):
 
         # Convert dom back to string, call super to test doms
         # Yes it's inefficient, but it's tests and saves me from forking it
-        super(TagTestManager, self).assertHTMLEqual(
-            six.text_type(dom1), six.text_type(dom2)
-        )
+        super(TagTestManager, self).assertHTMLEqual(str(dom1), str(dom2))
 
         # Test jsons
         # Assert we've found the same elements
@@ -259,9 +252,7 @@ class Capturing(list):
 
     def __exit__(self, *args):
         # Ensure output is unicode
-        self.extend(
-            six.text_type(line) for line in self._stringio.getvalue().splitlines()
-        )
+        self.extend(str(line) for line in self._stringio.getvalue().splitlines())
         sys.stdout = self._stdout
         sys.stderr = self._stderr
 

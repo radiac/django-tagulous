@@ -11,7 +11,6 @@ Modules tested:
 from django.core import exceptions
 from django.db import models
 from django.test import TestCase, TransactionTestCase
-from django.utils import six
 
 from tagulous import models as tag_models
 from tests.lib import TagTestManager, skip_if_mysql
@@ -109,14 +108,14 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         # Returned before save
         self.assertEqual(t1.title.__class__, self.tag_model)
         self.assertEqual(t1.title.name, "Mr")
-        self.assertEqual(six.text_type(t1.title), "Mr")
+        self.assertEqual(str(t1.title), "Mr")
         self.assertTagModel(self.tag_model, {})
 
         # Returned after save
         t1.save()
         self.assertEqual(t1.title.__class__, self.tag_model)
         self.assertEqual(t1.title.name, "Mr")
-        self.assertEqual(six.text_type(t1.title), "Mr")
+        self.assertEqual(str(t1.title), "Mr")
         self.assertTagModel(self.tag_model, {"Mr": 1})
 
     def test_assign_by_object(self):
@@ -130,8 +129,8 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t2.save()
         self.assertEqual(t1.name, "Test 1")
         self.assertEqual(t2.name, "Test 2")
-        self.assertEqual(six.text_type(t1.title), "Mr")
-        self.assertEqual(six.text_type(t2.title), "Mr")
+        self.assertEqual(str(t1.title), "Mr")
+        self.assertEqual(str(t2.title), "Mr")
         self.assertEqual(t1.title, t2.title)
         self.assertEqual(t1.title.pk, t2.title.pk)
         self.assertTagModel(self.tag_model, {"Mr": 2})
@@ -208,13 +207,13 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         """
         t1 = self.test_model.objects.create(name="Test 1", title="Mr")
         t2 = self.test_model.objects.create(name="Test 2", title="Mrs")
-        self.assertEqual(six.text_type(t1.title.name), "Mr")
-        self.assertEqual(six.text_type(t2.title.name), "Mrs")
+        self.assertEqual(str(t1.title.name), "Mr")
+        self.assertEqual(str(t2.title.name), "Mrs")
         self.assertTagModel(self.tag_model, {"Mr": 1, "Mrs": 1})
 
         # Now change the title and delete without saving
         t1.title = "Mrs"
-        self.assertEqual(six.text_type(t1.title.name), "Mrs")
+        self.assertEqual(str(t1.title.name), "Mrs")
         self.assertTagModel(self.tag_model, {"Mr": 1, "Mrs": 1})
         t1.delete()
 
@@ -222,7 +221,7 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {"Mrs": 1})
 
         # But check that tagulous still thinks the tag is 'Mrs'
-        self.assertEqual(six.text_type(t1.title.name), "Mrs")
+        self.assertEqual(str(t1.title.name), "Mrs")
 
     def test_save_deleted_instance(self):
         """
@@ -260,14 +259,14 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         t1 = self.test_model(name="Test 1", title="Mr")
         t2 = self.test_model(name="Test 1", title="Mrs")
         self.assertTagModel(self.tag_model, {})
-        self.assertEqual(six.text_type(t1.title), "Mr")
-        self.assertEqual(six.text_type(t2.title), "Mrs")
+        self.assertEqual(str(t1.title), "Mr")
+        self.assertEqual(str(t2.title), "Mrs")
         t1.save()
         self.assertTagModel(self.tag_model, {"Mr": 1})
         t2.save()
         self.assertTagModel(self.tag_model, {"Mr": 1, "Mrs": 1})
-        self.assertEqual(six.text_type(t1.title), "Mr")
-        self.assertEqual(six.text_type(t2.title), "Mrs")
+        self.assertEqual(str(t1.title), "Mr")
+        self.assertEqual(str(t2.title), "Mrs")
 
     def test_load_instance(self):
         "Check that SingleTagField is loaded correctly"
@@ -396,9 +395,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             class FailModel_invalid_to(models.Model):
                 to_model = tag_models.SingleTagField(test_models.SingleTagFieldModel)
 
-        self.assertEqual(
-            six.text_type(cm.exception), "Tag model must be a subclass of TagModel"
-        )
+        self.assertEqual(str(cm.exception), "Tag model must be a subclass of TagModel")
 
     def test_forbidden_to_field(self):
         "Check that to_field argument raises exception"
@@ -408,8 +405,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
                 to_field = tag_models.SingleTagField(to_field="fail")
 
         self.assertEqual(
-            six.text_type(cm.exception),
-            "Invalid argument 'to_field' for SingleTagField",
+            str(cm.exception), "Invalid argument 'to_field' for SingleTagField",
         )
 
     def test_forbidden_rel_class(self):
@@ -420,8 +416,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
                 rel_class = tag_models.SingleTagField(rel_class="fail")
 
         self.assertEqual(
-            six.text_type(cm.exception),
-            "Invalid argument 'rel_class' for SingleTagField",
+            str(cm.exception), "Invalid argument 'rel_class' for SingleTagField",
         )
 
     def test_forbidden_max_count(self):
@@ -432,8 +427,7 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
                 max_count = tag_models.SingleTagField(max_count="fail")
 
         self.assertEqual(
-            six.text_type(cm.exception),
-            "Invalid argument 'max_count' for SingleTagField",
+            str(cm.exception), "Invalid argument 'max_count' for SingleTagField",
         )
 
     def test_value_from_object_none(self):

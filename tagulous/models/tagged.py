@@ -7,7 +7,6 @@ is enabled.
 import copy
 
 from django.db import models, transaction
-from django.utils import six
 
 from tagulous import utils
 from tagulous.models.fields import (
@@ -112,8 +111,7 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         Custom lookups for tag fields
         """
-        # TODO: When minimum supported Django 1.7+, this can be replaced with
-        # custom lookups, which would work much better anyway.
+        # TODO: Replace with custom lookups
         safe_fields, singletag_fields, tag_fields, field_lookup = _split_kwargs(
             self.model, kwargs, lookups=True, with_fields=True
         )
@@ -121,7 +119,7 @@ class TaggedQuerySet(models.query.QuerySet):
         # Look up string values for SingleTagFields by name
         for field_name, val in singletag_fields.items():
             query_field_name = field_name
-            if isinstance(val, six.string_types):
+            if isinstance(val, str):
                 query_field_name += "__name"
                 if not field_lookup[field_name].tag_options.case_sensitive:
                     query_field_name += "__iexact"
@@ -142,7 +140,7 @@ class TaggedQuerySet(models.query.QuerySet):
             tag_options = field_lookup[field_name].tag_options
 
             # Only perform custom lookup if value is a string
-            if not isinstance(val, six.string_types):
+            if not isinstance(val, str):
                 qs = super(TaggedQuerySet, self)._filter_or_exclude(
                     negate, **{field_name: val}
                 )
@@ -360,11 +358,7 @@ class TaggedModel(models.Model):
         safe.
         """
         # Get fields on this model
-        if hasattr(cls._meta, "get_fields"):
-            # Django 1.8
-            fields = cls._meta.get_fields()
-        else:
-            fields = cls._meta.local_fields + cls._meta.local_many_to_many
+        fields = cls._meta.get_fields()
 
         # Create a fake model
         class FakeTaggedModel(models.Model):

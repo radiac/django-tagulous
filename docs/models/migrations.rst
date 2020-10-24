@@ -27,7 +27,7 @@ when using a non-transactional database, it won't be able to roll back and may
 be left in an unmigrateable state. It is therefore recommended that you either
 make a backup of your database before using this function, or that you follow
 the steps in the
-`official Django documentation <https://docs.djangoproject.com/en/1.8/howto/writing-migrations/#migrations-that-add-unique-fields>`_
+`official Django documentation <https://docs.djangoproject.com/en/dev/howto/writing-migrations/#migrations-that-add-unique-fields>`_
 to perform the action in 3 separate migrations.
 
 

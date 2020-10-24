@@ -85,9 +85,6 @@ class BaseTagField(object):
         # Make a note that this has not been contributed to a class yet
         self.contributed = False
 
-        # This attribute will let us tell South to supress undesired M2M fields
-        self.south_supression = True
-
     def do_related_class(self, other, cls):
         """
         Process tag model now it has been resolved if it was a string
@@ -417,7 +414,6 @@ class TagField(BaseTagField, models.ManyToManyField):
     def _check_ignored_options(self, **kwargs):
         warnings = []
 
-        # Django 1.9 introduces this, but later version remove has_null_arg
         if getattr(self, "null", False):
             warnings.append(
                 ChecksWarning(
@@ -429,10 +425,6 @@ class TagField(BaseTagField, models.ManyToManyField):
             )
             self.has_null_arg = False
             self.null = None
-
-        # Essentially a hack for tests in Django 1.7
-        if not hasattr(super(TagField, self), "_check_ignored_options"):
-            return warnings
 
         return warnings + super(TagField, self)._check_ignored_options(**kwargs)
 

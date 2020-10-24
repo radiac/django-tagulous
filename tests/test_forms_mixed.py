@@ -8,7 +8,6 @@ Modules tested:
     tagulous.forms.TagField
 """
 from django.test import TestCase
-from django.utils import six
 
 from tests.lib import TagTestManager
 from tests.tagulous_tests_app import forms as test_forms
@@ -171,7 +170,7 @@ class SingleInlineFormsetTest(TagTestManager, TestCase):
 
         formset = self.formset(prefix="formset", instance=tag1)
         self.assertHTMLEqual(
-            six.text_type(formset.forms[0]["singletag"]),
+            str(formset.forms[0]["singletag"]),
             (
                 '<input type="hidden" name="formset-0-singletag" '
                 'value="%d" id="id_formset-0-singletag" />'

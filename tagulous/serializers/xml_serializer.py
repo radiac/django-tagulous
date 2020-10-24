@@ -2,7 +2,6 @@
 XML serializer with Tagulous support
 """
 from django.core.serializers import xml_serializer
-from django.utils import six
 
 from tagulous.models.fields import SingleTagField, TagField
 from tagulous.models.tagged import TaggedModel
@@ -45,7 +44,7 @@ class Serializer(xml_serializer.Serializer):
         """
         Trick XML serializer into serializing this as text
         """
-        tag_string = six.text_type(getattr(obj, field.name))
+        tag_string = str(getattr(obj, field.name))
         fake_obj = FakeObject(field.name, tag_string)
         fake_field = FakeField(field.name)
         self.handle_field(fake_obj, fake_field)

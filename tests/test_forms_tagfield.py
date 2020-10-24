@@ -7,7 +7,6 @@ Modules tested:
 """
 from django import forms
 from django.test import TestCase
-from django.utils import six
 
 from tagulous import forms as tag_forms
 from tagulous import models as tag_models
@@ -77,7 +76,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         self.assertHTMLEqual(
-            six.text_type(form["tag"]),
+            str(form["tag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -94,7 +93,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         self.assertHTMLEqual(
-            six.text_type(form["tag"]),
+            str(form["tag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: false}" '
@@ -111,7 +110,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         self.assertHTMLEqual(
-            six.text_type(form["tag"]),
+            str(form["tag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -133,7 +132,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         self.assertHTMLEqual(
-            six.text_type(form["tag"]),
+            str(form["tag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -148,7 +147,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
         "Check widget renders value"
         form = test_forms.TagFieldForm(data={"tags": "run, walk"})
         self.assertHTMLEqual(
-            six.text_type(form["tags"]),
+            str(form["tags"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -169,9 +168,9 @@ class FormTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         with self.assertRaises(ValueError) as cm:
-            six.text_type(form["tag"])
+            str(form["tag"])
         self.assertTrue(
-            six.text_type(cm.exception).startswith(
+            str(cm.exception).startswith(
                 "Invalid autocomplete view: Reverse for '{0}' not found. "
                 "'{0}' is not a valid view function or pattern name.".format(
                     autocomplete_view
@@ -201,7 +200,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
         # Render
         # Expecting bees:buzz, cats:purr, cows:moo
         self.assertHTMLEqual(
-            six.text_type(form["tags"]),
+            str(form["tags"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -219,7 +218,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
         with self.assertRaises(ValueError) as cm:
             form["tags"].field.prepare_value(["tag", "list", "fails"])
         self.assertEqual(
-            six.text_type(cm.exception), "Tag field could not prepare unexpected value"
+            str(cm.exception), "Tag field could not prepare unexpected value"
         )
 
 
@@ -357,7 +356,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {"red": 0, "blue": 0, "yellow": 0})
         form = self.form(data={"name": "Test 1", "tags": "red, blue"})
         self.assertHTMLEqual(
-            six.text_type(form["tags"]),
+            str(form["tags"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -373,7 +372,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         "Check initial tag string"
         form = test_forms.TagFieldForm(initial={"tags": "red, blue"})
         self.assertHTMLEqual(
-            six.text_type(form["tags"]),
+            str(form["tags"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -389,7 +388,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         t2 = self.tag_model.objects.create(name="blue")
         form = test_forms.TagFieldForm(initial={"tags": [t1, t2]})
         self.assertHTMLEqual(
-            six.text_type(form["tags"]),
+            str(form["tags"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -406,7 +405,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         tags = self.tag_model.objects.all()
         form = test_forms.TagFieldForm(initial={"tags": tags})
         self.assertHTMLEqual(
-            six.text_type(form["tags"]),
+            str(form["tags"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -423,7 +422,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         form = self.form(instance=t1)
 
         self.assertHTMLEqual(
-            six.text_type(form["tags"]),
+            str(form["tags"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-list="[&quot;blue&quot;, &quot;red&quot;]" '
@@ -450,7 +449,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         form["two"].field.widget.default_autocomplete_settings = {"bees": "buzz"}
 
         self.assertHTMLEqual(
-            six.text_type(form["two"]),
+            str(form["two"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-list="[]" '
@@ -505,7 +504,7 @@ class ModelFormTagFieldRequiredTest(TagTestManager, TestCase):
         t1 = form.save()
         self.assertEqual(t1.name, "Test 1")
         self.assertEqual(t1.tag, "blue, red")
-        self.assertEqual(six.text_type(t1.tag), "blue, red")
+        self.assertEqual(str(t1.tag), "blue, red")
         self.assertIsInstance(t1.tag, tag_models.TagRelatedManagerMixin)
         self.assertEqual(t1.tag.count(), 2)
         self.assertEqual(t1.tag.all()[0], "blue")

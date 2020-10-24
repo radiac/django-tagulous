@@ -112,37 +112,21 @@ def clean_all():
 
 def make_migration(name):
     "Make a migration with the given name"
-    # Django 1.7 doesn't support --name, so create it with auto-gen name and
-    # rename it
     try:
         with Capturing() as output:
             call_command(
                 "makemigrations",
+                "--name={}".format(name),
                 app_name,  # app to make migration for
                 verbosity=0,  # Silent
             )
     except Exception as e:
-        print(">> makemigration failed:")
+        print(">> makemigration failed for {}:".format(name))
         print("\n".join(output))
         print("<<<<<<<<<<")
         raise e
 
-    # Find file using same numeric prefix
-    migrations = get_migrations()
-    last_migration = migrations[-1][1]
-    if not name.startswith(last_migration[:5]):
-        raise ValueError(
-            "Was expecting migration %s to start %s" % (name, last_migration[:5])
-        )
     clear_migrations()
-
-    # Rename file
-    migrations_dir = get_migrations_dir()
-    old_py = os.path.join(migrations_dir, "%s.py" % last_migration)
-    new_py = os.path.join(migrations_dir, "%s.py" % name)
-    os.rename(old_py, new_py)
-    if os.path.exists(old_py + "c"):
-        os.remove(old_py + "c")
 
 
 def migrate_app(target=None):
@@ -272,7 +256,7 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
         self.assertFalse(issubclass(model_initial, tag_models.tagged.TaggedModel))
 
         # Make the migration
-        make_migration("0001_initial")
+        make_migration("initial")
 
         # Check the files were created as expected
         migrations = get_migrations()
@@ -309,7 +293,7 @@ class DjangoMigrationTest(TagTestManager, TransactionTestCase):
         self.assertTrue(issubclass(model_tagged, tag_models.tagged.TaggedModel))
 
         # Make the migration
-        make_migration("0002_tagged")
+        make_migration("tagged")
 
         # Check the files were created as expected
         migrations = get_migrations()

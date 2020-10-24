@@ -299,6 +299,19 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+1.1.0, 2020-
+-----------------
+
+Feature:
+
+* Add Django 3.0 and 3.1 support (closes #85)
+
+Changes:
+
+* Drops support for Python 2
+* Drops support for Django 1.11 and earlier
+* Drops support for South migrations
+
 
 1.0.0, 2020-10-08
 -----------------

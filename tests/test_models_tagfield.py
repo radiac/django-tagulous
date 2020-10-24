@@ -10,19 +10,13 @@ Modules tested:
 """
 import unittest
 
+from django.core.checks import Warning as ChecksWarning
 from django.db import models
 from django.test import TestCase, TransactionTestCase
-from django.utils import six
 
 from tagulous import models as tag_models
 from tests.lib import TagTestManager, skip_if_mysql
 from tests.tagulous_tests_app import models as test_models
-
-
-try:
-    from django.core.checks import Warning as ChecksWarning
-except ImportError:
-    ChecksWarning = None
 
 
 class ModelTagFieldTest(TagTestManager, TestCase):
@@ -155,7 +149,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
         # Returned before save
         self.assertEqual(t1.tags.get_tag_string(), "blue, red")
-        self.assertEqual(six.text_type(t1.tags), t1.tags.get_tag_string())
+        self.assertEqual(str(t1.tags), t1.tags.get_tag_string())
         self.assertEqual(len(t1.tags.get_tag_list()), 2)
         self.assertTrue("red" in t1.tags.get_tag_list())
         self.assertTrue("blue" in t1.tags.get_tag_list())
@@ -163,13 +157,13 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
         # Check db hasn't changed
         t2 = self.test_model.objects.get(name="Test 1")
-        self.assertEqual(six.text_type(t2.tags), "")
+        self.assertEqual(str(t2.tags), "")
 
         # Returned after save
         t1.save()
         t1 = self.test_model.objects.get(name="Test 1")
         self.assertEqual(t1.tags.get_tag_string(), "blue, red")
-        self.assertEqual(six.text_type(t1.tags), t1.tags.get_tag_string())
+        self.assertEqual(str(t1.tags), t1.tags.get_tag_string())
         self.assertEqual(len(t1.tags.get_tag_list()), 2)
         self.assertTrue("red" in t1.tags.get_tag_list())
         self.assertTrue("blue" in t1.tags.get_tag_list())
@@ -186,12 +180,12 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         t1.tags = "red, blue"
 
         # Returned before save
-        self.assertEqual(six.text_type(t1.tags), "blue, red")
+        self.assertEqual(str(t1.tags), "blue, red")
         self.assertTagModel(self.tag_model, {})
 
         # Check db hasn't changed
         t2 = self.test_model.objects.get(name="Test 1")
-        self.assertEqual(six.text_type(t2.tags), "")
+        self.assertEqual(str(t2.tags), "")
 
         # Returned after save
         t1.tags.save()
@@ -204,12 +198,12 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         t1.tags = ["red", "blue"]
 
         # Returned before save
-        self.assertEqual(six.text_type(t1.tags), "blue, red")
+        self.assertEqual(str(t1.tags), "blue, red")
         self.assertTagModel(self.tag_model, {})
 
         # Check db hasn't changed
         t2 = self.test_model.objects.get(name="Test 1")
-        self.assertEqual(six.text_type(t2.tags), "")
+        self.assertEqual(str(t2.tags), "")
 
         # Returned after save
         t1.tags.save()
@@ -225,12 +219,12 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         ]
 
         # Returned before save
-        self.assertEqual(six.text_type(t1.tags), "blue, red")
+        self.assertEqual(str(t1.tags), "blue, red")
         self.assertTagModel(self.tag_model, {"red": 0, "blue": 0})
 
         # Check db hasn't changed
         t2 = self.test_model.objects.get(name="Test 1")
-        self.assertEqual(six.text_type(t2.tags), "")
+        self.assertEqual(str(t2.tags), "")
 
         # Returned after save
         t1.tags.save()
@@ -245,7 +239,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         t1.tags = self.tag_model.objects.all()
 
         # Returned before save, check DB hasn't changed
-        self.assertEqual(six.text_type(t1.tags), "blue, red")
+        self.assertEqual(str(t1.tags), "blue, red")
         self.assertInstanceEqual(t1, name="Test 1", tags="")
         self.assertTagModel(self.tag_model, {"red": 0, "blue": 0})
 
@@ -261,7 +255,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         t1.tags = ""
 
         # Returned before save, check DB hasn't changed
-        self.assertEqual(six.text_type(t1.tags), "")
+        self.assertEqual(str(t1.tags), "")
         self.assertInstanceEqual(t1, name="Test 1", tags="blue, red")
         self.assertTagModel(self.tag_model, {"red": 1, "blue": 1})
 
@@ -278,12 +272,12 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         t1.tags = []
 
         # Returned before save
-        self.assertEqual(six.text_type(t1.tags), "")
+        self.assertEqual(str(t1.tags), "")
         self.assertTagModel(self.tag_model, {"red": 1, "blue": 1})
 
         # Check db hasn't changed
         t2 = self.test_model.objects.get(name="Test 1")
-        self.assertEqual(six.text_type(t2.tags), "blue, red")
+        self.assertEqual(str(t2.tags), "blue, red")
 
         # Returned after save
         t1.tags.save()
@@ -298,12 +292,12 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         t1.tags = None
 
         # Returned before save
-        self.assertEqual(six.text_type(t1.tags), "")
+        self.assertEqual(str(t1.tags), "")
         self.assertTagModel(self.tag_model, {"red": 1, "blue": 1})
 
         # Check db hasn't changed
         t2 = self.test_model.objects.get(name="Test 1")
-        self.assertEqual(six.text_type(t2.tags), "blue, red")
+        self.assertEqual(str(t2.tags), "blue, red")
 
         # Returned after save
         t1.tags.save()
@@ -316,9 +310,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         with self.assertRaises(ValueError) as cm:
             # Assign the descriptor to itself, because why not.
             t1.tags = self.test_model.tags
-        self.assertEqual(
-            six.text_type(cm.exception), "Unexpected value assigned to TagField"
-        )
+        self.assertEqual(str(cm.exception), "Unexpected value assigned to TagField")
 
     def test_contains(self):
         "Check __contains__ using strings and Tag objects"
@@ -516,7 +508,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
         # Returned before save
         t1.tags.clear()
-        self.assertEqual(six.text_type(t1.tags), "")
+        self.assertEqual(str(t1.tags), "")
         self.assertTagModel(self.tag_model, {"red": 1, "blue": 1})
         self.assertInstanceEqual(t1, name="Test 1", tags="")
         self.assertInstanceEqual(t2, name="Test 2", tags="blue, red")
@@ -552,23 +544,23 @@ class ModelTagFieldTest(TagTestManager, TestCase):
 
         with self.assertRaises(ValueError) as cm:
             t1.tags.save()
-        self.assertEqual(six.text_type(cm.exception), errmsg)
+        self.assertEqual(str(cm.exception), errmsg)
 
         with self.assertRaises(ValueError) as cm:
             t1.tags.set("fail")
-        self.assertEqual(six.text_type(cm.exception), errmsg)
+        self.assertEqual(str(cm.exception), errmsg)
 
         with self.assertRaises(ValueError) as cm:
             t1.tags.add("fail")
-        self.assertEqual(six.text_type(cm.exception), errmsg)
+        self.assertEqual(str(cm.exception), errmsg)
 
         with self.assertRaises(ValueError) as cm:
             t1.tags.remove("blue")
-        self.assertEqual(six.text_type(cm.exception), errmsg)
+        self.assertEqual(str(cm.exception), errmsg)
 
         with self.assertRaises(ValueError) as cm:
             t1.tags.clear()
-        self.assertEqual(six.text_type(cm.exception), errmsg)
+        self.assertEqual(str(cm.exception), errmsg)
 
     def test_prefetch_related(self):
         self.create(self.test_model, name="Test 1", tags="blue, green")
@@ -645,7 +637,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
         with self.assertRaises(ValueError) as cm:
             new_field._process_deferred_options()
         self.assertEqual(
-            six.text_type(cm.exception),
+            str(cm.exception),
             "Cannot set tag options on explicit tag model "
             "<class 'tests.tagulous_tests_app.models.TagMetaUser'>",
         )
@@ -670,9 +662,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             class FailModel_invalid_to(models.Model):
                 to_model = tag_models.TagField(test_models.TagFieldModel)
 
-        self.assertEqual(
-            six.text_type(cm.exception), "Tag model must be a subclass of TagModel"
-        )
+        self.assertEqual(str(cm.exception), "Tag model must be a subclass of TagModel")
 
     def test_forbidden_db_table(self):
         "Check that db_table argument raises exception"
@@ -681,9 +671,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             class FailModel_forbidden_db(models.Model):
                 db_table = tag_models.TagField(db_table="fail")
 
-        self.assertEqual(
-            six.text_type(cm.exception), "Invalid argument 'db_table' for TagField"
-        )
+        self.assertEqual(str(cm.exception), "Invalid argument 'db_table' for TagField")
 
     def test_forbidden_through(self):
         "Check that through argument raises exception"
@@ -692,9 +680,7 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
             class FailModel_forbidden_through(models.Model):
                 through = tag_models.TagField(through="fail")
 
-        self.assertEqual(
-            six.text_type(cm.exception), "Invalid argument 'through' for TagField"
-        )
+        self.assertEqual(str(cm.exception), "Invalid argument 'through' for TagField")
 
     def test_forbidden_symmetrical(self):
         "Check that symmetrical argument raises exception"
@@ -704,10 +690,9 @@ class ModelTagFieldInvalidTest(TagTestManager, TransactionTestCase):
                 symmetrical = tag_models.TagField(symmetrical="fail")
 
         self.assertEqual(
-            six.text_type(cm.exception), "Invalid argument 'symmetrical' for TagField"
+            str(cm.exception), "Invalid argument 'symmetrical' for TagField"
         )
 
-    @unittest.skipIf(ChecksWarning is None, "Check test only run for Django 1.9+")
     def test_nulled_tag_field(self):
         "Check model field raises warning when given invalid null"
         nulled_tagfield = tag_models.TagField(null=True)
@@ -1203,9 +1188,7 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
             self.test_model.objects.create(
                 name="Test 1", max_count="Adam, Brian, Chris, David"
             )
-        self.assertEqual(
-            six.text_type(cm.exception), "Cannot set more than 3 tags on this field"
-        )
+        self.assertEqual(str(cm.exception), "Cannot set more than 3 tags on this field")
         with self.assertRaises(self.test_model.DoesNotExist) as cm:
             self.test_model.objects.get(name="Test 1")
         self.assertTagModel(self.test_model.max_count, {})
@@ -1223,9 +1206,7 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         t1 = self.create(self.test_model, name="Test 1")
         with self.assertRaises(ValueError) as cm:
             t1.max_count = "Adam, Brian, Chris, David"
-        self.assertEqual(
-            six.text_type(cm.exception), "Cannot set more than 3 tags on this field"
-        )
+        self.assertEqual(str(cm.exception), "Cannot set more than 3 tags on this field")
         self.assertInstanceEqual(t1, name="Test 1", max_count="")
         self.assertTagModel(self.test_model.max_count, {})
 
@@ -1234,7 +1215,7 @@ class ModelTagFieldOptionsTest(TagTestManager, TransactionTestCase):
         with self.assertRaises(ValueError) as cm:
             t1.max_count.add("Chris", "David")
         self.assertEqual(
-            six.text_type(cm.exception),
+            str(cm.exception),
             "Cannot set more than 3 tags on this field; it already has 2",
         )
         self.assertInstanceEqual(t1, name="Test 1", max_count="Adam, Brian")

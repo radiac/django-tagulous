@@ -5,7 +5,6 @@ Loosely based on django-taggit and django-tagging
 """
 import unicodedata
 
-from django.utils import six
 from django.utils.encoding import force_text
 
 from .constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
@@ -236,7 +235,7 @@ def render_tags(tags):
     names = []
     for tag in tags:
         # This will catch a list of Tag objects or tag name strings
-        name = six.text_type(tag)
+        name = str(tag)
 
         name = name.replace(QUOTE, DOUBLE_QUOTE)
         if COMMA in name or SPACE in name:
@@ -312,10 +311,10 @@ def unicode_to_ascii(raw):
     Returns unicode string which only contains ascii characters
     """
     if unidecode is not None:
-        return six.text_type(unidecode(six.text_type(raw)))
+        return str(unidecode(str(raw)))
 
     return "".join(
         c if ord(c) < 128 else "_"
-        for c in unicodedata.normalize("NFD", six.text_type(raw))
+        for c in unicodedata.normalize("NFD", str(raw))
         if unicodedata.category(c) != "Mn"
     )

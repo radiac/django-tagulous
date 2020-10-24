@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.db import migrations, models
-from django.utils import six
 
 import tagulous.models.fields
 import tagulous.models.migrations
@@ -48,7 +47,7 @@ class Migration(migrations.Migration):
             name="path",
             field=models.TextField(),
             preserve_default=False,
-            set_fn=lambda obj: setattr(obj, "path", six.text_type(obj.pk)),
+            set_fn=lambda obj: setattr(obj, "path", str(obj.pk)),
         )
         + [
             migrations.AlterField(
