@@ -1,8 +1,8 @@
 """
 Tag options
 """
-from tagulous import constants
-from tagulous.utils import parse_tags, render_tags
+from .. import constants
+from ..utils import parse_tags, render_tags
 
 
 class TagOptions(object):

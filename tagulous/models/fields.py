@@ -9,13 +9,12 @@ They are also responsible for preparing form fields.
 """
 from django.core.checks import Warning as ChecksWarning
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import capfirst
 
-from tagulous import constants, forms
-from tagulous.models.descriptors import SingleTagDescriptor, TagDescriptor
-from tagulous.models.models import BaseTagModel, TagModel, TagTreeModel
-from tagulous.models.options import TagOptions
+from .. import constants, forms
+from .descriptors import SingleTagDescriptor, TagDescriptor
+from .models import BaseTagModel, TagModel, TagTreeModel
+from .options import TagOptions
 
 
 # ##############################################################################
@@ -458,7 +457,6 @@ class TagField(BaseTagField, models.ManyToManyField):
         monkey-patching Django.
         """
 
-        @python_2_unicode_compatible
         class FakeObject(object):
             """
             FakeObject so m2d can check obj.pk

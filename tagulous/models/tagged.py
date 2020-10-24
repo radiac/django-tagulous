@@ -8,8 +8,8 @@ import copy
 
 from django.db import models, transaction
 
-from tagulous import utils
-from tagulous.models.fields import (
+from .. import utils
+from .fields import (
     BaseTagField,
     SingleTagField,
     TagField,
@@ -161,6 +161,8 @@ class TaggedQuerySet(models.query.QuerySet):
                 subqs = subqs.annotate(**{count_name: models.Count(field_name)}).filter(
                     **{count_name: len(tags)}
                 )
+                # Explicit order as meta ordering will be ignored
+                subqs = subqs.order_by("name")
 
             # Prep the field name
             query_field_name = field_name + "__name"

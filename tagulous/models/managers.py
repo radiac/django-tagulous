@@ -7,7 +7,6 @@ the tags.
 For tag model manager, look in tagulous.models.models
 """
 from django.core import exceptions
-from django.utils.encoding import python_2_unicode_compatible
 
 from ..utils import parse_tags, render_tags
 
@@ -243,7 +242,6 @@ class SingleTagManager(object):
 # ##############################################################################
 
 
-@python_2_unicode_compatible
 class BaseTagRelatedManager(object):
     """
     Mixin for TagRelatedManagerMixin, and base class for FakeTagRelatedManager.

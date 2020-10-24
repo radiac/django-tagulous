@@ -3,7 +3,7 @@ Python serializer with Tagulous support
 """
 from django.core.serializers import python as python_serializer
 
-from tagulous.serializers import base
+from . import base
 
 
 class Serializer(base.SerializerMixin, python_serializer.Serializer):

@@ -3,9 +3,9 @@ XML serializer with Tagulous support
 """
 from django.core.serializers import xml_serializer
 
-from tagulous.models.fields import SingleTagField, TagField
-from tagulous.models.tagged import TaggedModel
-from tagulous.serializers import base
+from ..models.fields import SingleTagField, TagField
+from ..models.tagged import TaggedModel
+from . import base
 
 
 class FakeObject(object):

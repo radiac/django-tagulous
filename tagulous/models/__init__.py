@@ -3,21 +3,18 @@ Tagulous models
 
 Make important functions and classes available on tagulous.models
 """
-from tagulous.models import initial, migrations  # noqa
-from tagulous.models.descriptors import (  # noqa
-    BaseTagDescriptor,
-    SingleTagDescriptor,
-    TagDescriptor,
-)
-from tagulous.models.fields import (  # noqa
+from ..signals.pre import register_pre_signals
+from . import initial, migrations  # noqa
+from .descriptors import BaseTagDescriptor, SingleTagDescriptor, TagDescriptor  # noqa
+from .fields import (  # noqa
     BaseTagField,
     SingleTagField,
     TagField,
     singletagfields_from_model,
     tagfields_from_model,
 )
-from tagulous.models.managers import SingleTagManager, TagRelatedManagerMixin  # noqa
-from tagulous.models.models import (  # noqa
+from .managers import SingleTagManager, TagRelatedManagerMixin  # noqa
+from .models import (  # noqa
     BaseTagModel,
     BaseTagTreeModel,
     TagModel,
@@ -25,9 +22,8 @@ from tagulous.models.models import (  # noqa
     TagModelQuerySet,
     TagTreeModel,
 )
-from tagulous.models.options import TagOptions  # noqa
-from tagulous.models.tagged import TaggedManager, TaggedModel, TaggedQuerySet  # noqa
-from tagulous.signals.pre import register_pre_signals
+from .options import TagOptions  # noqa
+from .tagged import TaggedManager, TaggedModel, TaggedQuerySet  # noqa
 
 
 register_pre_signals()

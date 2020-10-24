@@ -4,7 +4,6 @@ Tagulous tag models
 from django.db import IntegrityError, models, router, transaction
 from django.db.models import F, Max
 from django.db.models.functions import Floor
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.text import slugify
 
 from .. import constants, settings, utils
@@ -16,7 +15,6 @@ from .options import TagOptions
 # ##############################################################################
 
 
-@python_2_unicode_compatible
 class TagModelQuerySet(models.query.QuerySet):
     def initial(self):
         """
@@ -58,7 +56,6 @@ class TagModelQuerySet(models.query.QuerySet):
         return utils.render_tags(self)
 
 
-@python_2_unicode_compatible
 class TagModelManager(models.Manager):
     def get_queryset(self):
         return TagModelQuerySet(self.model, using=self._db)
@@ -144,7 +141,6 @@ class TagModelBase(models.base.ModelBase):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-@python_2_unicode_compatible
 class BaseTagModel(models.Model, metaclass=TagModelBase):
     """
     Empty abstract base class for tag models

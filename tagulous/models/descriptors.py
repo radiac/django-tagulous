@@ -9,11 +9,7 @@ manager instances.
 """
 from collections.abc import Iterable
 
-from tagulous.models.managers import (
-    FakeTagRelatedManager,
-    SingleTagManager,
-    TagRelatedManagerMixin,
-)
+from .managers import FakeTagRelatedManager, SingleTagManager, TagRelatedManagerMixin
 
 
 # ##############################################################################

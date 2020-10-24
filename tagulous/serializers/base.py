@@ -1,8 +1,8 @@
 """
 Extensions for serializers to add tag field support
 """
-from tagulous.models.fields import SingleTagField, TagField
-from tagulous.models.tagged import TaggedModel
+from ..models.fields import SingleTagField, TagField
+from ..models.tagged import TaggedModel
 
 
 class SerializerMixin(object):

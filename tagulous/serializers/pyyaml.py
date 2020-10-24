@@ -3,7 +3,7 @@ YAML serializer with Tagulous support
 """
 from django.core.serializers import pyyaml as pyyaml_serializer
 
-from tagulous.serializers import base
+from . import base
 
 
 class Serializer(base.SerializerMixin, pyyaml_serializer.Serializer):
