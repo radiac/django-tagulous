@@ -268,14 +268,7 @@ add a new tagulous TagField, then copy the tags back across.
 2. Create a data migration to copy the tags into the new field as a
    string.
 
-   ``django-taggit`` example using South::
-
-        def forwards(self, orm):
-            import tagulous
-            for obj in orm['myapp.MyModel'].objects.all():
-                obj.tags_store = tagulous.utils.render_tags(obj.tags.all())
-
-   ``django-taggit`` example using Django migrations::
+   ``django-taggit`` example::
 
         def store_tags(apps, schema_editor):
             import tagulous
@@ -306,14 +299,7 @@ add a new tagulous TagField, then copy the tags back across.
 
 5. Create a data migration to copy the tags into the new field.
 
-   Example using South::
-
-        def forwards(self, orm):
-            for obj in orm['myapp.MyModel'].objects.all():
-                obj.tags = obj.tags_store
-                obj.tags.save()
-
-   Example using Django migrations::
+   Example::
 
         def load_tags(apps, schema_editor):
             model = apps.get_model('myapp', 'MyModel')

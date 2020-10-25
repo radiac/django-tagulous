@@ -2,7 +2,7 @@
 Database Migrations
 ===================
 
-Tagulous supports both Django and South migrations.
+Tagulous supports Django migrations.
 
 Both ``SingleTagField`` and ``TagField`` work in schema and data migrations.
 Tagged models will be subclasses of ``TaggedModel`` as normal (as long as
@@ -15,12 +15,11 @@ is just how migrations work, and it will makes no practical difference.
 Adding unique columns
 =====================
 
-Migrating a model to a ``TagModel`` or ``TagTreeModel`` involves adding unique
-fields (``slug`` and ``path`` for example), which normally requires 3 separate
-migrations. To simplify this process, Tagulous provides two helper methods,
-``add_unique_column`` for South and ``add_unique_field`` for Django migrations
-to add them in a single migration - see step 2 in :ref:`converting_tag_trees`
-for examples of their use.
+Migrating a model to a ``TagModel`` or ``TagTreeModel`` involves adding unique fields
+(``slug`` and ``path`` for example), which normally requires 3 separate migrations. To
+simplify this process, Tagulous provides the helper method ``add_unique_field`` to add
+them in a single migration - see step 2 in :ref:`converting_tag_trees` for examples of
+their use.
 
 However, use these with care - should part of the function fail for some reason
 when using a non-transactional database, it won't be able to roll back and may

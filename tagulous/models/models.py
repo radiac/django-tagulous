@@ -145,7 +145,7 @@ class BaseTagModel(models.Model, metaclass=TagModelBase):
     """
     Empty abstract base class for tag models
 
-    This is used when dynamically building models, eg by South in migrations
+    This is used when dynamically building models, eg in migrations
     """
 
     objects = TagModelManager()
@@ -587,7 +587,7 @@ class BaseTagTreeModel(BaseTagModel, metaclass=TagTreeModelBase):
     """
     Empty abstract base class for tag models with tree
 
-    This is used when dynamically building models, eg by South in migrations
+    This is used when dynamically building models, eg in migrations
     """
 
     objects = TagTreeModelManager()

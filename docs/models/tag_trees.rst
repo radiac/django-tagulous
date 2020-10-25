@@ -171,8 +171,7 @@ required:
    You can skip this step if you have been using slashes in normal tags and
    want them to be converted to nested tree nodes.
 
-   When using Django migrations, run ``manage.py makemigrations myapp --empty``
-   and add::
+   Run ``manage.py makemigrations myapp --empty`` and add::
 
     def escape_tag_names(apps, schema_editor):
         model = apps.get_model('myapp', 'Tagulous_MyModel_Tags')
@@ -180,13 +179,6 @@ required:
             tag.name = tag.name.replace('/', '//')
             tag.save()
     operations = RunPython(escape_tag_names)
-
-   With South, run ``manage.py datamigration myapp escape_tags`` and add::
-
-    def forwards(self, orm):
-        for tag in orm['myapp.Tagulous_MyModel_tags'].objects.all():
-            tag.name = tag.name.replace('/', '//')
-            tag.save()
 
 2. Create a schema migration to change the model fields. Because paths are not
    allowed to be null, you need to add the ``path`` field as a non-unique
@@ -200,9 +192,9 @@ required:
    If you are only working with databases which support transactions, you can
    use a tagulous helper to add the unique field:
 
-   1. When you create the migration, Django or South will prompt you for a
-      default value for the unique ``path`` field; answer with ``'x'`` (do the
-      same for the ``label`` field when asked).
+   1. When you create the migration, Django will prompt you for a default value for the
+      unique ``path`` field; answer with ``'x'`` (do the same for the ``label`` field
+      when asked).
 
       Change the new migration to use the Tagulous helper to add the ``path``
       field.

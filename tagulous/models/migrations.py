@@ -1,5 +1,5 @@
 """
-Migration support for South and Django migrations
+Migration support for Django migrations
 """
 from .. import constants, settings
 from .fields import SingleTagField, TagField

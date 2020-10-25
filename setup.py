@@ -71,7 +71,6 @@ def runtests(args):
             },
             TAGULOUS_NAME_MAX_LENGTH=191,
         )
-        SETTINGS["SOUTH_MIGRATION_MODULES"] = SETTINGS["MIGRATION_MODULES"]
 
         # If yaml is available, add to serialisers
         try:
