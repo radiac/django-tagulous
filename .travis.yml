@@ -44,28 +44,31 @@ matrix:
   - python: '3.8'
     env: TOXENV=py38-django3.1
 
+  #- python: '3.9'
+  #  env: TOXENV=py39-django2.2
+  #- python: '3.9'
+  #  env: TOXENV=py39-django3.0
+  #- python: '3.9'
+  #  env: TOXENV=py39-django3.1
+
     # Test all DBs on latest LTS
-  - python: '3.9'
-    env: TOXENV=py39-django2.2
-  - python: '3.9'
-    env: TOXENV=py39-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+    # Using 3.8 until 3.9 is available on travis
+  - python: '3.8'
+    env: TOXENV=py38-django2.2 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
     services:
       - postgresql
-  - python: '3.9'
-    env: TOXENV=py39-django2.2 DATABASE_ENGINE=mysql DATABASE_USER=travis
+  - python: '3.8'
+    env: TOXENV=py38-django2.2 DATABASE_ENGINE=mysql DATABASE_USER=travis
     services:
       - mysql
-  - python: '3.9'
-    env: TOXENV=py39-django3.0
+
     # Test all DBs on latest release
-  - python: '3.9'
-    env: TOXENV=py39-django3.1
-  - python: '3.9'
-    env: TOXENV=py39-django3.1 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
+  - python: '3.8'
+    env: TOXENV=py38-django3.1 DATABASE_ENGINE=pgsql DATABASE_USER=postgres
     services:
       - postgresql
-  - python: '3.9'
-    env: TOXENV=py39-django3.1 DATABASE_ENGINE=mysql DATABASE_USER=travis
+  - python: '3.8'
+    env: TOXENV=py38-django3.1 DATABASE_ENGINE=mysql DATABASE_USER=travis
     services:
       - mysql
 
