@@ -38,11 +38,11 @@ matrix:
     env: TOXENV=py37-django3.1
 
   - python: '3.8'
-    env: TOXENV=py37-django2.2
+    env: TOXENV=py38-django2.2
   - python: '3.8'
-    env: TOXENV=py37-django3.0
+    env: TOXENV=py38-django3.0
   - python: '3.8'
-    env: TOXENV=py37-django3.1
+    env: TOXENV=py38-django3.1
 
     # Test all DBs on latest LTS
   - python: '3.9'
