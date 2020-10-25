@@ -312,6 +312,11 @@ Changes:
 * Drops support for Django 1.11 and earlier
 * Drops support for South migrations
 
+Thanks to:
+
+* Diego Ubirajara (dubirajara) for ``FieldDoesNotExist`` fix for Django 3.1
+* Andrew O'Brien (marxide) for ``admin.helpers`` fix for Django 3.1
+
 
 1.0.0, 2020-10-08
 -----------------

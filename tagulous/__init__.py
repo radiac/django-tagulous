@@ -21,6 +21,8 @@ __credits__ = [
     "Raniere Silva (rgaics)",
     "Robert Erb (rerb) at AASHE",
     "hagsteel",
+    "Diego Ubirajara (dubirajara)",
+    "Andrew O'Brien (marxide)",
 ]
 
 default_app_config = "tagulous.apps.TagulousConfig"
