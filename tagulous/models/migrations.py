@@ -3,11 +3,7 @@ Migration support for Django migrations
 """
 from django.db import migrations
 
-from .. import constants, settings
-from .fields import SingleTagField, TagField
 from .models import BaseTagModel, BaseTagTreeModel
-from .options import TagOptions
-from .tagged import TaggedModel
 
 
 # ##############################################################################

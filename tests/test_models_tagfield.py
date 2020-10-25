@@ -8,9 +8,6 @@ Modules tested:
     tagulous.models.fields.BaseTagField
     tagulous.models.fields.TagField
 """
-import unittest
-
-from django.core.checks import Warning as ChecksWarning
 from django.db import models
 from django.test import TestCase, TransactionTestCase
 
