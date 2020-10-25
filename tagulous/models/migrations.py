@@ -1,6 +1,8 @@
 """
 Migration support for Django migrations
 """
+from django.db import migrations
+
 from .. import constants, settings
 from .fields import SingleTagField, TagField
 from .models import BaseTagModel, BaseTagTreeModel
@@ -12,21 +14,12 @@ from .tagged import TaggedModel
 # ########################################################### Django migrations
 # ##############################################################################
 
-# Check for migration frameworks
-try:
-    from django.db import migrations as django_migrations
-except ImportError:
-    # Django migrations not available
-    django_migrations = None
-
 
 def django_support():
-    from django.db.migrations import state
-
     # Monkey-patch Django so it doesn't flatten TagModel abstract base classes.
     # We need them so the BaseTagModel metaclass can set up its options, and
     # so that tag model functionality is available in migrations.
-    old_from_model = state.ModelState.from_model.__func__
+    old_from_model = migrations.state.ModelState.from_model.__func__
 
     def from_model(cls, model, exclude_rels=False):
         base = None
@@ -41,7 +34,7 @@ def django_support():
             modelstate.bases = (base,) + modelstate.bases
         return modelstate
 
-    state.ModelState.from_model = classmethod(from_model)
+    migrations.state.ModelState.from_model = classmethod(from_model)
 
 
 # Add Tagulous support to Django migrations
@@ -53,7 +46,7 @@ django_support()
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class ChangeModelBases(django_migrations.operations.base.Operation):
+class ChangeModelBases(migrations.operations.base.Operation):
     """
     Change a Model's bases so it is correct for data migrations
     """
@@ -128,7 +121,7 @@ def add_unique_field(model_name, name, field, preserve_default, set_fn):
         preserve_default    As django defines
         set_fn      Callback to set the field on each instance
     """
-    if django_migrations is None:  # pragma: no cover
+    if migrations is None:  # pragma: no cover
         raise ValueError("Cannot use add_unique_column without Django migrations")
 
     # Clone the field so it's not unique and can be null
@@ -138,7 +131,7 @@ def add_unique_field(model_name, name, field, preserve_default, set_fn):
 
     # RunPython doesn't give the code the app label; pass it as an attribute
     # to save users having to specify the app
-    class RunPythonWithAppLabel(django_migrations.RunPython):
+    class RunPythonWithAppLabel(migrations.RunPython):
         def database_forwards(self, app_label, *args, **kwargs):
             self.code.app_label = app_label
             super(RunPythonWithAppLabel, self).database_forwards(
@@ -165,14 +158,14 @@ def add_unique_field(model_name, name, field, preserve_default, set_fn):
                 obj.save()
 
     return [
-        django_migrations.AddField(
+        migrations.AddField(
             model_name=model_name,
             name=name,
             field=field_nullable,
             preserve_default=preserve_default,
         ),
         RunPythonWithAppLabel(set_unique_values, reverse_code=lambda *a, **k: None),
-        django_migrations.AlterField(
+        migrations.AlterField(
             model_name=model_name,
             name=name,
             field=field,

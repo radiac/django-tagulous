@@ -37,7 +37,7 @@ class TaggedSignalHandler(object):
                 yield (field, TagField)
 
     def handle(self, manager, field_type, is_raw):
-        raise NotImplementedError()
+        raise NotImplementedError()  # noqa
 
 
 class PreSaveHandler(TaggedSignalHandler):

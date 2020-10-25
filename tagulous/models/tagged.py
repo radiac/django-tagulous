@@ -198,12 +198,7 @@ class TaggedQuerySet(models.query.QuerySet):
         # SingleTagFields are safe
         safe_fields.update(singletag_fields)
 
-        if hasattr(transaction, "atomic"):
-            transaction_atomic = transaction.atomic
-        else:
-            transaction_atomic = transaction.commit_on_success
-
-        with transaction_atomic():
+        with transaction.atomic():
             # Create as normal
             obj = super(TaggedQuerySet, self).create(**safe_fields)
 
