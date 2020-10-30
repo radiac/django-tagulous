@@ -54,9 +54,9 @@ def autocomplete(request, tag_model):
             query = query.lower()
 
         if options.case_sensitive:
-            results = queryset.filter(name__startswith=query)
+            results = queryset.filter(name__contains=query)
         else:
-            results = queryset.filter(name__istartswith=query)
+            results = queryset.filter(name__icontains=query)
     else:
         results = queryset.all()
 
