@@ -149,10 +149,14 @@ Settings
 
         TAGULOUS_AUTOCOMPLETE_JS = (
             'tagulous/lib/jquery.js',
-            'tagulous/lib/select2-3/select2.min.js',
+            'tagulous/lib/select2-4/js/select2.full.min.js',
             'tagulous/tagulous.js',
-            'tagulous/adaptor/select2.js',
+            'tagulous/adaptor/select2-4.js',
         )
+
+    In some cases when another version of jQuery is loaded (e.g. by Bootstrap), 
+    reloading jQuery again may have adverse effects (e.g. modal may not work). 
+    If this is encountered, you may override default configuration by removing the ```jquery.js``` line above.
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``
     List of paths under ``STATIC_URL`` to any CSS files which are required for
@@ -164,7 +168,7 @@ Settings
     Default::
 
         TAGULOUS_AUTOCOMPLETE_CSS = {
-            'all': ['tagulous/lib/select2-3/select2.css']
+            'all': ['tagulous/lib/select2-4/css/select2.min.css']
         }
 
 ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
