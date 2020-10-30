@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import django
 from django.db import IntegrityError, connection, models, router, transaction
 from django.db.models import F, Max
-from django.utils import six
+import six
 from django.utils.encoding import python_2_unicode_compatible
 
 import tagulous
