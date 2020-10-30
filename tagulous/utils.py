@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 
 import unicodedata
 
-from django.utils import six
+import six
 from django.utils.encoding import force_text
 
 from tagulous.constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
