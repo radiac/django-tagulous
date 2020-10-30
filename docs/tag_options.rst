@@ -199,6 +199,15 @@ If ``0``, there will be no limit and all results will be returned
 Default: ``100``
 
 
+.. _option_autocomplete_fulltext:
+
+``autocomplete_fulltext``
+----------------------
+Switch on autocomplete to match any text in tag names, otherwise only match from the beginning of the name.
+
+Default: ``False``
+
+
 .. _option_autocomplete_settings:
 
 ``autocomplete_settings``
