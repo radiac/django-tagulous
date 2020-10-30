@@ -4,7 +4,7 @@ import django
 from django import forms
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import QuerySet
-from django.utils import six
+import six
 from django.utils.encoding import force_text
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
