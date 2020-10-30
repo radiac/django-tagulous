@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 import collections
 
 import django
-from django.utils import six
+import six
 
 from tagulous.models.managers import (
     FakeTagRelatedManager,
