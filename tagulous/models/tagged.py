@@ -10,7 +10,7 @@ import copy
 
 import django
 from django.db import models, transaction
-from django.utils import six
+import six
 
 from tagulous import utils
 from tagulous.models.fields import (
