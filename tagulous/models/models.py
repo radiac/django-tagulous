@@ -7,7 +7,7 @@ import django
 from django.db import IntegrityError, connection, models, router, transaction
 from django.db.models import F, Max
 import six
-from django.utils.encoding import python_2_unicode_compatible
+from six import python_2_unicode_compatible
 
 import tagulous
 from tagulous import constants, settings, utils
