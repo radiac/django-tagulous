@@ -9,7 +9,7 @@ For tag model manager, look in tagulous.models.models
 from __future__ import unicode_literals
 
 from django.core import exceptions
-from django.utils import six
+import six
 from django.utils.encoding import python_2_unicode_compatible
 
 from tagulous.utils import parse_tags, render_tags
