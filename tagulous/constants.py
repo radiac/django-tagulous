@@ -20,6 +20,7 @@ OPTION_DEFAULTS = {
     "protect_initial": True,
     "protect_all": False,
     "case_sensitive": False,
+    "fulltext_search": False,
     "force_lowercase": False,
     "max_count": 0,
     "space_delimiter": True,
