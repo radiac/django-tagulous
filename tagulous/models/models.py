@@ -104,7 +104,7 @@ class TagModelQuerySet(models.query.QuerySet):
             # weight = ( (count * (max - min)) / max_count ) + min
             scale = int(max) - int(min)
 
-            max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 0
+            max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 1
 
             # Django 2.2
             qs = self.annotate(
@@ -115,7 +115,7 @@ class TagModelQuerySet(models.query.QuerySet):
             # Build SQL
             template = (
                 "%(floor)s((count*%(upper)d)/"
-                "(SELECT NULLIF(MAX(count), 0) FROM %(table)s)"
+                "(SELECT NULLIF(MAX(count), 1) FROM %(table)s)"
                 ")+%(lower)d"
             )
             data = {
