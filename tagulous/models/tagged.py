@@ -368,8 +368,9 @@ class TaggedModel(models.Model):
                 # cls and fields from closure's scope
                 data = {}
                 for field in fields:
-                    # Workaround 'ManyToOneRel' object has no attribute 'contribute_to_class
-                    if isinstance(field, models.ManyToOneRel):
+                    # ManyToOneRel and ManyToManyRel objects have no attribute
+                    # contribute_to_class
+                    if isinstance(field, (models.ManyToOneRel, models.ManyToManyRel)):
                         continue
                     # Find fields which are either TagFields, or not M2Ms -
                     # anything which Deserializer will have stored data for
@@ -386,8 +387,9 @@ class TaggedModel(models.Model):
 
         # Add fields to fake model
         for field in fields:
-            # Workaround 'ManyToOneRel' object has no attribute 'contribute_to_class
-            if isinstance(field, models.ManyToOneRel):
+            # ManyToOneRel and ManyToManyRel objects have no attribute
+            # contribute_to_class
+            if isinstance(field, (models.ManyToOneRel, models.ManyToManyRel)):
                 continue
             elif isinstance(field, BaseTagField):
                 clone_field = models.Field(blank=field.blank, null=field.null)

@@ -304,13 +304,17 @@ are available by installing the master branch from github (see
 
 Feature:
 
-* Add Django 3.0 and 3.1 support (closes #85)
+* Add Django 3.0 and 3.1 support (#85)
 
 Changes:
 
 * Drops support for Python 2
 * Drops support for Django 1.11 and earlier
 * Drops support for South migrations
+
+Bugfix:
+
+* Resolves ``ManyToManyRel`` issue sometimes seen in loaddata (#110)
 
 Thanks to:
 
