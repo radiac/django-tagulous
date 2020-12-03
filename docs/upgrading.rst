@@ -299,6 +299,28 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+1.1.0, 2020-
+-----------------
+
+Feature:
+
+* Add Django 3.0 and 3.1 support (#85)
+
+Changes:
+
+* Drops support for Python 2
+* Drops support for Django 1.11 and earlier
+* Drops support for South migrations
+
+Bugfix:
+
+* Resolves ``ManyToManyRel`` issue sometimes seen in loaddata (#110)
+
+Thanks to:
+
+* Diego Ubirajara (dubirajara) for ``FieldDoesNotExist`` fix for Django 3.1
+* Andrew O'Brien (marxide) for ``admin.helpers`` fix for Django 3.1
+
 
 1.0.0, 2020-10-08
 -----------------

@@ -171,8 +171,7 @@ required:
    You can skip this step if you have been using slashes in normal tags and
    want them to be converted to nested tree nodes.
 
-   When using Django migrations, run ``manage.py makemigrations myapp --empty``
-   and add::
+   Run ``manage.py makemigrations myapp --empty`` and add::
 
     def escape_tag_names(apps, schema_editor):
         model = apps.get_model('myapp', 'Tagulous_MyModel_Tags')
@@ -181,35 +180,27 @@ required:
             tag.save()
     operations = RunPython(escape_tag_names)
 
-   With South, run ``manage.py datamigration myapp escape_tags`` and add::
-
-    def forwards(self, orm):
-        for tag in orm['myapp.Tagulous_MyModel_tags'].objects.all():
-            tag.name = tag.name.replace('/', '//')
-            tag.save()
-
 2. Create a schema migration to change the model fields. Because paths are not
    allowed to be null, you need to add the ``path`` field as a non-unique
    field, set some unique data on it (such as the object's ``pk``), and then
    change the field to add back the unique constraint.
 
    To do this reliably on all database types, see
-   `Migrations that add unique fields <https://docs.djangoproject.com/en/1.8/howto/writing-migrations/#migrations-that-add-unique-fields>`_
+   `Migrations that add unique fields <https://docs.djangoproject.com/en/dev/howto/writing-migrations/#migrations-that-add-unique-fields>`_
    in the official Django documentation.
 
    If you are only working with databases which support transactions, you can
    use a tagulous helper to add the unique field:
 
-   1. When you create the migration, Django or South will prompt you for a
-      default value for the unique ``path`` field; answer with ``'x'`` (do the
-      same for the ``label`` field when asked).
+   1. When you create the migration, Django will prompt you for a default value for the
+      unique ``path`` field; answer with ``'x'`` (do the same for the ``label`` field
+      when asked).
 
       Change the new migration to use the Tagulous helper to add the ``path``
       field.
 
-   2. When using Django migrations::
+   2. Add the unique field::
 
-        from django.utils import six
         import tagulous.models.migrations
         ...
 
@@ -223,39 +214,18 @@ required:
                 name='path',
                 field=models.TextField(unique=True),
                 preserve_default=False,
-                set_fn=lambda obj: setattr(obj, 'path', six.text_type(obj.pk)),
+                set_fn=lambda obj: setattr(obj, 'path', str(obj.pk)),
             ) + [
                 ...
             ]
 
-      With South::
-
-        def forwards(self, orm):
-            ...
-
-            # Leave other migration statements as they are - just replace the
-            # call to db.add_column for the path field with add_unique_column.
-            # Replace ``myapp`` with your app name, and
-            # replace ``Tagulous_MyModel_tags`` with your tag model name
-
-            from tagulous.models.migrations import add_unique_column
-            from django.utils import six
-
-            # Adding field 'Tagulous_MyModel_tags.path'
-            add_unique_column(
-                self, db, orm['myapp.Tagulous_MyModel_tags'], 'path',
-                lambda obj: setattr(obj, 'path', six.text_type(obj.pk)),
-                'django.db.models.fields.TextField',
-            )
 
     .. warning::
         Although ``add_unique_column`` and ``add_unique_field`` do work with
         non-transactional databases, it is not without risk. See
         :doc:`migrations` for more details.
 
-3. Skip this step if you are using South.
-
-   We have changed the abstract base class of the tag model, but Django
+3. We have changed the abstract base class of the tag model, but Django
    migrations have no native way to do this. You will need to use the Tagulous
    helper operation ``ChangeModelBases`` to do it manually, otherwise future
    data migrations will think it is a ``TagModel``, not a ``TagTreeModel``.
@@ -277,19 +247,12 @@ required:
                 )
             ]
 
-4. Create another data migration to rebuild the tag model and set the paths.
-
-   When using Django migrations::
+4. Create another data migration to rebuild the tag model and set the paths::
 
         def rebuild_tag_model(apps, schema_editor):
             model = apps.get_model('myapp', 'Tagulous_MyModel_Tags')
             model.objects.rebuild()
         operations = RunPython(rebuild_tag_model)
-
-   With South::
-
-        def forwards(self, orm):
-            orm['myapp.Tagulous_MyModel_tags'].objects.rebuild()
 
    If you skipped step 1, this will also create and set parent tags as
    necessary.
@@ -297,6 +260,4 @@ required:
 5. Run the migrations
 
 You can see a working migration using steps 2 and 3 in the Tagulous tests, for
-:source:`Django migrations <tests/tagulous_tests_migration/django_migrations_expected/0003_tree.py>`
-and
-:source:`South migrations <tests/tagulous_tests_migration/south_migrations_expected/0003_tree.py>`.
+:source:`Django migrations <tests/tagulous_tests_migration/django_migrations_expected/0003_tree.py>`.

@@ -1,12 +1,8 @@
 """
 Extensions for serializers to add tag field support
 """
-from __future__ import unicode_literals
-
-from django.utils import six
-
-from tagulous.models.fields import SingleTagField, TagField
-from tagulous.models.tagged import TaggedModel
+from ..models.fields import SingleTagField, TagField
+from ..models.tagged import TaggedModel
 
 
 class SerializerMixin(object):
@@ -17,7 +13,7 @@ class SerializerMixin(object):
 
     def handle_fk_field(self, obj, field):
         if isinstance(field, SingleTagField):
-            self._current[field.name] = six.text_type(getattr(obj, field.name))
+            self._current[field.name] = str(getattr(obj, field.name))
         else:
             super(SerializerMixin, self).handle_fk_field(obj, field)
 

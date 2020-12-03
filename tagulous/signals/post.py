@@ -1,29 +1,11 @@
 """
 Model signal handlers
 
-This really should be tagulous.signals, imported by the tagulous app's ready()
-call, as per the django docs [1] - but that's only available in Django 1.7 or
-later and we're supporting back to 1.4, so we'll keep it in here for now.
-
-[1] https://docs.djangoproject.com/en/1.10/topics/signals/#connecting-receiver-functions
+These are connected in tagulous.apps.TagulousConfig.ready()
 """
-from django.db import models
 
-from tagulous import settings
-from tagulous.models.fields import SingleTagField, TagField
-from tagulous.models.tagged import TaggedModel
-
-
-if settings.ENHANCE_MODELS:
-
-    def class_prepared_listener(sender, **kwargs):
-        """
-        Listen to the class_prepared signal and subclass any model with tag
-        fields
-        """
-        TaggedModel.cast_class(sender)
-
-    models.signals.class_prepared.connect(class_prepared_listener, weak=False)
+from ..models.fields import SingleTagField, TagField
+from ..models.tagged import TaggedModel
 
 
 class TaggedSignalHandler(object):
@@ -55,7 +37,7 @@ class TaggedSignalHandler(object):
                 yield (field, TagField)
 
     def handle(self, manager, field_type, is_raw):
-        raise NotImplementedError()
+        raise NotImplementedError()  # noqa
 
 
 class PreSaveHandler(TaggedSignalHandler):
@@ -132,7 +114,10 @@ class PostDeleteHandler(PropagatedSignalMixin, TaggedSignalHandler):
         manager.post_delete_handler()
 
 
-models.signals.pre_save.connect(PreSaveHandler(), weak=False)
-models.signals.post_save.connect(PostSaveHandler(), weak=False)
-models.signals.pre_delete.connect(PreDeleteHandler(), weak=False)
-models.signals.post_delete.connect(PostDeleteHandler(), weak=False)
+def register_post_signals():
+    from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
+
+    pre_save.connect(PreSaveHandler(), weak=False)
+    post_save.connect(PostSaveHandler(), weak=False)
+    pre_delete.connect(PreDeleteHandler(), weak=False)
+    post_delete.connect(PostDeleteHandler(), weak=False)

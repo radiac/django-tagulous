@@ -4,11 +4,8 @@ Tagulous test: Tag Trees
 Modules tested:
     tagulous.models.tree
 """
-from __future__ import absolute_import, unicode_literals
-
 from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
-from django.utils import six
 
 import tagulous.settings as tagulous_settings
 from tagulous import models as tag_models
@@ -97,7 +94,7 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         with self.assertRaises(IntegrityError) as cm:
             self.tag_model.objects.create(name=None)
         self.assertEqual(
-            six.text_type(cm.exception),
+            str(cm.exception),
             "NOT NULL constraint failed: tagulous_tests_app_tagulous_treetest_tags.name",
         )
 
@@ -250,16 +247,16 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         # Break slugs
         t3 = self.tag_model.objects.create(name="One/Two/Three")
         for tag in self.tag_model.objects.all():
-            tag.slug = six.text_type(tag.pk)
+            tag.slug = str(tag.pk)
             tag.save()
 
         # Load
         t1 = self.tag_model.objects.get(name="One")
         t2 = self.tag_model.objects.get(name="One/Two")
         t3 = self.tag_model.objects.get(name="One/Two/Three")
-        t1_slug = six.text_type(t1.pk)
-        t2_slug = six.text_type(t2.pk)
-        t3_slug = six.text_type(t3.pk)
+        t1_slug = str(t1.pk)
+        t2_slug = str(t2.pk)
+        t3_slug = str(t3.pk)
         self.assertRegex(t1_slug, r"^\d+$")
         self.assertRegex(t2_slug, r"^\d+$")
         self.assertRegex(t3_slug, r"^\d+$")
@@ -526,9 +523,7 @@ class TagTreeModelCustomTest(TagTreeTestManager, TransactionTestCase):
                 class TagMeta:
                     tree = True
 
-        self.assertEqual(
-            six.text_type(cm.exception), "Cannot set tree option in TagMeta"
-        )
+        self.assertEqual(str(cm.exception), "Cannot set tree option in TagMeta")
 
 
 # ##############################################################################

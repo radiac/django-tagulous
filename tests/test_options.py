@@ -5,10 +5,7 @@ Modules tested:
     tagulous.options
     tagulous.constants
 """
-from __future__ import absolute_import, unicode_literals
-
 from django.test import TestCase
-from django.utils import six
 
 from tagulous import constants as tag_constants
 from tagulous import models as tag_models
@@ -70,13 +67,13 @@ class TagOptionsTest(TestCase):
     def test_set_invalid(self):
         with self.assertRaises(AttributeError) as cm:
             tag_models.TagOptions(invalid=False)
-        self.assertEqual(six.text_type(cm.exception), "invalid")
+        self.assertEqual(str(cm.exception), "invalid")
 
     def test_get_invalid(self):
         opt = tag_models.TagOptions()
         with self.assertRaises(AttributeError) as cm:
             opt.invalid
-        self.assertEqual(six.text_type(cm.exception), "invalid")
+        self.assertEqual(str(cm.exception), "invalid")
 
     def test_update_dict(self):
         opt = tag_models.TagOptions(initial="Adam, Brian")

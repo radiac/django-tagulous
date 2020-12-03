@@ -1,31 +1,18 @@
-from __future__ import unicode_literals
+import json
 
-import django
 from django import forms
+from django.contrib.admin.widgets import AutocompleteMixin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import QuerySet
-from django.utils import six
-from django.utils.encoding import force_text
+from django.urls import NoReverseMatch, reverse
+from django.utils.encoding import force_str
 from django.utils.html import escape
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
-from tagulous import settings
-from tagulous.models import options
-from tagulous.models.models import BaseTagModel, TagModelQuerySet
-from tagulous.utils import parse_tags, render_tags
-
-
-# Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
-try:
-    import json
-except ImportError:  # pragma: no cover
-    from django.utils import simplejson as json
-
-# Django 1.10 deprecates urlresolvers
-try:
-    from django.urls import reverse, NoReverseMatch
-except ImportError:
-    from django.core.urlresolvers import reverse, NoReverseMatch
+from . import settings
+from .models import options
+from .models.models import BaseTagModel, TagModelQuerySet
+from .utils import parse_tags, render_tags
 
 
 class TagWidgetBase(forms.TextInput):
@@ -62,11 +49,11 @@ class TagWidgetBase(forms.TextInput):
                 autocomplete_tags = autocomplete_tags.all()
 
             attrs["data-tag-list"] = escape(
-                force_text(
+                force_str(
                     json.dumps(
                         # Call str rather than tag.name directly, in case
                         # we've been given a list of tag strings
-                        [six.text_type(tag) for tag in autocomplete_tags],
+                        [str(tag) for tag in autocomplete_tags],
                         cls=DjangoJSONEncoder,
                     )
                 )
@@ -84,7 +71,7 @@ class TagWidgetBase(forms.TextInput):
 
         # Store tag options
         attrs["data-tag-options"] = escape(
-            force_text(json.dumps(tag_options, cls=DjangoJSONEncoder))
+            force_str(json.dumps(tag_options, cls=DjangoJSONEncoder))
         )
 
         # Mark it for the javascript to find
@@ -109,48 +96,26 @@ class TagWidget(TagWidgetBase):
         js = settings.AUTOCOMPLETE_JS
 
 
-# For Django 2.2 we switch to use select2 v4
-if django.VERSION >= (2, 2):
-    from django.contrib.admin.widgets import AutocompleteMixin
+class AdminTagWidget(TagWidgetBase):
+    """
+    Tag widget for admin forms
+    """
 
-    class AdminTagWidget(TagWidgetBase):
-        """
-        Tag widget for admin forms
-        """
+    default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
 
-        default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
+    @property
+    def media(self):
+        # Get the media from the AutocompleteMixin - this will give us Django's
+        # vendored jQuery and select2
+        media = AutocompleteMixin.media.fget(None)
 
-        @property
-        def media(self):
-            # Get the media from the AutocompleteMixin - this will give us Django's
-            # vendored jQuery and select2
-            media = AutocompleteMixin.media.fget(None)
+        return media + forms.Media(
+            js=settings.ADMIN_AUTOCOMPLETE_JS, css=settings.ADMIN_AUTOCOMPLETE_CSS,
+        )
 
-            return media + forms.Media(
-                js=settings.ADMIN_AUTOCOMPLETE_JS, css=settings.ADMIN_AUTOCOMPLETE_CSS,
-            )
-
-        # Admin will be expecting this to have a choices attribute
-        # Set this so the admin will behave as expected
-        choices = None
-
-
-else:
-
-    class AdminTagWidget(TagWidgetBase):
-        """
-        Tag widget for admin forms
-        """
-
-        default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
-
-        class Media:
-            css = settings.ADMIN_AUTOCOMPLETE_CSS
-            js = settings.ADMIN_AUTOCOMPLETE_JS
-
-        # Admin will be expecting this to have a choices attribute
-        # Set this so the admin will behave as expected
-        choices = None
+    # Admin will be expecting this to have a choices attribute
+    # Set this so the admin will behave as expected
+    choices = None
 
 
 class BaseTagField(forms.CharField):
@@ -188,7 +153,7 @@ class BaseTagField(forms.CharField):
             tag_string = ""
 
         # Will normally get a string
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             tag_string = value
 
         # Otherwise will be given by the model's TagField.value_from_object().
@@ -238,7 +203,7 @@ class BaseTagField(forms.CharField):
 
     def to_python(self, value):
         # Tags shouldn't be whitespace. Strip here for ``required`` validation
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             value = value.strip()
 
         return super(BaseTagField, self).to_python(value)

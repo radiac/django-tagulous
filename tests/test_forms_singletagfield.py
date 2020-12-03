@@ -5,11 +5,8 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.forms.SingleTagField
 """
-from __future__ import absolute_import, unicode_literals
-
 from django import forms
 from django.test import TestCase
-from django.utils import six
 
 from tagulous import forms as tag_forms
 from tagulous import models as tag_models
@@ -87,7 +84,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         self.assertHTMLEqual(
-            six.text_type(form["tag"]),
+            str(form["tag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -105,7 +102,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         self.assertHTMLEqual(
-            six.text_type(form["tag"]),
+            str(form["tag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -123,7 +120,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         self.assertHTMLEqual(
-            six.text_type(form["tag"]),
+            str(form["tag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -146,7 +143,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
 
         form = LocalTestForm()
         self.assertHTMLEqual(
-            six.text_type(form["tag"]),
+            str(form["tag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -162,7 +159,7 @@ class FormSingleTagFieldTest(TagTestManager, TestCase):
         "Check widget renders value"
         form = test_forms.SingleTagFieldForm(data={"singletag": "Mr"})
         self.assertHTMLEqual(
-            six.text_type(form["singletag"]),
+            str(form["singletag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -270,7 +267,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {"Mr": 0, "Mrs": 0})
         form = self.form(data={"name": "Test 1", "title": "Mrs"})
         self.assertHTMLEqual(
-            six.text_type(form["title"]),
+            str(form["title"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -285,7 +282,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         "Check initial string"
         form = test_forms.SingleTagFieldForm(initial={"singletag": "Mr"})
         self.assertHTMLEqual(
-            six.text_type(form["singletag"]),
+            str(form["singletag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -301,7 +298,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         t1 = self.tag_model.objects.create(name="Mr")
         form = test_forms.SingleTagFieldForm(initial={"singletag": t1})
         self.assertHTMLEqual(
-            six.text_type(form["singletag"]),
+            str(form["singletag"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-options="{'
@@ -317,7 +314,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
         t1 = self.model.objects.create(name="Test 1", title="Mr")
         form = self.form(instance=t1)
         self.assertHTMLEqual(
-            six.text_type(form["title"]),
+            str(form["title"]),
             (
                 '<input autocomplete="off" '
                 'data-tag-list="[&quot;Mr&quot;]" '

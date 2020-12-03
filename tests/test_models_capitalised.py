@@ -1,8 +1,6 @@
 """
 Test models with capitalised names in the database (#60)
 """
-from __future__ import absolute_import, unicode_literals
-
 from django.test import TestCase
 
 from tests.lib import TagTestManager

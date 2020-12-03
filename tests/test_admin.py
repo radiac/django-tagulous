@@ -4,12 +4,9 @@ Tagulous test: Admin
 Modules tested:
     tagulous.admin
 """
-from __future__ import absolute_import, unicode_literals
-
 import copy
 import re
 
-import django
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -17,7 +14,7 @@ from django.contrib.messages.storage.fallback import CookieStorage
 from django.core import exceptions
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
-from django.utils import six
+from django.urls import get_resolver, re_path, reverse
 
 from tagulous import admin as tag_admin
 from tagulous import forms as tag_forms
@@ -27,35 +24,7 @@ from tests.tagulous_tests_app import models as test_models
 from tests.tagulous_tests_app import urls as test_urls
 
 
-# Django 1.10 deprecates urlresolvers
-try:
-    from django.urls import reverse
-except ImportError:
-    from django.core.urlresolvers import reverse
-
-
 MOCK_PATH = "mock/path"
-
-
-def _monkeypatch_modeladmin():
-    """
-    ModelAdmin changes between django versions.
-
-    Monkeypatch it where necessary to allow tests to function, without making
-    any changes to ModelAdmin which would affect the code being tested.
-    """
-    # Django 1.4 ModelAdmin doesn't have get_list_filter
-    # Monkeypatch in; only used to simplify tests
-    if not hasattr(admin.ModelAdmin, "get_list_filter"):
-        if django.VERSION >= (1, 5):
-            raise AttributeError(
-                "Only old versions of django are expected to be missing "
-                "ModelAdmin.get_list_filter"
-            )
-        admin.ModelAdmin.get_list_filter = lambda self, request: self.list_filter
-
-
-_monkeypatch_modeladmin()
 
 
 class TestRequestMixin(object):
@@ -85,34 +54,23 @@ class AdminTestManager(object):
             return
 
         # Try to clear the resolver cache
-        if django.VERSION < (1, 7):
-            # Django 1.4 - 1.6
-            from django.core.urlresolvers import _resolver_cache
-
-            _resolver_cache.clear()
+        if hasattr(get_resolver, "cache_clear"):
+            # Django 2.2
+            get_resolver.cache_clear()
         else:
-            if django.VERSION < (1, 10):
-                from django.core.urlresolvers import get_resolver
-            else:
-                from django.urls import get_resolver
-            if hasattr(get_resolver, "cache_clear"):
-                get_resolver.cache_clear()
+            # Django 3.0+
+            from django.urls.resolvers import _get_cached_resolver
+
+            _get_cached_resolver.cache_clear()
 
         # Store the old urls and make a copy
         self.old_urls = test_urls.urlpatterns
         test_urls.urlpatterns = copy.copy(test_urls.urlpatterns)
 
         # Add the site to the copy
-        from django.conf.urls import include, url
-
-        def safe_include(urls):
-            if django.VERSION < (1, 9):
-                return include(urls)
-            return urls
-
-        test_urls.urlpatterns += test_urls.mk_urlpatterns(
-            url(r"^tagulous_tests_app/admin/", safe_include(self.site.urls))
-        )
+        test_urls.urlpatterns += [
+            re_path(r"^tagulous_tests_app/admin/", self.site.urls)
+        ]
 
     def tearDown(self):
         super(AdminTestManager, self).tearDown()
@@ -167,8 +125,7 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         with self.assertRaises(exceptions.ImproperlyConfigured) as cm:
             tag_admin.register([self.model, self.model], self.admin, site=self.site)
         self.assertEqual(
-            six.text_type(cm.exception),
-            "Tagulous can only register a single model with admin.",
+            str(cm.exception), "Tagulous can only register a single model with admin.",
         )
         self.assertFalse(self.model in self.site._registry)
 
@@ -278,9 +235,8 @@ class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCa
             self.ma.list_max_show_all,
             self.ma.list_editable,
             self.ma,
+            self.ma.get_sortable_by(req),
         ]
-        if django.VERSION >= (2, 1):
-            changelist_args.append(self.ma.get_sortable_by(req))
         self.cl = ChangeList(*changelist_args)
         return self.cl
 
@@ -403,17 +359,10 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
             self.ma.list_max_show_all,
             self.ma.list_editable,
             self.ma,
+            self.ma.get_sortable_by(req),
         ]
-        if django.VERSION >= (2, 1):
-            changelist_args.append(self.ma.get_sortable_by(req))
         self.cl = ChangeList(*changelist_args)
         return self.cl
-
-    def get_cl_queryset(self, cl, request):
-        "Because ModelAdmin.get_query_set is deprecated in 1.6"
-        if hasattr(cl, "get_queryset"):
-            return cl.get_queryset(request)
-        return cl.get_query_set(request)
 
     def assertContains(self, content, *seeks):
         for seek in seeks:
@@ -429,16 +378,18 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
             POST=QueryDict(
                 "&".join(
                     ["action=merge_tags"]
-                    + ["%s=%s" % (admin.ACTION_CHECKBOX_NAME, tag.pk) for tag in tags]
+                    + [
+                        "%s=%s" % (admin.helpers.ACTION_CHECKBOX_NAME, tag.pk)
+                        for tag in tags
+                    ]
                 )
             )
         )
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, cl.get_queryset(request))
         msgs = list(messages.get_messages(request))
 
         # Check response is appropriate
-        # Django 1.4 doesn't support assertInHTML, so have to do it manually
         self.assertEqual(len(msgs), 0)
         content = response.content.decode("utf-8")
         content_form = content[content.index("<form ") : content.index("</form>") + 7]
@@ -465,13 +416,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
         options = [
             "<option %s" % opt.strip() for opt in options_raw.split("<option ") if opt
         ]
-        if django.VERSION < (1, 11):
-            self.assertTrue(
-                '<option value="" selected="selected">---------</option>' in options
-            )
-        else:
-            # Django 1.11 tidies the option tag
-            self.assertTrue('<option value="" selected>---------</option>' in options)
+        self.assertTrue('<option value="" selected>---------</option>' in options)
 
         for tag in tags:
             self.assertContains(
@@ -565,7 +510,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
                     ]
                     + [
                         # These were selected on the changelist, the ones we're merging
-                        "%s=%s" % (admin.ACTION_CHECKBOX_NAME, tag.pk)
+                        "%s=%s" % (admin.helpers.ACTION_CHECKBOX_NAME, tag.pk)
                         for tag in tags
                     ]
                     + [
@@ -578,7 +523,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
             )
         )
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, cl.get_queryset(request))
         msgs = list(messages.get_messages(request))
 
         # Check response is appropriate
@@ -631,7 +576,7 @@ class TagAdminTest(TagAdminTestManager, TestRequestMixin):
         "Check the merge_tags action fails when no tags selected"
         request = self.mock_request(POST=QueryDict("action=merge_tags"))
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, cl.get_queryset(request))
         msgs = list(messages.get_messages(request))
 
         self.assertEqual(len(msgs), 1)
@@ -649,11 +594,12 @@ class TagAdminTest(TagAdminTestManager, TestRequestMixin):
         self.populate()
         request = self.mock_request(
             POST=QueryDict(
-                "action=merge_tags&%s=%s" % (admin.ACTION_CHECKBOX_NAME, self.red.pk)
+                "action=merge_tags&%s=%s"
+                % (admin.helpers.ACTION_CHECKBOX_NAME, self.red.pk)
             )
         )
         cl = self.get_changelist(request)
-        response = self.ma.response_action(request, self.get_cl_queryset(cl, request))
+        response = self.ma.response_action(request, cl.get_queryset(request))
         msgs = list(messages.get_messages(request))
 
         self.assertEqual(len(msgs), 1)

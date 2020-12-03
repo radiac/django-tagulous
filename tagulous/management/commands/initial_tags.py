@@ -1,30 +1,7 @@
-from __future__ import unicode_literals
-
+from django.apps import apps
 from django.core.management.base import BaseCommand
 
-from tagulous.models.initial import field_initialise_tags, model_initialise_tags
-
-
-# Abstract model lookup for django compatibility
-try:
-    # Django 1.8 and later
-    from django.apps import apps
-except ImportError:
-    # Django 1.7 or earlier
-    from django.db.models import get_app, get_models
-
-    def get_model(app, model_name):
-        return getattr(app, model_name)
-
-
-else:
-    get_app = apps.get_app_config
-
-    def get_models(app):
-        return app.get_models() if app else apps.get_models()
-
-    def get_model(app, model_name):
-        return app.get_model(model_name)
+from ...models.initial import field_initialise_tags, model_initialise_tags
 
 
 class Command(BaseCommand):
@@ -53,16 +30,18 @@ class Command(BaseCommand):
 
         # Look up app
         if app_name:
-            app = get_app(app_name)
+            app = apps.get_app_config(app_name)
         else:
-            # get_models(None) will get all models
             app = None
 
         # Look up specific model, or get all models for the app
         if model_name:
-            models = [get_model(app, model_name)]
+            models = [app.get_model(model_name)]
+        elif app is None:
+            # Get all models for all apps
+            models = apps.get_models()
         else:
-            models = get_models(app)
+            models = app.get_models()
 
         # If field is specified, can finish here
         if field_name:

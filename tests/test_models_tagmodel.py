@@ -8,14 +8,10 @@ Modules tested:
     tagulous.models.models.TagModelManager
     tagulous.models.models.TagModelQuerySet
 """
-from __future__ import absolute_import, unicode_literals
-
 import unittest
 
-import django
 from django.db import IntegrityError
 from django.test import TestCase
-from django.utils import six
 
 import tagulous.settings as tagulous_settings
 from tagulous import models as tag_models
@@ -75,7 +71,7 @@ class TagModelTest(TagTestManager, TestCase):
         with self.assertRaises(AttributeError) as cm:
             t1.get_absolute_url()
         self.assertEqual(
-            six.text_type(cm.exception),
+            str(cm.exception),
             "'Tagulous_SimpleMixedTest_tags' has no attribute 'get_absolute_url'",
         )
 
@@ -100,7 +96,7 @@ class TagModelTest(TagTestManager, TestCase):
     def test_empty_name_raises_integrity_error(self):
         with self.assertRaises(IntegrityError) as cm:
             self.tag_model.objects.create(name=None)
-        err = six.text_type(cm.exception).lower()
+        err = str(cm.exception).lower()
         self.assertTrue("name" in err)
         self.assertTrue("null" in err)
 
@@ -111,12 +107,7 @@ class TagModelTest(TagTestManager, TestCase):
         """
         match_field = match_model._meta.get_field(field_name)
         for related in related_fields:
-            if django.VERSION < (1, 8):
-                rel_model = related.model
-            else:
-                rel_model = related.related_model
-
-            if rel_model == match_model and related.field == match_field:
+            if related.related_model == match_model and related.field == match_field:
                 return related
         self.fail("Expected related field not found")
 
@@ -572,20 +563,20 @@ class TagModelUnicodeTest(TagTestManager, TestCase):
     def test_singletag_render(self):
         "Check unicode singletag name renders"
         t1 = self.model.objects.get(name="Test")
-        self.assertEqual(six.text_type(t1.singletag), "男の子")
+        self.assertEqual(str(t1.singletag), "男の子")
 
     def test_tag_render(self):
         "Check unicode tag name renders"
         t1 = self.model.objects.get(name="Test")
         tags = list(t1.tags.all())
-        self.assertEqual(six.text_type(tags[0]), "boy")
-        self.assertEqual(six.text_type(tags[1]), "niño")
-        self.assertEqual(six.text_type(tags[2]), "男の子")
+        self.assertEqual(str(tags[0]), "boy")
+        self.assertEqual(str(tags[1]), "niño")
+        self.assertEqual(str(tags[2]), "男の子")
 
     def test_tag_string_render(self):
         "Check unicode tags string renders"
         t1 = self.model.objects.get(name="Test")
-        self.assertEqual(six.text_type(t1.tags), "boy, niño, 男の子")
+        self.assertEqual(str(t1.tags), "boy, niño, 男の子")
 
     # Check slugs
 
@@ -960,17 +951,13 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
     def test_to_string(self):
         "Check manager and queryset can be converted to a tag string"
         self.assertEqual(
-            six.text_type(self.tag_model.objects),
-            "Adam, Brian, Chris, David, Eric, Frank",
+            str(self.tag_model.objects), "Adam, Brian, Chris, David, Eric, Frank",
         )
         self.assertEqual(
-            six.text_type(self.tag_model.objects.all()),
-            "Adam, Brian, Chris, David, Eric, Frank",
+            str(self.tag_model.objects.all()), "Adam, Brian, Chris, David, Eric, Frank",
         )
-        self.assertEqual(
-            six.text_type(self.tag_model.objects.initial()), "Adam, Brian, Chris"
-        )
-        self.assertEqual(six.text_type(self.o1.initial_list), "David, Eric")
+        self.assertEqual(str(self.tag_model.objects.initial()), "Adam, Brian, Chris")
+        self.assertEqual(str(self.o1.initial_list), "David, Eric")
 
 
 # ##############################################################################

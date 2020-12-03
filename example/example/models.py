@@ -4,8 +4,6 @@ Models for example Tagulous app
 Based on the usage examples in the documentation:
     http://radiac.net/projects/django-tagulous/documentation/usage/
 """
-from __future__ import unicode_literals
-
 from django.db import models
 
 import tagulous.models

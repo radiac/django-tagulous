@@ -1,23 +1,15 @@
-from __future__ import absolute_import, print_function, unicode_literals
-
-import json
 import os
 import re
 import sys
 import unittest
+from io import StringIO
 
 import django
 from django.db import connection, models
 from django.test import testcases
-from django.utils import six
 
 from tagulous import models as tag_models
 
-
-if six.PY3:
-    from io import StringIO
-else:
-    from cStringIO import StringIO
 
 # Detect test environment
 # This is used when creating files (migrations and fixtures) to ensure that
@@ -97,7 +89,7 @@ class TagTestManager(object):
 
     def assertRegex(self, text, expected_regex, msg="Regex didn't match"):
         # Implement python 3.2's assertRegex for all
-        if isinstance(text, six.string_types):
+        if isinstance(text, str):
             expected_regex = re.compile(expected_regex)
         self.assertTrue(expected_regex.search(text), msg=msg)
 
@@ -111,8 +103,8 @@ class TagTestManager(object):
                 if isinstance(
                     instance.__class__._meta.get_field(field_name),
                     (tag_models.SingleTagField, tag_models.TagField),
-                ) and isinstance(val, six.string_types):
-                    self.assertEqual(six.text_type(getattr(instance, field_name)), val)
+                ) and isinstance(val, str):
+                    self.assertEqual(str(getattr(instance, field_name)), val)
                 elif isinstance(
                     instance.__class__._meta.get_field(field_name),
                     models.ManyToManyField,
@@ -155,7 +147,7 @@ class TagTestManager(object):
     def _extract_json(self, dom, path=""):
         "Recursively break out json from a django.utils.html_parser dom object"
         jsons = {}
-        if isinstance(dom, six.string_types):
+        if isinstance(dom, str):
             return dom, {}
         el_name = path + "." + dom.name
 
@@ -186,9 +178,7 @@ class TagTestManager(object):
         """
         # Add backwards compatibility for HTML 5 "required"
         REQUIRED = "{{required}}"
-        required = ""
-        if django.VERSION >= (1, 10):
-            required = " required "
+        required = " required "
         if REQUIRED in html1:
             html1 = html1.replace(REQUIRED, required)
         if REQUIRED in html2:
@@ -210,9 +200,7 @@ class TagTestManager(object):
 
         # Convert dom back to string, call super to test doms
         # Yes it's inefficient, but it's tests and saves me from forking it
-        super(TagTestManager, self).assertHTMLEqual(
-            six.text_type(dom1), six.text_type(dom2)
-        )
+        super(TagTestManager, self).assertHTMLEqual(str(dom1), str(dom2))
 
         # Test jsons
         # Assert we've found the same elements
@@ -226,29 +214,9 @@ class TagTestManager(object):
                 % (dom_path, json1[dom_path].keys(), json2[dom_path].keys()),
             )
             for attr_name in json1[dom_path].keys():
-                # Django 1.4 doesn't support assertJSONEqual
-                # For now, just have a copy of it from 1.5
-                try:
-                    json1_val = json.loads(json1[dom_path][attr_name])
-                except ValueError:
-                    self.fail(
-                        "%s %s test result is not valid JSON: %r"
-                        % (dom_path, attr_name, json1[dom_path][attr_name])
-                    )
-                else:
-                    try:
-                        json2_val = json.loads(json2[dom_path][attr_name])
-                    except ValueError:
-                        self.fail(
-                            "%s %s expected is not valid JSON: %r"
-                            % (dom_path, attr_name, json2[dom_path][attr_name])
-                        )
-                    else:
-                        self.assertEqual(
-                            json1_val,
-                            json2_val,
-                            msg="%s %s JSON does not match" % (dom_path, attr_name),
-                        )
+                self.assertJSONEqual(
+                    json1[dom_path][attr_name], json2[dom_path][attr_name]
+                )
 
     def debugTagModel(self, model):
         """
@@ -284,9 +252,7 @@ class Capturing(list):
 
     def __exit__(self, *args):
         # Ensure output is unicode
-        self.extend(
-            six.text_type(line) for line in self._stringio.getvalue().splitlines()
-        )
+        self.extend(str(line) for line in self._stringio.getvalue().splitlines())
         sys.stdout = self._stdout
         sys.stderr = self._stderr
 

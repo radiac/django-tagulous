@@ -85,7 +85,7 @@ used.
 
 Note when using sqlite: substring matches on tag names, and matches on
 tag names with non-ASCII characters, will never be case sensitive - see the
-`databases <https://docs.djangoproject.com/en/1.8/ref/databases/#substring-matching-and-case-sensitivity>`_
+`databases <https://docs.djangoproject.com/en/dev/ref/databases/#substring-matching-and-case-sensitivity>`_
 django documentation for more information.
 
 See also :ref:`option_force_lowercase`

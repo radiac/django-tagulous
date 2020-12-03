@@ -2,9 +2,6 @@
 """
 Django Tagulous - Fabulous Tags
 """
-from __future__ import unicode_literals
-
-
 __version__ = "1.0.0"
 __license__ = "BSD"
 __author__ = "Richard Terry"
@@ -24,4 +21,8 @@ __credits__ = [
     "Raniere Silva (rgaics)",
     "Robert Erb (rerb) at AASHE",
     "hagsteel",
+    "Diego Ubirajara (dubirajara)",
+    "Andrew O'Brien (marxide)",
 ]
+
+default_app_config = "tagulous.apps.TagulousConfig"

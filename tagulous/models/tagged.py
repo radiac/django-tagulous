@@ -4,16 +4,13 @@ Tagulous extensions for models which use tag fields (tagged models)
 These are all applied automatically when the TAGULOUS_ENHANCE_MODELS setting
 is enabled.
 """
-from __future__ import unicode_literals
-
 import copy
 
-import django
+from django.core.exceptions import FieldDoesNotExist
 from django.db import models, transaction
-from django.utils import six
 
-from tagulous import utils
-from tagulous.models.fields import (
+from .. import utils
+from .fields import (
     BaseTagField,
     SingleTagField,
     TagField,
@@ -54,7 +51,7 @@ def _split_kwargs(model, kwargs, lookups=False, with_fields=False):
             if lookup == "exact":
                 try:
                     field = model._meta.get_field(field_name)
-                except models.fields.FieldDoesNotExist:
+                except FieldDoesNotExist:
                     # Unknown - pass it on untouched
                     pass
                 else:
@@ -72,7 +69,7 @@ def _split_kwargs(model, kwargs, lookups=False, with_fields=False):
         # Try to look up the field
         try:
             field = model._meta.get_field(field_name)
-        except models.fields.FieldDoesNotExist:
+        except FieldDoesNotExist:
             # Assume it's something clever and pass it through untouched
             # If it's invalid, an error will be raised later anyway
             safe_fields[field_name] = val
@@ -115,8 +112,7 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         Custom lookups for tag fields
         """
-        # TODO: When minimum supported Django 1.7+, this can be replaced with
-        # custom lookups, which would work much better anyway.
+        # TODO: Replace with custom lookups
         safe_fields, singletag_fields, tag_fields, field_lookup = _split_kwargs(
             self.model, kwargs, lookups=True, with_fields=True
         )
@@ -124,7 +120,7 @@ class TaggedQuerySet(models.query.QuerySet):
         # Look up string values for SingleTagFields by name
         for field_name, val in singletag_fields.items():
             query_field_name = field_name
-            if isinstance(val, six.string_types):
+            if isinstance(val, str):
                 query_field_name += "__name"
                 if not field_lookup[field_name].tag_options.case_sensitive:
                     query_field_name += "__iexact"
@@ -145,7 +141,7 @@ class TaggedQuerySet(models.query.QuerySet):
             tag_options = field_lookup[field_name].tag_options
 
             # Only perform custom lookup if value is a string
-            if not isinstance(val, six.string_types):
+            if not isinstance(val, str):
                 qs = super(TaggedQuerySet, self)._filter_or_exclude(
                     negate, **{field_name: val}
                 )
@@ -166,6 +162,8 @@ class TaggedQuerySet(models.query.QuerySet):
                 subqs = subqs.annotate(**{count_name: models.Count(field_name)}).filter(
                     **{count_name: len(tags)}
                 )
+                # Explicit order as meta ordering will be ignored
+                subqs = subqs.order_by("name")
 
             # Prep the field name
             query_field_name = field_name + "__name"
@@ -200,12 +198,7 @@ class TaggedQuerySet(models.query.QuerySet):
         # SingleTagFields are safe
         safe_fields.update(singletag_fields)
 
-        if hasattr(transaction, "atomic"):
-            transaction_atomic = transaction.atomic
-        else:
-            transaction_atomic = transaction.commit_on_success
-
-        with transaction_atomic():
+        with transaction.atomic():
             # Create as normal
             obj = super(TaggedQuerySet, self).create(**safe_fields)
 
@@ -278,13 +271,6 @@ class TaggedManager(models.Manager):
         Get the original queryset and then enhance it
         """
         qs = super(TaggedManager, self).get_queryset(*args, **kwargs)
-        return self._enhance_queryset(qs)
-
-    def get_query_set(self, *args, **kwargs):
-        """
-        Get the original queryset and then enhance it (Django 1.5 or earlier)
-        """
-        qs = super(TaggedManager, self).get_query_set(*args, **kwargs)
         return self._enhance_queryset(qs)
 
     @classmethod
@@ -370,11 +356,7 @@ class TaggedModel(models.Model):
         safe.
         """
         # Get fields on this model
-        if hasattr(cls._meta, "get_fields"):
-            # Django 1.8
-            fields = cls._meta.get_fields()
-        else:
-            fields = cls._meta.local_fields + cls._meta.local_many_to_many
+        fields = cls._meta.get_fields()
 
         # Create a fake model
         class FakeTaggedModel(models.Model):
@@ -386,22 +368,15 @@ class TaggedModel(models.Model):
                 # cls and fields from closure's scope
                 data = {}
                 for field in fields:
-                    # Workaround 'ManyToOneRel' object has no attribute 'contribute_to_class
-                    if isinstance(field, models.ManyToOneRel):
+                    # ManyToOneRel and ManyToManyRel objects have no attribute
+                    # contribute_to_class
+                    if isinstance(field, (models.ManyToOneRel, models.ManyToManyRel)):
                         continue
                     # Find fields which are either TagFields, or not M2Ms -
                     # anything which Deserializer will have stored data for
                     elif isinstance(field, TagField) or not (
-                        (
-                            django.VERSION < (1, 9)
-                            and field.rel
-                            and isinstance(field.rel, models.ManyToManyRel)
-                        )
-                        or (
-                            django.VERSION >= (1, 9)
-                            and field.remote_field
-                            and isinstance(field.remote_field, models.ManyToManyRel)
-                        )
+                        field.remote_field
+                        and isinstance(field.remote_field, models.ManyToManyRel)
                     ):
                         # Get data from object
                         data[field.name] = getattr(self, field.name)
@@ -412,8 +387,9 @@ class TaggedModel(models.Model):
 
         # Add fields to fake model
         for field in fields:
-            # Workaround 'ManyToOneRel' object has no attribute 'contribute_to_class
-            if isinstance(field, models.ManyToOneRel):
+            # ManyToOneRel and ManyToManyRel objects have no attribute
+            # contribute_to_class
+            if isinstance(field, (models.ManyToOneRel, models.ManyToManyRel)):
                 continue
             elif isinstance(field, BaseTagField):
                 clone_field = models.Field(blank=field.blank, null=field.null)

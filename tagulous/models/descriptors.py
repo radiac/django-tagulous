@@ -7,18 +7,9 @@ descriptors during the ``contribute_to_class`` phase.
 Their main purposes is to act as getter/setters and pass data to and from
 manager instances.
 """
-from __future__ import unicode_literals
+from collections.abc import Iterable
 
-import collections
-
-import django
-from django.utils import six
-
-from tagulous.models.managers import (
-    FakeTagRelatedManager,
-    SingleTagManager,
-    TagRelatedManagerMixin,
-)
+from .managers import FakeTagRelatedManager, SingleTagManager, TagRelatedManagerMixin
 
 
 # ##############################################################################
@@ -42,12 +33,7 @@ class BaseTagDescriptor(object):
     # If the field was created using a string, the field's tag model and
     # tag options will not be available when the descriptor is created, so
     # cannot store them directly here
-    def _get_tag_model(self):
-        if django.VERSION < (1, 9):
-            return self.field.remote_field.to
-        return self.field.remote_field.model
-
-    tag_model = property(_get_tag_model)
+    tag_model = property(lambda self: self.field.remote_field.model)
     tag_options = property(lambda self: self.field.tag_options)
 
     def load_initial(self):
@@ -211,11 +197,11 @@ class TagDescriptor(BaseTagDescriptor):
             # Clear
             manager.set_tag_string("")
 
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             # If it's a string, it must be a tag string
             manager.set_tag_string(value)
 
-        elif isinstance(value, collections.Iterable):
+        elif isinstance(value, Iterable):
             # An iterable goes in as a list of things that are, or can be
             # converted to, strings
             manager.set_tag_list(value)

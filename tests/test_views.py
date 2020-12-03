@@ -4,27 +4,16 @@ Tagulous test: View-related functionality
 Modules tested:
     tagulous.views
 """
-from __future__ import absolute_import, unicode_literals
+import json
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
+from django.urls import reverse
 
 from tagulous import models as tag_models
 from tests.lib import TagTestManager, skip_if_mysql
 from tests.tagulous_tests_app import models as test_models
 
-
-# Django 1.4 is last to support Python 2.5, but json isn't available until 2.6
-try:
-    import json
-except ImportError:
-    from django.utils import simplejson as json
-
-# Django 1.10 deprecates urlresolvers
-try:
-    from django.urls import reverse
-except ImportError:
-    from django.core.urlresolvers import reverse
 
 client = Client()
 

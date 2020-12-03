@@ -1,10 +1,9 @@
-from __future__ import unicode_literals
-
 from django.conf.urls import url
 from django.contrib import admin
 
 import tagulous.views
-from example import models, views
+
+from . import models, views
 
 
 urlpatterns = [

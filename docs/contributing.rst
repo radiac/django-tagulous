@@ -41,16 +41,9 @@ you can optionally specify which test to run::
 
     python setup.py test [tests[.test_set.TestClass]]
 
-* If you are using Django 1.4 to 1.6, the tests will look for ``south`` - if it
-  is not installed, a warning will be raised and the south tests will be
-  skipped.
-* Don't worry about Python 3.2 support. Pip 8.1.2 drops support for Python 3.2,
-  so to test all versions of tox you will need to pin your virtualenv to before
-  14. This is a pain, so it's probably best to just not bother.
-
 Use ``tox`` to run them on one or more supported versions::
 
-    tox [-e py27-django1.4] [tests[.test_module.TestClass]]
+    tox [-e py39-django2.2] [tests[.test_module.TestClass]]
 
 Tox will also generate a ``coverage`` HTML report.
 

@@ -1,6 +1,4 @@
-from __future__ import unicode_literals
-
-from tagulous.models.fields import SingleTagField, TagField
+from .fields import SingleTagField, TagField
 
 
 #
@@ -48,12 +46,7 @@ def model_initialise_tags(model, report=None):
         model       Model to check for tag fields to load
         report      Optional: a file handle to write verbose reports to
     """
-    if hasattr(model._meta, "get_fields"):
-        # Django 1.8 uses new meta API
-        fields = model._meta.get_fields()
-    else:
-        fields = model._meta.fields + model._meta.many_to_many
-
+    fields = model._meta.get_fields()
     for field in fields:
         if isinstance(field, (SingleTagField, TagField)):
             field_initialise_tags(model, field, report)

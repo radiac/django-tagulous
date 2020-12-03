@@ -5,8 +5,6 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.models.fields.TagField
 """
-from __future__ import absolute_import, unicode_literals
-
 from django.test import TestCase
 
 from tests.lib import TagTestManager
@@ -27,14 +25,7 @@ class ModelFieldOrderTest(TagTestManager, TestCase):
         """
         # Check the ordering is as expected
         opts = test_models.MixedOrderTest._meta
-        # Django 1.4 and 1.5 don't have concrete_fields in meta Options.
-        # Django 1.8 states that it's an internal function and shouldn't be
-        # used directly, but using it anyway to keep code simple.
-        if hasattr(opts, "concrete_fields"):
-            concrete_fields = opts.concrete_fields
-        else:
-            concrete_fields = [f for f in opts.fields if f.column is not None]
-        local_fields = sorted(concrete_fields + opts.many_to_many)
+        local_fields = sorted(opts.concrete_fields + opts.many_to_many)
         expected_fields = [
             # Auto pk 'id'
             "id",

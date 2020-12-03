@@ -35,7 +35,7 @@ and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
 * This will create two new models at runtime to store the tags,
   ``Tagulous_Person_title`` and ``Tagulous_Person_skills``.
 * These models will act like normal models, and can be managed in the database
-  using South or Django migrations (or ``syncdb`` before Django 1.7).
+  using Django migrations
 * ``Person.title`` will now act as a ``ForeignKey`` to
   ``Tagulous_Person_title``
 * ``Person.skills`` will now act as a ``ManyToManyField`` to

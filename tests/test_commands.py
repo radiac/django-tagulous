@@ -4,8 +4,6 @@ Tagulous test: manage.py commands
 Modules tested:
     tagulous.management.commands.initial_tags
 """
-from __future__ import absolute_import, print_function, unicode_literals
-
 from django.core.management import call_command
 from django.test import TestCase
 

@@ -4,26 +4,19 @@ Tagulous test of serializers, dumpdata and loaddata
 Modules tested:
     tagulous.serializers.*
 """
-# There were originally separate tests for loaddata and dumpdata, but have been
-# combined because in Django 1.4-1.8 serializer order is not deterministic, ie
-# order of keys in dicts can change, causing output order to change and
-# comparisons to fail on values which are effectively the same. Testing
-# dumpdata and loaddata in the same place isn't ideal, but the only other way
-# is to implement non-deterministic comparisons for json, pyyaml and xml;
-# patches welcome.
+# There were originally separate tests for loaddata and dumpdata, but these were
+# combined because in Django <1.8 serializer order was not deterministic.
 #
-# This should be fixed in Django 1.9, at which point we can look at splitting
-# them again - see https://code.djangoproject.com/ticket/24558
-
-from __future__ import absolute_import, unicode_literals
-
+# This has been addressed, so we can look at splitting them again when these tests need
+# refactoring
+#
 import os
 import tempfile
 import unittest
+from io import StringIO
 
 from django.core import management, serializers
 from django.test import TestCase
-from django.utils import six
 
 from tests.lib import TagTestManager, testenv
 from tests.tagulous_tests_app import models as test_models
@@ -49,7 +42,7 @@ class DumpDataAssertMixin(object):
         exclude_list=[],
         primary_keys="",
     ):
-        new_io = six.StringIO()
+        new_io = StringIO()
         if filename:
             filename = os.path.join(tempfile.gettempdir(), filename)
         management.call_command(
@@ -65,7 +58,7 @@ class DumpDataAssertMixin(object):
                 "use_base_manager": use_base_manager,
                 "exclude": exclude_list,
                 "primary_keys": primary_keys,
-            }
+            },
         )
         if filename:
             with open(filename, "r") as f:
@@ -98,13 +91,16 @@ class SerializationTestMixin(DumpDataAssertMixin):
         "tagulous_tests_app.SimpleMixedTest",
     ]
     fixture_format = "undefined"
+    fixture_prefix = "simple"
 
     def setUpExtra(self):
         self.model = test_models.SimpleMixedTest
         self.singletag_model = self.model.singletag.tag_model
         self.tags_model = self.model.tags.tag_model
         self.fixture_name = "test_fixtures.%s" % self.fixture_format
-        self.fixture_path = os.path.join(fixture_root, self.fixture_name)
+        self.fixture_path = os.path.join(
+            fixture_root, f"{self.fixture_prefix}_{self.fixture_name}"
+        )
 
         # Need to dump to loadable file due to django#24558
         self.tmp_fixture_name = "tmp_%s_%s" % (testenv, self.fixture_name)
@@ -145,10 +141,9 @@ class SerializationTestMixin(DumpDataAssertMixin):
         )
 
     def _assert_dumped(self, dumped):
-        # Basic checks to make sure it's not completely invalid
-        # Cannot test in more detail without django#24558
-        self.assertTrue("single1" in dumped)
-        self.assertTrue("tag1" in dumped)
+        with open(self.fixture_path) as file:
+            raw = file.read()
+        self.assertEqual(raw, dumped)
 
     def _empty(self):
         self.t1.delete()
@@ -214,12 +209,15 @@ class MixedTestMixin(SerializationTestMixin):
         "tagulous_tests_app.MixedNonTagModel",
         "tagulous_tests_app.MixedNonTagRefTest",
     ]
+    fixture_prefix = "mixed"
 
     def setUpExtra(self):
         self.model = test_models.MixedNonTagRefTest
         self.tag_model = test_models.MixedNonTagModel
         self.fixture_name = "test_fixtures.%s" % self.fixture_format
-        self.fixture_path = os.path.join(fixture_root, self.fixture_name)
+        self.fixture_path = os.path.join(
+            fixture_root, f"{self.fixture_prefix}_{self.fixture_name}"
+        )
 
         # Need to dump to loadable file due to django#24558
         self.tmp_fixture_name = "tmp_%s_%s" % (testenv, self.fixture_name)
@@ -271,10 +269,9 @@ class MixedTestMixin(SerializationTestMixin):
         )
 
     def _assert_dumped(self, dumped):
-        # Basic checks to make sure it's not completely invalid
-        # Cannot test in more detail without django#24558
-        self.assertTrue("tag1" in dumped)
-        self.assertTrue("tag2" in dumped)
+        with open(self.fixture_path) as file:
+            raw = file.read()
+        self.assertEqual(raw, dumped)
 
     def _empty(self):
         self.t1.delete()
@@ -314,11 +311,9 @@ class MixedTestMixin(TagTestManager, TestCase):
             name="test", singletag="test", tags="test"
         )
         rfk1 = test_models.ManyToOneTest.objects.create(name="rfk1", mixed_ref_test=t1)
-        # Django 1.7 and earlier don't support refresh_from_db
-        t1 = test_models.MixedRefTest.objects.get(pk=t1.pk)
+        t1.refresh_from_db()
         self.assertEqual(t1.many_to_one.count(), 1)
-        # Django 1.5 and earlier don't support .first
-        self.assertEqual(t1.many_to_one.all()[0], rfk1)
+        self.assertEqual(t1.many_to_one.first(), rfk1)
 
         serialized = serializers.serialize(
             "xml", test_models.MixedRefTest.objects.all()
@@ -328,5 +323,4 @@ class MixedTestMixin(TagTestManager, TestCase):
         obj = deserialized[0].object
         self.assertInstanceEqual(obj, name="test", singletag="test", tags="test")
         self.assertEqual(obj.many_to_one.count(), 1)
-        # Django 1.5 and earlier don't support .first
-        self.assertEqual(obj.many_to_one.all()[0].name, "rfk1")
+        self.assertEqual(obj.many_to_one.first().name, "rfk1")
