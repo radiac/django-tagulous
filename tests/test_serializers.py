@@ -58,7 +58,7 @@ class DumpDataAssertMixin(object):
                 "use_base_manager": use_base_manager,
                 "exclude": exclude_list,
                 "primary_keys": primary_keys,
-            }
+            },
         )
         if filename:
             with open(filename, "r") as f:
@@ -91,13 +91,16 @@ class SerializationTestMixin(DumpDataAssertMixin):
         "tagulous_tests_app.SimpleMixedTest",
     ]
     fixture_format = "undefined"
+    fixture_prefix = "simple"
 
     def setUpExtra(self):
         self.model = test_models.SimpleMixedTest
         self.singletag_model = self.model.singletag.tag_model
         self.tags_model = self.model.tags.tag_model
         self.fixture_name = "test_fixtures.%s" % self.fixture_format
-        self.fixture_path = os.path.join(fixture_root, self.fixture_name)
+        self.fixture_path = os.path.join(
+            fixture_root, f"{self.fixture_prefix}_{self.fixture_name}"
+        )
 
         # Need to dump to loadable file due to django#24558
         self.tmp_fixture_name = "tmp_%s_%s" % (testenv, self.fixture_name)
@@ -138,10 +141,9 @@ class SerializationTestMixin(DumpDataAssertMixin):
         )
 
     def _assert_dumped(self, dumped):
-        # Basic checks to make sure it's not completely invalid
-        # Cannot test in more detail without django#24558
-        self.assertTrue("single1" in dumped)
-        self.assertTrue("tag1" in dumped)
+        with open(self.fixture_path) as file:
+            raw = file.read()
+        self.assertEqual(raw, dumped)
 
     def _empty(self):
         self.t1.delete()
@@ -207,12 +209,15 @@ class MixedTestMixin(SerializationTestMixin):
         "tagulous_tests_app.MixedNonTagModel",
         "tagulous_tests_app.MixedNonTagRefTest",
     ]
+    fixture_prefix = "mixed"
 
     def setUpExtra(self):
         self.model = test_models.MixedNonTagRefTest
         self.tag_model = test_models.MixedNonTagModel
         self.fixture_name = "test_fixtures.%s" % self.fixture_format
-        self.fixture_path = os.path.join(fixture_root, self.fixture_name)
+        self.fixture_path = os.path.join(
+            fixture_root, f"{self.fixture_prefix}_{self.fixture_name}"
+        )
 
         # Need to dump to loadable file due to django#24558
         self.tmp_fixture_name = "tmp_%s_%s" % (testenv, self.fixture_name)
@@ -264,10 +269,9 @@ class MixedTestMixin(SerializationTestMixin):
         )
 
     def _assert_dumped(self, dumped):
-        # Basic checks to make sure it's not completely invalid
-        # Cannot test in more detail without django#24558
-        self.assertTrue("tag1" in dumped)
-        self.assertTrue("tag2" in dumped)
+        with open(self.fixture_path) as file:
+            raw = file.read()
+        self.assertEqual(raw, dumped)
 
     def _empty(self):
         self.t1.delete()
