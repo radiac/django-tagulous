@@ -99,7 +99,7 @@ class SerializationTestMixin(DumpDataAssertMixin):
         self.tags_model = self.model.tags.tag_model
         self.fixture_name = "test_fixtures.%s" % self.fixture_format
         self.fixture_path = os.path.join(
-            fixture_root, f"{self.fixture_prefix}_{self.fixture_name}"
+            fixture_root, "{}_{}".format(self.fixture_prefix, self.fixture_name)
         )
 
         # Need to dump to loadable file due to django#24558
@@ -216,7 +216,7 @@ class MixedTestMixin(SerializationTestMixin):
         self.tag_model = test_models.MixedNonTagModel
         self.fixture_name = "test_fixtures.%s" % self.fixture_format
         self.fixture_path = os.path.join(
-            fixture_root, f"{self.fixture_prefix}_{self.fixture_name}"
+            fixture_root, "{}_{}".format(self.fixture_prefix, self.fixture_name)
         )
 
         # Need to dump to loadable file due to django#24558
