@@ -88,7 +88,7 @@ def runtests(args):
         }
         engine = os.environ.get("DATABASE_ENGINE")
         if engine:
-            if engine == "pgsql":
+            if engine == "postgresql":
                 DATABASE["ENGINE"] = "django.db.backends.postgresql_psycopg2"
                 DATABASE["HOST"] = "localhost"
             elif engine == "mysql":
