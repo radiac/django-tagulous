@@ -133,7 +133,8 @@ jobs:
           coverage run --source='tagulous' setup.py test
         env:
           DATABASE_ENGINE: mysql
-          DATABASE_HOST: localhost
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_PORT: 3306
           DATABASE_USER: root
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
