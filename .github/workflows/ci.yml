@@ -10,14 +10,12 @@ on:
 
 jobs:
   test-sqlite:
-    name: ${{ matrix.python }} / ${{ matrix.django }}
+    name: py-${{ matrix.python }} dj-${{ matrix.django }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
           # Django LTS on Python oldest to latest - dj2.2, py3.5-3.9
-          - python: 3.5
-            django: 2.2
           - python: 3.6
             django: 2.2
           - python: 3.7
@@ -33,20 +31,112 @@ jobs:
             django: 3.1
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyyaml unidecode coverage
-        pip install "django~=${{ matrix.django }}.0"
-    - name: Test
-      run: |
-        coverage run --source='tagulous' setup.py test
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        name: ${{ matrix.python }}-${{ matrix.django }}
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml unidecode coverage
+          pip install "django~=${{ matrix.django }}.0"
+      - name: Test
+        run: |
+          coverage run --source='tagulous' setup.py test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          name: ${{ matrix.python }}-${{ matrix.django }}
+
+  test-postgres:
+    name: py-${{ matrix.python }} dj-${{ matrix.django }} PostgreSQL
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Django LTS on Python latest - dj2.2, py3.9
+          - python: 3.9
+            django: 2.2
+          # Django latest on Python latest - dj3.1, py3.9
+          - python: 3.9
+            django: 3.1
+
+    services:
+      postgres:
+        image: postgres:10.8
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml unidecode coverage
+          pip install psycopg2
+          pip install "django~=${{ matrix.django }}.0"
+      - name: Test
+        run: |
+          coverage run --source='tagulous' setup.py test
+        env:
+          DATABASE_ENGINE: django.db.backends.postgresql
+          DATABASE_HOST: localhost
+          DATABASE_USER: postgres
+          DATABASE_PASS: postgres
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          name: ${{ matrix.python }}-${{ matrix.django }}-postgres
+
+  test-mysql:
+    name: py-${{ matrix.python }} dj-${{ matrix.django }} MySQL
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Django LTS on Python latest - dj2.2, py3.9
+          - python: 3.9
+            django: 2.2
+          # Django latest on Python latest - dj3.1, py3.9
+          - python: 3.9
+            django: 3.1
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: wagtail
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml unidecode coverage
+          pip install mysqlclient
+          pip install "django~=${{ matrix.django }}.0"
+      - name: Test
+        run: |
+          coverage run --source='tagulous' setup.py test
+        env:
+          DATABASE_ENGINE: django.db.backends.mysql
+          DATABASE_HOST: localhost
+          DATABASE_USER: root
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          name: ${{ matrix.python }}-${{ matrix.django }}-mysql
