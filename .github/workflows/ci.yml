@@ -1,0 +1,51 @@
+name: Tagulous CI
+
+# Test Tagulous on:
+#   all supported Django and Python versions
+#   against sqlite, postgresql and mysql
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-sqlite:
+    name: ${{ matrix.python }} / ${{ matrix.django }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Django LTS on Python oldest to latest - dj2.2, py3.5-3.9
+          - python: 3.5
+            django: 2.2
+          - python: 3.6
+            django: 2.2
+          - python: 3.7
+            django: 2.2
+          - python: 3.8
+            django: 2.2
+          - python: 3.9
+            django: 2.2
+          # Django supported on Python latest - dj3.0-3.1, py3.9
+          - python: 3.9
+            django: 3.0
+          - python: 3.9
+            django: 3.1
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyyaml unidecode coverage
+    - name: Test
+      run: |
+        coverage run --source='tagulous' setup.py test
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        name: ${{ matrix.python }}-${{ matrix.django }}
