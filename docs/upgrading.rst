@@ -308,7 +308,7 @@ Feature:
 
 Changes:
 
-* Drops support for Python 2
+* Drops support for Python 2 and 3.5
 * Drops support for Django 1.11 and earlier
 * Drops support for South migrations
 

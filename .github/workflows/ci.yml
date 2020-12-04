@@ -85,10 +85,10 @@ jobs:
         run: |
           coverage run --source='tagulous' setup.py test
         env:
-          DATABASE_ENGINE: django.db.backends.postgresql
+          DATABASE_ENGINE: postgresql
           DATABASE_HOST: localhost
           DATABASE_USER: postgres
-          DATABASE_PASS: postgres
+          DATABASE_PASSWORD: postgres
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
@@ -112,7 +112,6 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: wagtail
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -133,7 +132,7 @@ jobs:
         run: |
           coverage run --source='tagulous' setup.py test
         env:
-          DATABASE_ENGINE: django.db.backends.mysql
+          DATABASE_ENGINE: mysql
           DATABASE_HOST: localhost
           DATABASE_USER: root
       - name: Upload coverage to Codecov

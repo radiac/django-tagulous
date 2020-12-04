@@ -2,10 +2,10 @@
 Contributing
 ============
 
-Contributions are welcome, preferably via pull request. Check the github issues
-and project :ref:`roadmap <roadmap>` to see what needs work. Tagulous aims to
-be a comprehensive tagging solution, but try to keep new features from having a
-significant impact on people who won't use them (eg tree support is optional).
+Contributions are welcome, preferably via pull request. Check the github issues to see
+what needs work. Tagulous aims to be a comprehensive tagging solution, but try to keep
+new features from having a significant impact on people who won't use them (eg tree
+support is optional).
 
 When submitting UI changes, please aim to support the latest versions of
 Chrome, Firefox and Internet Explorer through progressive enhancement - users
@@ -106,15 +106,3 @@ Everything for enhancing the admin site with support for tag fields is in
 :source:`tagulous/admin.py`. It is in two sections; registration (which adds
 tag field functionality to a normal ``ModelAdmin``, and replaces the widgets
 with tag widgets) and tag model admin (for managing tag models).
-
-
-.. _roadmap:
-
-Roadmap
-=======
-
-1.0
-
-* Resolve open bugs
-* Remove support for Django prior to 2.2
-* Add support for Django 3.0+
