@@ -1,4 +1,4 @@
-name: Tagulous CI
+name: Tests
 
 # Test Tagulous on:
 #   all supported Django and Python versions
