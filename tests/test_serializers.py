@@ -11,6 +11,7 @@ Modules tested:
 # refactoring
 #
 import os
+import re
 import tempfile
 import unittest
 from io import StringIO
@@ -27,6 +28,10 @@ try:
 except ImportError:
     yaml = None
 
+
+RE_STRIP_PK_JSON = re.compile(r'("(pk|fk)": \d+|"mm": \[[0-9, ]*\])')
+RE_STRIP_PK_YAML = re.compile(r"((pk|fk): \d+|mm:\s*(\n\s*- \d+)+)")
+RE_STRIP_PK_XML = re.compile(r'(pk="\d+"|<field name="fk"[^>]+>\d+</field>)')
 
 # Based on django's tests/fixtures/tests.py -> DumpDataAssertMixin
 # but without comparisons due to django#24558
@@ -143,7 +148,15 @@ class SerializationTestMixin(DumpDataAssertMixin):
     def _assert_dumped(self, dumped):
         with open(self.fixture_path) as file:
             raw = file.read()
-        self.assertEqual(raw, dumped)
+        self.assert_equivalent(raw, dumped)
+
+    def assert_equivalent(self, left, right):
+        """
+        Assert two fixtures are equivalent, allowing for pk variation
+        """
+        left = self.re_strip_pk.sub("", left)
+        right = self.re_strip_pk.sub("", right)
+        self.assertEqual(left, right)
 
     def _empty(self):
         self.t1.delete()
@@ -179,6 +192,7 @@ class SerializationTestMixin(DumpDataAssertMixin):
 class JsonSerializationTest(SerializationTestMixin, TagTestManager, TestCase):
     "Test JSON serializer"
     fixture_format = "json"
+    re_strip_pk = RE_STRIP_PK_JSON
 
 
 @unittest.skipIf(yaml is None, "pyyaml is not installed")
@@ -188,6 +202,7 @@ class YamlSerializationTest(SerializationTestMixin, TagTestManager, TestCase):
     """
 
     fixture_format = "yaml"
+    re_strip_pk = RE_STRIP_PK_YAML
 
 
 class XmlSerializationTest(SerializationTestMixin, TagTestManager, TestCase):
@@ -196,6 +211,7 @@ class XmlSerializationTest(SerializationTestMixin, TagTestManager, TestCase):
     """
 
     fixture_format = "xml"
+    re_strip_pk = RE_STRIP_PK_XML
 
 
 # ##############################################################################
@@ -268,11 +284,6 @@ class MixedTestMixin(SerializationTestMixin):
             self.tag_model, {"tag1": 2, "tag2": 2, "tag3": 1, "tag4": 1}
         )
 
-    def _assert_dumped(self, dumped):
-        with open(self.fixture_path) as file:
-            raw = file.read()
-        self.assertEqual(raw, dumped)
-
     def _empty(self):
         self.t1.delete()
         self.t2.delete()
@@ -284,17 +295,20 @@ class MixedTestMixin(SerializationTestMixin):
 class MixedJsonSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test JSON serializer with normal fk and m2m fields"
     fixture_format = "json"
+    re_strip_pk = RE_STRIP_PK_JSON
 
 
 @unittest.skipIf(yaml is None, "pyyaml is not installed")
 class MixedYamlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test Yaml serializer with normal fk and m2m fields"
     fixture_format = "yaml"
+    re_strip_pk = RE_STRIP_PK_YAML
 
 
 class MixedXmlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test XML serializer with normal fk and m2m fields"
     fixture_format = "xml"
+    re_strip_pk = RE_STRIP_PK_XML
 
 
 # ##############################################################################
