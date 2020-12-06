@@ -25,7 +25,7 @@ Features
 * Supports trees of nested tags, for detailed categorisation
 * Admin support for managing tags and tagged models
 
-Supports Django 2.2 and later, on Python 3.5 and later.
+Supports Django 2.2 and later, on Python 3.6 and later.
 
 
 See the `Documentation <http://radiac.net/projects/django-tagulous/documentation/>`_

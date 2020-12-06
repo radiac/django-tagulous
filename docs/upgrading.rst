@@ -299,7 +299,7 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-1.1.0, 2020-
+1.1.0, 2020-12-06
 -----------------
 
 Feature:
