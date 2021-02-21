@@ -184,6 +184,25 @@ If this is an invalid view, a ``ValueError`` will be raised.
 Default: ``None``
 
 
+.. _option_autocomplete_view_args:
+
+``autocomplete_view_args``
+--------------------------
+Optional ``args`` passed to the ``autocomplete_view``.
+
+Default: ``None``
+
+
+.. _option_autocomplete_view_kwargs:
+
+``autocomplete_view_kwargs``
+--------------------------
+Optional ``kwargs`` passed to the ``autocomplete_view``.
+
+Default: ``None``
+
+
+
 .. _option_autocomplete_limit:
 
 ``autocomplete_limit``
