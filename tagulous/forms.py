@@ -32,11 +32,19 @@ class TagWidgetBase(forms.TextInput):
     choices = None
 
     def render(self, name, value, attrs={}, renderer=None):
+
+        # Merge default autocomplete settings into tag options
+        tag_options = self.tag_options.form_items(with_defaults=False)
+        if self.default_autocomplete_settings is not None:
+            autocomplete_settings = self.default_autocomplete_settings.copy()
+            autocomplete_settings.update(tag_options.get("autocomplete_settings", {}))
+            tag_options["autocomplete_settings"] = autocomplete_settings
+
         # Try to provide a URL for the autocomplete to load tags on demand
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:
             try:
-                attrs["data-tag-url"] = reverse(autocomplete_view)
+                attrs["data-tag-url"] = reverse(autocomplete_view, kwargs={} if autocomplete_settings is None else autocomplete_settings)
             except NoReverseMatch as e:
                 raise ValueError("Invalid autocomplete view: %s" % e)
 
@@ -59,12 +67,6 @@ class TagWidgetBase(forms.TextInput):
                 )
             )
 
-        # Merge default autocomplete settings into tag options
-        tag_options = self.tag_options.form_items(with_defaults=False)
-        if self.default_autocomplete_settings is not None:
-            autocomplete_settings = self.default_autocomplete_settings.copy()
-            autocomplete_settings.update(tag_options.get("autocomplete_settings", {}))
-            tag_options["autocomplete_settings"] = autocomplete_settings
 
         # Inject extra settings
         tag_options.update({"required": self.is_required})
