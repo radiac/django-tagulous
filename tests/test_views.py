@@ -132,6 +132,26 @@ class AutocompleteViewTest(TagTestManager, TestCase):
             self.assertEqual(data["results"][i], "tag%02d" % i)
         self.assertEqual(data["more"], False)
 
+    def test_unlimited_query__contains(self):
+        "Test unlimited autocomplete view with query and contains"
+        # Add some tags
+        tag_model = self.test_model.autocomplete_view.tag_model
+        for i in range(100):
+            tag_model.objects.create(name="tag%02d" % i)
+        self.assertEqual(tag_model.objects.count(), 100)
+
+        # Force settings
+        tag_model.tag_options.autocomplete_fulltext = True
+
+        # Get them from view
+        response = client.get(reverse("tagulous_tests_app-unlimited"), {"q": "ag0"})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(get_response_content(response))
+        self.assertEqual(len(data["results"]), 10)
+        for i in range(10):
+            self.assertEqual(data["results"][i], "tag%02d" % i)
+        self.assertEqual(data["more"], False)
+
     def test_limited(self):
         "Test limited autocomplete view"
         # Add some tags
