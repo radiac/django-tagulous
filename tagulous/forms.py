@@ -36,7 +36,9 @@ class TagWidgetBase(forms.TextInput):
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:
             try:
-                attrs["data-tag-url"] = reverse(autocomplete_view)
+                attrs["data-tag-url"] = reverse(autocomplete_view,
+                    args=self.tag_options.autocomplete_view_args,
+                    kwargs=self.tag_options.autocomplete_view_kwargs)
             except NoReverseMatch as e:
                 raise ValueError("Invalid autocomplete view: %s" % e)
 

@@ -23,6 +23,8 @@ OPTION_DEFAULTS = {
     "tree": False,
     "autocomplete_initial": False,
     "autocomplete_view": "",
+    "autocomplete_view_args": None,
+    "autocomplete_view_kwargs": None,
     "autocomplete_limit": 100,
     "autocomplete_settings": None,
     "get_absolute_url": None,
