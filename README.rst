@@ -7,6 +7,7 @@ you all their normal power with a sprinkling of tagging syntactic sugar.
 
 * Project site: http://radiac.net/projects/django-tagulous/
 * Source code: https://github.com/radiac/django-tagulous
+* Changelog: http://radiac.net/projects/django-tagulous/documentation/upgrading/#changelog
 
 .. image:: https://travis-ci.org/radiac/django-tagulous.svg?branch=master
     :target: https://travis-ci.org/radiac/django-tagulous
