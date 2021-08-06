@@ -141,7 +141,7 @@ class AutocompleteViewTest(TagTestManager, TestCase):
         self.assertEqual(tag_model.objects.count(), 100)
 
         # Force settings
-        tag_model.tag_options.autocomplete_fulltext = True
+        tag_model.tag_options.autocomplete_view_fulltext = True
 
         # Get them from view
         response = client.get(reverse("tagulous_tests_app-unlimited"), {"q": "ag0"})

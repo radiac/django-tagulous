@@ -302,17 +302,22 @@ are available by installing the master branch from github (see
 1.2.0, 2021-
 -----------------
 
+Features:
+
+* Option ``autocomplete_view_fulltext`` for full text search in autocomplete view (#102)
+
 Changes:
 
-* Add `autocomplete_view_args` and `autocomplete_view_kwargs` options (#119, #120)
+* Add ``autocomplete_view_args`` and ``autocomplete_view_kwargs`` options (#119, #120)
 * Documentation updates (#105, #113)
+* Fix division by zero issue in ``weight()`` (#102)
 
 Thanks to:
 
-* BoPeng for the autocomplete config options
+* BoPeng for the ``autocomplete_view_args`` config options
 * valentijnscholten for the select2 doc fix
 * Jens Diemer (jedie) for the readme update
-
+* dany-nonstop for ``autocomplete_view_fulltext`` and weight division issue
 
 
 1.1.0, 2020-12-06

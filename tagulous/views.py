@@ -46,7 +46,7 @@ def autocomplete(request, tag_model):
         if options.force_lowercase:
             query = query.lower()
 
-        if options.autocomplete_fulltext:
+        if options.autocomplete_view_fulltext:
             lookup = "contains"
         else:
             lookup = "startswith"

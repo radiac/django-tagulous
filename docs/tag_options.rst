@@ -218,13 +218,16 @@ If ``0``, there will be no limit and all results will be returned
 Default: ``100``
 
 
-.. _option_autocomplete_fulltext:
+.. _option_autocomplete_view_fulltext:
 
-``autocomplete_fulltext``
-----------------------
-Switch on autocomplete to match any text in tag names, otherwise only match from the beginning of the name.
+``autocomplete_view_fulltext``
+------------------------------
+Whether to perform a start of word match (``__startswith``) or full text match
+(``__contains``) in the autocomplete view.
 
-Default: ``False``
+Has no effect if not using ``autocomplete_view``.
+
+Default: ``False`` (start of word)
 
 
 .. _option_autocomplete_settings:
