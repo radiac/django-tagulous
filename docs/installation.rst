@@ -103,6 +103,9 @@ Settings
     The order is important: the adaptor must appear last in the list, so that
     it is loaded after its dependencies.
 
+    If you use jQuery elsewhere on your site, you may need to remove `jquery.js` to
+    avoid conflicts.
+
     Default::
 
         TAGULOUS_AUTOCOMPLETE_JS = (
