@@ -931,8 +931,20 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
         weighted = self.tag_model.objects.weight()
         self.assertEqual(list(weighted.values_list("weight")), [])
 
+    def test_weight_tags__no_associated(self):
+        "Test weight() when there are tags but none are associated"
+        self.tag_model.objects.all().delete()
+        self.assertEqual(self.tag_model.objects.count(), 0)
+        tag = self.tag_model.objects.create(name="test")
+        self.assertEqual(tag.count, 0)
+
+        weighted = self.tag_model.objects.weight()
+        self.assertEqual(len(weighted), 1)
+        self.assertEqual(weighted[0], "test")
+        self.assertEqual(weighted[0].weight, 1)
+
     def test_weight_zero_no_tags(self):
-        "Test weight() when there are no tags"
+        "Test weight() when there are no tags and minimum weight is zero"
         self.tag_model.objects.all().delete()
         self.assertEqual(self.tag_model.objects.count(), 0)
 

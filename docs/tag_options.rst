@@ -218,6 +218,18 @@ If ``0``, there will be no limit and all results will be returned
 Default: ``100``
 
 
+.. _option_autocomplete_view_fulltext:
+
+``autocomplete_view_fulltext``
+------------------------------
+Whether to perform a start of word match (``__startswith``) or full text match
+(``__contains``) in the autocomplete view.
+
+Has no effect if not using ``autocomplete_view``.
+
+Default: ``False`` (start of word)
+
+
 .. _option_autocomplete_settings:
 
 ``autocomplete_settings``
