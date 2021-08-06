@@ -141,10 +141,10 @@ Settings
     Default::
 
         TAGULOUS_AUTOCOMPLETE_JS = (
-            'tagulous/lib/jquery.js',
-            'tagulous/lib/select2-3/select2.min.js',
-            'tagulous/tagulous.js',
-            'tagulous/adaptor/select2.js',
+            "tagulous/lib/jquery.js",
+            "tagulous/lib/select2-4/js/select2.full.min.js",
+            "tagulous/tagulous.js",
+            "tagulous/adaptor/select2-4.js",
         )
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``
@@ -157,7 +157,7 @@ Settings
     Default::
 
         TAGULOUS_AUTOCOMPLETE_CSS = {
-            'all': ['tagulous/lib/select2-3/select2.css']
+            'all': ['tagulous/lib/select2-4/css/select2.min.css']
         }
 
 ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
