@@ -14,15 +14,16 @@ you all their normal power with a sprinkling of tagging syntactic sugar.
 .. image:: https://coveralls.io/repos/radiac/django-tagulous/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/radiac/django-tagulous?branch=master
 
+
 Features
 ========
 
-* Easy to install - simple requirements, simple syntax, lots of options
-* Based on ForeignKey and ManyToManyField, so it's easy to query
-* Autocomplete support built in, if you want it
+* Easy to install - simple requirements, **simple syntax**, lots of options
+* Based on ForeignKey and ManyToManyField, so it's **easy to query**
+* **Autocomplete** support built in, if you want it
 * Supports multiple independent tag fields on a single model
 * Can be used as a user-customisable CharField with choices
-* Supports trees of nested tags, for detailed categorisation
+* Supports **trees of nested tags**, for detailed categorisation
 * Admin support for managing tags and tagged models
 
 Supports Django 2.2 and later, on Python 3.6 and later.
@@ -50,12 +51,12 @@ Install with ``pip install django-tagulous``, add ``tagulous`` to Django's
 model::
 
     from django.db import models
-    import tagulous
+    from tagulous.models import SingleTagField, TagField
 
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        title = tagulous.models.SingleTagField(initial="Mr, Mrs, Miss, Ms")
-        skills = tagulous.models.TagField()
+        title = SingleTagField(initial="Mr, Mrs, Miss, Ms")
+        skills = TagField()
 
 You can now set and get them using strings, lists or querysets::
 

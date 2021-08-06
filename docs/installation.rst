@@ -2,18 +2,6 @@
 Installation
 ============
 
-Requirements
-============
-
-These packages are recommended, but optional:
-
-* `unidecode <https://pypi.python.org/pypi/Unidecode>`_
-* `django-compressor <https://github.com/django-compressor/django-compressor>`_
-  or similar, to optimise static files
-
-If you are replacing an existing tagging solution, follow the
-:ref:`installation_instructions`, then read :ref:`converting_to_tagulous`.
-
 
 .. _installation_instructions:
 
@@ -29,28 +17,14 @@ Instructions
 
     pip install django-tagulous[i18n]
 
-   .. note::
-        If you prefer, you can also install the development version direct from
-        github::
 
-            pip install -e git+https://github.com/radiac/django-tagulous.git@develop#egg=django-tagulous
-
-        This may contain changes made since the last version was released -
-        these will be listed in the :ref:`changelog`.
-
-        If you are planning to contribute to Tagulous, you may want to install
-        with the ``dev`` extra requirements - see :doc:`contributing` for more
-        details.
-
-2. In your site settings, add Tagulous to ``INSTALLED_APPS``::
+2. In your site settings, add Tagulous to ``INSTALLED_APPS`` and tell Django to use the
+   Tagulous serialization modules::
 
     INSTALLED_APPS = (
         ...
         'tagulous',
     )
-
-3. In the same file, tell Django to use the Tagulous serialization modules, so
-   that Django can serialize tag fields (for fixtures etc)::
 
     SERIALIZATION_MODULES = {
         'xml':    'tagulous.serializers.xml_serializer',
@@ -59,11 +33,11 @@ Instructions
         'yaml':   'tagulous.serializers.pyyaml',
     }
 
-   You may also want to change some Tagulous settings here - see the global
-   max length :ref:`settings` for details.
+   There are other global :ref:`settings` you can add here.
 
-You are now ready to add Tagulous fields to your models - see
-:doc:`models/index`, :doc:`forms` and :doc:`usage`.
+
+3. Add Tagulous fields to your project - see :doc:`models/index`, :doc:`forms` and
+   :doc:`usage`.
 
 When you want to upgrade your Tagulous installation in the future, check
 :doc:`upgrading` to see if there are any special actions that you need to take.
@@ -88,7 +62,7 @@ Settings
 ``TAGULOUS_NAME_MAX_LENGTH``
 ``TAGULOUS_SLUG_MAX_LENGTH``
 ``TAGULOUS_LABEL_MAX_LENGTH``
-    Default max length for tag models.
+    Default max lengths for tag models.
 
     .. note::
 
@@ -122,116 +96,66 @@ Settings
     Default: ``False``
 
 ``TAGULOUS_AUTOCOMPLETE_JS``
-    List of paths under ``STATIC_URL`` for any JavaScript files which are
-    required for Tagulous autocomplete. These will be added to the form media
-    when a Tagulous form field is used.
-
-    The default list will use the included versions of jQuery and Select2,
-    with the tagulous Select2 adaptor. See :ref:`autocomplete_adaptors` for
-    information about using other adaptors, or writing your own.
+``TAGULOUS_ADMIN_AUTOCOMPLETE_JS``
+    List of static JavaScript files required for Tagulous autocomplete. These will be
+    added to the form media when a Tagulous form field is used.
 
     The order is important: the adaptor must appear last in the list, so that
     it is loaded after its dependencies.
-
-    Because a typical Tagulous installation will use multiple JavaScript files,
-    you may want to use something like
-    `django-compressor <http://django-compressor.readthedocs.org/en/latest/>`_
-    to combine them into a single file to optimise requests.
 
     Default::
 
         TAGULOUS_AUTOCOMPLETE_JS = (
             'tagulous/lib/jquery.js',
-            'tagulous/lib/select2-3/select2.min.js',
+            'tagulous/lib/select2-4/select2.min.js',
             'tagulous/tagulous.js',
-            'tagulous/adaptor/select2.js',
+            'tagulous/adaptor/select2-4.js',
         )
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``
-    List of paths under ``STATIC_URL`` to any CSS files which are required for
-    tagulous autocomplete. These will be added to the form media when a
-    tagulous form field is used.
+``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
+    List of static CSS files required for Tagulous autocomplete. These will be added to
+    the form media when a Tagulous form field is used.
 
     The default list will use the included version of Select2.
 
     Default::
 
         TAGULOUS_AUTOCOMPLETE_CSS = {
-            'all': ['tagulous/lib/select2-3/select2.css']
+            'all': ['tagulous/lib/select2-4/select2.css']
         }
 
 ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
-    Any settings which you want to override in the default adaptor. These will
-    be converted to a JSON value and embedded in the HTML field's
-    ``data-tag-options`` attribute. They can be overridden by a field's
-    :ref:`autocomplete_settings <option_autocomplete_settings>` option.
+    Any settings to pass to the JavaScript via the adaptor. They can be overridden by a
+    field's :ref:`autocomplete_settings <option_autocomplete_settings>` option.
 
-    If set to ``None``, no settings will be added to the HTML field.
+    If set to ``None``, no settings will be passed.
 
     Default: ``None``
 
-``TAGULOUS_ADMIN_AUTOCOMPLETE_JS``
-    List of paths under ``STATIC_URL`` to any javascript files which are
-    required for the admin site. This lets you configure your public and admin
-    sites separately if you need to.
-
-    If your autocomplete library uses jQuery and you want to use the Django
-    admin's version, you will need to set ``window.jQuery = django.jQuery;``
-    before loading the autocomplete javascript.
-
-    By default this will be the same as you have set for
-    ``TAGULOUS_AUTOCOMPLETE_JS``.
-
-    Default: value of setting ``TAGULOUS_AUTOCOMPLETE_JS``
-
-``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
-    List of paths under ``STATIC_URL`` to any CSS files which are required for
-    the admin site. This lets you configure your public and admin sites
-    separately if you need to.
-
-    By default this will be the same as you have set for
-    ``TAGULOUS_AUTOCOMPLETE_CSS``.
-
-    Default: value of setting ``TAGULOUS_AUTOCOMPLETE_CSS``
-
-``TAGULOUS_ADMIN_AUTOCOMPLETE_SETTINGS``
-    Admin settings for overriding the adaptor defaults.
-
-    By default this will be the same as you have set for
-    ``TAGULOUS_AUTOCOMPLETE_SETTINGS``.
-
-    Default: value of setting ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
-
-``TAGULOUS_ENHANCE_MODELS``
-    Feature flag to automatically enhance models, managers and querysets to
-    fully support tag fields.
-
-    In most situations Tagulous is able to sprinkle its syntactic sugar without
-    intefering with third-party code. However, there are a few places in
-    Django's darkest magical depths of its model code that it needs a helping
-    hand to understand the tag fields. When this setting is ``True``, any
-    models which use tag fields will automatically be enhanced to make this
-    happen, along with their managers and querysets.
-
-    If you set this to ``False``, Tagulous will still work, but certain
-    aspects may not work as you would expect - you should consider manually
-    enhancing your models, managers and querysets.
-
-    See :doc:`models/tagged_models` for more information.
-
-    Default: ``True``
-
 ``TAGULOUS_WEIGHT_MIN``
-    The default minimum value for the :ref:`weight <queryset_weight>` queryset
-    method.
+    The default minimum value for the :ref:`weight <queryset_weight>` queryset method.
 
     Default: ``1``
 
 ``TAGULOUS_WEIGHT_MAX``
-    The default maximum value for the :ref:`weight <queryset_weight>` queryset
-    method.
+    The default maximum value for the :ref:`weight <queryset_weight>` queryset method.
 
     Default: ``6``
+
+``TAGULOUS_ENHANCE_MODELS``
+    **Advanced usage** - only use this setting if you know what you're doing.
+
+    Tagulous automatically enhances models, managers and querysets to fully support tag
+    fields. This has the theoretical potential for unexpected results, so this setting
+    lets the cautious disable this enhancement.
+
+    If you set this to False you will need to manually add Tagulous mixins to your
+    models, managers and querysets.
+
+    See :doc:`models/tagged_models` for more information.
+
+    Default: ``True``
 
 
 
