@@ -48,7 +48,7 @@ class TagModelQuerySet(models.query.QuerySet):
         # Weight is the count scaled to the min/max bounds
         # weight = ( (count * (max - min)) / max_count ) + min
         scale = int(max) - int(min)
-        max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 0
+        max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 1
         qs = self.annotate(weight=(Floor(F("count") * scale) / max_count) + int(min))
         return qs
 
