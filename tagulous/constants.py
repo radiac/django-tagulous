@@ -26,6 +26,7 @@ OPTION_DEFAULTS = {
     "autocomplete_view_args": None,
     "autocomplete_view_kwargs": None,
     "autocomplete_limit": 100,
+    "autocomplete_fulltext": False,
     "autocomplete_settings": None,
     "get_absolute_url": None,
     "verbose_name_singular": None,
