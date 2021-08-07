@@ -6,6 +6,7 @@ is enabled.
 """
 import copy
 
+import django
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models, transaction
 
@@ -112,6 +113,10 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         Custom lookups for tag fields
         """
+        if django.VERSION > (3, 2):
+            # Arguments changed to _filter_or_exclude(self, negate, args, kwargs)
+            args, kwargs = args
+
         # TODO: Replace with custom lookups
         safe_fields, singletag_fields, tag_fields, field_lookup = _split_kwargs(
             self.model, kwargs, lookups=True, with_fields=True
@@ -127,9 +132,14 @@ class TaggedQuerySet(models.query.QuerySet):
             safe_fields[query_field_name] = val
 
         # Query as normal
-        qs = super(TaggedQuerySet, self)._filter_or_exclude(
-            negate, *args, **safe_fields
-        )
+        if django.VERSION > (3, 2):
+            qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                negate, args, safe_fields
+            )
+        else:
+            qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                negate, *args, **safe_fields
+            )
 
         # Look up TagFields by string name
         #
@@ -142,9 +152,14 @@ class TaggedQuerySet(models.query.QuerySet):
 
             # Only perform custom lookup if value is a string
             if not isinstance(val, str):
-                qs = super(TaggedQuerySet, self)._filter_or_exclude(
-                    negate, **{field_name: val}
-                )
+                if django.VERSION > (3, 2):
+                    qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                        negate, [], {field_name: val}
+                    )
+                else:
+                    qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                        negate, **{field_name: val}
+                    )
                 continue
 
             # Parse the tag string
