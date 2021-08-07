@@ -46,6 +46,7 @@ def runtests(args):
                 "django.contrib.auth.middleware.AuthenticationMiddleware",
                 "django.contrib.messages.middleware.MessageMiddleware",
             ],
+            SECRET_KEY="secret",
             ROOT_URLCONF="tests.tagulous_tests_app.urls",
             SERIALIZATION_MODULES={
                 "xml": "tagulous.serializers.xml_serializer",
