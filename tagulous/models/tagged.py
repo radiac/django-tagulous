@@ -6,6 +6,7 @@ is enabled.
 """
 import copy
 
+import django
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models, transaction
 
@@ -112,6 +113,10 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         Custom lookups for tag fields
         """
+        if django.VERSION >= (3, 2):
+            # Arguments changed to _filter_or_exclude(self, negate, args, kwargs)
+            args, kwargs = args
+
         # TODO: Replace with custom lookups
         safe_fields, singletag_fields, tag_fields, field_lookup = _split_kwargs(
             self.model, kwargs, lookups=True, with_fields=True
@@ -127,9 +132,14 @@ class TaggedQuerySet(models.query.QuerySet):
             safe_fields[query_field_name] = val
 
         # Query as normal
-        qs = super(TaggedQuerySet, self)._filter_or_exclude(
-            negate, *args, **safe_fields
-        )
+        if django.VERSION >= (3, 2):
+            qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                negate, args, safe_fields
+            )
+        else:
+            qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                negate, *args, **safe_fields
+            )
 
         # Look up TagFields by string name
         #
@@ -142,9 +152,14 @@ class TaggedQuerySet(models.query.QuerySet):
 
             # Only perform custom lookup if value is a string
             if not isinstance(val, str):
-                qs = super(TaggedQuerySet, self)._filter_or_exclude(
-                    negate, **{field_name: val}
-                )
+                if django.VERSION >= (3, 2):
+                    qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                        negate, [], {field_name: val}
+                    )
+                else:
+                    qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                        negate, **{field_name: val}
+                    )
                 continue
 
             # Parse the tag string
@@ -360,6 +375,17 @@ class TaggedModel(models.Model):
 
         # Create a fake model
         class FakeTaggedModel(models.Model):
+            def __init__(self, *args, **kwargs):
+                # Django 3.2 introduced a TypeError when trying to instantiate an
+                # abstract model. Set it to False to get past the check.
+                if django.VERSION >= (3, 2):
+                    self._meta.abstract = False
+
+                super().__init__(*args, **kwargs)
+
+                if django.VERSION >= (3, 2):
+                    self._meta.abstract = True
+
             def _retag_to_original(self):
                 """
                 Convert this instance into an instance of the proper class it
@@ -387,14 +413,17 @@ class TaggedModel(models.Model):
 
         # Add fields to fake model
         for field in fields:
-            # ManyToOneRel and ManyToManyRel objects have no attribute
-            # contribute_to_class
             if isinstance(field, (models.ManyToOneRel, models.ManyToManyRel)):
+                # ManyToOneRel and ManyToManyRel objects have no attribute
+                # contribute_to_class
                 continue
+
             elif isinstance(field, BaseTagField):
                 clone_field = models.Field(blank=field.blank, null=field.null)
+
             else:
                 clone_field = copy.deepcopy(field)
+
             clone_field.contribute_to_class(FakeTaggedModel, field.name)
 
         FakeTaggedModel._tagulous_original_cls = cls

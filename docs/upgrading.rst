@@ -8,6 +8,13 @@ For an overview of what has changed between versions, see the :ref:`changelog`.
 Instructions
 ============
 
+Tagulous follows semantic versioning in the format ``BREAKING.FEATURE.BUG``:
+
+* Read the upgrade instructions for a ``BREAKING`` release to see if you need to take
+  further action when upgrading.
+* ``FEATURE`` and ``BUG`` releases will be safe to install without reading the upgrade
+  notes.
+
 1. Check which version of Tagulous you are upgrading from::
 
     python
@@ -21,9 +28,27 @@ Instructions
 3. Scroll down to the earliest instructions relevant to your version, and
    follow them up to the latest version.
 
-   For example, to upgrade from 0.8.0, the earliest instructions relevant to
-   you are for 0.8.0 or later. 0.7.0 is an earlier version than yours, so you
-   don't need to follow those steps.
+
+.. _upgrade_1-1-0:
+
+Upgrading from 1.1.0
+---------------------
+
+Slugify behaviour
+~~~~~~~~~~~~~~~~~
+
+In Tagulous 1.2.0 the slugify logic has been replaced with Django's now all supported
+Django versions support the ``allow_unicode`` slugify option.
+
+If unicode tag slugs are not enabled with ``TAGULOUS_SLUG_ALLOW_UNICODE``
+:ref:`setting <settings>`, Django's implementation of unicode to ASCII does not support
+logographic characters, so these will be stripped as per Django's standard ``slugify()``
+output, rather than Tagulous' old behaviour of replacing them with underscore
+characters. This can now lead to empty slugs, which will now default to a single
+underscore.
+
+As a result of this change, the optional dependency ``unidecode`` and its corresponding
+extra installation requirements ``[i18n]`` have been removed.
 
 
 .. _upgrade_0-14-1:
@@ -31,12 +56,23 @@ Instructions
 Upgrading from 0.14.1
 ---------------------
 
+Django and Python support
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Tagulous 0.14.1 was the last version to support Django 1.10 and earlier.
 Tagulous 1.0.0 requires Django 1.11 or later, and Python 2.7 or 3.5 or later.
+
+
+Autocomplete upgrade
+~~~~~~~~~~~~~~~~~~~~
 
 Tagulous 1.0.0 changes the default JavaScript adaptor to use select2 v4. This may
 necessitate some styling changes on your user-facing pages if you have overridden the
 default styles.
+
+
+Single tag behaviour
+~~~~~~~~~~~~~~~~~~~~
 
 Tagulous 1.0.0 no longer allows whitespace tags in ``SingleTagField``.
 
@@ -304,6 +340,7 @@ are available by installing the master branch from github (see
 
 Features:
 
+* Django 3.2 support
 * Option ``autocomplete_view_fulltext`` for full text search in autocomplete view (#102)
 
 Changes:
@@ -311,6 +348,7 @@ Changes:
 * Add ``autocomplete_view_args`` and ``autocomplete_view_kwargs`` options (#119, #120)
 * Documentation updates (#105, #113)
 * Fix division by zero issue in ``weight()`` (#102)
+* Slugification now uses standard Django for unicode for consistency
 
 Thanks to:
 

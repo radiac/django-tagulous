@@ -7,6 +7,7 @@ Modules tested:
 import copy
 import re
 
+import django
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -529,7 +530,12 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
         # Check response is appropriate
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].message, "Tags merged")
-        self.assertEqual(response._headers["location"][1], MOCK_PATH)
+
+        if django.VERSION >= (3, 2):
+            location = response.headers["location"]
+        else:
+            location = response._headers["location"][1]
+        self.assertEqual(location, MOCK_PATH)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -604,7 +610,12 @@ class TagAdminTest(TagAdminTestManager, TestRequestMixin):
 
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].message, "You must select at least two tags to merge")
-        self.assertEqual(response._headers["location"][1], MOCK_PATH)
+
+        if django.VERSION >= (3, 2):
+            location = response.headers["location"]
+        else:
+            location = response._headers["location"][1]
+        self.assertEqual(location, MOCK_PATH)
 
     def test_merge_form_two(self):
         "Check the merge_tags form when two tag selected"

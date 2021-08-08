@@ -54,7 +54,6 @@ Use them like a normal Django relationship in your queries::
 
 As well as this you also get:
 
-* unicode support and automatic :ref:`slug generation <model_slug>`
 * tag field support in public :doc:`forms <forms>` and the :doc:`admin <admin>`
   site, including autocompletion
 * easy to build :ref:`tag clouds <tag_clouds>`
