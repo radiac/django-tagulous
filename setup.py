@@ -171,11 +171,7 @@ setup(
         "Framework :: Django :: 3.1",
     ],
     install_requires=["Django>=2.2"],
-    extras_require={
-        "dev": ["tox", "jasmine"],
-        "devdb": ["psycopg2", "mysqlclient"],
-        "i18n": ["unidecode"],
-    },
+    extras_require={"dev": ["tox", "jasmine"], "devdb": ["psycopg2", "mysqlclient"],},
     zip_safe=True,
     packages=find_packages(exclude=("docs", "tests*",)),
     include_package_data=True,

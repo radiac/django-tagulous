@@ -12,11 +12,6 @@ Instructions
 
     pip install django-tagulous
 
-   or to install with improved unicode support in slugs (installs ``unidecode``
-   - see :ref:`model_slug` for more details)::
-
-    pip install django-tagulous[i18n]
-
 
 2. In your site settings, add Tagulous to ``INSTALLED_APPS`` and tell Django to use the
    Tagulous serialization modules::

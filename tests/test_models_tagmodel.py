@@ -592,53 +592,16 @@ class TagModelUnicodeTest(TagTestManager, TestCase):
 
     def test_slug_japanese(self):
         "Check unicode tag name slugified to ascii"
-        t1 = self.tag_model.objects.get(name="男の子")
-        self.assertEqual(t1.slug, "___")
+        name = "男の子"
+        t1 = self.tag_model.objects.get(name=name)
+        self.assertEqual(t1.name, name)
+        self.assertEqual(t1.slug, "_")
 
 
 try:
     from unidecode import unidecode
 except ImportError:
     unidecode = None
-
-
-@unittest.skipIf(unidecode is None, "optional unidecode not installed")
-class TagModelUnicodeUnidecodeTest(TagTestManager, TestCase):
-    """
-    Test unicode tags, without using unidecode
-
-    This only affects slugs
-    """
-
-    manage_models = [test_models.MixedTest]
-
-    def setUpExtra(self):
-        self.model = test_models.MixedTest
-        self.tag_model = test_models.MixedTestTagModel
-        self.o1 = self.create(
-            self.model, name="Test", singletag="男の子", tags="boy, niño, 男の子"
-        )
-
-    def test_setup(self):
-        "Check setup created tags as expected"
-        self.assertTagModel(self.tag_model, {"boy": 1, "niño": 1, "男の子": 2})
-
-    # unidecode only affects slugs
-
-    def test_slug_ascii(self):
-        "Check ascii tag name slugified to ascii"
-        t1 = self.tag_model.objects.get(name="boy")
-        self.assertEqual(t1.slug, "boy")
-
-    def test_slug_extended_ascii(self):
-        "Check extended ascii tag name slugified to ascii"
-        t1 = self.tag_model.objects.get(name="niño")
-        self.assertEqual(t1.slug, "nino")
-
-    def test_slug_japanese(self):
-        "Check unicode tag name slugified to ascii"
-        t1 = self.tag_model.objects.get(name="男の子")
-        self.assertEqual(t1.slug, "nan-nozi")
 
 
 class TagModelFullUnicodeTest(TagTestManager, TestCase):
@@ -680,8 +643,9 @@ class TagModelFullUnicodeTest(TagTestManager, TestCase):
 
     def test_slug_japanese(self):
         "Check unicode tag name slugified to ascii"
-        t1 = self.tag_model.objects.get(name="男の子")
-        self.assertEqual(t1.slug, "男の子")
+        name = "男の子"
+        t1 = self.tag_model.objects.get(name=name)
+        self.assertEqual(t1.slug, name)
 
 
 # ##############################################################################
