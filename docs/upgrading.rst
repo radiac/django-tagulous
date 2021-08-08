@@ -345,10 +345,17 @@ Features:
 
 Changes:
 
+* Slugification now uses standard Django for unicode for consistency
 * Add ``autocomplete_view_args`` and ``autocomplete_view_kwargs`` options (#119, #120)
 * Documentation updates (#105, #113)
 * Fix division by zero issue in ``weight()`` (#102)
-* Slugification now uses standard Django for unicode for consistency
+
+Bugfix:
+
+* Fix issue where the Select2 adaptor for SingleTagField didn't provide an empty value,
+  which meant it would look like it had defaulted to a value which wasn't set. (#116)
+* Fix issue where the Select2 adaptor didn't correctly handle the ``required``
+  attribute, which meant browser field validation would fail silently. (#116)
 
 Thanks to:
 
