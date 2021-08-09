@@ -356,6 +356,7 @@ Bugfix:
   which meant it would look like it had defaulted to a value which wasn't set. (#116)
 * Fix issue where the Select2 adaptor didn't correctly handle the ``required``
   attribute, which meant browser field validation would fail silently. (#116)
+* Fix dark mode support in Django admin (#125)
 
 Thanks to:
 

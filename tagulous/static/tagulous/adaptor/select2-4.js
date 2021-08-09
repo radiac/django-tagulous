@@ -166,9 +166,12 @@
          */
         var $inputEl = $el;
         var $selectEl = $('<select/>').width($el.width());
-
         if (options.required) {
           $selectEl.prop('required', true);
+        }
+
+        if ($el.data('theme')) {
+          $selectEl.attr('data-theme', $el.data('theme'));
         }
 
         if (isSingle) {
