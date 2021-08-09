@@ -11,7 +11,7 @@ from django.core.checks import Warning as ChecksWarning
 from django.db import models
 from django.utils.text import capfirst
 
-from .. import constants, forms
+from .. import constants
 from .descriptors import SingleTagDescriptor, TagDescriptor
 from .models import BaseTagModel, TagModel, TagTreeModel
 from .options import TagOptions
@@ -364,11 +364,16 @@ class SingleTagField(BaseTagField, models.ForeignKey):
             return tag.name
         return ""
 
-    def formfield(self, form_class=forms.SingleTagField, **kwargs):
+    def formfield(self, form_class=None, **kwargs):
+
         """
         Create the form field
         For arguments see forms.TagField
         """
+        if form_class is None:
+            from ..forms import SingleTagField as FormSingleTagField
+
+            form_class = FormSingleTagField
         return super(SingleTagField, self).formfield(form_class=form_class, **kwargs)
 
 
@@ -498,11 +503,15 @@ class TagField(BaseTagField, models.ManyToManyField):
 
         return FakeQuerySet(FakeObject(getattr(obj, self.attname).get_tag_string()))
 
-    def formfield(self, form_class=forms.TagField, **kwargs):
+    def formfield(self, form_class=None, **kwargs):
         """
         Create the form field
         For arguments see forms.TagField
         """
+        if form_class is None:
+            from ..forms import TagField as FormTagField
+
+            form_class = FormTagField
         return super(TagField, self).formfield(form_class=form_class, **kwargs)
 
     def save_form_data(self, instance, data):
