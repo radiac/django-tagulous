@@ -166,6 +166,13 @@
          */
         var $inputEl = $el;
         var $selectEl = $('<select/>').width($el.width());
+
+        if ($el.width() == 0) {
+          $selectEl.css('width', '20em');
+        } else {
+          $selectEl.width($el.width());
+        }
+
         if (options.required) {
           $selectEl.prop('required', true);
         }
@@ -173,6 +180,7 @@
         if ($el.data('theme')) {
           $selectEl.attr('data-theme', $el.data('theme'));
         }
+
 
         if (isSingle) {
           // Add an empty option so the placeholder takes effect
