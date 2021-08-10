@@ -51,15 +51,14 @@ Custom views
 
 To render the form outside of the admin, you must include links to the 
 tagulous .js and .css files. The easiest way to do this is to add links
-to the media files inside the template itself like so:
+to the media files inside the template itself like so::
 
-`{% block content %}
+    {% block content %}
 
-{{ form.media.css }}
-{{ form.media.js }}
-{{ form }}
+    {{ form.media }}
+    {{ form }}
 
-{% endblock %}`
+    {% endblock %}
 
 Otherwise you can link to the files directly in the <head> section.
 
