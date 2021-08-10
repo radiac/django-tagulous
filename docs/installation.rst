@@ -31,7 +31,12 @@ Instructions
    There are other global :ref:`settings` you can add here.
 
 
-3. Add Tagulous fields to your project - see :doc:`models/index`, :doc:`forms` and
+3. Run ``collectstatic``::
+
+    python manage.py collectstatic
+
+
+4. Add Tagulous fields to your project - see :doc:`models/index`, :doc:`forms` and
    :doc:`usage`.
 
 When you want to upgrade your Tagulous installation in the future, check
