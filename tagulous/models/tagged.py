@@ -255,9 +255,9 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = queryset.__class__
-        queryset.__class__ = type(
-            str("CastTagged%s" % orig_cls.__name__), (cls, orig_cls), {}
-        )
+        new_cls_name = f"CastTagged{orig_cls.__name__}"
+        queryset.__class__ = type(new_cls_name, (cls, orig_cls), {},)
+
         return queryset
 
 
@@ -301,9 +301,9 @@ class TaggedManager(models.Manager):
         """
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = manager.__class__
-        manager.__class__ = type(
-            str("CastTagged%s" % orig_cls.__name__), (cls, orig_cls), {}
-        )
+        new_cls_name = f"CastTagged{orig_cls.__name__}"
+        manager.__class__ = type(new_cls_name, (cls, orig_cls), {})
+
         return manager
 
 

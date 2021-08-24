@@ -126,6 +126,13 @@ class TagOptions(object):
         """
         return self._get_items(with_defaults, constants.FORM_OPTIONS)
 
+    def clone(self):
+        """
+        Return a new TagOptions object with the options set on this object.
+        """
+        dct = self.items(with_defaults=False)
+        return TagOptions(**dct)
+
     def __add__(self, options):
         """
         Return a new TagOptions object with the options set on this object,
