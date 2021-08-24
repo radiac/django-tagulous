@@ -44,6 +44,23 @@ These views look for two GET parameters:
 
 For an example, see the :ref:`example_autocomplete_views` example.
 
+.. _Custom_views:
+
+Custom views
+============
+
+To render the form outside of the admin, you must include links to the 
+tagulous .js and .css files in the template. The easiest way to do this 
+is to add links to the media files inside the template itself like so::
+
+    {% block content %}
+
+    {{ form.media }}
+    {{ form }}
+
+    {% endblock %}
+
+Otherwise you can link to the files directly in the <head> section.
 
 .. _tag_clouds:
 
