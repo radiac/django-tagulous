@@ -347,7 +347,7 @@ Changes:
 
 * Slugification now uses standard Django for unicode for consistency
 * Add ``autocomplete_view_args`` and ``autocomplete_view_kwargs`` options (#119, #120)
-* Documentation updates (#105, #113)
+* Documentation updates (#105, #113, #131)
 * Fix division by zero issue in ``weight()`` (#102)
 
 Bugfix:
@@ -366,6 +366,7 @@ Thanks to:
 * valentijnscholten for the select2 doc fix
 * Jens Diemer (jedie) for the readme update
 * dany-nonstop for ``autocomplete_view_fulltext`` and weight division issue
+* poolpoolpoolpool for form.media docs (#131)
 
 
 1.1.0, 2020-12-06
