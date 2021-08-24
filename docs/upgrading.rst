@@ -358,6 +358,7 @@ Bugfix:
   attribute, which meant browser field validation would fail silently. (#116)
 * Fix dark mode support in Django admin (#125)
 * Fix collapsed select2 in Django admin (#123)
+* Fix duplicate migration issue (#93)
 
 Thanks to:
 
