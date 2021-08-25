@@ -236,6 +236,12 @@ Default: ``False`` (start of word)
 -------------------------
 Override the default ``TAGULOUS_AUTOCOMPLETE_SETTINGS``.
 
+For example, the select2 control defaults to use the same width as the form element it
+replaces; you can override this by passing their ``width`` option (see their docs on
+`appearance <https://select2.org/appearance>`_) as an autocomplete setting::
+
+    myfield = TagField(... autocomplete_settings={"width": "75%"})
+
 Default: ``None``
 
 

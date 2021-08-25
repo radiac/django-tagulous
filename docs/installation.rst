@@ -129,6 +129,12 @@ Settings
     Any settings to pass to the JavaScript via the adaptor. They can be overridden by a
     field's :ref:`autocomplete_settings <option_autocomplete_settings>` option.
 
+    For example, the select2 control defaults to use the same width as the form element
+    it replaces; you can override this by passing their ``width`` option (see their docs
+    on `appearance <https://select2.org/appearance>`_) as an autocomplete setting::
+
+        TAGULOUS_AUTOCOMPLETE_SETTINGS = {"width": "75%"}
+
     If set to ``None``, no settings will be passed.
 
     Default: ``None``
