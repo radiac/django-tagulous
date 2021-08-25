@@ -86,7 +86,7 @@ See :ref:`settings` for more information.
 
 Because the select2 control defaults to use the same width as the form element it
 replaces, you may find this a bit too small in some versions of the Django admin. You
-could override this with :ref:`autocomplete_settings`, but that will change
+could override this with :ref:`option_autocomplete_settings`, but that will change
 non-admin controls too, so the best option would be to add a custom stylesheet to
 ``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS`` with a rule such as::
 
