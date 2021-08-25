@@ -11,6 +11,7 @@ from django.core.exceptions import FieldDoesNotExist
 from django.db import models, transaction
 
 from .. import utils
+from ..constants import TAGGED_ATTR_MANAGER
 from .fields import (
     BaseTagField,
     SingleTagField,
@@ -329,6 +330,25 @@ class TaggedModel(models.Model):
         # Add on TagField values
         for field_name, val in tag_fields.items():
             setattr(self, field_name, val)
+
+    def __getstate__(self):
+        """
+        Pickle tag fields
+        """
+        state = super().__getstate__()
+
+        for field in self._meta.get_fields():
+            if isinstance(field, BaseTagField):
+                # Remove manager from state
+                attr = TAGGED_ATTR_MANAGER % field.name
+                if attr in state:
+                    del state[attr]
+
+                # Add text tags
+                state[field.name] = str(getattr(self, field.name))
+        breakpoint()
+
+        return state
 
     @classmethod
     def cast_class(cls, model):

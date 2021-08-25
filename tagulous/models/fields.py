@@ -253,7 +253,7 @@ class BaseTagField(object):
         """
         Get the field name for the Manager
         """
-        return "_%s_tagulous" % self.name
+        return constants.TAGGED_ATTR_MANAGER % self.name
 
     def deconstruct(self):
         """

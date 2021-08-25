@@ -6,6 +6,8 @@ Will fail if settings.ENHANCE_MODELS is not True
 Modules tested:
     tagulous.models.tagged
 """
+import pickle
+
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.test import TestCase
@@ -50,6 +52,15 @@ class ModelTaggedTest(TagTestManager, TestCase):
         t1 = self.test_model(name="Test 1", singletag="Mr", tags="red, blue")
         t1.save()
         t2 = self.test_model.objects.get(name="Test 1")
+        self.assertEqual(str(t2.singletag), "Mr")
+        self.assertEqual(str(t2.tags), "blue, red")
+
+    def test_pickle(self):
+        "Check tagged models can be pickled"
+        t1 = self.test_model(name="Test 1", singletag="Mr", tags="red, blue")
+        t1.save()
+        pickled = pickle.dumps(t1)
+        t2 = pickle.loads(pickled)
         self.assertEqual(str(t2.singletag), "Mr")
         self.assertEqual(str(t2.tags), "blue, red")
 
