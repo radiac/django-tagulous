@@ -335,7 +335,7 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-1.2.0, 2021-
+1.2.0, 2021-08-25
 -----------------
 
 Features:
