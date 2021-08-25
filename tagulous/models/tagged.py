@@ -346,7 +346,6 @@ class TaggedModel(models.Model):
 
                 # Add text tags
                 state[field.name] = str(getattr(self, field.name))
-        breakpoint()
 
         return state
 

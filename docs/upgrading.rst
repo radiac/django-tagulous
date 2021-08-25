@@ -359,6 +359,7 @@ Bugfix:
 * Fix dark mode support in Django admin (#125)
 * Fix collapsed select2 in Django admin (#123)
 * Fix duplicate migration issue (#93)
+* Tagged models can now be pickled (#109)
 
 Thanks to:
 
