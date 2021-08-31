@@ -285,7 +285,8 @@ class TaggedQuerySet(models.query.QuerySet):
         similar = similar.exclude(tagulous_similarity=0)
 
         # Order by similarity with most similar first
-        similar = similar.order_by("-tagulous_similarity")
+        ordering = ["-tagulous_similarity"] + list(similar.model._meta.ordering)
+        similar = similar.order_by(*ordering)
 
         return similar
 
