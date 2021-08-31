@@ -47,7 +47,7 @@ so that ``TagField`` values can be passed as keywords.
 ``tagulous.models.TaggedManager``
 ---------------------------------
 
-The subclass for managers of tagged models. It only exists to ensure querysets
+The base class for managers of tagged models. It only exists to ensure querysets
 are subclasses of ``tagulous.TaggedQuerySet``.
 
 
@@ -56,9 +56,11 @@ are subclasses of ``tagulous.TaggedQuerySet``.
 ``tagulous.models.TaggedQuerySet``
 ----------------------------------
 
-The subclass for querysets on tagged models. It changes ``get``, ``filter`` and
+The base class for querysets on tagged models. It changes ``get``, ``filter`` and
 ``exclude`` to work with string values, and ``create`` and ``get_or_create`` to
 work with string and ``TagField`` values.
+
+It also adds ``get_similar_objects()`` - see :ref:`finding_similar_objects` for usage.
 
 See :ref:`querying` for more details.
 
@@ -145,3 +147,29 @@ There is a ``filter_or_initial`` helper method on a ``TagModel``'s manager and
 queryset, which will add initial tags to your filtered queryset::
 
     myobj.tags.tag_model.objects.filter_or_initial(record__owner=user)
+
+
+.. _finding_similar_objects:
+
+Finding similar objects
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The QuerySet on a tagged model provides the method ``get_similar_objects``, which takes
+the instance and field name to compare similarity by, and returns a queryset of similar
+objects from that tagged model, ordered by similarity::
+
+    myobj = MyModel.objects.first()
+    similar = MyModel.objects.get_similar_objects(myobj, 'tags')
+
+There is a convenience wrapper on the related manager which detects the instance and
+field to compare by::
+
+    similar = myobj.tags.get_similar_objects()
+
+Although less useful, there is a similar function for single tag fields, which finds all
+objects with the same tag::
+
+    similar = myobj.singletag.get_similar_objects()
+
+The similar querysets will exclude the object being compared - in the above examples,
+``myobj`` will not be in the queryset.

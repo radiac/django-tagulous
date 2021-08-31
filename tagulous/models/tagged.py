@@ -261,6 +261,34 @@ class TaggedQuerySet(models.query.QuerySet):
 
         return queryset
 
+    def similarly_tagged(self, instance, field_name):
+        """
+        Filter the queryset to objects which are similarly tagged to the specified model
+        instance.
+
+        Arguments:
+            instance    Instance of the model whose tags we're comparing to
+            field_name  Name of TagField where we're checking similarity
+        """
+        # Start with a queryset of the tagged model, excluding the instance
+        qs = self.exclude(pk=instance.pk)
+
+        # Annotate with count of similarly tagged
+        q_filter = {f"{field_name}__in": getattr(instance, field_name).all()}
+        similar = qs.annotate(
+            tagulous_similarity=models.Count(
+                field_name, models.Q(**q_filter), distinct=True,
+            )
+        )
+
+        # Exclude any zero matches
+        similar = similar.exclude(tagulous_similarity=0)
+
+        # Order by similarity with most similar first
+        similar = similar.order_by("-tagulous_similarity")
+
+        return similar
+
 
 # ##############################################################################
 # ############################################################## TaggedManager
@@ -306,6 +334,9 @@ class TaggedManager(models.Manager):
         manager.__class__ = type(new_cls_name, (cls, orig_cls), {})
 
         return manager
+
+    def similarly_tagged(self, instance, field_name):
+        return self.get_queryset().similarly_tagged(instance, field_name)
 
 
 # ##############################################################################

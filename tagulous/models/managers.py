@@ -663,3 +663,21 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
         self.tags = []
 
     clear.alters_data = True
+
+    def get_similar_objects(self):
+        """
+        Find similarly tagged objects
+
+        Example::
+
+            related_objects_qs = myobject.tags.get_similar_objects()
+
+        is equivalent to::
+
+            related_objects_qs = MyModel.objects.similarly_tagged(myobject, 'tags')
+        """
+        tagged_model = self.source_field.related_model
+        similar = tagged_model.objects.similarly_tagged(
+            self.instance, field_name=self.prefetch_cache_name
+        )
+        return similar

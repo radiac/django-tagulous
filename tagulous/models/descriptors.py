@@ -9,6 +9,8 @@ manager instances.
 """
 from collections.abc import Iterable
 
+from django.db.models import Q
+
 from .managers import FakeTagRelatedManager, SingleTagManager, TagRelatedManagerMixin
 
 
@@ -97,7 +99,26 @@ class SingleTagDescriptor(BaseTagDescriptor):
 
         # Otherwise get from the manager
         manager = self.get_manager(instance, instance_type)
-        return manager.get()
+        related = manager.get()
+
+        if not related:
+            return related
+
+        # Add get_similar_objects()
+        field = self.field
+
+        def get_similar_objects():
+            # Start with all objects except the source object
+            qs = field.model.objects.exclude(pk=instance.pk)
+
+            # Find ones which match
+            qs = qs.filter(Q(**{f"{field.name}": getattr(instance, field.name)}))
+
+            return qs
+
+        related.get_similar_objects = get_similar_objects
+
+        return related
 
 
 # ##############################################################################
