@@ -335,6 +335,14 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
+1.2.1, 2021-08-31
+-----------------
+
+Bugfix:
+
+* Fix issue with update_or_create (#135)
+
+
 1.2.0, 2021-08-25
 -----------------
 
