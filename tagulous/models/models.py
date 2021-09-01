@@ -2,7 +2,7 @@
 Tagulous tag models
 """
 from django.db import IntegrityError, models, router, transaction
-from django.db.models import F, Max
+from django.db.models import Count, F, Max, Q, base
 from django.db.models.functions import Floor
 from django.utils.text import slugify
 
@@ -56,24 +56,12 @@ class TagModelQuerySet(models.query.QuerySet):
         return utils.render_tags(self)
 
 
-class TagModelManager(models.Manager):
-    def get_queryset(self):
-        return TagModelQuerySet(self.model, using=self._db)
-
-    get_query_set = get_queryset
-
+class BaseTagModelManager(models.Manager):
     def __str__(self):
         return str(self.get_queryset())
 
-    def initial(self):
-        return self.get_queryset().initial()
 
-    def filter_or_initial(self, *args, **kwargs):
-        return self.get_queryset().filter_or_initial(*args, **kwargs)
-
-    def weight(self, *args, **kwargs):
-        return self.get_queryset().weight(*args, **kwargs)
-
+TagModelManager = BaseTagModelManager.from_queryset(TagModelQuerySet)
 
 # ##############################################################################
 # ###### Abstract base class for all TagModel models

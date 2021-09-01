@@ -936,6 +936,77 @@ class TagModelQuerySetTest(TagTestManager, TestCase):
         self.assertEqual(str(self.o1.initial_list), "David, Eric")
 
 
+class TagModelQuerySetSimilarTest(TagTestManager, TestCase):
+    model = test_models.MixedTest
+
+    def test_queryset_similarly_tagged__finds_other(self):
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one")
+        t2 = self.create(self.model, name="t2", singletag="one", tags="one")
+        similar = self.model.objects.similarly_tagged(t1, "tags")
+        self.assertSequenceEqual(similar, [t2])
+
+    def test_queryset_similarly_tagged__ignores_dissimilar(self):
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one")
+        t2 = self.create(self.model, name="t2", singletag="one", tags="two")
+        similar = self.model.objects.similarly_tagged(t1, "tags")
+        self.assertSequenceEqual(similar, [])
+
+    def test_queryset_similarly_tagged__finds_other_inexact(self):
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one, two")
+        t2 = self.create(self.model, name="t2", singletag="one", tags="two, three")
+        similar = self.model.objects.similarly_tagged(t1, "tags")
+        self.assertSequenceEqual(similar, [t2])
+
+    def test_queryset_similarly_tagged__finds_others_order_correct(self):
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one, two")
+        t2 = self.create(self.model, name="t2", singletag="one", tags="two, three")
+        t3 = self.create(self.model, name="t3", singletag="one", tags="one, two")
+        t4 = self.create(self.model, name="t4", singletag="one", tags="one, two, three")
+        similar = self.model.objects.similarly_tagged(t1, "tags")
+        self.assertSequenceEqual(similar, [t3, t4, t2])
+
+    def test_singletagfield_get_similar_objects__finds_other(self):
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one")
+        t2 = self.create(self.model, name="t2", singletag="one", tags="two")
+        similar = t1.singletag.get_similar_objects()
+        self.assertSequenceEqual(similar, [t2])
+
+    def test_singletagfield_get_similar_objects__ignores_dissimilar(self):
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one")
+        t2 = self.create(self.model, name="t2", singletag="two", tags="one")
+        similar = t1.singletag.get_similar_objects()
+        self.assertSequenceEqual(similar, [])
+
+    def test_singletagfield_get_similar_objects__finds_others_order_correct(self):
+        # Uses queryset.similarly_tagged so just need to check instance and field_name
+        # are being correctly detected and passed
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one, two")
+        t2 = self.create(self.model, name="t2", singletag="two", tags="two, three")
+        t3 = self.create(self.model, name="t3", singletag="one", tags="one, two")
+        t4 = self.create(self.model, name="t4", singletag="one", tags="two, three")
+        similar = t1.singletag.get_similar_objects()
+        self.assertSequenceEqual(similar, [t3, t4])
+
+    # TagField related manager uses queryset.similarly_tagged, so these tests just need
+    # to check instance and field_name are being correctly detected and passed
+
+    def test_tagfield_get_similar_objects__finds_other(self):
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one")
+        t2 = self.create(self.model, name="t2", singletag="one", tags="one")
+        similar = t1.tags.get_similar_objects()
+        self.assertSequenceEqual(similar, [t2])
+
+    def test_tagfield_get_similar_objects__finds_others_order_correct(self):
+        # Uses queryset.similarly_tagged so just need to check instance and field_name
+        # are being correctly detected and passed
+        t1 = self.create(self.model, name="t1", singletag="one", tags="one, two")
+        t2 = self.create(self.model, name="t2", singletag="one", tags="two, three")
+        t3 = self.create(self.model, name="t3", singletag="one", tags="one, two")
+        t4 = self.create(self.model, name="t4", singletag="one", tags="one, two, three")
+        similar = t1.tags.get_similar_objects()
+        self.assertSequenceEqual(similar, [t3, t4, t2])
+
+
 # ##############################################################################
 # ###### Test tag model with custom to_base
 # ##############################################################################
