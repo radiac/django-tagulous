@@ -134,13 +134,13 @@ path under ``STATIC_URL`` to the appropriate ``TAGULOUS_`` settings.
 
 Tagulous includes the following adaptors:
 
-Select2 (version 3)
+Select2 (version 4)
 -------------------
 
 The default adaptor, for `Select2 <https://select2.github.io/>`_.
 
 Path:
-    ``tagulous/adaptor/select2-3.js``
+    ``tagulous/adaptor/select2-4.js``
 
 Autocomplete settings should be a dict:
 

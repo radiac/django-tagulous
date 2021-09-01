@@ -225,7 +225,7 @@ class TaggedQuerySet(models.query.QuerySet):
 
             return obj
 
-    def get_or_create(self, **kwargs):
+    def get_or_create(self, defaults=None, **kwargs):
         # Get or create object as normal
         safe_fields, singletag_fields, tag_fields = _split_kwargs(self.model, kwargs)
 
@@ -235,7 +235,7 @@ class TaggedQuerySet(models.query.QuerySet):
 
         # Use normal get_or_create if there are no tag fields
         if len(tag_fields) == 0:
-            return super(TaggedQuerySet, self).get_or_create(**safe_fields)
+            return super(TaggedQuerySet, self).get_or_create(defaults, **safe_fields)
 
         # Try to find it using get - that is able to handle tag_fields
         try:

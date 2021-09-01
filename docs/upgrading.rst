@@ -335,13 +335,21 @@ are available by installing the master branch from github (see
 :ref:`installation_instructions` for details).
 
 
-1.3.0, 2021-??-??
+1.3.0, 2021-
 -----------------
 
 Features:
 
 * Add ``similarly_tagged`` to tagged model querysets, and ``get_similar_objects`` to
   instantiated tag fields (#115)
+
+
+1.2.1, 2021-08-31
+-----------------
+
+Bugfix:
+
+* Fix issue with update_or_create (#135)
 
 
 1.2.0, 2021-08-25

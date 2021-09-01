@@ -306,6 +306,61 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         self.assertEqual(t1.pk, t2.pk)
 
     #
+    # .update_or_create()
+    #
+
+    def test_object_update_or_create_singletagfield(self):
+        "Check that objects.update_or_create on SingleTagField creates and updates"
+        # Clear out models
+        self.test_model.objects.all().delete()
+        self.test_model.singletag.tag_model.objects.all().delete()
+        self.assertTagModel(self.test_model.singletag, {})
+
+        # Create
+        t1, created = self.test_model.objects.update_or_create(
+            singletag="Mr", defaults={"name": "Created"}
+        )
+        self.assertEqual(created, True)
+        self.assertTagModel(self.test_model.singletag, {"Mr": 1})
+
+        # Get
+        t2, created = self.test_model.objects.update_or_create(
+            singletag="Mr", defaults={"name": "Updated"}
+        )
+        self.assertEqual(created, False)
+        self.assertTagModel(self.test_model.singletag, {"Mr": 1})
+        self.assertEqual(t2.name, "Updated")
+        self.assertEqual(str(t2.singletag), "Mr")
+
+        self.assertEqual(t1.pk, t2.pk)
+
+    def test_object_update_or_create_tagfield(self):
+        "Check that objects.update_or_create on TagField creates and gets"
+        # Clear out models
+        self.test_model.objects.all().delete()
+        self.test_model.tags.tag_model.objects.all().delete()
+        self.assertTagModel(self.test_model.tags, {})
+
+        # Create
+        t1, created = self.test_model.objects.update_or_create(
+            tags="red, blue", defaults={"name": "Created"}
+        )
+        self.assertEqual(created, True)
+        self.assertTagModel(self.test_model.tags, {"red": 1, "blue": 1})
+        self.assertEqual(str(t1.tags), "blue, red")
+
+        # Get
+        t2, created = self.test_model.objects.update_or_create(
+            tags="red, blue", defaults={"name": "Updated"}
+        )
+        self.assertEqual(created, False)
+        self.assertTagModel(self.test_model.tags, {"red": 1, "blue": 1})
+        self.assertEqual(t2.name, "Updated")
+        self.assertEqual(str(t1.tags), "blue, red")
+
+        self.assertEqual(t1.pk, t2.pk)
+
+    #
     # .filter()
     #
 
