@@ -6,10 +6,12 @@ is enabled.
 """
 import copy
 
+import django
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models, transaction
 
 from .. import utils
+from ..constants import TAGGED_ATTR_MANAGER
 from .fields import (
     BaseTagField,
     SingleTagField,
@@ -112,6 +114,10 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         Custom lookups for tag fields
         """
+        if django.VERSION >= (3, 2):
+            # Arguments changed to _filter_or_exclude(self, negate, args, kwargs)
+            args, kwargs = args
+
         # TODO: Replace with custom lookups
         safe_fields, singletag_fields, tag_fields, field_lookup = _split_kwargs(
             self.model, kwargs, lookups=True, with_fields=True
@@ -127,9 +133,14 @@ class TaggedQuerySet(models.query.QuerySet):
             safe_fields[query_field_name] = val
 
         # Query as normal
-        qs = super(TaggedQuerySet, self)._filter_or_exclude(
-            negate, *args, **safe_fields
-        )
+        if django.VERSION >= (3, 2):
+            qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                negate, args, safe_fields
+            )
+        else:
+            qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                negate, *args, **safe_fields
+            )
 
         # Look up TagFields by string name
         #
@@ -142,9 +153,14 @@ class TaggedQuerySet(models.query.QuerySet):
 
             # Only perform custom lookup if value is a string
             if not isinstance(val, str):
-                qs = super(TaggedQuerySet, self)._filter_or_exclude(
-                    negate, **{field_name: val}
-                )
+                if django.VERSION >= (3, 2):
+                    qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                        negate, [], {field_name: val}
+                    )
+                else:
+                    qs = super(TaggedQuerySet, self)._filter_or_exclude(
+                        negate, **{field_name: val}
+                    )
                 continue
 
             # Parse the tag string
@@ -209,7 +225,7 @@ class TaggedQuerySet(models.query.QuerySet):
 
             return obj
 
-    def get_or_create(self, **kwargs):
+    def get_or_create(self, defaults=None, **kwargs):
         # Get or create object as normal
         safe_fields, singletag_fields, tag_fields = _split_kwargs(self.model, kwargs)
 
@@ -219,7 +235,7 @@ class TaggedQuerySet(models.query.QuerySet):
 
         # Use normal get_or_create if there are no tag fields
         if len(tag_fields) == 0:
-            return super(TaggedQuerySet, self).get_or_create(**safe_fields)
+            return super(TaggedQuerySet, self).get_or_create(defaults, **safe_fields)
 
         # Try to find it using get - that is able to handle tag_fields
         try:
@@ -240,9 +256,9 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = queryset.__class__
-        queryset.__class__ = type(
-            str("CastTagged%s" % orig_cls.__name__), (cls, orig_cls), {}
-        )
+        new_cls_name = f"CastTagged{orig_cls.__name__}"
+        queryset.__class__ = type(new_cls_name, (cls, orig_cls), {},)
+
         return queryset
 
 
@@ -286,9 +302,9 @@ class TaggedManager(models.Manager):
         """
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = manager.__class__
-        manager.__class__ = type(
-            str("CastTagged%s" % orig_cls.__name__), (cls, orig_cls), {}
-        )
+        new_cls_name = f"CastTagged{orig_cls.__name__}"
+        manager.__class__ = type(new_cls_name, (cls, orig_cls), {})
+
         return manager
 
 
@@ -314,6 +330,24 @@ class TaggedModel(models.Model):
         # Add on TagField values
         for field_name, val in tag_fields.items():
             setattr(self, field_name, val)
+
+    def __getstate__(self):
+        """
+        Pickle tag fields
+        """
+        state = super().__getstate__()
+
+        for field in self._meta.get_fields():
+            if isinstance(field, BaseTagField):
+                # Remove manager from state
+                attr = TAGGED_ATTR_MANAGER % field.name
+                if attr in state:
+                    del state[attr]
+
+                # Add text tags
+                state[field.name] = str(getattr(self, field.name))
+
+        return state
 
     @classmethod
     def cast_class(cls, model):
@@ -360,6 +394,17 @@ class TaggedModel(models.Model):
 
         # Create a fake model
         class FakeTaggedModel(models.Model):
+            def __init__(self, *args, **kwargs):
+                # Django 3.2 introduced a TypeError when trying to instantiate an
+                # abstract model. Set it to False to get past the check.
+                if django.VERSION >= (3, 2):
+                    self._meta.abstract = False
+
+                super().__init__(*args, **kwargs)
+
+                if django.VERSION >= (3, 2):
+                    self._meta.abstract = True
+
             def _retag_to_original(self):
                 """
                 Convert this instance into an instance of the proper class it
@@ -387,14 +432,17 @@ class TaggedModel(models.Model):
 
         # Add fields to fake model
         for field in fields:
-            # ManyToOneRel and ManyToManyRel objects have no attribute
-            # contribute_to_class
             if isinstance(field, (models.ManyToOneRel, models.ManyToManyRel)):
+                # ManyToOneRel and ManyToManyRel objects have no attribute
+                # contribute_to_class
                 continue
+
             elif isinstance(field, BaseTagField):
                 clone_field = models.Field(blank=field.blank, null=field.null)
+
             else:
                 clone_field = copy.deepcopy(field)
+
             clone_field.contribute_to_class(FakeTaggedModel, field.name)
 
         FakeTaggedModel._tagulous_original_cls = cls

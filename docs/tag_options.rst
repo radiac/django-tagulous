@@ -184,6 +184,25 @@ If this is an invalid view, a ``ValueError`` will be raised.
 Default: ``None``
 
 
+.. _option_autocomplete_view_args:
+
+``autocomplete_view_args``
+--------------------------
+Optional ``args`` passed to the ``autocomplete_view``.
+
+Default: ``None``
+
+
+.. _option_autocomplete_view_kwargs:
+
+``autocomplete_view_kwargs``
+--------------------------
+Optional ``kwargs`` passed to the ``autocomplete_view``.
+
+Default: ``None``
+
+
+
 .. _option_autocomplete_limit:
 
 ``autocomplete_limit``
@@ -199,11 +218,29 @@ If ``0``, there will be no limit and all results will be returned
 Default: ``100``
 
 
+.. _option_autocomplete_view_fulltext:
+
+``autocomplete_view_fulltext``
+------------------------------
+Whether to perform a start of word match (``__startswith``) or full text match
+(``__contains``) in the autocomplete view.
+
+Has no effect if not using ``autocomplete_view``.
+
+Default: ``False`` (start of word)
+
+
 .. _option_autocomplete_settings:
 
 ``autocomplete_settings``
 -------------------------
 Override the default ``TAGULOUS_AUTOCOMPLETE_SETTINGS``.
+
+For example, the select2 control defaults to use the same width as the form element it
+replaces; you can override this by passing their ``width`` option (see their docs on
+`appearance <https://select2.org/appearance>`_) as an autocomplete setting::
+
+    myfield = TagField(... autocomplete_settings={"width": "75%"})
 
 Default: ``None``
 

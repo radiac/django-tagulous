@@ -5,7 +5,7 @@ import sys
 from setuptools import find_packages, setup
 
 
-VERSION = "1.1.0"
+VERSION = "1.2.1"
 
 
 def read(fname):
@@ -46,6 +46,8 @@ def runtests(args):
                 "django.contrib.auth.middleware.AuthenticationMiddleware",
                 "django.contrib.messages.middleware.MessageMiddleware",
             ],
+            SECRET_KEY="secret",
+            DEFAULT_AUTO_FIELD="django.db.models.AutoField",
             ROOT_URLCONF="tests.tagulous_tests_app.urls",
             SERIALIZATION_MODULES={
                 "xml": "tagulous.serializers.xml_serializer",
@@ -167,13 +169,10 @@ setup(
         "Framework :: Django :: 2.2",
         "Framework :: Django :: 3.0",
         "Framework :: Django :: 3.1",
+        "Framework :: Django :: 3.2",
     ],
     install_requires=["Django>=2.2"],
-    extras_require={
-        "dev": ["tox", "jasmine"],
-        "devdb": ["psycopg2", "mysqlclient"],
-        "i18n": ["unidecode"],
-    },
+    extras_require={"dev": ["tox", "jasmine"], "devdb": ["psycopg2", "mysqlclient"],},
     zip_safe=True,
     packages=find_packages(exclude=("docs", "tests*",)),
     include_package_data=True,

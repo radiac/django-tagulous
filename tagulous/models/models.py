@@ -48,7 +48,7 @@ class TagModelQuerySet(models.query.QuerySet):
         # Weight is the count scaled to the min/max bounds
         # weight = ( (count * (max - min)) / max_count ) + min
         scale = int(max) - int(min)
-        max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 0
+        max_count = self.model.objects.aggregate(Max("count"))["count__max"] or 1
         qs = self.annotate(weight=(Floor(F("count") * scale) / max_count) + int(min))
         return qs
 
@@ -403,14 +403,21 @@ class BaseTagModel(models.Model, metaclass=TagModelBase):
             return super(BaseTagModel, self).save(*args, **kwargs)
 
         # Set the slug using the label if possible (for TagTreeModel), else
-        # the tag name. Run it through unicode_to_ascii because slugify will
-        # cry if the label contains unicode characters
+        # the tag name.
         label = getattr(self, "label", self.name)
         slug_max_length = self.__class__._meta.get_field("slug").max_length
         if settings.SLUG_ALLOW_UNICODE:
             slug_base = slugify(label, allow_unicode=True)
         else:
-            slug_base = slugify(str(utils.unicode_to_ascii(label)))
+            slug_base = slugify(label, allow_unicode=False)
+
+            # Django 3.2 strips trailing and leading underscores; this risks creating an
+            # empty slug for unconvertable characters, eg logographic characters. Ensure
+            # they are not empty.
+            if slug_base == "":
+                slug_base = "_"
+
+        # ASCII-ification can make a longer string
         self.slug = slug_base[:slug_max_length]
         self._update_extra()
 

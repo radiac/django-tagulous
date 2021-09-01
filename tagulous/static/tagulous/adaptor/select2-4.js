@@ -140,6 +140,9 @@
             // Make SingleTagField look like a select, set data not tags
             args['data'] = listToData(list);
 
+            // Add a placeholder to ignore the empty option we're about to add
+            args['placeholder'] = $el.prop('placeholder') || "";
+
         } else {
             // Multiple tags, normal tags mode appropriate
             $.extend(args, {
@@ -163,6 +166,28 @@
          */
         var $inputEl = $el;
         var $selectEl = $('<select/>').width($el.width());
+
+        if ($el.width() == 0) {
+          $selectEl.css('width', '20em');
+        } else {
+          $selectEl.width($el.width());
+        }
+
+        if (options.required) {
+          $selectEl.prop('required', true);
+        }
+
+        if ($el.data('theme')) {
+          $selectEl.attr('data-theme', $el.data('theme'));
+        }
+
+
+        if (isSingle) {
+          // Add an empty option so the placeholder takes effect
+          // This prevents us accidentally selecting the first value
+          var option = new Option('', '', true, true);
+          $selectEl.append(option).trigger('change');
+        }
 
         // Swap in
         $selectEl.insertAfter($inputEl.hide());

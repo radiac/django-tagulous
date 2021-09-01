@@ -36,14 +36,9 @@ Must be unique.
 A unique ``SlugField``, generated automatically from the name when first
 saved.
 
-If ``unidecode`` is installed, Tagulous will use it to make a best-guess
-conversion of non-ascii characters to something similar in ascii which will
-be safe for a slug field. If ``unidecode`` is not installed, Tagulous will
-strip diacritical marks from extended ascii characters, but then just
-convert any remaining non-ascii characters to underscores. In most cases
-either option will be adequate for European languages, but if your tags
-frequently contain non-European characters you'll have less slug clashes
-if you use ``unidecode``.
+Slugs will support unicode if the ``TAGULOUS_SLUG_ALLOW_UNICODE``
+:ref:`setting <settings>` is ``True``. Empty slugs are not allowed; they will default to
+underscore. Slug clashes are avoided by adding an integer to the end.
 
 
 ``count``

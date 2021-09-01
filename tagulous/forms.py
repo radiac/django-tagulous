@@ -31,12 +31,19 @@ class TagWidgetBase(forms.TextInput):
     # tagulous.admin isn't used to register the admin model
     choices = None
 
-    def render(self, name, value, attrs={}, renderer=None):
+    def render(self, name, value, attrs=None, renderer=None):
+        if attrs is None:
+            attrs = {}
+
         # Try to provide a URL for the autocomplete to load tags on demand
         autocomplete_view = self.tag_options.autocomplete_view
         if autocomplete_view:
             try:
-                attrs["data-tag-url"] = reverse(autocomplete_view)
+                attrs["data-tag-url"] = reverse(
+                    autocomplete_view,
+                    args=self.tag_options.autocomplete_view_args,
+                    kwargs=self.tag_options.autocomplete_view_kwargs,
+                )
             except NoReverseMatch as e:
                 raise ValueError("Invalid autocomplete view: %s" % e)
 
@@ -103,6 +110,10 @@ class AdminTagWidget(TagWidgetBase):
 
     default_autocomplete_settings = settings.ADMIN_AUTOCOMPLETE_SETTINGS
 
+    # Admin will be expecting this to have a choices attribute
+    # Set this so the admin will behave as expected
+    choices = None
+
     @property
     def media(self):
         # Get the media from the AutocompleteMixin - this will give us Django's
@@ -113,9 +124,12 @@ class AdminTagWidget(TagWidgetBase):
             js=settings.ADMIN_AUTOCOMPLETE_JS, css=settings.ADMIN_AUTOCOMPLETE_CSS,
         )
 
-    # Admin will be expecting this to have a choices attribute
-    # Set this so the admin will behave as expected
-    choices = None
+    def render(self, name, value, attrs=None, renderer=None):
+        if attrs is None:
+            attrs = {}
+        attrs["data-theme"] = "admin-autocomplete"
+
+        return super().render(name, value, attrs, renderer)
 
 
 class BaseTagField(forms.CharField):

@@ -9,6 +9,14 @@ class PersonAdmin(admin.ModelAdmin):
     list_display = ("name", "title", "skills", "hobbies")
     list_filter = ("name", "title", "skills", "hobbies")
 
+    fieldsets = (
+        (None, {"fields": ("name",)},),
+        (
+            "Feed",
+            {"classes": ("collapse",), "fields": ("title", "skills", "hobbies",),},
+        ),
+    )
+
 
 tagulous.admin.register(models.Person, PersonAdmin)
 

@@ -2,6 +2,25 @@
 Views and Templates
 ===================
 
+.. _form_media:
+
+Form templates
+==============
+
+To render Tagulous fields in forms outside the admin site, add ``{{ form.media }}`` to
+your template to include the JavaScript and CSS resources; for example::
+
+    {% block content %}
+        {{ form.media }}
+        {{ form }}
+    {% endblock %}
+
+For an example of adding the JavaScript and CSS separately, see the
+`example project templates`__
+
+__ https://github.com/radiac/django-tagulous/tree/develop/example/example/templates
+
+
 .. _autocomplete_views:
 
 Autocomplete views

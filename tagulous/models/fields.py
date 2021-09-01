@@ -121,7 +121,11 @@ class BaseTagField(object):
                 # Tag option arguments must be used to update the tag model
                 # (and any other tag fields which use it) - used during
                 # migration when the tag model doesn't know its own options
-                self.tag_model.tag_options.update(options)
+                #
+                # However, to avoid issues with inheritance (particularly during
+                # migrations), clone the tag_options rather than changing in place
+                tag_options = self.tag_model.tag_options.clone()
+                self.tag_model.tag_options = tag_options.update(options)
             else:
                 raise ValueError(
                     "Cannot set tag options on explicit tag model %r"
@@ -165,7 +169,7 @@ class BaseTagField(object):
             else:
                 model_cls = TagModel
 
-            self.tag_model = type(str(model_name), (model_cls,), model_attrs)
+            self.tag_model = type(model_name, (model_cls,), model_attrs)
 
             # Give it a verbose name, for admin filters
             verbose_name_singular = (
@@ -249,7 +253,7 @@ class BaseTagField(object):
         """
         Get the field name for the Manager
         """
-        return "_%s_tagulous" % self.name
+        return constants.TAGGED_ATTR_MANAGER % self.name
 
     def deconstruct(self):
         """

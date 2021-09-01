@@ -15,20 +15,24 @@ jobs:
     strategy:
       matrix:
         include:
-          # Django LTS on Python oldest to latest - dj2.2, py3.5-3.9
-          - python: 3.6
-            django: 2.2
-          - python: 3.7
-            django: 2.2
-          - python: 3.8
-            django: 2.2
-          - python: 3.9
-            django: 2.2
-          # Django supported on Python latest - dj3.0-3.1, py3.9
-          - python: 3.9
-            django: 3.0
-          - python: 3.9
-            django: 3.1
+          # Test Python versions - Django LTS on supported Python - dj3.2, py3.5-3.9
+          - python: "3.6"
+            django: "3.2"
+          - python: "3.7"
+            django: "3.2"
+          - python: "3.8"
+            django: "3.2"
+          - python: "3.9"
+            django: "3.2"
+          # Test Django versions - Django supported on Python latest - dj2.2-3.3, py3.9
+          - python: "3.9"
+            django: "2.2"
+          - python: "3.9"
+            django: "3.0"
+          - python: "3.9"
+            django: "3.1"
+          - python: "3.9"
+            django: "3.2"
 
     steps:
       - uses: actions/checkout@v2
@@ -56,11 +60,11 @@ jobs:
       matrix:
         include:
           # Django LTS on Python latest - dj2.2, py3.9
-          - python: 3.9
-            django: 2.2
-          # Django latest on Python latest - dj3.1, py3.9
-          - python: 3.9
-            django: 3.1
+          - python: "3.9"
+            django: "2.2"
+          # Django latest on Python latest - dj3.2, py3.9
+          - python: "3.9"
+            django: "3.2"
 
     services:
       postgres:
@@ -101,11 +105,11 @@ jobs:
       matrix:
         include:
           # Django LTS on Python latest - dj2.2, py3.9
-          - python: 3.9
-            django: 2.2
-          # Django latest on Python latest - dj3.1, py3.9
-          - python: 3.9
-            django: 3.1
+          - python: "3.9"
+            django: "2.2"
+          # Django latest on Python latest - dj3.2, py3.9
+          - python: "3.9"
+            django: "3.2"
 
     services:
       mysql:

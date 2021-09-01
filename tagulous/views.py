@@ -46,10 +46,16 @@ def autocomplete(request, tag_model):
         if options.force_lowercase:
             query = query.lower()
 
-        if options.case_sensitive:
-            results = queryset.filter(name__startswith=query)
+        if options.autocomplete_view_fulltext:
+            lookup = "contains"
         else:
-            results = queryset.filter(name__istartswith=query)
+            lookup = "startswith"
+
+        if not options.case_sensitive:
+            lookup = f"i{lookup}"
+
+        results = queryset.filter(**{f"name__{lookup}": query})
+
     else:
         results = queryset.all()
 
