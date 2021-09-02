@@ -7,7 +7,7 @@ you all their normal power with a sprinkling of tagging syntactic sugar.
 
 * Project site: http://radiac.net/projects/django-tagulous/
 * Source code: https://github.com/radiac/django-tagulous
-* Changelog: http://radiac.net/projects/django-tagulous/documentation/upgrading/#changelog
+* Changelog: http://radiac.net/projects/django-tagulous/documentation/changelog/
 
 .. image:: https://travis-ci.org/radiac/django-tagulous.svg?branch=master
     :target: https://travis-ci.org/radiac/django-tagulous
@@ -37,8 +37,9 @@ for details of how Tagulous works; in particular:
   - how to install Tagulous
 * `Example Usage <http://radiac.net/projects/django-tagulous/documentation/usage/>`_
   - see examples of Tagulous in use
-* `Upgrading <http://radiac.net/projects/django-tagulous/documentation/upgrading/>`_  - how to upgrade Tagulous, and see what has changed in the
-  `changelog <http://radiac.net/projects/django-tagulous/documentation/upgrading/#changelog>`_.
+* `Upgrading <http://radiac.net/projects/django-tagulous/documentation/upgrading/>`_  -
+  how to upgrade Tagulous, and see what has changed in the
+  `changelog <http://radiac.net/projects/django-tagulous/documentation/changelog/>`_.
 * `Contributing <http://radiac.net/projects/django-tagulous/documentation/contributing/>`_
   - for how to contribute to Tagulous, and the planned
   `roadmap <http://radiac.net/projects/django-tagulous/documentation/contributing/#roadmap>`_.
