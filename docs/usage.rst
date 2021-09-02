@@ -417,7 +417,7 @@ Django REST Framework
 =====================
 
 The Django REST framework's ``ModelSerializer`` will serialize tag fields to their
-primary keys; for example:
+primary keys; for example::
 
     class PersonKeySerializer(ModelSerializer):
         class Meta:

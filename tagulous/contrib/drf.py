@@ -48,11 +48,4 @@ class TagSerializer(serializers.ModelSerializer):
                 # M2M cannot have required=True
                 field_mappings[field.name] = TagRelatedManagerField(required=False)
 
-        # fields["singletag"] = CharField(required=False)
-        # fields["tags"] = TagRelatedManagerField(required=False)
         return field_mappings
-
-
-# TODO: take a look at
-# https://www.django-rest-framework.org/api-guide/serializers/#serializer_field_mapping
-# TODO: at the very least we need to improve the arguments here
