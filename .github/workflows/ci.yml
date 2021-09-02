@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         include:
-          # Test Python versions - Django LTS on supported Python - dj3.2, py3.7-3.9
+          # Test Python versions - Django LTS on supported Python - dj3.2, py3.6-3.9
           - python: "3.6"
             django: "3.2"
           - python: "3.7"
