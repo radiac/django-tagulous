@@ -164,11 +164,28 @@ Settings
     Default: ``True``
 
 
+System checks
+=============
+
+Tagulous adds to the Django system check framework with the following:
+
+``tagulous.W001``
+    ``settings.SERIALIZATION_MODULES`` has not been configured as expected
+
+    A common installation error is to forget to set ``SERIALIZATION_MODULES`` as
+    described in the :ref:`installation instructions <installation_instructions>`.
+
+    This is a straight string comparison. If your serialisation modules don't match what
+    Tagulous is expecting (you're subclassing the Tagulous modules, for example), you
+    can disable this warning with the setting::
+
+        SILENCED_SYSTEM_CHECKS = ["tagulous.W001"]
+
 
 .. _converting_to_tagulous:
 
 Converting to Tagulous
-----------------------
+======================
 
 If you're already using a tagging library which you'd like to replace with
 Tagulous, freeze the tags into a temporary column, remove the old tagging code,

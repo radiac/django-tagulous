@@ -23,7 +23,7 @@ Features:
 * New DRF serializer to serialize tags as strings (#111)
 * Initial ``TagField`` values passed on ``Form(initial=...)`` can now be a string, list
   or tuple of strings or tags, or queryset (#107)
-
+* Add system check for ``settings.SERIALIZATION_MODULES`` (#101)
 
 Bugfix:
 
