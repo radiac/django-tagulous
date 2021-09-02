@@ -117,7 +117,11 @@ class PostDeleteHandler(PropagatedSignalMixin, TaggedSignalHandler):
 def register_post_signals():
     from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 
-    pre_save.connect(PreSaveHandler(), weak=False)
-    post_save.connect(PostSaveHandler(), weak=False)
-    pre_delete.connect(PreDeleteHandler(), weak=False)
-    post_delete.connect(PostDeleteHandler(), weak=False)
+    pre_save.connect(PreSaveHandler(), weak=False, dispatch_uid="tagulous_pre_save")
+    post_save.connect(PostSaveHandler(), weak=False, dispatch_uid="tagulous_post_save")
+    pre_delete.connect(
+        PreDeleteHandler(), weak=False, dispatch_uid="tagulous_pre_delete"
+    )
+    post_delete.connect(
+        PostDeleteHandler(), weak=False, dispatch_uid="tagulous_post_delete"
+    )

@@ -412,3 +412,36 @@ Add a wrapper function which filters the queryset before it calls the normal
             ).distinct()
         )
 
+
+Django REST Framework
+=====================
+
+The Django REST framework's ``ModelSerializer`` will serialize tag fields to their
+primary keys; for example::
+
+    class PersonKeySerializer(ModelSerializer):
+        class Meta:
+            model = Person
+            fields = ["name", "title", "skills"]
+
+    person = Person.objects.create(name="adam", title="mr", skills="run, jump")
+    PersonKeySerializer(Person).data == {
+        "name": "adam",
+        "title": 1,
+        "skills": [1, 2]
+
+
+If you'd prefer to serialize to strings, use the Tagulous ``TagSerializer``::
+
+    from tagulous.contrib.drf import TagSerializer
+
+    class PersonStringSerializer(TagSerializer):
+        class Meta:
+            model = Person
+            fields = ["name", "title", "skills"]
+
+    person = Person.objects.create(name="adam", title="mr", skills="run, jump")
+    PersonStringSerializer(Person).data == {
+        "name": "adam",
+        "title": "mr",
+        "skills": ["run", "jump"]

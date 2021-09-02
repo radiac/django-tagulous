@@ -568,7 +568,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
                     field_lookup += "__iexact"
                 db_tag, __ = self.tag_model.objects.get_or_create(
                     defaults={"name": tag.name, "protected": False},
-                    **{field_lookup: tag.name}
+                    **{field_lookup: tag.name},
                 )
             db_tags.append(db_tag)
         return db_tags
@@ -576,7 +576,7 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
     #
     # New set, add, remove and clear, to update tag counts
     #
-    def set(self, *objs):
+    def set(self, objs, **kwargs):
         self.clear()
         self.add(*objs)
 

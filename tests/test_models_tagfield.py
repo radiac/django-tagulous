@@ -390,11 +390,11 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {"blue": 1, "green": 1})
 
     def test_m2m_set_by_string(self):
-        "Set a tag directly using M2M .set(string)"
+        "Set a tag directly using M2M .set([string])"
         t1 = self.create(self.test_model, name="Test 1", tags="blue, red")
         self.assertInstanceEqual(t1, name="Test 1", tags="blue, red")
         self.assertTagModel(self.tag_model, {"blue": 1, "red": 1})
-        t1.tags.set("green", "pink")
+        t1.tags.set(["green", "pink"])
         self.assertEqual(t1.tags, "green, pink")
         self.assertInstanceEqual(t1, name="Test 1", tags="green, pink")
         self.assertTagModel(self.tag_model, {"green": 1, "pink": 1})
@@ -544,7 +544,7 @@ class ModelTagFieldTest(TagTestManager, TestCase):
         self.assertEqual(str(cm.exception), errmsg)
 
         with self.assertRaises(ValueError) as cm:
-            t1.tags.set("fail")
+            t1.tags.set(["fail"])
         self.assertEqual(str(cm.exception), errmsg)
 
         with self.assertRaises(ValueError) as cm:
