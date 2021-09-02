@@ -342,6 +342,12 @@ Features:
 
 * Add ``similarly_tagged`` to tagged model querysets, and ``get_similar_objects`` to
   instantiated tag fields (#115)
+* New DRF serializer to serialize tags as strings
+
+
+Bugfix:
+
+* Fix incorrect arguments for the TagField's RelatedManager.set
 
 
 1.2.1, 2021-08-31

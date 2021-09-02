@@ -172,7 +172,10 @@ setup(
         "Framework :: Django :: 3.2",
     ],
     install_requires=["Django>=2.2"],
-    extras_require={"dev": ["tox", "jasmine"], "devdb": ["psycopg2", "mysqlclient"],},
+    extras_require={
+        "dev": ["tox", "jasmine", "djangorestframework~=3.0"],
+        "devdb": ["psycopg2", "mysqlclient"],
+    },
     zip_safe=True,
     packages=find_packages(exclude=("docs", "tests*",)),
     include_package_data=True,
