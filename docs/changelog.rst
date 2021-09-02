@@ -20,12 +20,19 @@ Features:
 
 * Add ``similarly_tagged`` to tagged model querysets, and ``get_similar_objects`` to
   instantiated tag fields (#115)
-* New DRF serializer to serialize tags as strings
+* New DRF serializer to serialize tags as strings (#111)
+* Initial ``TagField`` values passed on ``Form(initial=...)`` can now be a string, list
+  or tuple of strings or tags, or queryset (#107)
 
 
 Bugfix:
 
 * Fix incorrect arguments for the TagField's ``RelatedManager.set``
+
+
+Thanks to:
+
+* valentijnscholten for the form ``initial=`` solution (#107)
 
 
 1.2.1, 2021-08-31

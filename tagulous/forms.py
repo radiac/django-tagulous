@@ -170,6 +170,13 @@ class BaseTagField(forms.CharField):
         elif isinstance(value, str):
             tag_string = value
 
+        # Might be a QuerySet or list of tags, or a list of strings, passed as initial=
+        elif isinstance(value, TagModelQuerySet) or (
+            isinstance(value, (list, tuple))
+            and all(isinstance(part, (str, BaseTagModel)) for part in value)
+        ):
+            tag_string = render_tags(value)
+
         # Otherwise will be given by the model's TagField.value_from_object().
         # The value comes from django.forms.model.model_to_dict, which thinks
         # it produced a list of pks - but TagField.value_from_object tricked it

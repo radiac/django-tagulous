@@ -23,6 +23,7 @@ __credits__ = [
     "hagsteel",
     "Diego Ubirajara (dubirajara)",
     "Andrew O'Brien (marxide)",
+    "valentijnscholten",
 ]
 
 default_app_config = "tagulous.apps.TagulousConfig"

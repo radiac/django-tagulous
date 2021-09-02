@@ -30,6 +30,55 @@ class FormMixedNonTagRefTest(TagTestManager, TestCase):
         self.model = test_models.MixedNonTagRefTest
         self.tag_model = self.model.singletag.tag_model
 
+    def test_model_form__initial_strings__renders_with_initial(self):
+        form = test_forms.MixedNonTagRefModelForm(
+            initial={"name": "Test", "singletag": "purple", "tags": "yellow, orange"},
+        )
+
+        self.assertIn('value="Test"', str(form["name"]))
+        self.assertIn('value="purple"', str(form["singletag"]))
+        self.assertIn('value="yellow, orange"', str(form["tags"]))
+
+    def test_model_form__initial_list_of_strings__renders_with_initial(self):
+        form = test_forms.MixedNonTagRefModelForm(
+            initial={
+                "name": "Test",
+                "singletag": "purple",
+                "tags": ["yellow", "orange"],
+            },
+        )
+
+        self.assertIn('value="Test"', str(form["name"]))
+        self.assertIn('value="purple"', str(form["singletag"]))
+        # Will be re-ordered, thanks to render_tags
+        self.assertIn('value="orange, yellow"', str(form["tags"]))
+
+    def test_model_form__initial_tuple_of_tags__renders_with_initial(self):
+        tag1 = self.tag_model.objects.create(name="orange")
+        tag2 = self.tag_model.objects.create(name="yellow")
+        form = test_forms.MixedNonTagRefModelForm(
+            initial={"name": "Test", "singletag": "purple", "tags": (tag1, tag2)},
+        )
+
+        self.assertIn('value="Test"', str(form["name"]))
+        self.assertIn('value="purple"', str(form["singletag"]))
+        self.assertIn('value="orange, yellow"', str(form["tags"]))
+
+    def test_model_form__initial_queryset_of_tags__renders_with_initial(self):
+        tag1 = self.tag_model.objects.create(name="orange")
+        tag2 = self.tag_model.objects.create(name="yellow")
+        form = test_forms.MixedNonTagRefModelForm(
+            initial={
+                "name": "Test",
+                "singletag": "purple",
+                "tags": self.tag_model.objects.all(),
+            },
+        )
+
+        self.assertIn('value="Test"', str(form["name"]))
+        self.assertIn('value="purple"', str(form["singletag"]))
+        self.assertIn('value="orange, yellow"', str(form["tags"]))
+
     def test_model_form_save(self):
         """
         Test that a model form with a TagField saves correctly with other
