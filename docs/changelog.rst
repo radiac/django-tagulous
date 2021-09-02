@@ -23,6 +23,11 @@ Features:
 * New DRF serializer to serialize tags as strings
 
 
+Changes:
+
+* Drops support for Python 3.6
+
+
 Bugfix:
 
 * Fix incorrect arguments for the TagField's ``RelatedManager.set``
