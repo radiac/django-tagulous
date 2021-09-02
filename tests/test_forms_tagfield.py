@@ -216,7 +216,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
         "Check form field raises exception when given an invalid value"
         form = test_forms.TagFieldForm()
         with self.assertRaises(ValueError) as cm:
-            form["tags"].field.prepare_value(["tag", "list", "fails"])
+            form["tags"].field.prepare_value([1, 2])
         self.assertEqual(
             str(cm.exception), "Tag field could not prepare unexpected value"
         )
