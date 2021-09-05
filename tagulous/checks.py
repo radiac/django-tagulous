@@ -25,7 +25,7 @@ def tagulous_check(app_configs, **kwargs):
 
     serialization_modules = getattr(settings, "SERIALIZATION_MODULES", None)
     if serialization_modules != SERIALIZATION_MODULES_EXPECTED:
-        errors.append()
+        errors.append(WARNING_W001)
 
     return errors
 
