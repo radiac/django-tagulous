@@ -28,7 +28,7 @@ tagulous.admin.register(models.Person.hobbies.tag_model)
 # Give the Title ModelAdmin the people as inlines
 class PersonInline(admin.TabularInline):
     model = models.Person
-    extra = 3
+    extra = 1
 
 
 class TitleAdmin(admin.ModelAdmin):
