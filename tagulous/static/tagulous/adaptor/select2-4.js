@@ -1,4 +1,6 @@
-/** Tagulous adaptor for Select2 v4 */
+/**
+ * Tagulous adaptor for Select2 v4
+ */
 (function ($) {
   if (!$.fn.select2 || !window.Tagulous) {
     return;
@@ -10,8 +12,13 @@
    */
   $.fn.select2.amd.require([
       'select2/data/tokenizer',
-  ], function (Tokenizer) {
+      'select2/defaults',
+      'select2/utils',
+  ], function (Tokenizer, defaults, Utils) {
 
+    /**
+     * Add tokenizer to parse tags consistently between backend and frontend
+     */
     function tokenizer(params, options, selectCallback) {
         /**
          * Tokenises input and detects when a tag has been completed
@@ -58,6 +65,57 @@
           term: (lastRaw === undefined) ? term : lastRaw
         };
     }
+
+
+    /**
+     * Extend data adaptor to handle quoted tags in the dropdown
+     *
+     * The tokenizer will generate correctly-quoted tags if the user enters commas or
+     * spaces after the quotes, but the quotes will be included in the tag if someone
+     * selects it from the dropdown (with click or enter).
+     *
+     * We can't remove quotes in the tokenizer, as although that'll change the dropdown
+     * value, it'll also change the user input, which we don't want to do.
+     *
+     * This data adaptor extension will therefore trim unescaped quotes from the start
+     * and end of a new tag in the dropdown so it's safe to click, without affecting the
+     * input field.
+     */
+    function TagulousDataAdapter (decorated, $e, options) {
+      decorated.call(this, $e, options);
+    }
+
+    TagulousDataAdapter.prototype.createTag = function (decorated, params) {
+      // Get number of quotes at start and end
+      term = params.term.trim();
+      numStartQuotes = term.length - term.replace(/^"+/, '').length;
+      numEndQuotes = term.length - term.replace(/"+$/, '').length;
+
+      // See if we need to trim
+      if (
+        numStartQuotes > 0 &&  // there are quotes
+        numEndQuotes > 0 &&
+        numStartQuotes + numEndQuotes < term.length &&  // something other than quotes
+        numStartQuotes % 2 == 1 &&  // uneven quotes, so one is unescaped
+        numEndQuotes % 2 == 1
+      ) {
+        params.term = term.substr(1, term.length - 2);
+      }
+
+      return decorated.call(this, params);
+    }
+
+    // Rather than re-implement Default.prototype.apply logic to determine the correct
+    // data adapter base classes so we can pass it in as options.dataAdapter, we'll just
+    // monkeypatch Default.apply so we can add our data adapter extension at the end.
+    // There might be a nicer way to do this, PRs welcome!
+    var oldApply = defaults.apply
+    defaults.apply = function (options) {
+      options = oldApply.call(this, options);
+      options.dataAdapter = Utils.Decorate(options.dataAdapter, TagulousDataAdapter);
+      return options
+    };
+
 
     /** Apply select2 to a specified element
 
