@@ -9,11 +9,14 @@ you all their normal power with a sprinkling of tagging syntactic sugar.
 * Source code: https://github.com/radiac/django-tagulous
 * Changelog: http://radiac.net/projects/django-tagulous/documentation/changelog/
 
-.. image:: https://travis-ci.org/radiac/django-tagulous.svg?branch=master
-    :target: https://travis-ci.org/radiac/django-tagulous
+.. image:: https://img.shields.io/pypi/v/django-tagulous.svg
+    :target: https://pypi.org/project/django-tagulous/
 
-.. image:: https://coveralls.io/repos/radiac/django-tagulous/badge.svg?branch=master&service=github
-    :target: https://coveralls.io/github/radiac/django-tagulous?branch=master
+.. image:: https://github.com/radiac/django-tagulous/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/radiac/django-tagulous/actions/workflows/ci.yml
+
+.. image:: https://codecov.io/gh/radiac/django-tagulous/branch/develop/graph/badge.svg?token=5VZNPABZ7E
+    :target: https://codecov.io/gh/radiac/django-tagulous
 
 
 Features
