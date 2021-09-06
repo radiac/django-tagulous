@@ -13,7 +13,7 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-1.3.0, 2021-
+1.3.0, 2021-09-07
 -----------------
 
 Features:
@@ -31,6 +31,7 @@ Bugfix:
 * Upgrade select2 to fix composed characters (#138)
 * Fix select2 input where quotes in quoted tags could be escaped
 * The select2 control is applied when the formset:added event adds a tag field (#97)
+* Fix edge case circular import (#124)
 
 
 Thanks to:
