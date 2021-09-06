@@ -30,6 +30,7 @@ Bugfix:
 * Fix incorrect arguments for the TagField's ``RelatedManager.set``
 * Upgrade select2 to fix composed characters (#138)
 * Fix select2 input where quotes in quoted tags could be escaped
+* The select2 control is applied when the formset:added event adds a tag field (#97)
 
 
 Thanks to:

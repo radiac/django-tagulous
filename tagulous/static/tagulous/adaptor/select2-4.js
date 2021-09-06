@@ -309,10 +309,17 @@
         select2: select2
     });
 
-    // Finally, initialise the tags
+    // We're finally ready to initialise the tags
+    var inputSelector = 'input[data-tagulous]:not([id*=-__prefix__-])'
     $(function () {
         // Initialise tag fields which exists
-        return select2($('input[data-tagulous]'), true);
+        return select2($(inputSelector), true);
+    });
+
+    // Watch for formsets
+    $(document).on('formset:added', function (event, $formset) {
+      var $inputs = $formset.find(inputSelector);
+      select2($inputs, true);
     });
   });
 })(jQuery);

@@ -159,7 +159,9 @@ Autocomplete settings should be a dict:
             Tagulous.select2($row.find('input[data-tagulous]'));
         }
 
-    This will need to be clear or set to ``False`` in the admin settings.
+    Note that when used with inline formsets which raise the ``formset:added`` event
+    (like in the Django admin site), Tagulous will automatically try to register tag
+    fields in new formsets if ``defer=False``.
 
 ``width``
     This is the same as in Select2's documentation, but the Tagulous
