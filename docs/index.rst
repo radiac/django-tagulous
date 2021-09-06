@@ -28,5 +28,6 @@ Contents
     tag_options
     views
     admin
+    changelog
     upgrading
     contributing
