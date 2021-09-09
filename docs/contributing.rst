@@ -22,7 +22,8 @@ install it to a virtualenv::
     virtualenv django-tagulous
     cd django-tagulous
     source bin/activate
-    pip install -e git+git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous[dev,i18n]
+    pip install -e git+git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous
+    pip install -r src/django-tagulous/requirements.test.txt
 
 (replacing ``USERNAME`` with your username).
 
@@ -36,19 +37,15 @@ Testing
 
 It is greatly appreciated when contributions come with unit tests.
 
-Use ``setup.py`` to run the python tests on your current python environment;
-you can optionally specify which test to run::
+Pytest is the test runner of choice::
 
-    python setup.py test [tests[.test_set.TestClass]]
+    pytest
+    pytest tests/test_file.py
+    pytest tests/test_file::TestClass::test_method
 
 Use ``tox`` to run them on one or more supported versions::
 
-    tox [-e py39-django2.2] [tests[.test_module.TestClass]]
-
-Tox will also generate a ``coverage`` HTML report.
-
-You can also use ``detox`` to run the tests concurrently, although you will
-need to run ``tox -e report`` again afterwards to generate the coverage report.
+    tox [-e py39-django3.2]
 
 To use a different database (mysql, postgres etc) use the environment variables
 ``DATABASE_ENGINE``, ``DATABASE_NAME``, ``DATABASE_USER``,
