@@ -192,7 +192,13 @@ class BaseTagModel(models.Model, metaclass=TagModelBase):
         return [
             f
             for f in related_fields
-            if isinstance(f.field, (SingleTagField, TagField,),)
+            if isinstance(
+                f.field,
+                (
+                    SingleTagField,
+                    TagField,
+                ),
+            )
         ]
 
     def get_related_objects(self, flat=False, distinct=False, include_standard=False):

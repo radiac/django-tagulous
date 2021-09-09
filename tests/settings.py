@@ -103,17 +103,22 @@ DATABASES = {"default": DATABASE, "test": DATABASE}
 # Make sure the django migration loader will find MIGRATION_MODULES
 # This will be cleaned away after each test
 tests_migration_path = os.path.join(
-    os.path.dirname(__file__), "tagulous_tests_migration",
+    os.path.dirname(__file__),
+    "tagulous_tests_migration",
 )
 if not os.path.isdir(tests_migration_path):
     raise ValueError("tests.tagulous_tests_migration not found")
 
 tests_migration_module_path = os.path.join(
-    tests_migration_path, tests_migration_module_name,
+    tests_migration_path,
+    tests_migration_module_name,
 )
 if not os.path.exists(tests_migration_module_path):
     os.mkdir(tests_migration_module_path)
 
-tests_migration_module_init = os.path.join(tests_migration_module_path, "__init__.py",)
+tests_migration_module_init = os.path.join(
+    tests_migration_module_path,
+    "__init__.py",
+)
 if not os.path.exists(tests_migration_module_init):
     open(tests_migration_module_init, "a").close()

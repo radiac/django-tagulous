@@ -121,7 +121,8 @@ class AdminTagWidget(TagWidgetBase):
         media = AutocompleteMixin.media.fget(None)
 
         return media + forms.Media(
-            js=settings.ADMIN_AUTOCOMPLETE_JS, css=settings.ADMIN_AUTOCOMPLETE_CSS,
+            js=settings.ADMIN_AUTOCOMPLETE_JS,
+            css=settings.ADMIN_AUTOCOMPLETE_CSS,
         )
 
     def render(self, name, value, attrs=None, renderer=None):

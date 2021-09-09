@@ -405,7 +405,8 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
                 to_field = tag_models.SingleTagField(to_field="fail")
 
         self.assertEqual(
-            str(cm.exception), "Invalid argument 'to_field' for SingleTagField",
+            str(cm.exception),
+            "Invalid argument 'to_field' for SingleTagField",
         )
 
     def test_forbidden_rel_class(self):
@@ -416,7 +417,8 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
                 rel_class = tag_models.SingleTagField(rel_class="fail")
 
         self.assertEqual(
-            str(cm.exception), "Invalid argument 'rel_class' for SingleTagField",
+            str(cm.exception),
+            "Invalid argument 'rel_class' for SingleTagField",
         )
 
     def test_forbidden_max_count(self):
@@ -427,7 +429,8 @@ class ModelSingleTagFieldInvalidTest(TagTestManager, TransactionTestCase):
                 max_count = tag_models.SingleTagField(max_count="fail")
 
         self.assertEqual(
-            str(cm.exception), "Invalid argument 'max_count' for SingleTagField",
+            str(cm.exception),
+            "Invalid argument 'max_count' for SingleTagField",
         )
 
     def test_value_from_object_none(self):

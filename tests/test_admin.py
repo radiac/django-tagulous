@@ -126,7 +126,8 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         with self.assertRaises(exceptions.ImproperlyConfigured) as cm:
             tag_admin.register([self.model, self.model], self.admin, site=self.site)
         self.assertEqual(
-            str(cm.exception), "Tagulous can only register a single model with admin.",
+            str(cm.exception),
+            "Tagulous can only register a single model with admin.",
         )
         self.assertFalse(self.model in self.site._registry)
 

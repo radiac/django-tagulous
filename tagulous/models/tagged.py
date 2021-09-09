@@ -257,7 +257,11 @@ class TaggedQuerySet(models.query.QuerySet):
         # Make a subclass of TaggedQuerySet and the original class
         orig_cls = queryset.__class__
         new_cls_name = f"CastTagged{orig_cls.__name__}"
-        queryset.__class__ = type(new_cls_name, (cls, orig_cls), {},)
+        queryset.__class__ = type(
+            new_cls_name,
+            (cls, orig_cls),
+            {},
+        )
 
         return queryset
 
@@ -277,7 +281,9 @@ class TaggedQuerySet(models.query.QuerySet):
         q_filter = {f"{field_name}__in": getattr(instance, field_name).all()}
         similar = qs.annotate(
             tagulous_similarity=models.Count(
-                field_name, models.Q(**q_filter), distinct=True,
+                field_name,
+                models.Q(**q_filter),
+                distinct=True,
             )
         )
 
