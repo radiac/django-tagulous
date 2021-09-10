@@ -5,17 +5,9 @@ Tagulous test: Utils
 Modules tested:
     tagulous.utils
 """
-import unittest
-
 from django.test import TestCase
 
 from tagulous import utils as tag_utils
-
-
-try:
-    from unidecode import unidecode
-except ImportError:
-    unidecode = None
 
 
 # ##############################################################################

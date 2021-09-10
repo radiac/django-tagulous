@@ -2,7 +2,7 @@
 Tagulous tag models
 """
 from django.db import IntegrityError, models, router, transaction
-from django.db.models import Count, F, Max, Q, base
+from django.db.models import F, Max
 from django.db.models.functions import Floor
 from django.utils.text import slugify
 

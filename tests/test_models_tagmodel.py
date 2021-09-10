@@ -8,14 +8,11 @@ Modules tested:
     tagulous.models.models.TagModelManager
     tagulous.models.models.TagModelQuerySet
 """
-import unittest
-
 from django.db import IntegrityError
 from django.test import TestCase
 
 import tagulous.settings as tagulous_settings
 from tagulous import models as tag_models
-from tagulous import utils as tag_utils
 from tagulous.settings import SLUG_TRUNCATE_UNIQUE
 from tests.lib import TagTestManager
 from tests.tagulous_tests_app import models as test_models
@@ -512,25 +509,17 @@ class TagMetaTest(TagTestManager, TestCase):
 
 class TagModelUnicodeTest(TagTestManager, TestCase):
     """
-    Test unicode tags - with unicode slugs disabled, and forced to not use unidecode,
-    even if available
+    Test unicode tags - with unicode slugs disabled
     """
 
     manage_models = [test_models.MixedTest]
 
     def setUpExtra(self):
-        # Disable unidecode support
-        self.unidecode_status = tag_utils.unidecode
-        tag_utils.unidecode = None
-
         self.model = test_models.MixedTest
         self.tag_model = test_models.MixedTestTagModel
         self.o1 = self.create(
             self.model, name="Test", singletag="男の子", tags="boy, niño, 男の子"
         )
-
-    def tearDownExtra(self):
-        tag_utils.unidecode = self.unidecode_status
 
     def test_setup(self):
         "Check setup created tags as expected"
@@ -596,12 +585,6 @@ class TagModelUnicodeTest(TagTestManager, TestCase):
         t1 = self.tag_model.objects.get(name=name)
         self.assertEqual(t1.name, name)
         self.assertEqual(t1.slug, "_")
-
-
-try:
-    from unidecode import unidecode
-except ImportError:
-    unidecode = None
 
 
 class TagModelFullUnicodeTest(TagTestManager, TestCase):
@@ -950,8 +933,10 @@ class TagModelQuerySetSimilarTest(TagTestManager, TestCase):
     def test_queryset_similarly_tagged__ignores_dissimilar(self):
         t1 = self.create(self.model, name="t1", singletag="one", tags="one")
         t2 = self.create(self.model, name="t2", singletag="one", tags="two")
-        similar = self.model.objects.similarly_tagged(t1, "tags")
-        self.assertSequenceEqual(similar, [])
+        similar_t1 = self.model.objects.similarly_tagged(t1, "tags")
+        self.assertSequenceEqual(similar_t1, [])
+        similar_t2 = self.model.objects.similarly_tagged(t2, "tags")
+        self.assertSequenceEqual(similar_t2, [])
 
     def test_queryset_similarly_tagged__finds_other_inexact(self):
         t1 = self.create(self.model, name="t1", singletag="one", tags="one, two")
@@ -976,8 +961,10 @@ class TagModelQuerySetSimilarTest(TagTestManager, TestCase):
     def test_singletagfield_get_similar_objects__ignores_dissimilar(self):
         t1 = self.create(self.model, name="t1", singletag="one", tags="one")
         t2 = self.create(self.model, name="t2", singletag="two", tags="one")
-        similar = t1.singletag.get_similar_objects()
-        self.assertSequenceEqual(similar, [])
+        similar_t1 = t1.singletag.get_similar_objects()
+        self.assertSequenceEqual(similar_t1, [])
+        similar_t2 = t2.singletag.get_similar_objects()
+        self.assertSequenceEqual(similar_t2, [])
 
     def test_singletagfield_get_similar_objects__finds_others_order_correct(self):
         # Uses queryset.similarly_tagged so just need to check instance and field_name
@@ -986,8 +973,10 @@ class TagModelQuerySetSimilarTest(TagTestManager, TestCase):
         t2 = self.create(self.model, name="t2", singletag="two", tags="two, three")
         t3 = self.create(self.model, name="t3", singletag="one", tags="one, two")
         t4 = self.create(self.model, name="t4", singletag="one", tags="two, three")
-        similar = t1.singletag.get_similar_objects()
-        self.assertSequenceEqual(similar, [t3, t4])
+        similar_t1 = t1.singletag.get_similar_objects()
+        self.assertSequenceEqual(similar_t1, [t3, t4])
+        similar_t2 = t2.singletag.get_similar_objects()
+        self.assertSequenceEqual(similar_t2, [])
 
     # TagField related manager uses queryset.similarly_tagged, so these tests just need
     # to check instance and field_name are being correctly detected and passed
