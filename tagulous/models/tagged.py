@@ -116,7 +116,10 @@ class TaggedQuerySet(models.query.QuerySet):
         """
         if django.VERSION >= (3, 2):
             # Arguments changed to _filter_or_exclude(self, negate, args, kwargs)
-            args, kwargs = args
+            if len(args) == 2:
+                args, kwargs = args
+            elif set(kwargs.keys()) == {"args", "kwargs"}:
+                args, kwargs = kwargs["args"], kwargs["kwargs"]
 
         # TODO: Replace with custom lookups
         safe_fields, singletag_fields, tag_fields, field_lookup = _split_kwargs(

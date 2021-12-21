@@ -364,6 +364,11 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
     # .filter()
     #
 
+    def test_object_empty_complex_filter(self):
+        "Check that object.complex_filter can be called without arguments"
+        qs1 = self.test_model.objects.complex_filter({})
+        self.assertEqual(qs1.count(), 3)
+
     def test_object_singletag_filter(self):
         "Check that object.filter finds the correct items by singletag"
         qs1 = self.test_model.objects.filter(singletag="Mr")
