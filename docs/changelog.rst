@@ -13,6 +13,24 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
+1.3.1, 2021-12-
+-----------------
+
+Changes:
+
+* Switch to pytest and enforce linting
+
+
+Bugfix:
+
+* Fix ``_filter_or_exclude`` exception missed by tests (#144, #149)
+
+
+Thanks to:
+
+* nschlemm for the ``_filter_or_exclude" fix (#144, #149)
+
+
 1.3.0, 2021-09-07
 -----------------
 
