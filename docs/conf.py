@@ -104,7 +104,10 @@ todo_include_todos = False
 
 
 extlinks = {
-    "source": ("https://github.com/radiac/django-tagulous/blob/master/%s", "",),
+    "source": (
+        "https://github.com/radiac/django-tagulous/blob/master/%s",
+        "",
+    ),
     "issue": ("https://github.com/radiac/django-tagulous/issues/%s", "issue "),
 }
 

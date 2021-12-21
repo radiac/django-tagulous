@@ -33,9 +33,10 @@ RE_STRIP_PK_JSON = re.compile(r'("(pk|fk)": \d+|"mm": \[[0-9, ]*\])')
 RE_STRIP_PK_YAML = re.compile(r"((pk|fk): \d+|mm:\s*(\n\s*- \d+)+)")
 RE_STRIP_PK_XML = re.compile(r'(pk="\d+"|<field name="fk"[^>]+>\d+</field>)')
 
-# Based on django's tests/fixtures/tests.py -> DumpDataAssertMixin
-# but without comparisons due to django#24558
+
 class DumpDataAssertMixin(object):
+    # Based on django's tests/fixtures/tests.py -> DumpDataAssertMixin
+    # but without comparisons due to django#24558
     def _dumpdata(
         self,
         args,

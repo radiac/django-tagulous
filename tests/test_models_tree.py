@@ -107,7 +107,12 @@ class TagTreeModelTest(TagTreeTestManager, TestCase):
         "Check level 1 node created correctly if only one character"
         t1 = self.tag_model.objects.create(name="O")
         self.assertTreeTag(
-            t1, name="O", label="O", slug="o", path="o", level=1,
+            t1,
+            name="O",
+            label="O",
+            slug="o",
+            path="o",
+            level=1,
         )
 
     def test_level_2_existing_l1(self):

@@ -2,7 +2,7 @@
 Tagulous tag models
 """
 from django.db import IntegrityError, models, router, transaction
-from django.db.models import Count, F, Max, Q, base
+from django.db.models import F, Max
 from django.db.models.functions import Floor
 from django.utils.text import slugify
 
@@ -192,7 +192,13 @@ class BaseTagModel(models.Model, metaclass=TagModelBase):
         return [
             f
             for f in related_fields
-            if isinstance(f.field, (SingleTagField, TagField,),)
+            if isinstance(
+                f.field,
+                (
+                    SingleTagField,
+                    TagField,
+                ),
+            )
         ]
 
     def get_related_objects(self, flat=False, distinct=False, include_standard=False):

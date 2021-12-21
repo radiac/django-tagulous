@@ -65,8 +65,8 @@ class FormMixedNonTagRefTest(TagTestManager, TestCase):
         self.assertIn('value="orange, yellow"', str(form["tags"]))
 
     def test_model_form__initial_queryset_of_tags__renders_with_initial(self):
-        tag1 = self.tag_model.objects.create(name="orange")
-        tag2 = self.tag_model.objects.create(name="yellow")
+        self.tag_model.objects.create(name="orange")
+        self.tag_model.objects.create(name="yellow")
         form = test_forms.MixedNonTagRefModelForm(
             initial={
                 "name": "Test",

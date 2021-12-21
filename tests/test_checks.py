@@ -1,4 +1,3 @@
-from django.core.checks import Warning
 from django.test import TestCase, override_settings
 
 from tagulous.checks import SERIALIZATION_MODULES_EXPECTED, WARNING_W001, tagulous_check
@@ -13,7 +12,7 @@ class CheckTest(TestCase):
         self.assertEqual(errors, expected_errors)
 
     @override_settings(SERIALIZATION_MODULES=SERIALIZATION_MODULES_EXPECTED)
-    def test_serialization_modules_missing__check_raises_warning(self):
+    def test_serialization_modules_set__check_raises_no_warning(self):
         expected_errors = []
         errors = tagulous_check(app_configs=None)
         self.assertEqual(errors, expected_errors)

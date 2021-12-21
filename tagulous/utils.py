@@ -3,17 +3,9 @@ Tag parsing and printing
 
 Loosely based on django-taggit and django-tagging
 """
-import unicodedata
-
 from django.utils.encoding import force_str
 
 from .constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
-
-
-try:
-    from unidecode import unidecode
-except ImportError:  # pragma: no cover - tests simulate this
-    unidecode = None
 
 
 # ##############################################################################

@@ -10,10 +10,20 @@ class PersonAdmin(admin.ModelAdmin):
     list_filter = ("name", "title", "skills", "hobbies")
 
     fieldsets = (
-        (None, {"fields": ("name",)},),
+        (
+            None,
+            {"fields": ("name",)},
+        ),
         (
             "Feed",
-            {"classes": ("collapse",), "fields": ("title", "skills", "hobbies",),},
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "title",
+                    "skills",
+                    "hobbies",
+                ),
+            },
         ),
     )
 
