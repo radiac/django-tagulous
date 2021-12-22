@@ -385,9 +385,6 @@ class TaggedModel(models.Model):
                 if attr in state:
                     del state[attr]
 
-                # Add text tags
-                state[field.name] = str(getattr(self, field.name))
-
         return state
 
     @classmethod

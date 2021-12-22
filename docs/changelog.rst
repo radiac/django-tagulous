@@ -13,6 +13,14 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
+1.3.2 2021-12-
+-----------------
+
+Changes:
+
+* Remove tag lookup from model getstate to improve pickling performance (#143)
+
+
 1.3.1, 2021-12-21
 -----------------
 
