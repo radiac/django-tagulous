@@ -2,7 +2,7 @@
 """
 Django Tagulous - Fabulous Tags
 """
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __license__ = "BSD"
 __author__ = "Richard Terry"
 
