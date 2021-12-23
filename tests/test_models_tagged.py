@@ -6,6 +6,7 @@ Will fail if settings.ENHANCE_MODELS is not True
 Modules tested:
     tagulous.models.tagged
 """
+import inspect
 import pickle
 
 from django.core.exceptions import MultipleObjectsReturned
@@ -42,6 +43,11 @@ class ModelTaggedTest(TagTestManager, TestCase):
         self.assertTrue(
             issubclass(self.test_model.objects.__class__, tag_models.TaggedManager)
         )
+
+    def test_tagged_manager_in_original_module(self):
+        "Check tagged manager has been added to the module of the original manager"
+        module = inspect.getmodule(self.test_model.objects.__class__)
+        self.assertEqual(module.__name__, "django.db.models.manager")
 
     def test_base_manager_not_tagged(self):
         "Check normal base manager hasn't been modified"
@@ -462,6 +468,28 @@ class ModelTaggedQuerysetTest(TagTestManager, TestCase):
         self.assertEqual(qs1[0].pk, self.o1.pk)
         self.assertEqual(qs1[1].pk, self.o2.pk)
         self.assertEqual(qs1[2].pk, self.o3.pk)
+
+    #
+    # pickle
+    #
+
+    def test_pickle(self):
+        "Check tagged model querysets can be pickled"
+        qs = self.test_model.objects.all()
+        print([o.name for o in qs])
+        self.assertEqual(qs.count(), 3)
+        pickled_qs = pickle.dumps(qs)
+        unpickled_qs = pickle.loads(pickled_qs)
+        self.assertEqual(unpickled_qs.count(), 3)
+        self.assertEqual(unpickled_qs[0].name, "Test 1")
+        self.assertEqual(str(unpickled_qs[0].singletag), "Mr")
+        self.assertEqual(str(unpickled_qs[0].tags), "blue, green, red")
+        self.assertEqual(unpickled_qs[1].name, "Test 2")
+        self.assertEqual(str(unpickled_qs[1].singletag), "Mrs")
+        self.assertEqual(str(unpickled_qs[1].tags), "blue, green, red")
+        self.assertEqual(unpickled_qs[2].name, "Test 3")
+        self.assertEqual(str(unpickled_qs[2].singletag), "Mr")
+        self.assertEqual(str(unpickled_qs[2].tags), "green, red")
 
 
 @skip_if_mysql
