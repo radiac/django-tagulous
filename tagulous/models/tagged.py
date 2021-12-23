@@ -12,6 +12,7 @@ from django.db import models, transaction
 
 from .. import utils
 from ..constants import TAGGED_ATTR_MANAGER
+from .cast import cast_instance
 from .fields import (
     BaseTagField,
     SingleTagField,
@@ -254,18 +255,10 @@ class TaggedQuerySet(models.query.QuerySet):
         was first initialised, but is now a TaggedQuerySet subclass.
 
         The new class is given the same name as the old class, but with the prefix
-        'CastTagged' to indicate the type of the object has changed, eg a normal
-        QuerySet will become CastTaggedQuerySet.
+        CAST_CLASS_PREFIX to indicate the type of the object has changed, eg a normal
+        QuerySet will become TagulousCastTaggedQuerySet.
         """
-        # Make a subclass of TaggedQuerySet and the original class
-        orig_cls = queryset.__class__
-        new_cls_name = f"CastTagged{orig_cls.__name__}"
-        queryset.__class__ = type(
-            new_cls_name,
-            (cls, orig_cls),
-            {},
-        )
-
+        cast_instance(queryset, cls)
         return queryset
 
     def similarly_tagged(self, instance, field_name):
@@ -335,14 +328,10 @@ class TaggedManager(models.Manager):
         was first initialised, but is now a TaggedManager subclass.
 
         The new class is given the same name as the old class, but with the prefix
-        'CastTagged' to indicate the type of the object has changed, eg a normal
-        Manager will become CastTaggedManager
+        CAST_CLASS_PREFIX to indicate the type of the object has changed, eg a normal
+        Manager will become TagulousCastTaggedManager
         """
-        # Make a subclass of TaggedQuerySet and the original class
-        orig_cls = manager.__class__
-        new_cls_name = f"CastTagged{orig_cls.__name__}"
-        manager.__class__ = type(new_cls_name, (cls, orig_cls), {})
-
+        cast_instance(manager, cls)
         return manager
 
     def similarly_tagged(self, instance, field_name):
@@ -384,9 +373,6 @@ class TaggedModel(models.Model):
                 attr = TAGGED_ATTR_MANAGER % field.name
                 if attr in state:
                     del state[attr]
-
-                # Add text tags
-                state[field.name] = str(getattr(self, field.name))
 
         return state
 

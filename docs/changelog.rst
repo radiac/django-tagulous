@@ -13,6 +13,25 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
+1.3.2 2021-12-
+-----------------
+
+Changes:
+
+* Remove tag lookup from model getstate to improve pickling performance (#143)
+* Manager and QuerySet cast classes are now placed in the module of the original class
+  so they can be imported and found by serializers and picklers
+* Cast class names prefixes changed from ``CastTagged`` to ``TagulousCastTagged`` to
+  further reduce risk of clashes
+* Class casting detects and reuses classes which have already been cast
+
+
+Bugfix:
+
+* QuerySets can be pickled (#142)
+
+
+
 1.3.1, 2021-12-21
 -----------------
 
