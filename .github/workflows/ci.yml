@@ -33,6 +33,8 @@ jobs:
             django: "3.1"
           - python: "3.9"
             django: "3.2"
+          - python: "3.9"
+            django: "4.0"
 
     steps:
       - uses: actions/checkout@v2
@@ -64,7 +66,7 @@ jobs:
             django: "2.2"
           # Django latest on Python latest - dj3.2, py3.9
           - python: "3.9"
-            django: "3.2"
+            django: "4.0"
 
     services:
       postgres:
@@ -109,7 +111,7 @@ jobs:
             django: "2.2"
           # Django latest on Python latest - dj3.2, py3.9
           - python: "3.9"
-            django: "3.2"
+            django: "4.0"
 
     services:
       mysql:
