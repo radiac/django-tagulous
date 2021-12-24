@@ -479,7 +479,8 @@ class TagModelTest(TagTestManager, TestCase):
         # We need to make unique names which will be slugged to the same thing, so work
         # through string.punctuation. Quick sanity check we've got enough chars
         num_clashes = 25
-        self.assertTrue(len(punctuation) > num_clashes)
+        invalid_chars = punctuation.replace("_", "").replace("-", "")
+        self.assertTrue(len(invalid_chars) > num_clashes)
 
         TestModel = test_models.TagSlugShorterModel
         name_length = TestModel._meta.get_field("name").max_length
@@ -488,7 +489,7 @@ class TagModelTest(TagTestManager, TestCase):
         long_slug = "x" * (slug_length - SLUG_TRUNCATE_UNIQUE)
 
         tests = [
-            TestModel.objects.create(name=f"{long_name}{punctuation[i]}")
+            TestModel.objects.create(name=f"{long_name}{invalid_chars[i]}")
             for i in range(0, num_clashes)
         ]
         self.assertEqual(TestModel.objects.count(), num_clashes)
