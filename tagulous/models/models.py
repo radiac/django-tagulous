@@ -433,16 +433,14 @@ class BaseTagModel(models.Model, metaclass=TagModelBase):
         # Assume it was the slug - make it unique by appending a number.
         # See which numbers have been used
         slug_base = slug_base[: slug_max_length - settings.SLUG_TRUNCATE_UNIQUE]
-        try:
-            last = cls.objects.filter(slug__regex="^%s_[0-9]+$" % slug_base).latest(
-                "slug"
-            )
-        except cls.DoesNotExist:
+        based_objects = cls.objects.filter(slug__regex="^%s_[0-9]+$" % slug_base)
+        based_slugs = list(based_objects.values_list("slug", flat=True))
+        if len(based_slugs) == 0:
             # No numbered version of the slug exists
             number = 1
         else:
-            slug_base, number = last.slug.rsplit("_", 1)
-            number = int(number) + 1
+            numbers = [int(slug.rsplit("_", 1)[1]) for slug in based_slugs]
+            number = sorted(numbers)[-1] + 1
 
         self.slug = "%s_%d" % (slug_base, number)
         self._update_extra()

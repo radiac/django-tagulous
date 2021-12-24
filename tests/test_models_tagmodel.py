@@ -8,6 +8,8 @@ Modules tested:
     tagulous.models.models.TagModelManager
     tagulous.models.models.TagModelQuerySet
 """
+from string import punctuation
+
 from django.db import IntegrityError
 from django.test import TestCase
 
@@ -424,13 +426,29 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t3b.slug, "one-and-two_2")
         self.assertEqual(t4b.slug, "one-and-two_3")
 
+    def test_slug_clash__more_than_ten(self):
+        "Check slug field clash avoidance works above 10"
+        # We need to make unique names which will be slugged to the same thing, so work
+        # through string.punctuation. Quick sanity check we've got enough chars
+        num_clashes = 25
+        self.assertTrue(len(punctuation) > num_clashes)
+
+        tests = [
+            self.tag_model.objects.create(name=f"one and two{punctuation[i]}")
+            for i in range(0, num_clashes)
+        ]
+        self.assertEqual(self.tag_model.objects.count(), num_clashes)
+        self.assertEqual(tests[0].slug, "one-and-two")
+        for i in range(1, num_clashes):
+            self.assertEqual(tests[i].slug, f"one-and-two_{i}")
+
     def test_tag_model_factory(self):
         "Check the tag model factory supports setting max lengths"
         TestModel = test_models.TagSlugShorterModel
         self.assertEqual(TestModel._meta.get_field("name").max_length, 20)
         self.assertEqual(TestModel._meta.get_field("slug").max_length, 10)
 
-    def test_long_slug_truncates(self):
+    def test_long_slug__truncates(self):
         "Check the slug field is truncated correctly"
         TestModel = test_models.TagSlugShorterModel
         name_length = TestModel._meta.get_field("name").max_length
@@ -440,7 +458,7 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t1a.name, "x" * name_length)
         self.assertEqual(t1a.slug, "x" * slug_length)
 
-    def test_long_slug_clash_truncates(self):
+    def test_long_slug__clash_truncates(self):
         "Check clashing slug fields are truncated correctly"
         TestModel = test_models.TagSlugShorterModel
         name_length = TestModel._meta.get_field("name").max_length
@@ -455,6 +473,28 @@ class TagModelTest(TagTestManager, TestCase):
         self.assertEqual(t2a.name, ln2)
         slug2 = "{}_{}".format("x" * (slug_length - SLUG_TRUNCATE_UNIQUE), "1")
         self.assertEqual(t2a.slug, slug2)
+
+    def test_long_slug__clash_truncates__more_than_ten(self):
+        "Check slug field clash avoidance works above 10"
+        # We need to make unique names which will be slugged to the same thing, so work
+        # through string.punctuation. Quick sanity check we've got enough chars
+        num_clashes = 25
+        self.assertTrue(len(punctuation) > num_clashes)
+
+        TestModel = test_models.TagSlugShorterModel
+        name_length = TestModel._meta.get_field("name").max_length
+        slug_length = TestModel._meta.get_field("slug").max_length
+        long_name = "x" * (name_length - 1)
+        long_slug = "x" * (slug_length - SLUG_TRUNCATE_UNIQUE)
+
+        tests = [
+            TestModel.objects.create(name=f"{long_name}{punctuation[i]}")
+            for i in range(0, num_clashes)
+        ]
+        self.assertEqual(TestModel.objects.count(), num_clashes)
+        self.assertEqual(tests[0].slug, "x" * slug_length)
+        for i in range(1, num_clashes):
+            self.assertEqual(tests[i].slug, f"{long_slug}_{i}")
 
 
 # ##############################################################################

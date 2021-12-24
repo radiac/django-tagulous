@@ -21,6 +21,11 @@ Features:
 * Add Django 4.0 support
 
 
+Bugfix:
+
+* Slug uniqueness now works when there are more than 11 collisions (#152)
+
+
 1.3.2, 2021-12-23
 -----------------
 
