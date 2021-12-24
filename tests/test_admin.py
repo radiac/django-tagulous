@@ -239,6 +239,12 @@ class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCa
             self.ma,
             self.ma.get_sortable_by(req),
         ]
+        if django.VERSION >= (4, 0, 0):
+            changelist_args.extend(
+                [
+                    self.ma.search_help_text,
+                ]
+            )
         self.cl = ChangeList(*changelist_args)
         return self.cl
 
@@ -363,6 +369,12 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
             self.ma,
             self.ma.get_sortable_by(req),
         ]
+        if django.VERSION >= (4, 0, 0):
+            changelist_args.extend(
+                [
+                    self.ma.search_help_text,
+                ]
+            )
         self.cl = ChangeList(*changelist_args)
         return self.cl
 

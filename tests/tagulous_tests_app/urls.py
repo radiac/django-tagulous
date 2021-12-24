@@ -5,7 +5,7 @@ Usage:
     class MyTestCase(TestCase):
         urls = 'tests.tagulous_tests_app.urls'
 """
-from django.conf.urls import include, re_path
+from django.urls import include, re_path
 
 import tagulous.views
 from tests.tagulous_tests_app import models, views
