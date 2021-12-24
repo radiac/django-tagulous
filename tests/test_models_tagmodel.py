@@ -431,10 +431,11 @@ class TagModelTest(TagTestManager, TestCase):
         # We need to make unique names which will be slugged to the same thing, so work
         # through string.punctuation. Quick sanity check we've got enough chars
         num_clashes = 25
-        self.assertTrue(len(punctuation) > num_clashes)
+        invalid_chars = punctuation.replace("_", "").replace("-", "")
+        self.assertTrue(len(invalid_chars) > num_clashes)
 
         tests = [
-            self.tag_model.objects.create(name=f"one and two{punctuation[i]}")
+            self.tag_model.objects.create(name=f"one and two{invalid_chars[i]}")
             for i in range(0, num_clashes)
         ]
         self.assertEqual(self.tag_model.objects.count(), num_clashes)
