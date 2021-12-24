@@ -13,7 +13,15 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-1.3.2 2021-12-23
+1.3.3, 2021-12
+-----------------
+
+Features:
+
+* Add Django 4.0 support
+
+
+1.3.2, 2021-12-23
 -----------------
 
 Changes:
