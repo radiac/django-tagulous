@@ -13,7 +13,7 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-1.3.3, 2021-12
+1.3.3, 2021-12-25
 -----------------
 
 Features:
