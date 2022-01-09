@@ -59,6 +59,7 @@ Settings
 ``TAGULOUS_NAME_MAX_LENGTH``
 ``TAGULOUS_SLUG_MAX_LENGTH``
 ``TAGULOUS_LABEL_MAX_LENGTH``
+
     Default max lengths for tag models.
 
     .. note::
@@ -94,6 +95,7 @@ Settings
 
 ``TAGULOUS_AUTOCOMPLETE_JS``
 ``TAGULOUS_ADMIN_AUTOCOMPLETE_JS``
+
     List of static JavaScript files required for Tagulous autocomplete. These will be
     added to the form media when a Tagulous form field is used.
 
@@ -114,6 +116,7 @@ Settings
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``
 ``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
+
     List of static CSS files required for Tagulous autocomplete. These will be added to
     the form media when a Tagulous form field is used.
 

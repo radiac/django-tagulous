@@ -60,7 +60,7 @@ Bugfix:
 
 Thanks to:
 
-* nschlemm for the ``_filter_or_exclude" fix (#144, #149)
+* nschlemm for the ``_filter_or_exclude`` fix (#144, #149)
 
 
 1.3.0, 2021-09-07
