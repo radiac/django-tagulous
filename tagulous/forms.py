@@ -1,13 +1,13 @@
 import json
 
 from django import forms
-from django.contrib.admin.widgets import AutocompleteMixin
+from django.contrib.admin.widgets import AutocompleteMixin, SELECT2_TRANSLATIONS
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import QuerySet
 from django.urls import NoReverseMatch, reverse
 from django.utils.encoding import force_str
 from django.utils.html import escape
-from django.utils.translation import gettext as _
+from django.utils.translation import get_language, gettext as _
 
 from . import settings
 from .models import options
@@ -118,6 +118,8 @@ class AdminTagWidget(TagWidgetBase):
     def media(self):
         # Get the media from the AutocompleteMixin - this will give us Django's
         # vendored jQuery and select2
+        instance = object()
+        instance.i18_name = SELECT2_TRANSLATIONS.get(get_language())
         media = AutocompleteMixin.media.fget(None)
 
         return media + forms.Media(
