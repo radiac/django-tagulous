@@ -118,9 +118,10 @@ class AdminTagWidget(TagWidgetBase):
     def media(self):
         # Get the media from the AutocompleteMixin - this will give us Django's
         # vendored jQuery and select2
-        instance = object()
-        instance.i18_name = SELECT2_TRANSLATIONS.get(get_language())
-        media = AutocompleteMixin.media.fget(None)
+        class GetMedia(AutocompleteMixin):
+            def __init__(self):
+                self.i18_name = SELECT2_TRANSLATIONS.get(get_language())
+        media = GetMedia().media
 
         return media + forms.Media(
             js=settings.ADMIN_AUTOCOMPLETE_JS,
