@@ -196,7 +196,7 @@ Default: ``None``
 .. _option_autocomplete_view_kwargs:
 
 ``autocomplete_view_kwargs``
---------------------------
+----------------------------
 Optional ``kwargs`` passed to the ``autocomplete_view``.
 
 Default: ``None``

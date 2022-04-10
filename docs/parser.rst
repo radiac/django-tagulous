@@ -43,8 +43,9 @@ commas will be used to separate tags.
 The parser is implemented in both Python and JavaScript for consistency.
 
 For more examples and how the parser treats odd edge cases, see the examples
-used for testing the parser in :source:`tests/test_utils.py` and
-:source:`tests/spec/javascripts/tagulous.spec.js`.
+used for testing the parser in
+:gitref:`tests/test_utils.py` and
+:gitref:`tests/spec/javascripts/tagulous.spec.js`.
 
 
 Using the parser directly

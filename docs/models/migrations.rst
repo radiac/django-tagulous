@@ -41,7 +41,7 @@ example, changing a plain model to a ``TagModel``, or a ``TagModel`` to a
 so you will need to use the Tagulous helper operation ``ChangeModelBases`` -
 see step 3 of :ref:`converting_tag_trees` for more details, or the working
 example in
-:source:`0003_tree.py <tests/tagulous_tests_migration/django_migrations_expected/0003_tree.py>`.
+:gitref:`0003_tree.py <tests/tagulous_tests_migration/django_migrations_expected/0003_tree.py>`.
 
 Django migrations also cannot serialise lambda expressions, so the
 ``get_absolute_url`` argument is not available during data migrations, neither

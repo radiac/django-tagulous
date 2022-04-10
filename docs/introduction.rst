@@ -94,12 +94,7 @@ Tag string
 Comparison with other tagging libraries
 =======================================
 
-Popular tagging libraries for Django include:
-* `django-taggit <https://github.com/alex/django-taggit>`_
-* `django-tagging <https://github.com/Fantomas42/django-tagging>`_
-* `django-tagging-ng <https://github.com/svetlyak40wt/django-tagging-ng>`_
-
-If you are already using one of these, read
+If you are already using django-taggit or django-tagging, read
 :ref:`converting_to_tagulous` to see what is involved in switching to Tagulous.
 
 Tagulous is easier to use and has more features, and is a proven library which has been
