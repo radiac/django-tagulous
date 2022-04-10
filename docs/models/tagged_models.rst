@@ -134,7 +134,7 @@ the ``name`` field on the tag model for those::
 
 
 Filtering tags by related model fields
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------
 
 Because tag fields use standard database relationships, you can easily filter
 the tags by other fields in your model.
@@ -153,7 +153,7 @@ queryset, which will add initial tags to your filtered queryset::
 .. _finding_similar_objects:
 
 Finding similar objects
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 The QuerySet on a tagged model provides the method ``get_similar_objects``, which takes
 the instance and field name to compare similarity by, and returns a queryset of similar

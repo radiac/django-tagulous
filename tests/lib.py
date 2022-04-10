@@ -100,13 +100,10 @@ class TagTestManager(object):
         # Check values
         for field_name, val in kwargs.items():
             try:
-                if (
-                    isinstance(
-                        instance.__class__._meta.get_field(field_name),
-                        (tag_models.SingleTagField, tag_models.TagField),
-                    )
-                    and isinstance(val, str)
-                ):
+                if isinstance(
+                    instance.__class__._meta.get_field(field_name),
+                    (tag_models.SingleTagField, tag_models.TagField),
+                ) and isinstance(val, str):
                     self.assertEqual(str(getattr(instance, field_name)), val)
                 elif isinstance(
                     instance.__class__._meta.get_field(field_name),

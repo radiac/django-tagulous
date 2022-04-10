@@ -27,7 +27,7 @@ Autocomplete views
 ==================
 
 Although Tagulous doesn't need any views by default, it does provide generic
-views in :source:`tagulous/views.py` to support AJAX autocomplete requests.
+views in :gitref:`tagulous/views.py` to support AJAX autocomplete requests.
 
 ``response = autocomplete(request, tag_model)``
     This takes the request object from the dispatcher, and a reference to the

@@ -260,4 +260,4 @@ required:
 5. Run the migrations
 
 You can see a working migration using steps 2 and 3 in the Tagulous tests, for
-:source:`Django migrations <tests/tagulous_tests_migration/django_migrations_expected/0003_tree.py>`.
+:gitref:`Django migrations <tests/tagulous_tests_migration/django_migrations_expected/0003_tree.py>`.

@@ -8,11 +8,6 @@ tagging syntactic sugar, and a full set of extra
 :doc:`features <introduction>`.
 
 
-.. seealso::
-
-    Read this online at http://radiac.net/projects/django-tagulous/
-
-
 Contents
 ========
 

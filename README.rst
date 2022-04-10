@@ -5,18 +5,26 @@ Django Tagulous - Fabulous Tags
 A tagging library for Django built on ForeignKey and ManyToManyField, giving
 you all their normal power with a sprinkling of tagging syntactic sugar.
 
-* Project site: http://radiac.net/projects/django-tagulous/
+* Project site: https://radiac.net/projects/django-tagulous/
 * Source code: https://github.com/radiac/django-tagulous
-* Changelog: http://radiac.net/projects/django-tagulous/documentation/changelog/
+* Documentation: https://django-tagulous.readthedocs.io/
+* Changelog: https://django-tagulous.readthedocs.io/en/latest/changelog.html
 
 .. image:: https://img.shields.io/pypi/v/django-tagulous.svg
     :target: https://pypi.org/project/django-tagulous/
+    :alt: PyPI
+
+.. image:: https://readthedocs.org/projects/django-tagulous/badge/?version=latest
+    :target: https://django-tagulous.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 .. image:: https://github.com/radiac/django-tagulous/actions/workflows/ci.yml/badge.svg
     :target: https://github.com/radiac/django-tagulous/actions/workflows/ci.yml
+    :alt: Tests
 
 .. image:: https://codecov.io/gh/radiac/django-tagulous/branch/develop/graph/badge.svg?token=5VZNPABZ7E
     :target: https://codecov.io/gh/radiac/django-tagulous
+    :alt: Test coverage
 
 
 Features
@@ -30,22 +38,21 @@ Features
 * Supports **trees of nested tags**, for detailed categorisation
 * Admin support for managing tags and tagged models
 
-Supports Django 2.2 to 3.2, on Python 3.6 to 3.9.
+Supports Django 2.2+, on Python 3.6+.
 
 
-See the `Documentation <http://radiac.net/projects/django-tagulous/documentation/>`_
+See the `Documentation <https://django-tagulous.readthedocs.io/>`_
 for details of how Tagulous works; in particular:
 
-* `Installation <http://radiac.net/projects/django-tagulous/documentation/installation/>`_
+* `Installation <https://django-tagulous.readthedocs.io/en/latest/installation.html>`_
   - how to install Tagulous
-* `Example Usage <http://radiac.net/projects/django-tagulous/documentation/usage/>`_
+* `Example Usage <https://django-tagulous.readthedocs.io/en/latest/usage.html>`_
   - see examples of Tagulous in use
-* `Upgrading <http://radiac.net/projects/django-tagulous/documentation/upgrading/>`_  -
+* `Upgrading <https://django-tagulous.readthedocs.io/en/latest/upgrading.html>`_  -
   how to upgrade Tagulous, and see what has changed in the
-  `changelog <http://radiac.net/projects/django-tagulous/documentation/changelog/>`_.
-* `Contributing <http://radiac.net/projects/django-tagulous/documentation/contributing/>`_
-  - for how to contribute to Tagulous, and the planned
-  `roadmap <http://radiac.net/projects/django-tagulous/documentation/contributing/#roadmap>`_.
+  `changelog <https://django-tagulous.readthedocs.io/en/latest/changelog.html>`_.
+* `Contributing <https://django-tagulous.readthedocs.io/en/latest/contributing.html>`_
+  - for how to contribute to Tagulous
 
 
 Quickstart

@@ -70,36 +70,36 @@ Javascript tests are defined in ``tests/spec/javascripts/*.spec.js``.
 Code overview
 =============
 
-Tag model fields start in :source:`tagulous/models/fields.py`; when they are
+Tag model fields start in :gitref:`tagulous/models/fields.py`; when they are
 added to models, the models call the field's ``contribute_to_class`` method,
-which adds the descriptors in :source:`tagulous/models/descriptors.py` onto
+which adds the descriptors in :gitref:`tagulous/models/descriptors.py` onto
 the model in their place. These descriptors act as getters and setters,
 channeling data to and from the managers in
-:source:`tagulous/models/managers.py`.
+:gitref:`tagulous/models/managers.py`.
 
 Models which have tag fields are called tagged models. For tags to be fully
 supported in constructors, managers and querysets, those classes need to use
-the classes defined in :source:`tagulous/models/tagged.py` as base classes.
+the classes defined in :gitref:`tagulous/models/tagged.py` as base classes.
 That file contains a ``class_prepared`` signal listener which tries to
 dynamically change the base classes of any models which contain tag fields.
 
 Model fields take their arguments and store them in a ``TagOptions`` instance,
-defined in :source:`tagulous/models/options.py`. Any ``initial`` tags in the
+defined in :gitref:`tagulous/models/options.py`. Any ``initial`` tags in the
 options can be loaded into the database using the functions in
-:source:`tagulous/models/initial.py`, which is the same code the
+:gitref:`tagulous/models/initial.py`, which is the same code the
 ``initial_tags`` management command uses.
 
 When a ``ModelForm`` is created for a model with a tag field, the model field's
 ``formfield`` method is called. This creates a tag form field, defined in
-:source:`tagulous/forms.py`, which is passed the ``TagOptions`` from the model.
+:gitref:`tagulous/forms.py`, which is passed the ``TagOptions`` from the model.
 A tag form field can also be created directly on a plain form. Tag form fields
-in turn uses tag widgets (also in :source:`tagulous/forms.py`) to render the
+in turn uses tag widgets (also in :gitref:`tagulous/forms.py`) to render the
 field to HTML with the data from ``TagOptions``.
 
 Tag strings are parsed and rendered (tags joined back to a tag string) by the
-functions in :source:`tagulous/utils.py`.
+functions in :gitref:`tagulous/utils.py`.
 
 Everything for enhancing the admin site with support for tag fields is in
-:source:`tagulous/admin.py`. It is in two sections; registration (which adds
+:gitref:`tagulous/admin.py`. It is in two sections; registration (which adds
 tag field functionality to a normal ``ModelAdmin``, and replaces the widgets
 with tag widgets) and tag model admin (for managing tag models).

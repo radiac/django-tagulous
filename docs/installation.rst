@@ -56,10 +56,8 @@ Settings
 .. note::
     Model and form field options are managed separately by :doc:`tag_options`.
 
-``TAGULOUS_NAME_MAX_LENGTH``
-``TAGULOUS_SLUG_MAX_LENGTH``
-``TAGULOUS_LABEL_MAX_LENGTH``
 
+``TAGULOUS_NAME_MAX_LENGTH``, ``TAGULOUS_SLUG_MAX_LENGTH``, ``TAGULOUS_LABEL_MAX_LENGTH``
     Default max lengths for tag models.
 
     .. note::
@@ -93,9 +91,7 @@ Settings
 
     Default: ``False``
 
-``TAGULOUS_AUTOCOMPLETE_JS``
-``TAGULOUS_ADMIN_AUTOCOMPLETE_JS``
-
+``TAGULOUS_AUTOCOMPLETE_JS``, ``TAGULOUS_ADMIN_AUTOCOMPLETE_JS``
     List of static JavaScript files required for Tagulous autocomplete. These will be
     added to the form media when a Tagulous form field is used.
 
@@ -114,9 +110,8 @@ Settings
             "tagulous/adaptor/select2-4.js",
         )
 
-``TAGULOUS_AUTOCOMPLETE_CSS``
-``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
 
+``TAGULOUS_AUTOCOMPLETE_CSS``, ``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
     List of static CSS files required for Tagulous autocomplete. These will be added to
     the form media when a Tagulous form field is used.
 
