@@ -56,6 +56,7 @@ Settings
 .. note::
     Model and form field options are managed separately by :doc:`tag_options`.
 
+
 ``TAGULOUS_NAME_MAX_LENGTH``, ``TAGULOUS_SLUG_MAX_LENGTH``, ``TAGULOUS_LABEL_MAX_LENGTH``
     Default max lengths for tag models.
 
@@ -108,6 +109,7 @@ Settings
             "tagulous/tagulous.js",
             "tagulous/adaptor/select2-4.js",
         )
+
 
 ``TAGULOUS_AUTOCOMPLETE_CSS``, ``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
     List of static CSS files required for Tagulous autocomplete. These will be added to
