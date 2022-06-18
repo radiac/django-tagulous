@@ -13,8 +13,13 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-1.3.4, TBC
+1.4.0, TBC
 ----------
+
+Features:
+
+* Add ``TagTreeModel.objects.as_nested_list()``
+
 
 Bugfix:
 

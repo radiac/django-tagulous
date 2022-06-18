@@ -556,6 +556,57 @@ class TagTreeModelManager(TagModelManager):
 
     rebuild.alters_data = True
 
+    def as_nested_list(self):
+        """
+        Return all tags as a nested list, as lists of ``(tag, children)`` tuples in the
+        format::
+
+            [(tag, [child_tuple, ...]), ...]
+
+        For example::
+
+            [
+                (level_1_tag_!, [
+                    (level_2_tag_1, [...]),
+                    (level_2_tag_2, [...]),
+                ]),
+                (level_1_tag_!, [...]),
+            ]
+
+        Will be in alphabetical order
+
+        Note: this will cause the queryset to be evaluated
+        """
+        qs = self.all().order_by("name")
+        root = []
+        stack = []
+        for tag in qs:
+            # Top level tag restarts the stack and gets added to the root list
+            if tag.level == 1:
+                stack = [(tag, [])]
+                root.append(stack[0])
+                continue
+
+            # Current deepest child is on the end of the stack
+            current_tag, current_children = stack[-1]
+
+            # This tag is a sibling or ancestor's sibling, move up the stack
+            if tag.level <= current_tag.level:
+                # Move up to the parent of the tag
+                up = current_tag.level - (tag.level - 1)
+                # ``up`` should never be less than 0 due to db constraints
+                del stack[-up:]
+
+                current_tag, current_children = stack[-1]
+
+            # Due to db constraints At this point we must be adding a direct child
+            # Record and add to the stack
+            new_node = (tag, [])
+            current_children.append(new_node)
+            stack.append(new_node)
+
+        return root
+
 
 # ##############################################################################
 # ###### Abstract base class for all TagTreeModel models

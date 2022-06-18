@@ -124,6 +124,26 @@ is a subclass of :ref:`tagmodel_manager` so provides those methods, but its
 queries return a :ref:`tagtreemodel_queryset` instead.
 
 
+``as_nested_list()``
+~~~~~~~~~~~~~~~~~~~~
+
+Return all tags as a nested list, as lists of ``(tag, children)`` tuples in the format::
+
+    [(tag, [child_tuple, ...]), ...]
+
+For example::
+
+    [
+        (level_1_tag, [
+            (level_2_tag_1, [...]),
+            (level_2_tag_2, [...]),
+        ]),
+        (level_1_tag, [...]),
+    ]
+
+Tags will be in alphabetical order.
+
+
 .. _tagtreemodel_queryset:
 
 ``tagulous.models.TagTreeModelQuerySet``

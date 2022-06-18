@@ -802,6 +802,38 @@ class TagTreeQuerySetTest(TagTreeTestManager, TestCase):
             ["Animal/Mammal/Cat", "Animal/Mammal/Dog"],
         )
 
+    def test_as_nested_list(self):
+        root = self.tag_model.objects.as_nested_list()
+
+        animal = self.tag_model.objects.get(name="Animal")
+        mammal = self.tag_model.objects.get(name="Animal/Mammal")
+        insect = self.tag_model.objects.get(name="Animal/Insect")
+
+        self.assertSequenceEqual(
+            root,
+            [
+                (
+                    animal,
+                    [
+                        (
+                            insect,
+                            [
+                                (self.bee, []),
+                            ],
+                        ),
+                        (
+                            mammal,
+                            [
+                                (self.cat, []),
+                                (self.dog, []),
+                            ],
+                        ),
+                    ],
+                ),
+                (self.vegetable, []),
+            ],
+        )
+
 
 # ##############################################################################
 # ###### TagTreeModel access via fields
