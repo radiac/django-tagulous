@@ -27,12 +27,11 @@ SLUG_ALLOW_UNICODE = getattr(settings, "TAGULOUS_SLUG_ALLOW_UNICODE", False)
 #
 
 DEFAULT_AUTOCOMPLETE_JS = (
-    "tagulous/lib/jquery.js",
-    "tagulous/lib/select2-4/js/select2.full.min.js",
+    "tagulous/lib/choices-10/scripts/choices.min.js",
     "tagulous/tagulous.js",
-    "tagulous/adaptor/select2-4.js",
+    "tagulous/adaptor/choices.js",
 )
-DEFAULT_AUTOCOMPLETE_CSS = {"all": ["tagulous/lib/select2-4/css/select2.min.css"]}
+DEFAULT_AUTOCOMPLETE_CSS = {"all": ["tagulous/lib/choices-10/styles/choices.min.css"]}
 
 AUTOCOMPLETE_JS = getattr(settings, "TAGULOUS_AUTOCOMPLETE_JS", DEFAULT_AUTOCOMPLETE_JS)
 AUTOCOMPLETE_CSS = getattr(
