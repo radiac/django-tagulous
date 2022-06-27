@@ -177,7 +177,7 @@ def _create_display(field):
     return display
 
 
-def enhance(model, admin_class):
+def enhance(model, admin_class, display_func=_create_display):
     """
     Add tag support to the admin class based on the specified model
     """
@@ -231,7 +231,7 @@ def enhance(model, admin_class):
                     admin_class.list_display[i] = display_name
 
                     # Add display function to admin class
-                    setattr(admin_class, display_name, _create_display(field))
+                    setattr(admin_class, display_name, display_func(field))
 
     #
     # If admin is for a tag model, ensure any inlines for tagged models are
