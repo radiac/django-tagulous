@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
 from django.core import exceptions
+from django.forms import Media
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from django.urls import get_resolver, re_path, reverse
@@ -836,6 +837,50 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         # There should be 3 empty fields, zero-indexed
         self.assertContains(response, 'id="id_simplemixedtest_set-2-singletag"')
         self.assertNotContains(response, 'id="id_simplemixedtest_set-3-singletag"')
+        # Check if static files are loaded
+        media: Media = response.context["media"]
+        js_files = media._js
+        django_version = django.VERSION[:2]
+        if django_version == (4, 0):
+            expected_js_files = [
+                "admin/js/vendor/jquery/jquery.min.js",
+                "tagulous/tagulous.js",
+                "admin/js/jquery.init.js",
+                "tagulous/adaptor/select2-4.js",
+                "admin/js/core.js",
+                "admin/js/inlines.js",
+                "admin/js/admin/RelatedObjectLookups.js",
+                "admin/js/actions.js",
+                "admin/js/urlify.js",
+                "admin/js/prepopulate.js",
+                "admin/js/vendor/xregexp/xregexp.min.js",
+            ]
+        elif django_version == (3, 2):
+            expected_js_files = [
+                "admin/js/vendor/jquery/jquery.min.js",
+                "tagulous/tagulous.js",
+                "admin/js/vendor/select2/select2.full.min.js",
+                "tagulous/adaptor/select2-4.js",
+                "admin/js/jquery.init.js",
+                "admin/js/core.js",
+                "admin/js/inlines.min.js",
+                "admin/js/autocomplete.js",
+                "admin/js/admin/RelatedObjectLookups.js",
+                "admin/js/actions.min.js",
+                "admin/js/urlify.js",
+                "admin/js/prepopulate.min.js",
+                "admin/js/vendor/xregexp/xregexp.min.js",
+            ]
+        else:
+            # Just ignore unsupported Django versions ;)
+            expected_js_files = None
+            # Just check if our own files exists:
+            self.assertIn("tagulous/tagulous.js", js_files)
+            self.assertIn("tagulous/adaptor/select2-4.js", js_files)
+
+        if expected_js_files is not None:
+            # Note: The order is also important here!
+            self.assertEqual(js_files, expected_js_files)
 
     def test_add_submits(self):
         "Check inline add saves without error, and increments tag model"
