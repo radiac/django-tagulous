@@ -19,17 +19,17 @@ Installing
 The easiest way to work on Tagulous is to fork the project on github, then
 install it to a virtualenv::
 
-    virtualenv django-tagulous
-    cd django-tagulous
-    source bin/activate
-    pip install -e git+git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous
-    pip install -r src/django-tagulous/requirements.test.txt
+    git clone git@github.com:USERNAME/django-tagulous.git
+    cd django-tagulous/
+    git remote add upstream https://github.com/radiac/django-tagulous.git
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -e .
+    pip install -r requirements.test.txt
 
 (replacing ``USERNAME`` with your username).
 
-This will install the development dependencies too, and you'll find the
-tagulous source ready for you to work on in the ``src`` folder of your
-virtualenv.
+This will install the development dependencies too.
 
 
 Testing
@@ -39,12 +39,16 @@ It is greatly appreciated when contributions come with unit tests.
 
 Pytest is the test runner of choice::
 
+    cd django-tagulous/
+    source .venv/bin/activate
     pytest
     pytest tests/test_file.py
     pytest tests/test_file::TestClass::test_method
 
 Use ``tox`` to run them on one or more supported versions::
 
+    cd django-tagulous/
+    source .venv/bin/activate
     tox [-e py39-django3.2]
 
 To use a different database (mysql, postgres etc) use the environment variables
@@ -59,6 +63,8 @@ the ``tests`` dir where required.
 
 Run the javascript tests using Jasmine::
 
+    cd django-tagulous/
+    source .venv/bin/activate
     pip install jasmine
     cd tests
     jasmine
