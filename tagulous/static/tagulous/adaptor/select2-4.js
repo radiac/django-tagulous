@@ -165,7 +165,7 @@
         $.extend(args, {
             // Select2 options
             tokenizer: tokenizer,
-            tags: true,
+            tags: !options.allow_create,
 
             // Things defined by field/tag options, which can't be overridden
             multiple: !isSingle,
