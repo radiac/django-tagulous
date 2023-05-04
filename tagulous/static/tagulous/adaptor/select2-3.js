@@ -181,7 +181,7 @@
         $.extend(args, {
             // Our overriden methods
             tokenizer: tokenizer,
-            createSearchChoice: createSearchChoice,
+            createSearchChoice: options.allow_create !== false ? createSearchChoice : (term, data) => {return null},
 
             // Things defined by field/tag options, which can't be overridden
             multiple: !isSingle,

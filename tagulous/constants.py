@@ -36,6 +36,7 @@ OPTION_DEFAULTS = {
     "get_absolute_url": None,
     "verbose_name_singular": None,
     "verbose_name_plural": None,
+    "allow_create": True,
 }
 
 # List of model TagField options which are relevant to form fields
@@ -47,4 +48,5 @@ FORM_OPTIONS = [
     "tree",
     "autocomplete_limit",
     "autocomplete_settings",
+    "allow_create",
 ]
