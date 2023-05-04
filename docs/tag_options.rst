@@ -306,6 +306,16 @@ name from its ``verbose_name`` argument, falling back to the field name.
     ``verbose_name_singular`` to a string which is 38 characters or less.
 
 
+.. _option_allow_create:
+
+``allow_create``
+--------------------
+Controls whether in a form, users are prompted to create new tags or whether 
+they're restricted to choosing from pre-existing tags.
+
+Default: ``True``
+
+
 .. _form_options:
 
 Form Options
@@ -319,6 +329,7 @@ The following options are used by form fields:
 * :ref:`option_tree`
 * :ref:`option_autocomplete_limit`
 * :ref:`option_autocomplete_settings`
+* :ref:`option_allow_create`
 
 
 .. _tagoptions:
