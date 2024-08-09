@@ -1,6 +1,7 @@
 """
 Forms for example Tagulous app
 """
+
 from django import forms
 
 from example import models

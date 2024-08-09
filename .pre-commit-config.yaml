@@ -1,0 +1,15 @@
+exclude: .*migrations\/.*
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+  - id: check-merge-conflict
+  - id: trailing-whitespace
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.4.10
+  hooks:
+  # Run the linter with import sorting
+  - id: ruff
+    args: ["check", "--select", "I", "--fix"]
+  # Run the formatter
+  - id: ruff-format

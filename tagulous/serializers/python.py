@@ -1,6 +1,7 @@
 """
 Python serializer with Tagulous support
 """
+
 from django.core.serializers import python as python_serializer
 
 from . import base

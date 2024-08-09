@@ -7,6 +7,7 @@ necessary tag models, and add the descriptors back onto the model.
 
 They are also responsible for preparing form fields.
 """
+
 from django.core.checks import Warning as ChecksWarning
 from django.db import models
 from django.utils.text import capfirst
@@ -15,7 +16,6 @@ from .. import constants
 from .descriptors import SingleTagDescriptor, TagDescriptor
 from .models import BaseTagModel, TagModel, TagTreeModel
 from .options import TagOptions
-
 
 # ##############################################################################
 # ###### Mixin for model tag fields
@@ -369,7 +369,6 @@ class SingleTagField(BaseTagField, models.ForeignKey):
         return ""
 
     def formfield(self, form_class=None, **kwargs):
-
         """
         Create the form field
         For arguments see forms.TagField

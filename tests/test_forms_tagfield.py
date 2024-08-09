@@ -5,6 +5,7 @@ Modules tested:
     tagulous.models.fields.TagField
     tagulous.forms.TagField
 """
+
 from django import forms
 from django.test import TestCase
 
@@ -14,7 +15,6 @@ from tagulous import settings as tag_settings
 from tests.lib import TagTestManager, skip_if_mysql
 from tests.tagulous_tests_app import forms as test_forms
 from tests.tagulous_tests_app import models as test_models
-
 
 # ##############################################################################
 # ###### Test form TagField
@@ -180,6 +180,7 @@ class FormTagFieldTest(TagTestManager, TestCase):
 
     def test_render_autocomplete_settings(self):
         "Check widget merges autocomplete settings with defaults"
+
         # Make a form with some autocomplete settings
         class LocalTestForm(forms.Form):
             tags = tag_forms.TagField(
@@ -471,6 +472,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
 
 class ModelFormTagFieldOptionalTest(TagTestManager, TestCase):
     "Test optional TagField"
+
     manage_models = [test_models.TagFieldOptionalModel]
 
     def setUpExtra(self):
@@ -490,6 +492,7 @@ class ModelFormTagFieldOptionalTest(TagTestManager, TestCase):
 
 class ModelFormTagFieldRequiredTest(TagTestManager, TestCase):
     "Test required TagField"
+
     manage_models = [test_models.TagFieldRequiredModel]
 
     def setUpExtra(self):
@@ -652,6 +655,7 @@ class ModelFormTagFieldOptionsTest(TagTestManager, TestCase):
 
     def text_max_count_1(self):
         "Test form TagField max_count of 1"
+
         # Mostly just to test grammar of the error message
         class LocalTestForm(forms.Form):
             tags = tag_forms.TagField(tag_options=tag_models.TagOptions(max_count=1))

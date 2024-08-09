@@ -7,12 +7,12 @@ Modules tested:
     tagulous.forms.SingleTagField
     tagulous.forms.TagField
 """
+
 from django.test import TestCase
 
 from tests.lib import TagTestManager
 from tests.tagulous_tests_app import forms as test_forms
 from tests.tagulous_tests_app import models as test_models
-
 
 # ##############################################################################
 # ###### Test mixed form

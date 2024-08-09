@@ -6,6 +6,7 @@ Will fail if settings.ENHANCE_MODELS is not True
 Modules tested:
     tagulous.models.tagged
 """
+
 import inspect
 import pickle
 
@@ -17,7 +18,6 @@ from tagulous import models as tag_models
 from tagulous.models.tagged import _split_kwargs
 from tests.lib import TagTestManager, skip_if_mysql
 from tests.tagulous_tests_app import models as test_models
-
 
 # ##############################################################################
 # ###### Test TaggedModel

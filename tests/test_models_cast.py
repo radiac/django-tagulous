@@ -10,7 +10,6 @@ from pytest import fixture
 from tagulous.models.cast import cast_instance, get_cast_class
 from tests.tagulous_tests_app.cast import NewBase, OldBase, Target
 
-
 EXPECTED_CAST_NAME = "TagulousCastTaggedTarget"
 
 

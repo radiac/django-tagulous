@@ -1,10 +1,10 @@
 """
 Migration support for Django migrations
 """
+
 from django.db import migrations
 
 from .models import BaseTagModel, BaseTagTreeModel
-
 
 # ##############################################################################
 # ########################################################### Django migrations

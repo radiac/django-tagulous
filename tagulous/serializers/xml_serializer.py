@@ -1,6 +1,7 @@
 """
 XML serializer with Tagulous support
 """
+
 from django.core.serializers import xml_serializer
 
 from ..models.fields import SingleTagField, TagField

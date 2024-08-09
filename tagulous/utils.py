@@ -3,10 +3,10 @@ Tag parsing and printing
 
 Loosely based on django-taggit and django-tagging
 """
+
 from django.utils.encoding import force_str
 
 from .constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
-
 
 # ##############################################################################
 # ###### Tag name parse and render
@@ -154,7 +154,6 @@ def parse_tags(tag_string, max_count=0, space_delimiter=True):
             # An odd number followed by a delimiter will mean it has ended
             # Need to look ahead to figure it out
             if quote_count % 2 == 1:
-
                 # If it's the last character, it has closed
                 if len(chars) == 0:
                     in_quote = False

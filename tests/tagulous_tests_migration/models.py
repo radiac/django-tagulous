@@ -1,10 +1,10 @@
 """
 Test models
 """
+
 from django.db import models
 
 import tagulous
-
 
 try:
     import django.apps as django_apps

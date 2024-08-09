@@ -5,6 +5,7 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.forms.SingleTagField
 """
+
 from django import forms
 from django.test import TestCase
 
@@ -14,7 +15,6 @@ from tagulous import settings as tag_settings
 from tests.lib import TagTestManager, skip_if_mysql
 from tests.tagulous_tests_app import forms as test_forms
 from tests.tagulous_tests_app import models as test_models
-
 
 # ##############################################################################
 # ###### Test form SingleTagField
@@ -354,6 +354,7 @@ class ModelFormSingleTagFieldTest(TagTestManager, TestCase):
 
 class ModelFormSingleTagFieldOptionalTest(TagTestManager, TestCase):
     "Test optional SingleTagField"
+
     manage_models = [test_models.SingleTagFieldOptionalModel]
 
     def setUpExtra(self):
@@ -373,6 +374,7 @@ class ModelFormSingleTagFieldOptionalTest(TagTestManager, TestCase):
 
 class ModelFormSingleTagFieldRequiredTest(TagTestManager, TestCase):
     "Test required SingleTagField"
+
     manage_models = [test_models.SingleTagFieldRequiredModel]
 
     def setUpExtra(self):
@@ -406,6 +408,7 @@ class ModelFormSingleTagFieldRequiredTest(TagTestManager, TestCase):
 
 class ModelFormSingleTagFieldOptionsTest(TagTestManager, TestCase):
     "Check tag options"
+
     manage_models = [test_models.SingleTagFieldOptionsModel]
 
     def setUpExtra(self):

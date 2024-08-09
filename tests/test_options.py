@@ -5,6 +5,7 @@ Modules tested:
     tagulous.options
     tagulous.constants
 """
+
 from django.test import TestCase
 
 from tagulous import constants as tag_constants

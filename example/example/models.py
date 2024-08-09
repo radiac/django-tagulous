@@ -4,6 +4,7 @@ Models for example Tagulous app
 Based on the usage examples in the documentation:
     http://radiac.net/projects/django-tagulous/documentation/usage/
 """
+
 from django.db import models
 
 import tagulous.models

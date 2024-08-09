@@ -4,13 +4,13 @@ Tagulous test: manage.py commands
 Modules tested:
     tagulous.management.commands.initial_tags
 """
+
 from django.core.management import call_command
 from django.test import TestCase
 
 from tests.lib import Capturing, TagTestManager
 from tests.tagulous_tests_app import models as test_models
 from tests.tagulous_tests_app2 import models as test_models2
-
 
 # If True, display output from call_command - use for debugging tests
 DISPLAY_CALL_COMMAND = False
@@ -51,7 +51,9 @@ class InitialTagsTest(TagTestManager, TestCase):
     def run_command(self, target=""):
         with Capturing() as output:
             call_command(
-                "initial_tags", target=target, verbosity=1  # Optional target  # Silent
+                "initial_tags",
+                target=target,
+                verbosity=1,  # Optional target  # Silent
             )
 
         if DISPLAY_CALL_COMMAND:

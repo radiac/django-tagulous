@@ -5,6 +5,7 @@ Modules tested:
     tagulous.models.fields.SingleTagField
     tagulous.models.fields.TagField
 """
+
 from django.test import TestCase
 
 from tests.lib import TagTestManager

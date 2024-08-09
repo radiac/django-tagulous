@@ -11,7 +11,6 @@ from pathlib import Path
 
 import sphinx_radiac_theme  # noqa
 
-
 # Make sure sphinx can find the source
 sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(0, os.path.abspath("../example/"))

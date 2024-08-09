@@ -7,12 +7,12 @@ descriptors during the ``contribute_to_class`` phase.
 Their main purposes is to act as getter/setters and pass data to and from
 manager instances.
 """
+
 from collections.abc import Iterable
 
 from django.db.models import Q
 
 from .managers import FakeTagRelatedManager, SingleTagManager, TagRelatedManagerMixin
-
 
 # ##############################################################################
 # ###### Base class for tag field descriptors

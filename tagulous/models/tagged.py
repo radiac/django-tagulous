@@ -4,6 +4,7 @@ Tagulous extensions for models which use tag fields (tagged models)
 These are all applied automatically when the TAGULOUS_ENHANCE_MODELS setting
 is enabled.
 """
+
 import copy
 
 import django

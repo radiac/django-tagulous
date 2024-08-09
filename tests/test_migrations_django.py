@@ -4,6 +4,7 @@ Tagulous test: django migrations
 Modules tested:
     tagulous.models.migrations
 """
+
 import os
 import shutil
 import sys
@@ -17,7 +18,6 @@ from django.test import TransactionTestCase
 from tagulous import models as tag_models
 from tests import tagulous_tests_migration
 from tests.lib import Capturing, TagTestManager, testenv
-
 
 # If True, display output from call_command - use for debugging tests
 DISPLAY_CALL_COMMAND = False

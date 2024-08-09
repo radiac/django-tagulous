@@ -16,20 +16,21 @@ the bells and whistles.
 Installing
 ==========
 
-The easiest way to work on Tagulous is to fork the project on github, then
+The easiest way to work on Tagulous is to fork the project on GitHub, then
 install it to a virtualenv::
 
-    virtualenv django-tagulous
+    python -m venv venv
+    source venv/bin/activate
+    git clone https://github.com/<username>/django-tagulous.git
     cd django-tagulous
-    source bin/activate
-    pip install -e git+git@github.com:USERNAME/django-tagulous.git#egg=django-tagulous
-    pip install -r src/django-tagulous/requirements.test.txt
+    pip install -r requirements.test.txt
+    pre-compile install
 
 (replacing ``USERNAME`` with your username).
 
 This will install the development dependencies too, and you'll find the
 tagulous source ready for you to work on in the ``src`` folder of your
-virtualenv.
+virtual environment.
 
 
 Testing
@@ -45,7 +46,7 @@ Pytest is the test runner of choice::
 
 Use ``tox`` to run them on one or more supported versions::
 
-    tox [-e py39-django3.2]
+    tox [-e py3.10-django3.2]
 
 To use a different database (mysql, postgres etc) use the environment variables
 ``DATABASE_ENGINE``, ``DATABASE_NAME``, ``DATABASE_USER``,

@@ -3,8 +3,8 @@ Tagulous default settings
 
 Override these by setting new values in your global settings file
 """
-from django.conf import settings
 
+from django.conf import settings
 
 #
 # Database control settings

@@ -1,8 +1,8 @@
 """
 Manage instance casting
 """
-import inspect
 
+import inspect
 
 # Give all cast classes a name that's unique to Tagulous and not going to clash with any
 # names in the originating class module

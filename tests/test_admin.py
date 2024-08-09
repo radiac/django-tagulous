@@ -4,6 +4,7 @@ Tagulous test: Admin
 Modules tested:
     tagulous.admin
 """
+
 import copy
 import re
 
@@ -23,7 +24,6 @@ from tests.lib import TagTestManager
 from tests.tagulous_tests_app import admin as test_admin
 from tests.tagulous_tests_app import models as test_models
 from tests.tagulous_tests_app import urls as test_urls
-
 
 MOCK_PATH = "mock/path"
 
@@ -529,8 +529,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
                     ]
                     + [
                         # This is the one we're merging to
-                        "merge_to=%s"
-                        % merge_to.pk
+                        "merge_to=%s" % merge_to.pk
                     ]
                     + params
                 )

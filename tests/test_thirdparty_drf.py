@@ -7,6 +7,7 @@ To run these tests::
 
     pip install djangorestframework~=3.0
 """
+
 import unittest
 
 from django.conf import settings
@@ -14,7 +15,6 @@ from django.test import TestCase, override_settings
 
 from tests.lib import TagTestManager
 from tests.tagulous_tests_app.models import MixedTest
-
 
 try:
     import rest_framework

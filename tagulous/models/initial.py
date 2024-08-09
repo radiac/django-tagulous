@@ -1,6 +1,5 @@
 from .fields import SingleTagField, TagField
 
-
 #
 # Functions to load initial tags
 # Used by tests and the management command `initialtags`

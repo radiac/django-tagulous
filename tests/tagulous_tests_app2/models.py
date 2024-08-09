@@ -1,6 +1,7 @@
 """
 Test models
 """
+
 from django.db import models
 
 import tagulous

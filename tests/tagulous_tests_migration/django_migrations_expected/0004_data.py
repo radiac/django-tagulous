@@ -3,7 +3,6 @@ from django.db import migrations
 
 import tagulous.models
 
-
 #
 # Basic unittest-esque functions
 #
@@ -51,7 +50,6 @@ def test_tagulous_in_migrations(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("tagulous_tests_migration", "0003_tree")]
 
     operations = [

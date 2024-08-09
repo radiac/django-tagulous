@@ -4,6 +4,7 @@ Tagulous test of serializers, dumpdata and loaddata
 Modules tested:
     tagulous.serializers.*
 """
+
 # There were originally separate tests for loaddata and dumpdata, but these were
 # combined because in Django <1.8 serializer order was not deterministic.
 #
@@ -21,7 +22,6 @@ from django.test import TestCase
 
 from tests.lib import TagTestManager, testenv
 from tests.tagulous_tests_app import models as test_models
-
 
 try:
     import yaml
@@ -192,6 +192,7 @@ class SerializationTestMixin(DumpDataAssertMixin):
 
 class JsonSerializationTest(SerializationTestMixin, TagTestManager, TestCase):
     "Test JSON serializer"
+
     fixture_format = "json"
     re_strip_pk = RE_STRIP_PK_JSON
 
@@ -295,6 +296,7 @@ class MixedTestMixin(SerializationTestMixin):
 
 class MixedJsonSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test JSON serializer with normal fk and m2m fields"
+
     fixture_format = "json"
     re_strip_pk = RE_STRIP_PK_JSON
 
@@ -302,12 +304,14 @@ class MixedJsonSerializationTest(MixedTestMixin, TagTestManager, TestCase):
 @unittest.skipIf(yaml is None, "pyyaml is not installed")
 class MixedYamlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test Yaml serializer with normal fk and m2m fields"
+
     fixture_format = "yaml"
     re_strip_pk = RE_STRIP_PK_YAML
 
 
 class MixedXmlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
     "Test XML serializer with normal fk and m2m fields"
+
     fixture_format = "xml"
     re_strip_pk = RE_STRIP_PK_XML
 

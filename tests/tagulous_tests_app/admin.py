@@ -26,6 +26,7 @@ class SimpleMixedTestInline(admin.TabularInline):
 
 class SimpleMixedTestSingletagAdmin(admin.ModelAdmin):
     "For testing FK inlines"
+
     inlines = [SimpleMixedTestInline]
 
 

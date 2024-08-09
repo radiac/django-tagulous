@@ -10,7 +10,6 @@ from django.test import testcases
 
 from tagulous import models as tag_models
 
-
 # Detect test environment
 # This is used when creating files (migrations and fixtures) to ensure that
 # tests can be run concurrently without interfering with each other.

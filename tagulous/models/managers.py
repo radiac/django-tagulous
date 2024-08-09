@@ -6,10 +6,10 @@ the tags.
 
 For tag model manager, look in tagulous.models.models
 """
+
 from django.core import exceptions
 
 from ..utils import parse_tags, render_tags
-
 
 # ##############################################################################
 # ###### Manager for SingleTagField

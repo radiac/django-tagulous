@@ -1,6 +1,7 @@
 """
 Extensions for serializers to add tag field support
 """
+
 from ..models.fields import SingleTagField, TagField
 from ..models.tagged import TaggedModel
 

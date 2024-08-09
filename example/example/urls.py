@@ -5,7 +5,6 @@ import tagulous.views
 
 from . import models, views
 
-
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
     url(

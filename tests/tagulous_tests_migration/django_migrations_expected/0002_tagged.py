@@ -6,7 +6,6 @@ import tagulous.models.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("tagulous_tests_migration", "0001_initial")]
 
     operations = [

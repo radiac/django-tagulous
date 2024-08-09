@@ -1,6 +1,7 @@
 """
 YAML serializer with Tagulous support
 """
+
 from django.core.serializers import pyyaml as pyyaml_serializer
 
 from . import base

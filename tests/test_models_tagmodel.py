@@ -8,6 +8,7 @@ Modules tested:
     tagulous.models.models.TagModelManager
     tagulous.models.models.TagModelQuerySet
 """
+
 from string import punctuation
 
 from django.db import IntegrityError

@@ -1,11 +1,11 @@
 """
 Django settings for test project.
 """
+
 import os
 import re
 
 import django
-
 
 testenv = re.sub(
     r"[^a-zA-Z0-9]",

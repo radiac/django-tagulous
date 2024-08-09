@@ -5,10 +5,10 @@ Tagulous test: Utils
 Modules tested:
     tagulous.utils
 """
+
 from django.test import TestCase
 
 from tagulous import utils as tag_utils
-
 
 # ##############################################################################
 # ###### utils.strip_split()

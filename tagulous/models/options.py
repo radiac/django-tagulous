@@ -1,6 +1,7 @@
 """
 Tag options
 """
+
 from .. import constants
 from ..utils import parse_tags, render_tags
 

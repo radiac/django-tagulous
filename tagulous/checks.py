@@ -1,6 +1,5 @@
 from django.core.checks import Warning, register
 
-
 SERIALIZATION_MODULES_EXPECTED = {
     "xml": "tagulous.serializers.xml_serializer",
     "json": "tagulous.serializers.json",

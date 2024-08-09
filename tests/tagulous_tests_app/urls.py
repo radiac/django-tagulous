@@ -5,11 +5,11 @@ Usage:
     class MyTestCase(TestCase):
         urls = 'tests.tagulous_tests_app.urls'
 """
+
 from django.urls import include, re_path
 
 import tagulous.views
 from tests.tagulous_tests_app import models, views
-
 
 tagged_model = models.TagFieldOptionsModel
 

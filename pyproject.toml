@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-tagulous"
+description = "Fabulous Tagging for Django"
+dynamic = ["version"]
+authors = [
+    { name="Richard Terry", email="code@radiac.net" },
+]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+    "Framework :: Django :: 2.2",
+    "Framework :: Django :: 3.0",
+    "Framework :: Django :: 3.1",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+keywords = ["django", "tags", "tagging"]
+requires-python = ">=3.8"
+dependencies = [
+    "Django>=2.2",
+]
+
+[project.urls]
+Homepage = "https://radiac.net/django-tagulous/nanodjango/"
+Documentation = "https://django-tagulous.readthedocs.io/"
+Changelog = "https://django-tagulous.readthedocs.io/en/latest/changelog.html"
+Repository = "https://github.com/radiac/django-tagulous"
+Issues = "https://github.com/radiac/django-tagulous/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["tagulous*"]
+exclude = ["docs*", "tests*", "examples*", "src*", "dist*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "tagulous.__version__"}
+
+[tool.pytest.ini_options]
+addopts = "--cov=tagulous --cov-report=term --cov-report=html"
+testpaths = [
+    "tests",
+    "tagulous",
+]
+pythonpath = ["."]
+django_find_project = false
+DJANGO_SETTINGS_MODULE = "tests.settings"
+
+[tool.coverage.run]
+parallel = true
+source = ["tagulous"]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = "\\.pyi?$"
+
+[tool.isort]
+multi_line_output = 3
+line_length = 88
+known_django = "django"
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+include_trailing_comma = true
+lines_after_imports = 2
+skip = [".git"]
+
+[tool.mypy]
+follow_imports = "skip"
+ignore_missing_imports = true
+
+[tool.doc8]
+max-line-length = 88
+ignore-path = ["*.txt"]
+
+[tool.ruff]
+line-length = 88
+lint.select = ["E", "F"]
+lint.ignore = [
+    "E501",  # line length
+]
+exclude = [
+    ".git",
+    "dist",
+]

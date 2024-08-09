@@ -4,6 +4,7 @@ Tagulous test: View-related functionality
 Modules tested:
     tagulous.views
 """
+
 import json
 
 from django.contrib.auth.models import User
@@ -13,7 +14,6 @@ from django.urls import reverse
 from tagulous import models as tag_models
 from tests.lib import TagTestManager, skip_if_mysql
 from tests.tagulous_tests_app import models as test_models
-
 
 client = Client()
 
@@ -25,6 +25,7 @@ client = Client()
 
 class TagFormCBVTest(TagTestManager, TestCase):
     "Test CBVs which use tagged forms"
+
     manage_models = [test_models.SimpleMixedTest]
 
     def setUpExtra(self):
@@ -92,6 +93,7 @@ def get_response_content(response):
 
 class AutocompleteViewTest(TagTestManager, TestCase):
     "Test autocomplete view"
+
     manage_models = [test_models.TagFieldOptionsModel]
 
     def setUpExtra(self):

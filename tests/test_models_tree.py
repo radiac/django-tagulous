@@ -4,6 +4,7 @@ Tagulous test: Tag Trees
 Modules tested:
     tagulous.models.tree
 """
+
 from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
 

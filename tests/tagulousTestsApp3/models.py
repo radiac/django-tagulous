@@ -1,6 +1,7 @@
 """
 Test models for capitalised app names (#60)
 """
+
 from django.db import models
 
 import tagulous
