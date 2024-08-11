@@ -9,7 +9,9 @@ import copy
 import re
 
 import django
+from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.storage.fallback import CookieStorage
@@ -325,6 +327,76 @@ class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCa
         db_tags = self.model._meta.get_field("tags")
         field_tags = self.ma.formfield_for_dbfield(db_tags)
         self.assertIsInstance(field_tags.widget, tag_forms.AdminTagWidget)
+
+
+class TaggedAdminHttpTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCase):
+    """
+    Test ModelAdmin enhancements via Http
+    """
+
+    def setUpExtra(self):
+        self.admin = test_admin.SimpleMixedTestAdmin
+        self.model = test_models.SimpleMixedTest
+        self.model_singletag = self.model.singletag.tag_model
+        self.model_tags = self.model.tags.tag_model
+        self.site = admin.AdminSite(name="tagulous_admin")
+        tag_admin.register(self.model, self.admin, site=self.site)
+
+        User = get_user_model()
+        self.superuser = User.objects.create_superuser(
+            username="admin", email="admin@example.com", password="password"
+        )
+        self.client.login(username="admin", password="password")
+
+    def get_url_name(self, view: str) -> str:
+        meta = self.model._meta
+        return f"admin:{meta.app_label}_{meta.model_name}_{view}"
+
+    def test_form_field__widget_js(self):
+        "Check form widget JS is present"
+        t1 = self.model.objects.create(name="Test 1", singletag="Mr", tags="red, blue")
+        url = reverse(self.get_url_name("change"), args=[t1.pk])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<form", html=False)
+
+        self.assertContains(
+            response,
+            f'<script src="{settings.STATIC_URL or ""}tagulous/tagulous.js"></script>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            f'<script src="{settings.STATIC_URL or ""}tagulous/adaptor/select2-4.js"></script>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            (
+                '<input type="text" name="singletag" id="id_singletag" value="Mr"'
+                ' data-tag-type="single"'
+                ' data-theme="admin-autocomplete"'
+                ' data-tag-list="[&quot;Mr&quot;]"'
+                ' data-tag-options="{&quot;max_count&quot;: 1, &quot;required&quot;: false}"'
+                ' data-tagulous="true"'
+                ' autocomplete="off">'
+            ),
+            html=True,
+        )
+
+        self.assertContains(
+            response,
+            (
+                '<input type="text" name="tags" id="id_tags" value="blue, red"'
+                ' data-theme="admin-autocomplete"'
+                ' data-tag-list="[&quot;blue&quot;, &quot;red&quot;]"'
+                ' data-tag-options="{&quot;required&quot;: false}"'
+                ' data-tagulous="true"'
+                ' autocomplete="off">'
+            ),
+            html=True,
+        )
 
 
 # ##############################################################################

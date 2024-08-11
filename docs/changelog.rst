@@ -13,7 +13,7 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-1.4.0, TBC
+2.0.0, TBC
 ----------
 
 Features:
@@ -24,6 +24,12 @@ Features:
 Bugfix:
 
 *  Documentation fixes (#154)
+
+
+Internal:
+
+* Add pinned versions for tests
+* Switch to ``pre-commit`` for code formatting and linting
 
 
 Thanks to:
@@ -213,7 +219,7 @@ Internal:
 
 * Signals have been refactored to global handlers (instead of multiple independent
   handlers bound to descriptors)
-* Code linting improved; project now uses black and isort, and flake8 pases
+* Code linting improved; project now uses black and isort, and flake8 passes
 
 
 Thanks to:

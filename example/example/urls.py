@@ -1,18 +1,18 @@
-from django.conf.urls import url
 from django.contrib import admin
+from django.urls import path, re_path
 
 import tagulous.views
 
 from . import models, views
 
 urlpatterns = [
-    url(r"^admin/", admin.site.urls),
-    url(
-        r"^api/skills/$",
+    path("admin/", admin.site.urls),
+    path(
+        "api/skills/",
         tagulous.views.autocomplete,
         {"tag_model": models.Skill},
         name="person_skills_autocomplete",
     ),
-    url(r"^$", views.index, name="index"),
-    url(r"^(?P<person_pk>\d+)/$", views.index, name="edit"),
+    re_path(r"^(?P<person_pk>\d+)/$", views.index, name="edit"),
+    path("", views.index, name="index"),
 ]

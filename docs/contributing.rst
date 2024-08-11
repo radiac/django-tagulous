@@ -17,16 +17,17 @@ Installing
 ==========
 
 The easiest way to work on Tagulous is to fork the project on GitHub, then
-install it to a virtualenv::
+install it to a venv::
 
     python -m venv venv
     source venv/bin/activate
     git clone https://github.com/<username>/django-tagulous.git
     cd django-tagulous
-    pip install -r requirements.test.txt
+    pip install -r tests/requirements/django-VERSION.txt
     pre-compile install
 
-(replacing ``USERNAME`` with your username).
+(replacing ``USERNAME`` with your username and ``VERSION`` with the version of Django
+you're working with).
 
 This will install the development dependencies too, and you'll find the
 tagulous source ready for you to work on in the ``src`` folder of your
@@ -44,9 +45,9 @@ Pytest is the test runner of choice::
     pytest tests/test_file.py
     pytest tests/test_file::TestClass::test_method
 
-Use ``tox`` to run them on one or more supported versions::
+Use ``tox`` to run them on one or more supported versions, eg::
 
-    tox [-e py3.10-django3.2]
+    tox [-e py3.12-django4.2]
 
 To use a different database (mysql, postgres etc) use the environment variables
 ``DATABASE_ENGINE``, ``DATABASE_NAME``, ``DATABASE_USER``,
@@ -66,6 +67,18 @@ Run the javascript tests using Jasmine::
     # open http://127.0.0.1:8888/ in your browser
 
 Javascript tests are defined in ``tests/spec/javascripts/*.spec.js``.
+
+
+Adding a Django version
+-----------------------
+
+We have a separate requirements file for each version of Django, as some dependencies
+specify a minimum version of Django.
+
+* Add a requirements file to ``tests/requirements/django-<version>.in``
+* Build the pinned requirements with ``cd tests/requirements && pip-compile && cd -``
+* Update ``tox.ini`` - change ``envlist`` and ``deps``
+* Update the three ``matrix`` definitions in ``.github/workflows/ci.yml``
 
 
 Code overview

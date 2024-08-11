@@ -1,7 +1,5 @@
-# Requirements for testing
-
 pyyaml
-djangorestframework~=3.0
+djangorestframework
 
 pytest
 pytest-pythonpath
