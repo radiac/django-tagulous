@@ -25,7 +25,7 @@ you all their normal power with a sprinkling of tagging syntactic sugar.
 * Supports **trees of nested tags**, for detailed categorisation
 * Admin support for managing tags and tagged models
 
-Supports Django 2.2+, on Python 3.6+.
+Supports Django 3.2+, on Python 3.10+.
 
 
 See the [Documentation](https://django-tagulous.readthedocs.io/)

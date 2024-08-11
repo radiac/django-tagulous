@@ -21,6 +21,11 @@ Features:
 * Add ``TagTreeModel.objects.as_nested_list()``
 
 
+Changes:
+
+* Drop Django 2.2 support
+
+
 Bugfix:
 
 *  Documentation fixes (#154)
