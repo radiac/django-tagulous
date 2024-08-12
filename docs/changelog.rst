@@ -25,11 +25,8 @@ Features:
 Changes:
 
 * Drop Django 2.2 support
-
-
-Bugfix:
-
-*  Documentation fixes (#154)
+* Documentation fixes (#154)
+* Simplify steps for contributors (#166)
 
 
 Internal:
@@ -42,7 +39,7 @@ Thanks to:
 
 * Frank Lanitz (frlan) for documentation fixes (#154)
 * Tommy Wang (twang817) for Django 4 fixes (#158)
-* Jens Diemer (jedie) for Django 4 fixes (#167)
+* Jens Diemer (jedie) for Django 4 fixes (#167) and contributor improvements (#166)
 
 
 1.3.3, 2021-12-25

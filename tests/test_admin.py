@@ -34,16 +34,20 @@ from tests.tagulous_tests_app import urls as test_urls
 MOCK_PATH = "mock/path"
 
 
-def dict_to_querydict(obj: dict | None) -> QueryDict:
+def dict_to_querydict(data: dict | QueryDict | None) -> QueryDict:
+    if isinstance(data, QueryDict):
+        return data
     qd = QueryDict("", mutable=True)
-    if obj:
-        for key, value in obj.items():
+    if data:
+        for key, value in data.items():
             qd[key] = value
     return qd
 
 
 class TestRequestMixin(object):
-    def mock_request(self, GET=None, POST=None):
+    def mock_request(
+        self, GET: dict | QueryDict | None = None, POST: dict | QueryDict | None = None
+    ):
         """
         Create a fake Request object based on the GET and POST kwargs
         """
