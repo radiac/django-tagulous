@@ -21,10 +21,10 @@ install it to a venv::
 
     python -m venv venv
     source venv/bin/activate
-    git clone https://github.com/<username>/django-tagulous.git
+    git clone https://github.com/USERNAME/django-tagulous.git
     cd django-tagulous
     pip install -r tests/requirements/django-VERSION.txt
-    pre-compile install
+    pre-commit install
 
 (replacing ``USERNAME`` with your username and ``VERSION`` with the version of Django
 you're working with).
@@ -75,8 +75,7 @@ Adding a Django version
 We have a separate requirements file for each version of Django, as some dependencies
 specify a minimum version of Django.
 
-* Add a requirements file to ``tests/requirements/django-<version>.in``
-* Build the pinned requirements with ``cd tests/requirements && pip-compile && cd -``
+* Add a requirements file to ``tests/requirements/django-<version>.txt``
 * Update ``tox.ini`` - change ``envlist`` and ``deps``
 * Update the three ``matrix`` definitions in ``.github/workflows/ci.yml``
 
