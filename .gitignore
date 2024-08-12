@@ -2,7 +2,7 @@
 *.egg-info
 *.log
 __pycache__
-.venv/
+.*
 django_tagulous.egg-info
 
 # Docs
@@ -11,17 +11,9 @@ build
 dist
 
 # Testing
-.tox
-.coverage*
 htmlcov
-.*_cache
 tests/tagulous_tests_migration/migrations_*
 
 # Examples
 example/*.sqlite3
 example/tagulous
-
-# OS-specific
-.DS_Store
-
-

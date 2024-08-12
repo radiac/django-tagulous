@@ -3,14 +3,12 @@ Contributing
 ============
 
 Contributions are welcome, preferably via pull request. Check the github issues to see
-what needs work. Tagulous aims to be a comprehensive tagging solution, but try to keep
-new features from having a significant impact on people who won't use them (eg tree
-support is optional).
+what needs work, or if you have an idea for a new feature it may be worth raising an
+issue to discuss it first.
 
-When submitting UI changes, please aim to support the latest versions of
-Chrome, Firefox and Internet Explorer through progressive enhancement - users
-of old browsers must still be able to tag things, even if they don't get all
-the bells and whistles.
+When submitting UI changes, please aim to support the latest versions of Chrome, Firefox
+and Edge through progressive enhancement - users of old browsers must still be able to
+tag things, even if they don't get all the bells and whistles.
 
 
 Installing
@@ -19,19 +17,19 @@ Installing
 The easiest way to work on Tagulous is to fork the project on GitHub, then
 install it to a venv::
 
-    python -m venv venv
-    source venv/bin/activate
-    git clone https://github.com/USERNAME/django-tagulous.git
-    cd django-tagulous
+    git clone git@github.com:USERNAME/django-tagulous.git
+    cd django-tagulous/
+    git remote add upstream https://github.com/radiac/django-tagulous.git
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -e .
     pip install -r tests/requirements/django-VERSION.txt
     pre-commit install
 
 (replacing ``USERNAME`` with your username and ``VERSION`` with the version of Django
 you're working with).
 
-This will install the development dependencies too, and you'll find the
-tagulous source ready for you to work on in the ``src`` folder of your
-virtual environment.
+This will install the development dependencies too.
 
 
 Testing
@@ -41,13 +39,26 @@ It is greatly appreciated when contributions come with unit tests.
 
 Pytest is the test runner of choice::
 
+    cd django-tagulous/
+    source .venv/bin/activate
     pytest
-    pytest tests/test_file.py
-    pytest tests/test_file::TestClass::test_method
+
+    # or a subset of tests:
+    pytest tests/test_admin.py
+    pytest tests/test_admin.py::TagAdminTest::test_merge_form_submit
 
 Use ``tox`` to run them on one or more supported versions, eg::
 
-    tox [-e py3.12-django4.2]
+    cd django-tagulous/
+    source .venv/bin/activate
+    tox
+
+    # or a specific version
+    tox -e py3.10-django4.2
+
+    # or a subset of tests
+    tox -e py3.10-django4.2 -- tests/test_admin.py::TagAdminTest::test_merge_form_submit
+
 
 To use a different database (mysql, postgres etc) use the environment variables
 ``DATABASE_ENGINE``, ``DATABASE_NAME``, ``DATABASE_USER``,
@@ -61,6 +72,8 @@ the ``tests`` dir where required.
 
 Run the javascript tests using Jasmine::
 
+    cd django-tagulous/
+    source .venv/bin/activate
     pip install jasmine
     cd tests
     jasmine
