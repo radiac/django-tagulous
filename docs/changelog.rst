@@ -18,6 +18,7 @@ are available by installing the develop branch from github.
 
 Features:
 
+* Support Django 4.2 (#158, #164, #167)
 * Add ``TagTreeModel.objects.as_nested_list()``
 
 
@@ -40,7 +41,8 @@ Internal:
 Thanks to:
 
 * Frank Lanitz (frlan) for documentation fixes (#154)
-
+* Tommy Wang (twang817) for Django 4 fixes (#158)
+* Jens Diemer (jedie) for Django 4 fixes (#167)
 
 
 1.3.3, 2021-12-25

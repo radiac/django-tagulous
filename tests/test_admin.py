@@ -7,6 +7,7 @@ Modules tested:
 
 import copy
 import re
+from typing import cast
 
 import django
 from django.conf import settings
@@ -21,6 +22,7 @@ from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from django.urls import get_resolver, re_path, reverse
 from django.urls.resolvers import _get_cached_resolver
+from django.utils.datastructures import MultiValueDict
 
 from tagulous import admin as tag_admin
 from tagulous import forms as tag_forms
@@ -32,6 +34,14 @@ from tests.tagulous_tests_app import urls as test_urls
 MOCK_PATH = "mock/path"
 
 
+def dict_to_querydict(obj: dict | None) -> QueryDict:
+    qd = QueryDict("", mutable=True)
+    if obj:
+        for key, value in obj.items():
+            qd[key] = value
+    return qd
+
+
 class TestRequestMixin(object):
     def mock_request(self, GET=None, POST=None):
         """
@@ -40,8 +50,8 @@ class TestRequestMixin(object):
         r = HttpRequest()
         r.path = MOCK_PATH
         r.method = "POST" if POST is not None else "GET"
-        r.GET = GET or QueryDict("")
-        r.POST = POST or QueryDict("")
+        r.GET = dict_to_querydict(GET)
+        r.POST = dict_to_querydict(POST)
         r._messages = CookieStorage(r)
         r.user = User.objects.get_or_create(username="test_user")[0]
         return r
@@ -347,7 +357,7 @@ class TaggedAdminHttpTest(TestRequestMixin, AdminTestManager, TagTestManager, Te
         meta = self.model._meta
         return f"admin:{meta.app_label}_{meta.model_name}_{view}"
 
-    def test_form_field__widget_js(self):
+    def test_form_field__html_rendered(self):
         "Check form widget JS is present"
         t1 = self.model.objects.create(name="Test 1", singletag="Mr", tags="red, blue")
         url = reverse(self.get_url_name("change"), args=[t1.pk])
@@ -356,16 +366,6 @@ class TaggedAdminHttpTest(TestRequestMixin, AdminTestManager, TagTestManager, Te
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<form", html=False)
 
-        self.assertContains(
-            response,
-            f'<script src="{settings.STATIC_URL or ""}tagulous/tagulous.js"></script>',
-            html=True,
-        )
-        self.assertContains(
-            response,
-            f'<script src="{settings.STATIC_URL or ""}tagulous/adaptor/select2-4.js"></script>',
-            html=True,
-        )
         self.assertContains(
             response,
             (
@@ -392,6 +392,57 @@ class TaggedAdminHttpTest(TestRequestMixin, AdminTestManager, TagTestManager, Te
             ),
             html=True,
         )
+
+    def test_form_field__media_js_in_order(self):
+        "Check form widget's media JS is present"
+        t1 = self.model.objects.create(name="Test 1", singletag="Mr", tags="red, blue")
+        url = reverse(self.get_url_name("change"), args=[t1.pk])
+        response = self.client.get(url)
+
+        # Check if static files are loaded
+        media: Media = response.context["media"]
+        actual = media._js
+        django_version = django.VERSION[:2]
+        if django_version >= (4, 0):
+            expected = [
+                "admin/js/vendor/jquery/jquery.min.js",
+                "tagulous/tagulous.js",
+                "tagulous/adaptor/select2-4.js",
+                "admin/js/jquery.init.js",
+            ]
+
+        else:
+            # Django 3.2
+            expected = [
+                "admin/js/vendor/jquery/jquery.min.js",
+                "tagulous/tagulous.js",
+                "admin/js/vendor/select2/select2.full.min.js",
+                "tagulous/adaptor/select2-4.js",
+                "admin/js/jquery.init.js",
+            ]
+
+        # Check that all expected files are loaded, in the expected order
+        found = []
+        for actual_file in actual:
+            # This should be the next one
+            if (
+                actual_file == expected[0]
+                or actual_file.replace(".min", "") == expected[0]
+            ):
+                found.append(expected.pop(0))
+
+            if not expected:
+                # Found everything
+                break
+
+        if expected:
+            # Debug info on stdout
+            print("Actual:\n  ", "\n  ".join(actual))
+            print("Found:\n  ", "\n  ".join(found))
+            print("Expected:\n", "\n  ".join(expected))
+            self.fail(
+                f"Expected JS file not found in order: {actual=} {found=} {expected=}"
+            )
 
 
 # ##############################################################################
@@ -902,50 +953,6 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
         # There should be 3 empty fields, zero-indexed
         self.assertContains(response, 'id="id_simplemixedtest_set-2-singletag"')
         self.assertNotContains(response, 'id="id_simplemixedtest_set-3-singletag"')
-        # Check if static files are loaded
-        media: Media = response.context["media"]
-        js_files = media._js
-        django_version = django.VERSION[:2]
-        if django_version == (4, 0):
-            expected_js_files = [
-                "admin/js/vendor/jquery/jquery.min.js",
-                "tagulous/tagulous.js",
-                "admin/js/jquery.init.js",
-                "tagulous/adaptor/select2-4.js",
-                "admin/js/core.js",
-                "admin/js/inlines.js",
-                "admin/js/admin/RelatedObjectLookups.js",
-                "admin/js/actions.js",
-                "admin/js/urlify.js",
-                "admin/js/prepopulate.js",
-                "admin/js/vendor/xregexp/xregexp.min.js",
-            ]
-        elif django_version == (3, 2):
-            expected_js_files = [
-                "admin/js/vendor/jquery/jquery.min.js",
-                "tagulous/tagulous.js",
-                "admin/js/vendor/select2/select2.full.min.js",
-                "tagulous/adaptor/select2-4.js",
-                "admin/js/jquery.init.js",
-                "admin/js/core.js",
-                "admin/js/inlines.min.js",
-                "admin/js/autocomplete.js",
-                "admin/js/admin/RelatedObjectLookups.js",
-                "admin/js/actions.min.js",
-                "admin/js/urlify.js",
-                "admin/js/prepopulate.min.js",
-                "admin/js/vendor/xregexp/xregexp.min.js",
-            ]
-        else:
-            # Just ignore unsupported Django versions ;)
-            expected_js_files = None
-            # Just check if our own files exists:
-            self.assertIn("tagulous/tagulous.js", js_files)
-            self.assertIn("tagulous/adaptor/select2-4.js", js_files)
-
-        if expected_js_files is not None:
-            # Note: The order is also important here!
-            self.assertEqual(js_files, expected_js_files)
 
     def test_add_submits(self):
         "Check inline add saves without error, and increments tag model"

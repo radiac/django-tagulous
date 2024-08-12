@@ -121,7 +121,7 @@ class AdminTagWidget(TagWidgetBase):
         # vendored jQuery and select2
         class GetMedia(AutocompleteMixin, forms.Select):
             def __init__(self):
-                self.i18_name = SELECT2_TRANSLATIONS.get(get_language())
+                self.i18n_name = SELECT2_TRANSLATIONS.get(get_language())
 
         media = GetMedia().media
 
