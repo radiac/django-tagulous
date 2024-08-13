@@ -275,8 +275,12 @@
         $selectEl.on("change", function (e) {
           var valueObjects = $selectEl.select2('data');
           var values = valueObjects.map(function(obj) { return obj.text; });
-          var rendered = Tagulous.renderTags(values);
-          $inputEl.val(rendered);
+          if (isSingle) {
+            $inputEl.val(values[0])
+          } else {
+            var rendered = Tagulous.renderTags(values);
+            $inputEl.val(rendered);
+          }
         });
         return $selectCtl;
     }
