@@ -4,7 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/django-tagulous.svg)](https://pypi.org/project/django-tagulous/)
 [![Documentation](https://readthedocs.org/projects/django-tagulous/badge/?version=latest)](https://django-tagulous.readthedocs.io/en/latest/)
 [![Tests](https://github.com/radiac/django-tagulous/actions/workflows/ci.yml/badge.svg)](https://github.com/radiac/django-tagulous/actions/workflows/ci.yml)
-[![Coverage](https://codecov.io/gh/radiac/django-tagulous/branch/main/graph/badge.svg?token=BCNM45T6GI)](https://codecov.io/gh/radiac/django-tagulous)
+[![Coverage](https://codecov.io/gh/radiac/django-tagulous/graph/badge.svg?token=zotfCDdrUG)](https://codecov.io/gh/radiac/django-tagulous)
 
 A tagging library for Django. Built on ForeignKey and ManyToManyField to support tag
 strings as well as native ORM queries.
