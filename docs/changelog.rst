@@ -29,6 +29,11 @@ Changes:
 * Simplify steps for contributors (#166)
 * Remove ``AppConfig.default_app_config``, deprecated in Django 3.2 (#169)
 
+Bugfix:
+
+* Fix duplicates in select2 dropdown in certain circumstances (#148, #160)
+* Fix issue where incorrect values could be set for initial values (#148)
+
 
 Internal:
 
@@ -39,7 +44,7 @@ Internal:
 Thanks to:
 
 * Frank Lanitz (frlan) for documentation fixes (#154)
-* Tommy Wang (twang817) for Django 4 fixes (#158)
+* Tommy Wang (twang817) for Django 4 fixes (#158) and select2 duplicate fix (#160)
 * Jens Diemer (jedie) for Django 4 fixes (#167), contributor improvements (#166) and
   the ``default_app_config`` fix (#169)
 

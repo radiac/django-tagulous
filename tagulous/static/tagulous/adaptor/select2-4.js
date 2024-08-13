@@ -254,19 +254,17 @@
 
         if (selectedTags.length > 0) {
           if (url) {
-          var selectedData = [];
-          for (var i=0; i<selectedTags.length; i++) {
-            var option = new Option(selectedTags[i], selectedTags[0], true, true);
-            $selectCtl.append(option).trigger('change');
-            selectedData.push({id: selectedTags[i], text: selectedTags[i]});
-          }
+            var selectedData = [];
+            for (var i=0; i<selectedTags.length; i++) {
+              var option = new Option(selectedTags[i], selectedTags[i], true, true);
+              $selectCtl.append(option).trigger('change');
 
-          $selectCtl.trigger({
-            type: "select2:select",
-            params: {
-              data: selectedData,
+              selectedData.push({id: selectedTags[i], text: selectedTags[i]});
             }
-          });
+
+            $selectCtl.val(selectedTags);
+            $selectCtl.trigger("change");
+
           } else {
             $selectCtl.val(selectedTags);
             $selectCtl.trigger("change");
