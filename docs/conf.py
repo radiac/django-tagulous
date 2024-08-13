@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath("../example/"))
 # -- Project information -----------------------------------------------------
 
 project = "django-tagulous"
-copyright = "2022, Richard Terry"
+copyright = "2024, Richard Terry"
 author = "Richard Terry"
 
 
