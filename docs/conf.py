@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.abspath("../example/"))
 
 # -- Project information -----------------------------------------------------
 
-project = "django-fastview"
+project = "django-tagulous"
 copyright = "2022, Richard Terry"
 author = "Richard Terry"
 
