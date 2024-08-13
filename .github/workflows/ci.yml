@@ -63,7 +63,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:10.8
+        image: postgres:latest
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -111,7 +111,7 @@ jobs:
 
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:latest
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
         ports:
