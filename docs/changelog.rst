@@ -33,12 +33,14 @@ Bugfix:
 
 * Fix duplicates in select2 dropdown in certain circumstances (#148, #160)
 * Fix issue where incorrect values could be set for initial values (#148)
+* No longer parse single tag fields in the select2.4 adaptor (#176, #181)
 
 
 Internal:
 
 * Add pinned versions for tests
 * Switch to ``pre-commit`` for code formatting and linting
+* Cleaned git branches, all development is now on ``main``
 
 
 Thanks to:
@@ -47,6 +49,7 @@ Thanks to:
 * Tommy Wang (twang817) for Django 4 fixes (#158) and select2 duplicate fix (#160)
 * Jens Diemer (jedie) for Django 4 fixes (#167), contributor improvements (#166) and
   the ``default_app_config`` fix (#169)
+* Jeff Bowen (jeffbowen) for the fix disabling single tag parsing (#181)
 
 
 1.3.3, 2021-12-25
