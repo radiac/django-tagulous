@@ -6,8 +6,11 @@
 [![Tests](https://github.com/radiac/django-tagulous/actions/workflows/ci.yml/badge.svg)](https://github.com/radiac/django-tagulous/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/radiac/django-tagulous/branch/main/graph/badge.svg?token=BCNM45T6GI)](https://codecov.io/gh/radiac/django-tagulous)
 
-A tagging library for Django built on ForeignKey and ManyToManyField, giving
-you all their normal power with a sprinkling of tagging syntactic sugar.
+A tagging library for Django. Built on ForeignKey and ManyToManyField to support tag
+strings as well as native ORM queries.
+
+Use a `SingleTagField` as a CharField with dynamic choices, or a `TagField` for
+conventional tagging or nested categorisation.
 
 * [Project site](https://radiac.net/projects/django-tagulous/)
 * [Source code](https://github.com/radiac/django-tagulous)
@@ -20,8 +23,7 @@ you all their normal power with a sprinkling of tagging syntactic sugar.
 * Easy to install - simple requirements, **simple syntax**, lots of options
 * Based on ForeignKey and ManyToManyField, so it's **easy to query**
 * **Autocomplete** support built in, if you want it
-* Supports multiple independent tag fields on a single model
-* Can be used as a user-customisable CharField with choices
+* Supports multiple **independent fields** on a single model
 * Supports **trees of nested tags**, for detailed categorisation
 * Admin support for managing tags and tagged models
 
@@ -71,9 +73,8 @@ myperson.save()
 runners = Person.objects.filter(skills='run')
 ```
 
-Behind the scenes your tags are stored in separate models (by default), so
-because the fields are based on ``ForeignKey`` and ``ManyToManyField`` more
-complex queries are simple::
+Behind the scenes each tag field is a `ForeignKey` or `ManyToManyField` relationship to
+a separate model (by default), so more complex queries are simple::
 
 ```python
 qs = MyRelatedModel.objects.filter(

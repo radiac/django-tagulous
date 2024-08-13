@@ -6,13 +6,14 @@ Modules tested:
     tagulous.forms.TagField
 """
 
+import django
 from django import forms
 from django.test import TestCase
 
 from tagulous import forms as tag_forms
 from tagulous import models as tag_models
 from tagulous import settings as tag_settings
-from tests.lib import TagTestManager, skip_if_mysql
+from tests.lib import TagTestManager, skip_if_mysql, tagfield_html
 from tests.tagulous_tests_app import forms as test_forms
 from tests.tagulous_tests_app import models as test_models
 
@@ -200,18 +201,34 @@ class FormTagFieldTest(TagTestManager, TestCase):
 
         # Render
         # Expecting bees:buzz, cats:purr, cows:moo
-        self.assertHTMLEqual(
-            str(form["tags"]),
-            (
-                '<input autocomplete="off" '
-                'data-tag-options="{'
-                "&quot;autocomplete_settings&quot;: {&quot;cows&quot;: &quot;moo"
-                "&quot;, &quot;bees&quot;: &quot;buzz&quot;, &quot;cats&quot;: "
-                '&quot;purr&quot;}, &quot;required&quot;: true}" '
-                'data-tagulous="true" '
-                'id="id_tags" name="tags" {{required}}type="text" />'
-            ),
+        # Order depends on Django version
+        expected = (
+            '<input autocomplete="off" '
+            'data-tag-options="{'
+            "&quot;autocomplete_settings&quot;: {SETTINGS}, &quot;required&quot;: true"
+            '}"data-tagulous="true" '
+            'id="id_tags" name="tags" required type="text" />'
         )
+        if django.VERSION < (5, 0):
+            expected = expected.replace(
+                "SETTINGS",
+                (
+                    "&quot;cows&quot;: &quot;moo&quot;, "
+                    "&quot;bees&quot;: &quot;buzz&quot;, "
+                    "&quot;cats&quot;: &quot;purr&quot;"
+                ),
+            )
+        else:
+            expected = expected.replace(
+                "SETTINGS",
+                (
+                    "&quot;bees&quot;: &quot;buzz&quot;, "
+                    "&quot;cats&quot;: &quot;purr&quot;, "
+                    "&quot;cows&quot;: &quot;moo&quot;"
+                ),
+            )
+
+        self.assertHTMLEqual(str(form["tags"]), expected)
 
     def test_invalid_prepare_value(self):
         "Check form field raises exception when given an invalid value"
@@ -356,9 +373,10 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
         self.tag_model.objects.create(name="yellow")
         self.assertTagModel(self.tag_model, {"red": 0, "blue": 0, "yellow": 0})
         form = self.form(data={"name": "Test 1", "tags": "red, blue"})
+        print(str(form["tags"]))
         self.assertHTMLEqual(
             str(form["tags"]),
-            (
+            tagfield_html(
                 '<input autocomplete="off" '
                 'data-tag-options="{&quot;required&quot;: true}" '
                 'data-tagulous="true" '
@@ -424,7 +442,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
 
         self.assertHTMLEqual(
             str(form["tags"]),
-            (
+            tagfield_html(
                 '<input autocomplete="off" '
                 'data-tag-list="[&quot;blue&quot;, &quot;red&quot;]" '
                 'data-tag-options="{&quot;required&quot;: true}" '
@@ -451,7 +469,7 @@ class ModelFormTagFieldTest(TagTestManager, TestCase):
 
         self.assertHTMLEqual(
             str(form["two"]),
-            (
+            tagfield_html(
                 '<input autocomplete="off" '
                 'data-tag-list="[]" '
                 'data-tag-options="{&quot;autocomplete_settings&quot;: '

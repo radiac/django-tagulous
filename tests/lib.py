@@ -260,3 +260,18 @@ def skip_if_mysql(fn):
     if connection.vendor == "mysql":
         return unittest.skip("MySQL does not support tested feature")(fn)
     return fn
+
+
+def tagfield_html(html: str) -> str:
+    """
+    Standardise expected tag field html across Django versions
+    """
+    if django.VERSION >= (5, 0):
+        match = re.search(r'id="([^"]*)"', html)
+        if match is None:
+            raise ValueError("Couldn't find tag field ID to standardise")
+        html = html.replace(
+            ">",
+            f' aria-describedby="{match.group(1)}_helptext">',
+        )
+    return html

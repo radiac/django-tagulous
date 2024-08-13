@@ -26,7 +26,7 @@ from django.utils.datastructures import MultiValueDict
 
 from tagulous import admin as tag_admin
 from tagulous import forms as tag_forms
-from tests.lib import TagTestManager
+from tests.lib import TagTestManager, tagfield_html
 from tests.tagulous_tests_app import admin as test_admin
 from tests.tagulous_tests_app import models as test_models
 from tests.tagulous_tests_app import urls as test_urls
@@ -370,32 +370,35 @@ class TaggedAdminHttpTest(TestRequestMixin, AdminTestManager, TagTestManager, Te
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<form", html=False)
 
-        self.assertContains(
-            response,
-            (
-                '<input type="text" name="singletag" id="id_singletag" value="Mr"'
-                ' data-tag-type="single"'
-                ' data-theme="admin-autocomplete"'
-                ' data-tag-list="[&quot;Mr&quot;]"'
-                ' data-tag-options="{&quot;max_count&quot;: 1, &quot;required&quot;: false}"'
-                ' data-tagulous="true"'
-                ' autocomplete="off">'
-            ),
-            html=True,
+        expected_single = (
+            '<input type="text" name="singletag" id="id_singletag" value="Mr"'
+            ' data-tag-type="single"'
+            ' data-theme="admin-autocomplete"'
+            ' data-tag-list="[&quot;Mr&quot;]"'
+            ' data-tag-options="{&quot;max_count&quot;: 1, &quot;required&quot;: false}"'
+            ' data-tagulous="true"'
+            ' autocomplete="off">'
         )
+        expected_multiple = tagfield_html(
+            '<input type="text" name="tags" id="id_tags" value="blue, red"'
+            ' data-theme="admin-autocomplete"'
+            ' data-tag-list="[&quot;blue&quot;, &quot;red&quot;]"'
+            ' data-tag-options="{&quot;required&quot;: false}"'
+            ' data-tagulous="true"'
+            ' autocomplete="off">'
+        )
+        if django.VERSION >= (5, 1):
+            expected_single = expected_single.replace(
+                ">",
+                ' data-context="available-source">',
+            )
+            expected_multiple = expected_multiple.replace(
+                ">",
+                ' data-context="available-source">',
+            )
 
-        self.assertContains(
-            response,
-            (
-                '<input type="text" name="tags" id="id_tags" value="blue, red"'
-                ' data-theme="admin-autocomplete"'
-                ' data-tag-list="[&quot;blue&quot;, &quot;red&quot;]"'
-                ' data-tag-options="{&quot;required&quot;: false}"'
-                ' data-tagulous="true"'
-                ' autocomplete="off">'
-            ),
-            html=True,
-        )
+        self.assertContains(response, expected_single, html=True)
+        self.assertContains(response, expected_multiple, html=True)
 
     def test_form_field__media_js_in_order(self):
         "Check form widget's media JS is present"
@@ -406,8 +409,7 @@ class TaggedAdminHttpTest(TestRequestMixin, AdminTestManager, TagTestManager, Te
         # Check if static files are loaded
         media: Media = response.context["media"]
         actual = media._js
-        django_version = django.VERSION[:2]
-        if django_version >= (4, 0):
+        if django.VERSION >= (4, 0):
             expected = [
                 "admin/js/vendor/jquery/jquery.min.js",
                 "tagulous/tagulous.js",
@@ -946,7 +948,15 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
     def test_add_renders(self):
         "Check inline add renders without error"
         response = self.client.get(self.get_url("add"))
-        self.assertContains(response, "<h2>Simple mixed tests</h2>")
+
+        # Check the section is there
+        h2_extra = ""
+        if django.VERSION >= (5, 1):
+            h2_extra = ' id="simplemixedtest_set-heading" class="inline-heading"'
+        self.assertContains(
+            response, f"<h2{h2_extra}>Simple mixed tests</h2>", html=True
+        )
+
         # assertHTMLEquals isn't going to be particularly helpful here
         # Just check that a few attributes exist, to indicate all is well
         # Real test will be done in next test
@@ -989,7 +999,14 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
 
         response = self.client.get(self.get_url("change", obj1.singletag.pk))
 
-        self.assertContains(response, "<h2>Simple mixed tests</h2>")
+        # Check the section is there
+        h2_extra = ""
+        if django.VERSION >= (5, 1):
+            h2_extra = ' id="simplemixedtest_set-heading" class="inline-heading"'
+        self.assertContains(
+            response, f"<h2{h2_extra}>Simple mixed tests</h2>", html=True
+        )
+
         self.assertContains(response, 'id="id_simplemixedtest_set-TOTAL_FORMS')
         self.assertContains(response, 'id="id_simplemixedtest_set-0-singletag"')
         self.assertContains(response, 'id="id_simplemixedtest_set-0-name"')

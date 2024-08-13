@@ -27,6 +27,7 @@ Changes:
 * Drop Django 2.2 support
 * Documentation fixes (#154)
 * Simplify steps for contributors (#166)
+* Remove ``AppConfig.default_app_config``, deprecated in Django 3.2 (#169)
 
 
 Internal:
@@ -39,7 +40,8 @@ Thanks to:
 
 * Frank Lanitz (frlan) for documentation fixes (#154)
 * Tommy Wang (twang817) for Django 4 fixes (#158)
-* Jens Diemer (jedie) for Django 4 fixes (#167) and contributor improvements (#166)
+* Jens Diemer (jedie) for Django 4 fixes (#167), contributor improvements (#166) and
+  the ``default_app_config`` fix (#169)
 
 
 1.3.3, 2021-12-25

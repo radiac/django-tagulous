@@ -53,6 +53,9 @@ When you want to upgrade your Tagulous installation in the future, check
 Settings
 ========
 
+Most projects won't need these settings, but they allow for finer control of how
+Tagulous behaves.
+
 .. note::
     Model and form field options are managed separately by :doc:`tag_options`.
 
@@ -175,7 +178,7 @@ Tagulous adds to the Django system check framework with the following:
 
     This is a straight string comparison. If your serialisation modules don't match what
     Tagulous is expecting (you're subclassing the Tagulous modules, for example), you
-    can disable this warning with the setting::
+    can disable this warning by adding this to your settings::
 
         SILENCED_SYSTEM_CHECKS = ["tagulous.W001"]
 
@@ -190,8 +193,9 @@ Tagulous, freeze the tags into a temporary column, remove the old tagging code,
 add a new tagulous TagField, then copy the tags back across.
 
 .. warning::
-    This hasn't been tested with your data, so back up your database first,
-    just in case.
+    This may not have been tested with the latest versions of django-taggit or
+    django-tagging, and hasn't been tested with your data, so back up your
+    database first, just in case.
 
 1. Create a schema migration to add a ``TextField`` to your tagged
    model, where we'll temporarily store the tags for that instance.

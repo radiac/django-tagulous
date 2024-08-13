@@ -1,0 +1,117 @@
+============
+Why Tagulous
+============
+
+Comparison with other tagging libraries
+=======================================
+
+If you are already using django-taggit or django-tagging, read
+:ref:`converting_to_tagulous` to see what is involved in switching to Tagulous.
+
+Tagulous is easier to use and has more features, and is a proven library which has been
+in use since Django 1.4.
+
+
+Real relations
+--------------
+
+The Tagulous ``TagField`` is based on ``ManyToManyField``, so you can set and query tag
+objects like a normal M2M field, but also use tag strings and lists of tag names.
+
+django-tagging and django-taggit both use generic relations, which tend to be
+second-class citizens in Django - they are often slower and lack functionality compared
+to native FK and M2M fields. This means they have a more convoluted syntax and queries
+are more complex and limited.
+
+
+Separate tag models
+-------------------
+
+In Tagulous, tag models can be independent or shared - this allows you to have multiple
+tag fields on one model which each have their own sets of tags, or share sets of tags
+between fields and models as you wish - see the :doc:`models/tag_models` documentation
+for more details.
+
+You can also easily define custom tag models in Tagulous, to store additional data on
+with tags - see the :ref:`custom_tag_models` documentation and
+:ref:`this example <example_custom_tag_model>` for more details.
+
+django-taggit can be configured to use custom models so it can have separate sets of
+tags, but requires a bit more work. django-tagging does not support separate sets of
+tags or custom models.
+
+
+More customisable
+-----------------
+
+Tagulous is designed to be configurable. For example, it lets you protect tags from
+being removed when they're no longer in use, they can be case sensitive, forced to
+lowercase, you can specify a maximum number of tags for a field, and whether or not
+space should be used as a delimiter.  See the :doc:`tag_options` documentation for more
+details.
+
+django-tagging only lets you force tags to lowercase, and django-taggit
+only lets you toggle case sensitivity.
+
+
+Built-in autocomplete
+---------------------
+
+Tagulous has built-in support for autocomplete; tags can either be embedded into the
+page, or queried using the ajax views provided. It uses Select2, but it has been
+designed to be easy to switch that out for something else using
+:ref:`autocomplete adaptors <autocomplete_adaptors>`.
+
+The JavaScript and Python code is closely integrated - the same tag parser has been
+implemented in both to ensure tag strings are treated consistently.
+
+Neither django-tagging and django-taggit support autocomplete out of the box; you need
+to add another library to do that.
+
+
+Better admin support
+--------------------
+
+Tagulous tag fields are first-class citizens in Django's admin site. You can show them
+in ``list_display``, use them to filter your model, and can register tag models to
+rename and merge tags. Tag fields and autocomplete work throughout admin forms and
+inlines. See the :doc:`admin` documentation for more details.
+
+django-tagging and django-taggit tags cannot be shown in ``list_display``,
+and there are no special admin tools.
+
+
+Single tag mode
+---------------
+
+The standard ``TagField`` is based on a ``ManyToManyField`` for conventional tagging,
+but Tagulous also provides a ``SingleTagField``, which is based on ``ForeignKey``. This
+acts more like a ``CharField`` with dynamic ``choices`` that users can add to at
+runtime. See the :doc:`models/fields` documentation for more details.
+
+django-tagging and django-taggit don't have an equivalent feature.
+
+
+Hierarchical tag trees
+----------------------
+
+Tagulous has a tree mode, which lets you create sub-tags using the ``/`` character in a
+tag name. You can query and navigate a tag tree as you would expect (querying for
+parents, siblings, children, descendants etc), as well as rename and merge subtrees from
+your code or the Django admin. See the :doc:`models/tag_trees` documentation for more
+details.
+
+django-tagging and django-taggit don't have an equivalent feature.
+
+
+And there's more
+----------------
+
+Tagulous is packed with small features which make it easy to work with,
+such as:
+
+* a more robust :doc:`tag string parser <parser>` with better support for quoted tags.
+* automatic :ref:`slug <model_slug>` generation, and :ref:`path <model_path>` generation
+  for tree tags.
+* tag model managers and querysets have a :ref:`weight <queryset_weight>`
+  method to make it easy to build custom tag clouds.
