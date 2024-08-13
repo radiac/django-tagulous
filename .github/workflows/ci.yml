@@ -50,14 +50,9 @@ jobs:
     strategy:
       matrix:
         include:
-          # Django LTS on latest supported Python
-          - python: "3.10"
-            django: "3.2"
+          # Latest Django LTS and release on latest supported Python
           - python: "3.12"
             django: "4.2"
-          # Django supported latest on supported Python
-          - python: "3.12"
-            django: "5.0"
           - python: "3.12"
             django: "5.1"
 
@@ -104,14 +99,9 @@ jobs:
     strategy:
       matrix:
         include:
-          # Django LTS on latest supported Python
-          - python: "3.10"
-            django: "3.2"
+          # Latest Django LTS and release on latest supported Python
           - python: "3.12"
             django: "4.2"
-          # Django supported latest on supported Python
-          - python: "3.12"
-            django: "5.0"
           - python: "3.12"
             django: "5.1"
 
