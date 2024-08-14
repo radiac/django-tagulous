@@ -32,6 +32,15 @@ Tagulous follows semantic versioning in the format ``BREAKING.FEATURE.BUG``:
    follow them up to the latest version.
 
 
+.. _upgrade-1-3-3:
+
+Upgrading from 1.3.3
+--------------------
+
+Tagulous 1.3.3 was the last version to support Django 2.2. Tagulous 2.0.0 requires
+Django 3.2 or later, and is only tested against Python 3.10 or later.
+
+
 .. _upgrade_1-1-0:
 
 Upgrading from 1.1.0
