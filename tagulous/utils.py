@@ -13,7 +13,7 @@ from .constants import COMMA, DOUBLE_QUOTE, QUOTE, SPACE, TREE
 # ##############################################################################
 
 
-def parse_tags(tag_string, max_count=0, space_delimiter=True):
+def parse_tags(tag_string: str, max_count=0, space_delimiter=True) -> list[str]:
     """
     Tag parser
 

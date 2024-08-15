@@ -13,6 +13,19 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
+2.1.0, TBC
+----------
+
+Bugfix:
+
+* Form field ``has_changed`` now correctly detects if a TagField has changed (#185)
+
+Thanks to:
+
+* Christian Schneider (cnschn) for help fixing ``has_changed`` (#185)
+
+
+
 2.0.0, 2024-08-13
 -----------------
 

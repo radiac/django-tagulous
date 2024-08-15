@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 
 from . import settings
 from .models import options
+from .models.fields import FakeQuerySet
 from .models.models import BaseTagModel, TagModelQuerySet
 from .utils import parse_tags, render_tags
 
@@ -323,6 +324,18 @@ class TagField(BaseTagField):
 
         # Deal with it as normal
         return super(TagField, self).prepare_value(value)
+
+    def _coerce(self, value):
+        """
+        Standardise the value - it could be a fake queryset from the database object, or
+        a tag string from the form field. Split and sort the tags.
+        """
+        if isinstance(value, FakeQuerySet):
+            tag_string = value[0]
+        else:
+            tag_string = value
+        tags = parse_tags(tag_string)
+        return render_tags(sorted(tags))
 
 
 # ##############################################################################

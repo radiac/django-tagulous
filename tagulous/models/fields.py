@@ -385,6 +385,47 @@ class SingleTagField(BaseTagField, models.ForeignKey):
 # ##############################################################################
 
 
+class FakeObject(object):
+    """
+    FakeObject so m2d can check obj.pk
+    """
+
+    def __init__(self, value):
+        self.pk = value
+
+    def __str__(self):
+        return self.pk
+
+
+class FakeQuerySet(object):
+    """
+    FakeQuerySet so m2d can call qs.values_list()
+    Only contains one FakeObject instance
+    """
+
+    def __init__(self, obj):
+        self.obj = obj
+        self._result_cache = None
+
+    def __iter__(self):
+        """
+        Iterable so m2d can use in list comprehension
+        """
+        yield self.obj
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, key):
+        return self.obj
+
+    def values_list(self, *fields, **kwargs):
+        """
+        Ignores arguments and returns an empty list with the object.pk
+        """
+        return [self.obj.pk]
+
+
 class TagField(BaseTagField, models.ManyToManyField):
     """
     Build the tag model and register the TagManyToManyField
@@ -464,46 +505,6 @@ class TagField(BaseTagField, models.ManyToManyField):
         where the pk attribute is the tag string - a bit of a hack, but avoids
         monkey-patching Django.
         """
-
-        class FakeObject(object):
-            """
-            FakeObject so m2d can check obj.pk
-            """
-
-            def __init__(self, value):
-                self.pk = value
-
-            def __str__(self):
-                return self.pk
-
-        class FakeQuerySet(object):
-            """
-            FakeQuerySet so m2d can call qs.values_list()
-            Only contains one FakeObject instance
-            """
-
-            def __init__(self, obj):
-                self.obj = obj
-                self._result_cache = None
-
-            def __iter__(self):
-                """
-                Iterable so m2d can use in list comprehension
-                """
-                yield self.obj
-
-            def __len__(self):
-                return 1
-
-            def __getitem__(self, key):
-                return self.obj
-
-            def values_list(self, *fields, **kwargs):
-                """
-                Ignores arguments and returns an empty list with the object.pk
-                """
-                return [self.obj.pk]
-
         return FakeQuerySet(FakeObject(getattr(obj, self.attname).get_tag_string()))
 
     def formfield(self, form_class=None, **kwargs):
