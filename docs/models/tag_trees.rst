@@ -46,6 +46,16 @@ saving, creating missing ancestors as needed.
 The reverse relation manager for ``parent``, eg ``mytag.children.all()``.
 
 
+``descendant_count``
+~~~~~~~~~~~~~~~~~~~~
+The number of times descendants have been used.
+
+
+``family_count``
+~~~~~~~~~~~~~~~~
+The number of times this tag and its descendants have been used.
+
+
 ``label``
 ~~~~~~~~~
 A ``CharField`` containing the name of the tag without its ancestors.
