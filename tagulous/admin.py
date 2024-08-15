@@ -49,7 +49,7 @@ class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
                 (tag_models.SingleTagField, tag_models.TagField),
             )
         ]
-        return safe_fields
+        return tuple(safe_fields)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -231,6 +231,9 @@ def enhance(model, admin_class):
 
                     # Add display function to admin class
                     setattr(admin_class, display_name, _create_display(field))
+
+        # Make it immutable
+        admin_class.list_display = tuple(admin_class.list_display)
 
     #
     # If admin is for a tag model, ensure any inlines for tagged models are

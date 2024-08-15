@@ -19,11 +19,11 @@ are available by installing the develop branch from github.
 Bugfix:
 
 * Form field ``has_changed`` now correctly detects if a TagField has changed (#185)
+* Admin enhance ensures ``list_display`` is a tuple (#183)
 
 Thanks to:
 
 * Christian Schneider (cnschn) for help fixing ``has_changed`` (#185)
-
 
 
 2.0.0, 2024-08-13

@@ -193,7 +193,7 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         self.assertTrue(self.model.singletag.tag_model in self.site._registry)
         ma = self.site._registry[self.model.singletag.tag_model]
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
-        self.assertEqual(ma.list_display, ["name"])
+        self.assertEqual(ma.list_display, ("name",))
         self.assertEqual(ma.list_filter, ["count"])
         self.assertEqual(ma.exclude, ["name"])
         self.assertEqual(ma.actions, [])
