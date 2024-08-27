@@ -13,8 +13,8 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-2.1.0, TBC
-----------
+2.1.0, 2024-08-28
+-----------------
 
 Feature:
 
@@ -22,11 +22,18 @@ Feature:
 
 Bugfix:
 
+* Restores missing files from packaging issue in 2.0.0 (#186)
 * Form field ``has_changed`` now correctly detects if a TagField has changed (#185)
 * Admin enhance ensures ``list_display`` is a tuple (#183)
 
+Internal:
+
+* Improve build step to check packaging is correct (#186)
+
 Thanks to:
 
+* George Hickman (ghickman) for help fixing the missing files and preventing it
+  happening again in the future (#186)
 * Christian Schneider (cnschn) for help fixing ``has_changed`` (#185)
 
 
