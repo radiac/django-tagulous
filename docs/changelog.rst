@@ -16,6 +16,10 @@ are available by installing the develop branch from github.
 2.1.0, TBC
 ----------
 
+Feature:
+
+* Global defaults can be set with ``settings.TAGULOUS_DEFAULT_TAG_OPTIONS`` (#108)
+
 Bugfix:
 
 * Form field ``has_changed`` now correctly detects if a TagField has changed (#185)
@@ -38,6 +42,8 @@ Features:
 Changes:
 
 * Drop Django 2.2 support
+* Drop Python 3.7 support - from now on Tagulous will only guarantee compatibility with
+  the latest versions of Python for supported Django versions.
 * Documentation fixes (#154)
 * Simplify steps for contributors (#166)
 * Remove ``AppConfig.default_app_config``, deprecated in Django 3.2 (#169)

@@ -11,6 +11,8 @@ from django.test import TestCase
 from tagulous import constants as tag_constants
 from tagulous import models as tag_models
 
+from .lib import override_tag_settings
+
 
 class TagOptionsTest(TestCase):
     """
@@ -32,6 +34,35 @@ class TagOptionsTest(TestCase):
                 ]
             ),
         )
+
+    def test_global_defaults(self):
+        # Set some overrides
+        overrides = {
+            "initial": "override",
+            "protect_initial": False,
+            "force_lowercase": True,
+            "autocomplete_view": "/override/",
+        }
+        for key, value in overrides.items():
+            self.assertNotEqual(value, tag_constants.OPTION_DEFAULTS[key])
+
+        expected = {**tag_constants.OPTION_DEFAULTS, **overrides}
+
+        with override_tag_settings(**overrides):
+            opt = tag_models.TagOptions()
+            self.assertEqual(opt.items(with_defaults=False), {})
+            self.assertEqual(opt.items(), expected)
+            self.assertEqual(opt.form_items(with_defaults=False), {})
+            self.assertEqual(
+                opt.form_items(),
+                dict(
+                    [
+                        (k, v)
+                        for k, v in expected.items()
+                        if k in tag_constants.FORM_OPTIONS
+                    ]
+                ),
+            )
 
     def test_override_defaults(self):
         opt = tag_models.TagOptions(force_lowercase=True, case_sensitive=True)

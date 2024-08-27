@@ -6,6 +6,8 @@ Override these by setting new values in your global settings file
 
 from django.conf import settings
 
+from .constants import OPTION_DEFAULTS
+
 #
 # Database control settings
 #
@@ -20,6 +22,20 @@ SLUG_TRUNCATE_UNIQUE = getattr(settings, "TAGULOUS_SLUG_TRUNCATE_UNIQUE", 5)
 
 # Set to false to generate ASCII slugs
 SLUG_ALLOW_UNICODE = getattr(settings, "TAGULOUS_SLUG_ALLOW_UNICODE", False)
+
+
+#
+# Field settings
+#
+
+# Collect dict of default values, and use them to override the internal defaults
+# Validate them against the internal defaults, as TagOptions would
+DEFAULT_TAG_OPTIONS = {
+    **OPTION_DEFAULTS,
+    **getattr(settings, "TAGULOUS_DEFAULT_TAG_OPTIONS", {}),
+}
+if _unknown := set(DEFAULT_TAG_OPTIONS) - set(OPTION_DEFAULTS):
+    raise ValueError(f"Unexpected TAGULOUS_DEFAULT_TAG_OPTIONS: {', '.join(_unknown)}")
 
 
 #

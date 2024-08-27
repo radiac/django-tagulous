@@ -13,6 +13,7 @@ from django.db import models
 from django.utils.text import capfirst
 
 from .. import constants
+from .. import settings as tag_settings
 from .descriptors import SingleTagDescriptor, TagDescriptor
 from .models import BaseTagModel, TagModel, TagTreeModel
 from .options import TagOptions
@@ -48,7 +49,7 @@ class BaseTagField(object):
 
         # Extract options from kwargs
         options = {}
-        for key, default in constants.OPTION_DEFAULTS.items():
+        for key, default in tag_settings.DEFAULT_TAG_OPTIONS.items():
             # Look in kwargs, then in tag_meta
             if key in kwargs:
                 options[key] = kwargs.pop(key)

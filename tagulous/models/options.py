@@ -3,6 +3,7 @@ Tag options
 """
 
 from .. import constants
+from .. import settings as tag_settings
 from ..utils import parse_tags, render_tags
 
 
@@ -90,7 +91,7 @@ class TagOptions(object):
             return ""
         if name not in constants.OPTION_DEFAULTS:
             raise AttributeError(name)
-        return self.__dict__.get(name, constants.OPTION_DEFAULTS[name])
+        return self.__dict__.get(name, tag_settings.DEFAULT_TAG_OPTIONS[name])
 
     def _get_items(self, with_defaults, keys):
         """
@@ -99,7 +100,10 @@ class TagOptions(object):
         if with_defaults:
             return dict(
                 [
-                    (name, self.__dict__.get(name, constants.OPTION_DEFAULTS[name]))
+                    (
+                        name,
+                        self.__dict__.get(name, tag_settings.DEFAULT_TAG_OPTIONS[name]),
+                    )
                     for name in keys
                 ]
             )

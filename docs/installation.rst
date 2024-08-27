@@ -56,8 +56,17 @@ Settings
 Most projects won't need these settings, but they allow for finer control of how
 Tagulous behaves.
 
-.. note::
-    Model and form field options are managed separately by :doc:`tag_options`.
+``TAGULOUS_DEFAULT_TAG_OPTIONS``
+    Global defaults for tag field options.
+
+    This will override the default tag options for every tag field on models and forms.
+
+    See :doc:`tag_options` for the list of tag field options and their defaults, and how
+    to override them on individual tag models and tag fields.
+
+    Default:
+
+        TAGULOUS_DEFAULT_TAG_OPTIONS = {}
 
 
 ``TAGULOUS_NAME_MAX_LENGTH``, ``TAGULOUS_SLUG_MAX_LENGTH``, ``TAGULOUS_LABEL_MAX_LENGTH``

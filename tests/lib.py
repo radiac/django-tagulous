@@ -1,14 +1,17 @@
+import importlib
 import os
 import re
 import sys
 import unittest
+from contextlib import contextmanager
 from io import StringIO
 
 import django
 from django.db import connection, models
-from django.test import testcases
+from django.test import override_settings, testcases
 
 from tagulous import models as tag_models
+from tagulous import settings as tag_settings
 
 # Detect test environment
 # This is used when creating files (migrations and fixtures) to ensure that
@@ -275,3 +278,19 @@ def tagfield_html(html: str) -> str:
             f' aria-describedby="{match.group(1)}_helptext">',
         )
     return html
+
+
+@contextmanager
+def override_tag_settings(**options):
+    # Reload settings
+    context = override_settings(TAGULOUS_DEFAULT_TAG_OPTIONS=options)
+    context.__enter__()
+    importlib.reload(tag_settings)
+
+    try:
+        yield
+    finally:
+        context.__exit__(None, None, None)
+
+    # Reload settings
+    importlib.reload(tag_settings)
