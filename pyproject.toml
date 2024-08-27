@@ -36,12 +36,12 @@ Changelog = "https://django-tagulous.readthedocs.io/en/latest/changelog.html"
 Repository = "https://github.com/radiac/django-tagulous"
 Issues = "https://github.com/radiac/django-tagulous/issues"
 
-[tool.setuptools]
-include-package-data = true
-
 [tool.setuptools.packages.find]
 include = ["tagulous*"]
-exclude = ["docs*", "tests*", "examples*", "src*", "dist*"]
+exclude = ["docs*", "tests*", "examples*", "dist*"]
+
+[tool.setuptools.package-data]
+tagulous = ["static/**/*", "templates/**/*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "tagulous.__version__"}

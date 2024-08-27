@@ -3,6 +3,6 @@
 Django Tagulous - Fabulous Tags
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0-rc1"
 __license__ = "BSD"
 __author__ = "Richard Terry"
