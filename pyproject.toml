@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://radiac.net/django-tagulous/nanodjango/"
+Homepage = "https://radiac.net/projects/django-tagulous/"
 Documentation = "https://django-tagulous.readthedocs.io/"
 Changelog = "https://django-tagulous.readthedocs.io/en/latest/changelog.html"
 Repository = "https://github.com/radiac/django-tagulous"
