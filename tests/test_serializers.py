@@ -343,3 +343,31 @@ class MixedTestMixin(TagTestManager, TestCase):
         self.assertInstanceEqual(obj, name="test", singletag="test", tags="test")
         self.assertEqual(obj.many_to_one.count(), 1)
         self.assertEqual(obj.many_to_one.first().name, "rfk1")
+
+    def test_monkeypatch_get_model(self):
+        """
+        Test monkeypatch_get_model function handles the absence of _get_model attribute
+        """
+        from tagulous.serializers import base
+        from django.core.serializers import python as python_serializer
+
+        # Ensure the test case runs in a Django 5.2b1 environment
+        if not hasattr(python_serializer, "get_model"):
+            self.skipTest("Django version is not 5.2b1 or later")
+
+        # Backup original get_model method
+        original_get_model = python_serializer.get_model
+
+        try:
+            # Remove _get_model attribute if it exists
+            if hasattr(python_serializer, "_get_model"):
+                del python_serializer._get_model
+
+            # Apply monkeypatch
+            base.monkeypatch_get_model(python_serializer)
+
+            # Check if the monkeypatch works without _get_model attribute
+            self.assertTrue(hasattr(python_serializer, "get_model"))
+        finally:
+            # Restore original get_model method
+            python_serializer.get_model = original_get_model

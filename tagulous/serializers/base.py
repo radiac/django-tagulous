@@ -62,16 +62,29 @@ def monkeypatch_get_model(serializer):
     Given a model identifier, get the model - unless it's a TaggedModel, in
     which case return a temporary fake model to get it serialized.
     """
-    old_get_model = serializer._get_model
+    if hasattr(serializer, "_get_model"):
+        old_get_model = serializer._get_model
 
-    def _get_model(model_identifier):
-        RealModel = old_get_model(model_identifier)
+        def _get_model(model_identifier):
+            RealModel = old_get_model(model_identifier)
 
-        if issubclass(RealModel, TaggedModel):
-            Model = RealModel._detag_to_serializable()
-        else:
-            Model = RealModel
+            if issubclass(RealModel, TaggedModel):
+                Model = RealModel._detag_to_serializable()
+            else:
+                Model = RealModel
 
-        return Model
+            return Model
 
-    serializer._get_model = _get_model
+        serializer._get_model = _get_model
+    else:
+        def _get_model(model_identifier):
+            RealModel = serializer.get_model(model_identifier)
+
+            if issubclass(RealModel, TaggedModel):
+                Model = RealModel._detag_to_serializable()
+            else:
+                Model = RealModel
+
+            return Model
+
+        serializer.get_model = _get_model
