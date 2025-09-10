@@ -664,6 +664,140 @@ class TagRelatedManagerMixin(BaseTagRelatedManager):
 
     clear.alters_data = True
 
+    @classmethod
+    def bulk_add_tag_to_instances(cls, tag_name, instances, tag_field_name='tags', batch_size=1000):
+        """
+        Efficiently add a single tag to many model instances.
+
+        This method optimizes the common case where you want to apply the same tag
+        to many instances, reducing from O(n) queries to O(1) queries.
+
+        This method will not enforce the max_count of the tag field. (yet)
+
+        Args:
+            tag_name (str): Name of the tag to add
+            instances (list): List or QuerySet of model instances to tag
+            tag_field_name (str): Name of the tag field on the model (default: 'tags')
+            batch_size (int): Process in batches of this size (default: 1000)
+
+        Returns:
+            int: Number of new relationships created
+
+        Example:
+            # Instead of this (generates N queries):
+            for finding in findings:
+                finding.tags.add('security-issue')
+
+            # Use this (generates 4 queries total):
+            TagRelatedManagerMixin.bulk_add_tag_to_instances(
+                tag_name='security-issue',
+                instances=findings,  # Pass model instances directly
+                tag_field_name='tags'
+            )
+        """
+        from django.db import models, transaction
+
+        # Convert QuerySet to list if needed
+        if hasattr(instances, 'model'):
+            instances = list(instances)
+
+        if not instances:
+            return 0
+
+        # Get model class and tag field from first instance
+        model_class = instances[0].__class__
+        try:
+            tag_field = model_class._meta.get_field(tag_field_name)
+        except Exception:
+            raise ValueError(f"Model {model_class} does not have field '{tag_field_name}'")
+
+        if not hasattr(tag_field, 'tag_options'):
+            raise ValueError(f"Field '{tag_field_name}' is not a TagField")
+
+        tag_model = tag_field.related_model
+        through_model = tag_field.remote_field.through
+
+        total_created = 0
+
+        # Process in batches to manage memory
+        for i in range(0, len(instances), batch_size):
+            batch_instances = instances[i:i + batch_size]
+
+            with transaction.atomic():
+                # Query 1: Get or create the tag
+                if tag_field.tag_options.case_sensitive:
+                    tag, created = tag_model.objects.get_or_create(
+                        name=tag_name,
+                        defaults={'name': tag_name, 'protected': False}
+                    )
+                else:
+                    tag, created = tag_model.objects.get_or_create(
+                        name__iexact=tag_name,
+                        defaults={'name': tag_name, 'protected': False}
+                    )
+
+                # Query 2: Find existing relationships in this batch
+                # Get the actual field names from the through model
+                through_fields = {f.name: f for f in through_model._meta.fields}
+
+                # Find the field that points to our model instances
+                source_field_name = None
+                target_field_name = None
+
+                for field_name, field in through_fields.items():
+                    if hasattr(field, 'remote_field') and field.remote_field:
+                        if field.remote_field.model == model_class:
+                            source_field_name = field_name
+                        elif field.remote_field.model == tag_model:
+                            target_field_name = field_name
+
+                batch_ids = [instance.pk for instance in batch_instances]
+                existing_ids = set(
+                    through_model.objects.filter(
+                        **{target_field_name: tag.pk}
+                    ).filter(
+                        **{f'{source_field_name}__in': batch_ids}
+                    ).values_list(source_field_name, flat=True)
+                )
+
+                # Find new instances that don't have this tag yet
+                new_instances = [instance for instance in batch_instances if instance.pk not in existing_ids]
+
+                if new_instances:
+                    # Query 3: Bulk create new relationships
+                    relationships = []
+                    for instance in new_instances:
+                        # Create relationship using model instances directly
+                        relationship_data = {
+                            source_field_name: instance,
+                            target_field_name: tag
+                        }
+                        relationships.append(through_model(**relationship_data))
+
+                    # Use ignore_conflicts=True to handle race conditions
+                    actually_created = through_model.objects.bulk_create(
+                        relationships,
+                        ignore_conflicts=True
+                    )
+
+                    # Count how many were actually created (Django 4.0+)
+                    if hasattr(actually_created, '__len__'):
+                        batch_created = len(actually_created)
+                    else:
+                        # Fallback for older Django versions
+                        batch_created = len(new_instances)
+
+                    total_created += batch_created
+
+                    # Query 4: Update tag count
+                    tag_model.objects.filter(pk=tag.pk).update(
+                        count=models.F('count') + batch_created
+                    )
+
+        return total_created
+
+    bulk_add_tag_to_instances.alters_data = True
+
     def get_similar_objects(self):
         """
         Find similarly tagged objects
