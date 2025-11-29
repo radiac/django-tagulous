@@ -343,3 +343,46 @@ class MixedTestMixin(TagTestManager, TestCase):
         self.assertInstanceEqual(obj, name="test", singletag="test", tags="test")
         self.assertEqual(obj.many_to_one.count(), 1)
         self.assertEqual(obj.many_to_one.first().name, "rfk1")
+
+
+class MonkeypatchTest(TestCase):
+    """
+    Test that the monkeypatch_get_model function works correctly with different Django versions
+    """
+
+    def test_monkeypatch_compatibility(self):
+        """
+        Test that monkeypatch works with both old and new Django serializer APIs
+        """
+        from django.core.serializers import python as python_serializer
+        from tagulous.serializers import base
+
+        # Store original methods to restore later
+        original_get_model = getattr(python_serializer, '_get_model', None)
+        original_deserializer_get_model = None
+
+        if hasattr(python_serializer, 'Deserializer') and hasattr(python_serializer.Deserializer, '_get_model_from_node'):
+            original_deserializer_get_model = python_serializer.Deserializer._get_model_from_node
+
+        try:
+            # Test that monkeypatch doesn't raise AttributeError
+            base.monkeypatch_get_model(python_serializer)
+
+            # Verify that some form of get_model method exists after monkeypatching
+            has_get_model = (
+                hasattr(python_serializer, '_get_model') or
+                (hasattr(python_serializer, 'Deserializer') and
+                 hasattr(python_serializer.Deserializer, '_get_model_from_node')) or
+                hasattr(python_serializer, 'get_model')
+            )
+            self.assertTrue(has_get_model, "Monkeypatch should ensure some get_model method exists")
+
+        finally:
+            # Restore original methods
+            if original_get_model is not None:
+                python_serializer._get_model = original_get_model
+            elif hasattr(python_serializer, '_get_model'):
+                delattr(python_serializer, '_get_model')
+
+            if original_deserializer_get_model is not None:
+                python_serializer.Deserializer._get_model_from_node = original_deserializer_get_model

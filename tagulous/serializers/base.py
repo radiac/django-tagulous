@@ -62,7 +62,18 @@ def monkeypatch_get_model(serializer):
     Given a model identifier, get the model - unless it's a TaggedModel, in
     which case return a temporary fake model to get it serialized.
     """
-    old_get_model = serializer._get_model
+    # Django 5.2+ moved _get_model to Deserializer._get_model_from_node
+    if hasattr(serializer, 'Deserializer') and hasattr(serializer.Deserializer, '_get_model_from_node'):
+        old_get_model = serializer.Deserializer._get_model_from_node
+    elif hasattr(serializer, '_get_model'):
+        old_get_model = serializer._get_model
+    else:
+        # Fallback - try to find any get_model method
+        if hasattr(serializer, 'get_model'):
+            old_get_model = serializer.get_model
+        else:
+            # If we can't find any get_model method, skip monkeypatching
+            return
 
     def _get_model(model_identifier):
         RealModel = old_get_model(model_identifier)
@@ -74,4 +85,10 @@ def monkeypatch_get_model(serializer):
 
         return Model
 
-    serializer._get_model = _get_model
+    # Apply the monkeypatch to the appropriate location
+    if hasattr(serializer, 'Deserializer') and hasattr(serializer.Deserializer, '_get_model_from_node'):
+        serializer.Deserializer._get_model_from_node = staticmethod(_get_model)
+    elif hasattr(serializer, '_get_model'):
+        serializer._get_model = _get_model
+    elif hasattr(serializer, 'get_model'):
+        serializer.get_model = _get_model

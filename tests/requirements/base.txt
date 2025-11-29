@@ -4,7 +4,7 @@ tox
 pyyaml
 djangorestframework
 
-pytest
+pytest>=8.0.0
 pytest-pythonpath
-pytest-cov
-pytest-django
+pytest-cov>=5.0.0
+pytest-django>=4.8.0
