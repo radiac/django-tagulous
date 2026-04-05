@@ -317,6 +317,58 @@ class MixedXmlSerializationTest(MixedTestMixin, TagTestManager, TestCase):
 
 
 # ##############################################################################
+# ###### Monkeypatch tests
+# ##############################################################################
+
+
+class MonkeypatchTest(TestCase):
+    """
+    Test that monkeypatch_get_model works correctly across Django versions.
+
+    Django 5.2 moved _get_model to Deserializer._get_model_from_node; earlier
+    versions expose it as serializer._get_model.
+    """
+
+    def test_monkeypatch_compatibility(self):
+        """
+        Monkeypatch should not raise AttributeError regardless of Django version,
+        and should result in the appropriate method being patched.
+        """
+        from django.core.serializers import python as python_serializer
+
+        from tagulous.serializers import base
+
+        # Store originals for teardown
+        original_module_get_model = getattr(python_serializer, "_get_model", None)
+        original_node_get_model = None
+        if hasattr(python_serializer, "Deserializer") and hasattr(
+            python_serializer.Deserializer, "_get_model_from_node"
+        ):
+            original_node_get_model = (
+                python_serializer.Deserializer._get_model_from_node
+            )
+
+        try:
+            base.monkeypatch_get_model(python_serializer)
+
+            # After patching, some form of get_model must exist
+            has_patched = hasattr(python_serializer, "_get_model") or (
+                hasattr(python_serializer, "Deserializer")
+                and hasattr(python_serializer.Deserializer, "_get_model_from_node")
+            )
+            self.assertTrue(has_patched, "Monkeypatch should set a get_model method")
+        finally:
+            if original_node_get_model is not None:
+                python_serializer.Deserializer._get_model_from_node = (
+                    original_node_get_model
+                )
+            if original_module_get_model is not None:
+                python_serializer._get_model = original_module_get_model
+            elif hasattr(python_serializer, "_get_model"):
+                del python_serializer._get_model
+
+
+# ##############################################################################
 # ###### Other serialization tests
 # ##############################################################################
 

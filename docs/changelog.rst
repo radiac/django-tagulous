@@ -13,6 +13,21 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
+2.1.2, TBD
+----------
+
+Feature:
+
+* Support Django 5.2
+
+Thanks to:
+
+* Valentijn Scholten (valentijnscholten) for Django 5.2 support (#195)
+* Yoav Hager (yhager) for fixing the serializer monkeypatch for Django 5.2 (#194)
+* Stephen Wolff (stephendwolff) for early investigation of Django 5.2 serializer
+  changes (#188)
+
+
 2.1.1, 2025-06-23
 -----------------
 
