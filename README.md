@@ -15,6 +15,7 @@ conventional tagging or nested categorisation.
 * [Project site](https://radiac.net/projects/django-tagulous/)
 * [Source code](https://github.com/radiac/django-tagulous)
 * [Documentation](https://django-tagulous.readthedocs.io/)
+* [Live demo](https://radiac-django-tagulous-demo.nanodjango.dev)
 * [Changelog](https://django-tagulous.readthedocs.io/en/latest/changelog.html)
 
 

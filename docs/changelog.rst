@@ -20,6 +20,12 @@ Feature:
 
 * Support Django 5.2
 
+Changes:
+
+* Moved the example project into a nanodjango single file ``example.py``, and added it
+  to the nanodjango playground for a
+  `live demo <https://radiac-django-tagulous-demo.nanodjango.dev>`_
+
 Thanks to:
 
 * Valentijn Scholten (valentijnscholten) for Django 5.2 support (#195)

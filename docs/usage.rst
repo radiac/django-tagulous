@@ -4,10 +4,10 @@ Example Usage
 
 This section contains code examples of how to set up and use Tagulous. If you'd
 like a more interactive demonstration, there is a
-`static demo <http://radiac.net/projects/django-tagulous/demo/>`_ showing the
-front-end, or an
-`example project <https://github.com/radiac/django-tagulous/tree/master/example>`_
-for you to install locally and play with some of these code examples.
+`live demo <https://radiac-django-tagulous-demo.nanodjango.dev>`_ running on the
+nanodjango playground, or you can
+`download it <https://github.com/radiac/django-tagulous/tree/master/example.py>`_
+and run locally with `uv run example.py` to play with some of these code examples.
 
 
 .. _example_auto_tagmodel:
