@@ -306,14 +306,70 @@ name from its ``verbose_name`` argument, falling back to the field name.
     ``verbose_name_singular`` to a string which is 38 characters or less.
 
 
-.. _option_allow_create:
+.. _option_can_create:
 
-``allow_create``
+``can_create``
 --------------------
-Controls whether in a form, users are prompted to create new tags or whether 
-they're restricted to choosing from pre-existing tags.
+Controls whether users can create new tags, or are restricted to selecting from
+pre-existing tags.
 
 Default: ``True``
+
+When set to ``False`` on a field, the frontend widget will not offer tag
+creation, and the form will raise a ``ValidationError`` if a new tag name is
+submitted.
+
+The restriction can also be set dynamically at runtime without changing the
+field definition, highest priority first:
+
+1. ``form.can_create_<fieldname>`` - set as an attribute on the form instance,
+   or passed as a keyword argument to the form constructor::
+
+       # In a view, where there is a TagField called `skills`:
+       form = MyForm(request.POST, can_create_skills=request.user.is_staff)
+       # or:
+       form.can_create_skills = request.user.is_staff
+
+   This means it can either be set either when the form is instantiated, or after it
+   has been instantiated but before it is processed.
+
+   This should allow you to control ``can_create`` based on the current request and
+   any other global, request, or user state - eg does the current user has permission
+   to create tags.
+
+2. ``instance.can_create_<fieldname>`` - set on the model instance (ModelForms
+   only)::
+
+       # control the `skills` TagField
+       obj.can_create_skills = False
+
+   Because Tagulous assumes that this is a boolean value, it could also be a property
+   or even a ``BooleanField`` model field.
+
+   This should allow you to control ``can_create`` based on the instance state - eg
+   has tag creation been enabled for this model.
+
+3. ``TagField(can_create=False)`` - the field definition itself.
+
+   This allows you to disable tag creation for a field by default - the idea being you
+   could then turn it on in certain forms or management commands.
+
+
+To customise the validation error message, set ``can_create_error`` on the
+field::
+
+    tags = tagulous.TagField(can_create=False, can_create_error="Sorry, no new tags.")
+
+.. note::
+    Server-side enforcement uses the ``autocomplete_tags`` queryset to determine
+    whether a submitted tag is new. This is always set for model-backed forms.
+    For manually constructed form fields without ``autocomplete_tags``, all
+    submitted tags are treated as new when ``can_create`` is ``False``.
+
+.. note::
+    The model-level ``can_create_<fieldname>`` flags are enforced during form
+    validation only. They do not add a separate enforcement layer at ``.save()``
+    time; direct model manipulation bypasses this check.
 
 
 .. _form_options:
@@ -329,7 +385,7 @@ The following options are used by form fields:
 * :ref:`option_tree`
 * :ref:`option_autocomplete_limit`
 * :ref:`option_autocomplete_settings`
-* :ref:`option_allow_create`
+* :ref:`option_can_create`
 
 
 .. _tagoptions:

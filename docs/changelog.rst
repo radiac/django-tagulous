@@ -13,12 +13,14 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-2.1.2, TBD
+2.2.0, TBD
 ----------
 
 Feature:
 
 * Support Django 5.2
+* Add :ref:`option_can_create` tag option to restrict tag creation to existing
+  tags, with support for logic to control it in forms.
 
 Changes:
 
@@ -32,6 +34,8 @@ Thanks to:
 * Yoav Hager (yhager) for fixing the serializer monkeypatch for Django 5.2 (#194)
 * Stephen Wolff (stephendwolff) for early investigation of Django 5.2 serializer
   changes (#188)
+* Calum Mackervoy (calummackervoy) for the original PR for controlling tag creation
+  (#180)
 
 
 2.1.1, 2025-06-23

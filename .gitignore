@@ -15,5 +15,5 @@ htmlcov
 tests/tagulous_tests_migration/migrations_*
 
 # Examples
-example.sqlite3
-example_migrations/*
+examples/*.sqlite3
+examples/*_migrations/*

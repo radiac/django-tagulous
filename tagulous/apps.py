@@ -10,3 +10,20 @@ class TagulousConfig(AppConfig):
 
         register_checks()
         register_post_signals()
+        self._enhance_forms()
+
+    def _enhance_forms(self):
+        from . import settings as tag_settings
+
+        if not tag_settings.ENHANCE_MODELS:
+            return
+
+        from django.forms.forms import Form
+        from django.forms.models import BaseModelForm
+
+        from .forms import TagFormMixin
+
+        if TagFormMixin not in Form.__bases__:
+            Form.__bases__ = (TagFormMixin,) + Form.__bases__
+        if TagFormMixin not in BaseModelForm.__bases__:
+            BaseModelForm.__bases__ = (TagFormMixin,) + BaseModelForm.__bases__

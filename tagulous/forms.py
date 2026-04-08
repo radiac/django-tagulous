@@ -139,6 +139,93 @@ class AdminTagWidget(TagWidgetBase):
         return super().render(name, value, attrs, renderer)
 
 
+class TagFormMixin:
+    """
+    Enforces can_create on tag fields after form cleaning.
+
+    Auto-injected into Django's form base classes when TAGULOUS_ENHANCE_MODELS
+    is True (the default). Can also be added manually to individual form classes
+    if that setting is disabled.
+
+    Accepts ``can_create_<fieldname>`` keyword arguments in the form constructor,
+    which override the field-level ``can_create`` option. Can also be set as
+    attributes on the form instance after construction.
+
+    Resolution order (highest priority first):
+        1. ``form.can_create_<fieldname>`` attribute
+        2. ``form.instance.can_create_<fieldname>`` (ModelForms only)
+        3. ``TagField(can_create=...)`` option
+    """
+
+    def __init__(self, *args, **kwargs):
+        can_create_attrs = {
+            k: kwargs.pop(k) for k in list(kwargs) if k.startswith("can_create_")
+        }
+        super().__init__(*args, **kwargs)
+        for k, v in can_create_attrs.items():
+            setattr(self, k, v)
+
+    def render(self, template_name=None, context=None, renderer=None):
+        instance = getattr(self, "instance", None)
+        for name, field in self.fields.items():
+            if not isinstance(field, BaseTagField):
+                continue
+            can_create = getattr(self, f"can_create_{name}", None)
+            if can_create is None and instance is not None:
+                can_create = getattr(instance, f"can_create_{name}", None)
+            if can_create is not None and can_create != field.tag_options.can_create:
+                field.tag_options = field.tag_options + options.TagOptions(
+                    can_create=can_create
+                )
+        return super().render(template_name, context, renderer)
+
+    def _clean_fields(self):
+        super()._clean_fields()
+
+        for name, field in self.fields.items():
+            if not isinstance(field, BaseTagField):
+                continue
+            if name in self._errors:
+                continue  # already failed, don't add a second error
+
+            # Resolve can_create (highest → lowest priority)
+            can_create = getattr(self, f"can_create_{name}", None)
+            if can_create is None:
+                instance = getattr(self, "instance", None)
+                if instance is not None:
+                    can_create = getattr(instance, f"can_create_{name}", None)
+            if can_create is None:
+                can_create = field.tag_options.can_create
+
+            if can_create:
+                continue
+
+            value = self.cleaned_data.get(name)
+            if not value:
+                continue
+            tag_list = [value] if isinstance(value, str) else list(value)
+            if not tag_list:
+                continue
+
+            # Single queryset check for new tags
+            if field.autocomplete_tags is not None:
+                existing = set(
+                    field.autocomplete_tags.filter(name__in=tag_list).values_list(
+                        "name", flat=True
+                    )
+                )
+                new_tags = [t for t in tag_list if t not in existing]
+            else:
+                # No queryset to check against
+                new_tags = tag_list
+
+            if new_tags:
+                self.add_error(
+                    name,
+                    forms.ValidationError(field.can_create_error, code="cannot_create"),
+                )
+
+
 class BaseTagField(forms.CharField):
     """
     Base class for form tag fields
@@ -147,7 +234,12 @@ class BaseTagField(forms.CharField):
     # Use the tag widget
     widget = TagWidget
 
-    def __init__(self, tag_options=None, autocomplete_tags=None, **kwargs):
+    # Default error message when can_create=False blocks a new tag
+    can_create_error = _("You cannot create new tags.")
+
+    def __init__(
+        self, tag_options=None, autocomplete_tags=None, can_create_error=None, **kwargs
+    ):
         """
         Takes all CharField options, plus:
             tag_options         A TagOptions instance
@@ -156,7 +248,11 @@ class BaseTagField(forms.CharField):
                                 ie a queryset from a TagModel, or a list of
                                 strings. Will be ignored if tag_options
                                 contains autocomplete_view
+            can_create_error    Custom error message when can_create=False
+                                blocks a new tag submission
         """
+        if can_create_error is not None:
+            self.can_create_error = can_create_error
         # Initialise as normal
         super(BaseTagField, self).__init__(**kwargs)
 

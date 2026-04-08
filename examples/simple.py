@@ -4,7 +4,7 @@
 #
 # Usage:
 #
-#   uv run example.py
+#   uv run example/simple.py
 #
 from django.db import models
 from nanodjango import Django, defer
@@ -29,8 +29,8 @@ app = Django(
         "yaml": "tagulous.serializers.pyyaml",
     },
     STYLE_SITE_TITLE="Tagulous example",
-    SQLITE_DATABASE="example.sqlite3",
-    MIGRATIONS_DIR="example_migrations",
+    SQLITE_DATABASE="simple.sqlite3",
+    MIGRATIONS_DIR="simple_migrations",
 )
 
 
