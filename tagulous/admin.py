@@ -4,6 +4,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.base import ModelBase
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
+from django.utils.html import format_html, mark_safe
 
 from . import forms as tag_forms
 from . import models as tag_models
@@ -173,6 +175,52 @@ def _create_display(field):
         return getattr(obj, field).get_tag_string()
 
     display.short_description = field.replace("_", " ")
+    return display
+
+
+def list_display_tag_links(field_name):
+    """
+    Factory for a list_display function that renders tag fields as admin links.
+
+    Each tag links to its admin change view if the tag model is registered with
+    the default admin site; otherwise tags are shown as plain text. Works for
+    both SingleTagField and TagField.
+
+    Usage::
+
+        class MyAdmin(tagulous.admin.TaggedModelAdmin):
+            list_display = ['name', 'tags_links']
+            tags_links = tagulous.admin.list_display_tag_links('tags')
+
+        tagulous.admin.register(MyModel, MyAdmin)
+    """
+
+    def display(self, obj):
+        field = obj.__class__._meta.get_field(field_name)
+        tag_model = field.tag_model
+        tag_value = getattr(obj, field_name)
+
+        if not admin.site.is_registered(tag_model):
+            if isinstance(field, tag_models.SingleTagField):
+                return str(tag_value) if tag_value is not None else ""
+            return tag_value.get_tag_string()
+
+        if isinstance(field, tag_models.SingleTagField):
+            tags = [tag_value]
+        else:
+            tags = tag_value.all()
+
+        links = []
+        for tag in tags:
+            url = reverse(
+                "admin:%s_%s_change"
+                % (tag_model._meta.app_label, tag_model._meta.model_name),
+                args=[tag.pk],
+            )
+            links.append(format_html('<a href="{}">{}</a>', url, tag.name))
+        return mark_safe(", ".join(links))
+
+    display.short_description = field_name.replace("_", " ")
     return display
 
 

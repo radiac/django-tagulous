@@ -1084,3 +1084,96 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
             self.tagged_model.tags.tag_model,
             {"tag1": 1, "tag2e": 1, "tag3": 1, "tag4e": 1},
         )
+
+
+# ##############################################################################
+# ###### list_display_tag_links
+# ##############################################################################
+
+
+class ListDisplayTagLinksTest(TagTestManager, TestCase):
+    """
+    Test list_display_tag_links helper
+    """
+
+    def setUpExtra(self):
+        self.model = test_models.SimpleMixedTest
+        self.tags_tag_model = self.model.tags.tag_model
+        self.singletag_tag_model = self.model.singletag.tag_model
+        self._old_urls = None
+
+    def _register_tag_models(self):
+        admin.site.register(self.tags_tag_model)
+        admin.site.register(self.singletag_tag_model)
+        _get_cached_resolver.cache_clear()
+        self._old_urls = test_urls.urlpatterns
+        test_urls.urlpatterns = copy.copy(test_urls.urlpatterns)
+        test_urls.urlpatterns.append(re_path(r"^admin/", admin.site.urls))
+
+    def tearDown(self):
+        if self.tags_tag_model in admin.site._registry:
+            admin.site.unregister(self.tags_tag_model)
+        if self.singletag_tag_model in admin.site._registry:
+            admin.site.unregister(self.singletag_tag_model)
+        if self._old_urls is not None:
+            test_urls.urlpatterns = self._old_urls
+            _get_cached_resolver.cache_clear()
+        super().tearDown()
+
+    # TagField
+
+    def test_tagfield_not_registered_plain_text(self):
+        "Tags render as plain comma-separated text when tag model not registered"
+        obj = self.model.objects.create(name="Test", tags="red, blue")
+        display = tag_admin.list_display_tag_links("tags")
+        result = display(None, obj)
+        self.assertEqual(result, "blue, red")
+
+    def test_tagfield_not_registered_empty(self):
+        "Empty TagField returns empty string when tag model not registered"
+        obj = self.model.objects.create(name="Test")
+        display = tag_admin.list_display_tag_links("tags")
+        result = display(None, obj)
+        self.assertEqual(result, "")
+
+    def test_tagfield_registered_returns_links(self):
+        "Tags render as admin links when tag model is registered"
+        self._register_tag_models()
+        obj = self.model.objects.create(name="Test", tags="red, blue")
+        display = tag_admin.list_display_tag_links("tags")
+        result = display(None, obj)
+        self.assertIn("<a href=", result)
+        self.assertIn(">blue<", result)
+        self.assertIn(">red<", result)
+
+    # SingleTagField
+
+    def test_singletagfield_not_registered_plain_text(self):
+        "SingleTagField renders as plain text when tag model not registered"
+        obj = self.model.objects.create(name="Test", singletag="Mr")
+        display = tag_admin.list_display_tag_links("singletag")
+        result = display(None, obj)
+        self.assertEqual(result, "Mr")
+
+    def test_singletagfield_not_registered_null(self):
+        "Null SingleTagField returns empty string"
+        obj = self.model.objects.create(name="Test")
+        display = tag_admin.list_display_tag_links("singletag")
+        result = display(None, obj)
+        self.assertEqual(result, "")
+
+    def test_singletagfield_registered_returns_link(self):
+        "SingleTagField renders as admin link when tag model is registered"
+        self._register_tag_models()
+        obj = self.model.objects.create(name="Test", singletag="Mr")
+        display = tag_admin.list_display_tag_links("singletag")
+        result = display(None, obj)
+        self.assertIn("<a href=", result)
+        self.assertIn(">Mr<", result)
+
+    # short_description
+
+    def test_short_description(self):
+        "short_description uses field name with underscores replaced by spaces"
+        display = tag_admin.list_display_tag_links("my_tags_field")
+        self.assertEqual(display.short_description, "my tags field")

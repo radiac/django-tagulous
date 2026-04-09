@@ -73,6 +73,22 @@ For example::
     admin.site.register(MyModel, MyAdmin)
 
 
+Displaying tags as links
+========================
+
+By default, tag fields in ``list_display`` are rendered as plain text. To render
+each tag as a link to its admin change view, use ``list_display_tag_links``::
+
+    class MyAdmin(tagulous.admin.TaggedModelAdmin):
+        list_display = ['name', 'tags_links']
+        tags_links = tagulous.admin.list_display_tag_links('tags')
+
+    tagulous.admin.register(MyModel, MyAdmin)
+
+This works for both ``TagField`` and ``SingleTagField``. If the tag model is not
+registered with the admin site, tags are shown as plain text instead.
+
+
 Autocomplete settings
 =====================
 

@@ -21,6 +21,8 @@ Feature:
 * Support Django 5.2
 * Add :ref:`option_can_create` tag option to restrict tag creation to existing
   tags, with support for logic to control it in forms.
+* Add ``tagulous.admin.list_display_tag_links()`` helper to render tags as links
+  to their admin change views in ``list_display``.
 
 Changes:
 
@@ -36,6 +38,7 @@ Thanks to:
   changes (#188)
 * Calum Mackervoy (calummackervoy) for the original PR for controlling tag creation
   (#180)
+* Tommy Wang (twang817) for the idea behind ``list_display_tag_links`` (#159)
 
 
 2.1.1, 2025-06-23
