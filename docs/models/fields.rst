@@ -413,3 +413,47 @@ Will call ``reload()`` first, so any unsaved changes to tags will be lost.
 
     person.skills.remove('Judo', kung_fu_tag)
 
+
+.. _tagrelatedmanager_bulk_add:
+
+``bulk_add_tag_to_instances(tag_name, instances, batch_size=1000)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Efficiently add a single tag to many model instances at once.
+
+The standard ``add()`` method issues several database queries per instance.
+When tagging a large number of instances with the same tag, this overhead can
+add up significantly. This method reduces the cost to a fixed number of
+queries per batch regardless of how many instances are being tagged.
+
+Call it on the manager of any instance of the same model - the tag will be
+added to all instances passed in, not just the one the manager is bound to.
+
+Arguments:
+
+``tag_name``
+    The name of the tag to add (a string). Case sensitivity is determined by
+    :ref:`option_case_sensitive`.
+
+``instances``
+    A list or ``QuerySet`` of model instances to tag.
+
+``batch_size``
+    Number of instances to process per database batch. Defaults to ``1000``.
+
+Returns the number of new relationships created (instances that did not
+already have the tag).
+
+.. note::
+    This method does not enforce :ref:`option_max_count`. If ``max_count``
+    is set on the field, a ``UserWarning`` will be issued.
+
+Example - instead of::
+
+    for finding in findings:
+        finding.tags.add('security-issue')   # several queries per instance
+
+Use::
+
+    findings[0].tags.bulk_add_tag_to_instances('security-issue', findings)
+

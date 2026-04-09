@@ -23,6 +23,9 @@ Feature:
   tags, with support for logic to control it in forms.
 * Add ``tagulous.admin.list_display_tag_links()`` helper to render tags as links
   to their admin change views in ``list_display``.
+* Add :ref:`tagrelatedmanager_bulk_add` to efficiently tag many instances with
+  the same tag in a fixed number of queries rather than one set of queries per
+  instance.
 
 Changes:
 
@@ -32,7 +35,8 @@ Changes:
 
 Thanks to:
 
-* Valentijn Scholten (valentijnscholten) for Django 5.2 support (#195)
+* Valentijn Scholten (valentijnscholten) for Django 5.2 support (#195) and the
+  original bulk tag implementation (#191)
 * Yoav Hager (yhager) for fixing the serializer monkeypatch for Django 5.2 (#194)
 * Stephen Wolff (stephendwolff) for early investigation of Django 5.2 serializer
   changes (#188)
