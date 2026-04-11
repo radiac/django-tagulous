@@ -1,5 +1,8 @@
+import warnings
+
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.admin.checks import ModelAdminChecks
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.base import ModelBase
 from django.http import HttpResponseRedirect
@@ -15,10 +18,38 @@ from . import models as tag_models
 # ##############################################################################
 
 
-class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
+class TaggedModelAdminChecks(ModelAdminChecks):
     """
-    Mixin for BaseModelAdmin subclasses which are for tagged models
+    ModelAdminChecks subclass that suppresses admin.E109 for TagFields.
+
+    Set as ``checks_class`` on ``TaggedBaseModelAdminMixin`` so that any
+    admin class which includes the mixin (either explicitly or via
+    auto-enhancement) does not get E109 errors for TagField names in
+    ``list_display``.
     """
+
+    def _check_list_display_item(self, obj, item, label):
+        if not callable(item) and not hasattr(obj, item):
+            try:
+                field = obj.model._meta.get_field(item)
+                if isinstance(field, tag_models.TagField):
+                    return []  # skip E109 for TagFields
+            except Exception:
+                pass
+        return super()._check_list_display_item(obj, item, label)
+
+
+class TaggedBaseModelAdminMixin:
+    """
+    Mixin providing tagulous support for ModelAdmin subclasses.
+
+    Can be used explicitly in a custom ModelAdmin. When TAGULOUS_ENHANCE_MODELS
+    is True (the default), it is also automatically injected into
+    ModelAdmin.__bases__ so that standard admin registration works without any
+    tagulous-specific imports.
+    """
+
+    checks_class = TaggedModelAdminChecks
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         """
@@ -52,6 +83,25 @@ class TaggedBaseModelAdminMixin(admin.options.BaseModelAdmin):
             )
         ]
         return tuple(safe_fields)
+
+    def get_list_display(self, request):
+        """
+        Replace TagField names in list_display with display callables, so that
+        the changelist renders tag strings rather than rejecting M2M fields.
+        """
+        list_display = list(super().get_list_display(request))
+        for i, item in enumerate(list_display):
+            if not callable(item) and not hasattr(self.__class__, item):
+                try:
+                    field = self.model._meta.get_field(item)
+                    if isinstance(field, tag_models.TagField):
+                        display_name = "_tagulous_display_%s" % item
+                        if not hasattr(self.__class__, display_name):
+                            setattr(self.__class__, display_name, _create_display(item))
+                        list_display[i] = display_name
+                except Exception:
+                    pass
+        return list_display
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -224,171 +274,129 @@ def list_display_tag_links(field_name):
     return display
 
 
-def enhance(model, admin_class):
+def enhance():
     """
-    Add tag support to the admin class based on the specified model
+    Apply tagulous enhancements to Django's admin framework globally.
+
+    Called automatically by the tagulous ``AppConfig.ready()`` when
+    ``TAGULOUS_ENHANCE_MODELS`` is ``True`` (the default).
+
+    Patches ``AdminSite.register`` so that any model registered with the
+    standard Django admin automatically gets:
+
+    * ``TaggedBaseModelAdminMixin`` injected into the admin class, providing
+      correct widget rendering, autocomplete filtering, and ``list_display``
+      handling for tag fields. This also sets ``checks_class`` to
+      ``TaggedModelAdminChecks``, suppressing ``admin.E109`` for tag fields.
+    * ``TagModelAdmin`` or ``TagTreeModelAdmin`` injected for tag models
+      (subclasses of ``BaseTagModel``), providing the merge action, sensible
+      ``list_display``, and other tag-model-specific admin features.
+    * Inline formset classes on tag model admins upgraded to
+      ``TaggedInlineFormSet`` where needed.
     """
-    #
-    # Get a list of all tag fields
-    #
+    from django.contrib.admin import AdminSite
 
-    # Dict of single tag fields, {name: tag}
-    single_tag_fields = {}
+    # Patch AdminSite.register to inject tagulous support into each registered
+    # admin class at the point of registration.
+    if getattr(AdminSite.register, "_tagulous_enhanced", False):
+        return
 
-    # Dict of normal tag fields, {name: tag}
-    tag_fields = {}
+    original_register = AdminSite.register
 
-    # List of all single and normal tag fields
-    tag_field_names = []
+    def tagulous_register(site, model_or_iterable, admin_class=None, **options):
+        model = model_or_iterable if isinstance(model_or_iterable, ModelBase) else None
 
-    # Check for SingleTagField related fields
-    for field in tag_models.singletagfields_from_model(model):
-        single_tag_fields[field.name] = field
-        tag_field_names.append(field.name)
-
-    # Check for TagField m2m fields
-    for field in tag_models.tagfields_from_model(model):
-        tag_fields[field.name] = field
-        tag_field_names.append(field.name)
-
-    #
-    # Ensure any tag fields in list_display are rendered by functions
-    #
-
-    # The admin.site.register will complain if it's a ManyToManyField, so this
-    # will work around that.
-    #
-    # We also need to have a different name to the model field, otherwise the
-    # ChangeList class will just use the model field - that would get the tag
-    # strings showing in the table, but the column would be sortable which
-    # would cause problems for TagFields, and the display function would never
-    # get called, which would be unexpected for anyone maintaining this code.
-    if hasattr(admin_class, "list_display"):
-        # Make sure we're working with a list
-        if isinstance(admin_class.list_display, tuple):
-            admin_class.list_display = list(admin_class.list_display)
-
-        for i, field in enumerate(admin_class.list_display):
-            # If the field's not a callable, and not in the admin class already
-            if not hasattr(field, "__call__") and not hasattr(admin_class, field):
-                # Only TagFields (admin can already handle SingleTagField FKs)
-                if field in tag_fields:
-                    # Create new field name and replace in list_display
-                    display_name = "_tagulous_display_%s" % field
-                    admin_class.list_display[i] = display_name
-
-                    # Add display function to admin class
-                    setattr(admin_class, display_name, _create_display(field))
-
-        # Make it immutable
-        admin_class.list_display = tuple(admin_class.list_display)
-
-    #
-    # If admin is for a tag model, ensure any inlines for tagged models are
-    # subclasses of TaggedInlineFormSet.
-    #
-    if issubclass(model, tag_models.BaseTagModel) and hasattr(admin_class, "inlines"):
-        for inline_cls in admin_class.inlines:
-            # Make sure inline class uses TaggedBaseModelAdminMixin
-            if not issubclass(inline_cls, TaggedBaseModelAdminMixin):
-                inline_cls.__bases__ = (
-                    TaggedBaseModelAdminMixin,
-                ) + inline_cls.__bases__
-
-            # Make sure inlines used TaggedInlineFormSet
-            if issubclass(inline_cls.model, tag_models.TaggedModel) and not issubclass(
-                inline_cls.formset, tag_forms.TaggedInlineFormSet
-            ):
-                orig_cls = inline_cls.formset
-                inline_cls.formset = type(
-                    str("Tagged%s" % orig_cls.__name__),
-                    (tag_forms.TaggedInlineFormSet, orig_cls),
-                    {},
+        if model is not None and issubclass(model, tag_models.BaseTagModel):
+            # Supply or inject the appropriate tag model admin class so that
+            # tag models always get the merge action, sensible list_display,
+            # count exclusion, etc.
+            if admin_class is None:
+                admin_class = (
+                    TagTreeModelAdmin
+                    if issubclass(model, tag_models.TagTreeModel)
+                    else TagModelAdmin
                 )
+            else:
+                if issubclass(model, tag_models.TagTreeModel):
+                    if not issubclass(admin_class, TagTreeModelAdmin):
+                        admin_class.__bases__ = (
+                            TagTreeModelAdmin,
+                        ) + admin_class.__bases__
+                elif not issubclass(admin_class, TagModelAdmin):
+                    admin_class.__bases__ = (TagModelAdmin,) + admin_class.__bases__
+
+        if admin_class is not None:
+            # Inject TaggedBaseModelAdminMixin before the existing bases so its
+            # methods (get_list_display, formfield_for_dbfield, etc.) take
+            # priority over ModelAdmin's own implementations in the MRO.
+            if TaggedBaseModelAdminMixin not in admin_class.__mro__:
+                admin_class.__bases__ = (
+                    TaggedBaseModelAdminMixin,
+                ) + admin_class.__bases__
+
+            # For tag model admins with inlines for tagged models, upgrade the
+            # inline formset to TaggedInlineFormSet so tags are saved correctly.
+            if (
+                model is not None
+                and issubclass(model, tag_models.BaseTagModel)
+                and hasattr(admin_class, "inlines")
+            ):
+                for inline_cls in admin_class.inlines:
+                    if not issubclass(inline_cls, TaggedBaseModelAdminMixin):
+                        inline_cls.__bases__ = (
+                            TaggedBaseModelAdminMixin,
+                        ) + inline_cls.__bases__
+                    if issubclass(
+                        inline_cls.model, tag_models.TaggedModel
+                    ) and not issubclass(
+                        inline_cls.formset, tag_forms.TaggedInlineFormSet
+                    ):
+                        orig_cls = inline_cls.formset
+                        inline_cls.formset = type(
+                            str("Tagged%s" % orig_cls.__name__),
+                            (tag_forms.TaggedInlineFormSet, orig_cls),
+                            {},
+                        )
+
+        return original_register(site, model_or_iterable, admin_class, **options)
+
+    tagulous_register._tagulous_enhanced = True
+    AdminSite.register = tagulous_register
 
 
 def register(model, admin_class=None, site=None, **options):
     """
-    Provide tag support to the model when it is registered with the admin site.
+    Register a model with the admin site with tagulous support.
 
-    For tagged models (have one or more SingleTagField or TagField fields):
-        * Admin will support TagField in list_display
-
-    For tag models (subclass of TagModel):
-        * Admin will provide a merge action to merge tags
-
-    For other models:
-        * No changes made
+    .. deprecated::
+        Use ``django.contrib.admin.site.register()`` directly. When
+        ``TAGULOUS_ENHANCE_MODELS`` is ``True`` (the default), tagulous admin
+        enhancements are applied automatically via :func:`enhance`.
 
     Arguments:
-        model       Model to register
-        admin_class Admin class for model
-        site        Admin site to register with
-                    Default: django.contrib.admin.site
-        **options   Extra options for admin class
-
-    This only supports one model, but is otherwise safe to use with non-tagged
-    models.
+        model       Model or tag descriptor to register
+        admin_class Admin class for model (optional)
+        site        Admin site to register with (default: ``django.contrib.admin.site``)
+        **options   Passed to the admin site
     """
-    # Look at the model we've been given
-    if isinstance(model, tag_models.BaseTagDescriptor):
-        # It's a tag descriptor; change it for the tag model itself
-        model = model.tag_model
+    warnings.warn(
+        "tagulous.admin.register() is deprecated, use django.contrib.admin.site.register() "
+        "directly - see Upgrading documentation for details",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
+    if isinstance(model, tag_models.BaseTagDescriptor):
+        model = model.tag_model
     elif not isinstance(model, ModelBase):
         raise ImproperlyConfigured(
             "Tagulous can only register a single model with admin."
         )
 
-    # Ensure we have a valid admin site
     if site is None:
         site = admin.site
 
-    #
-    # Determine appropriate admin class
-    #
-    if not admin_class:
-        admin_class = admin.ModelAdmin
-
-    # Going to make a list of base classes to inject
-    cls_bases = []
-
-    # If it's a tag model, subclass TagModelAdmin or TagTreeModelAdmin
-    if issubclass(model, tag_models.BaseTagModel):
-        if issubclass(model, tag_models.TagTreeModel):
-            if not issubclass(admin_class, TagTreeModelAdmin):
-                cls_bases += [TagTreeModelAdmin]
-        else:
-            if not issubclass(admin_class, TagModelAdmin):
-                cls_bases += [TagModelAdmin]
-
-    # If it's a tagged model, subclass TaggedModelAdmin
-    singletagfields = tag_models.singletagfields_from_model(model)
-    tagfields = tag_models.tagfields_from_model(model)
-    if singletagfields or tagfields:
-        if not issubclass(admin_class, TaggedModelAdmin):
-            cls_bases += [TaggedModelAdmin]
-
-    # If options specified, or other bases, will need to subclass admin_class
-    if options or cls_bases:
-        cls_bases += [admin_class]
-        # Update options with anything the new subclasses could have overidden
-        # in a custom ModelAdmin - unless they're already overridden in options
-        options["__module__"] = __name__
-        if admin_class != admin.ModelAdmin:
-            options.update(
-                dict(
-                    (k, v)
-                    for k, v in admin_class.__dict__.items()
-                    if k in ["list_display", "list_filter", "exclude", "actions"]
-                    and k not in options
-                )
-            )
-        admin_class = type(str("%sAdmin" % model.__name__), tuple(cls_bases), options)
-
-    # Enhance the model admin class
-    enhance(model, admin_class)
-
-    # Register the model
-    # Don't pass options - we've already dealt with that
-    site.register(model, admin_class)
+    if admin_class is not None:
+        site.register(model, admin_class, **options)
+    else:
+        site.register(model, **options)

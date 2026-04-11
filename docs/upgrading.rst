@@ -32,6 +32,59 @@ Tagulous follows semantic versioning in the format ``BREAKING.FEATURE.BUG``:
    follow them up to the latest version.
 
 
+.. _upgrade_2-1-1:
+
+Upgrading from 2.1.0
+--------------------
+
+Tagulous 2.2.0 introduces several changes which raise deprecation warnings. These will
+become breaking changes in version 3.0.0 - take action now for a smooth upgrade.
+
+Admin registration
+~~~~~~~~~~~~~~~~~~
+
+Tagulous now automatically patches the admin site, so ``tagulous.admin.register`` has
+been deprecated and will show a warning when used.
+
+You should switch to registering directly with Django's admin site using the standard
+``admin.register``.
+
+For example, this::
+
+    import tagulous.admin
+
+    class MyAdmin(admin.ModelAdmin):
+        list_display = ['name', 'tags']
+    tagulous.admin.register(MyModel, MyAdmin)
+
+becomes this::
+
+    from django.contrib import admin
+
+    @admin.register(MyModel)
+    class MyAdmin(admin.ModelAdmin):
+        list_display = ['name', 'tags']
+
+or the older syntax::
+
+    from django.contrib import admin
+
+    class MyAdmin(admin.ModelAdmin):
+        pass
+    admin.site.register(MyModel, MyAdmin)
+
+If you have ``TAGULOUS_ENHANCE_MODELS = False``, then you can manually upgrade your
+model admins by subclassing ``TaggedModelAdmin``::
+
+    from tagulous.admin import TaggedModelAdmin
+
+    @admin.site.register(MyModel)
+    class MyAdmin(TaggedModelAdmin):
+        list_display = ['name', 'tags']
+
+``tagulous.admin.register`` will be removed in Tagulous 3.0.0.
+
+
 .. _upgrade-1-3-3:
 
 Upgrading from 1.3.3

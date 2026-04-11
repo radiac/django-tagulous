@@ -100,7 +100,7 @@ class AdminTestManager(object):
 
 class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
     """
-    Test Admin registration of tagged model
+    Test standard Django admin registration with auto-enhancement
     """
 
     def setUpExtra(self):
@@ -110,32 +110,80 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         self.model_tags = self.model.tags.tag_model
         self.site = admin.AdminSite(name="tagulous_admin")
 
-    def test_register_site(self):
-        "Check register with site"
+    def test_register_tagged_model(self):
+        "Standard registration of a tagged model gets tagulous enhancements"
         self.assertFalse(self.model in self.site._registry)
-        tag_admin.register(self.model, self.admin, site=self.site)
+        self.site.register(self.model, self.admin)
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
-        self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
+        # TaggedBaseModelAdminMixin is in the MRO via auto-enhancement
+        self.assertIsInstance(ma, tag_admin.TaggedBaseModelAdminMixin)
+
+    def test_register_tagged_model__list_display(self):
+        "TagField in list_display is replaced with a display callable"
+        self.site.register(self.model, self.admin)
+        ma = self.site._registry[self.model]
+        self.assertSequenceEqual(
+            ma.get_list_display(self.mock_request()),
+            ["name", "singletag", "_tagulous_display_tags"],
+        )
+
+    def test_register_tagged_model__form_fields(self):
+        "Tag fields get AdminTagWidget, not RelatedFieldWidgetWrapper"
+        self.site.register(self.model, self.admin)
+        ma = self.site._registry[self.model]
+        db_singletag = self.model._meta.get_field("singletag")
+        self.assertIsInstance(
+            ma.formfield_for_dbfield(db_singletag).widget,
+            tag_forms.AdminTagWidget,
+        )
+        db_tags = self.model._meta.get_field("tags")
+        self.assertIsInstance(
+            ma.formfield_for_dbfield(db_tags).widget,
+            tag_forms.AdminTagWidget,
+        )
+
+
+class DeprecatedRegisterTest(TestRequestMixin, TagTestManager, TestCase):
+    """
+    Test deprecated tagulous.admin.register() still works with a warning
+    """
+
+    def setUpExtra(self):
+        self.admin = test_admin.SimpleMixedTestAdmin
+        self.model = test_models.SimpleMixedTest
+        self.model_singletag = self.model.singletag.tag_model
+        self.model_tags = self.model.tags.tag_model
+        self.site = admin.AdminSite(name="tagulous_admin")
+
+    def register(self, *args, **kwargs):
+        with self.assertWarns(DeprecationWarning):
+            tag_admin.register(*args, **kwargs)
+
+    def test_register_site(self):
+        "Check register with site still applies tagulous enhancements"
+        self.assertFalse(self.model in self.site._registry)
+        self.register(self.model, self.admin, site=self.site)
+        self.assertTrue(self.model in self.site._registry)
+        ma = self.site._registry[self.model]
+        self.assertIn(tag_admin.TaggedBaseModelAdminMixin, type(ma).__mro__)
 
     def test_register_no_site(self):
-        "Check register without site"
-        # Replace admin.site with our own
+        "Check register without site still applies tagulous enhancements"
         old_admin_site = admin.site
         admin.site = self.site
         self.assertFalse(self.model in self.site._registry)
-        tag_admin.register(self.model, self.admin)
+        self.register(self.model, self.admin)
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
-        self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
-
-        # Return admin.site
+        self.assertIn(tag_admin.TaggedBaseModelAdminMixin, type(ma).__mro__)
         admin.site = old_admin_site
 
     def test_register_models(self):
         "Check register refuses multiple models"
-        with self.assertRaises(exceptions.ImproperlyConfigured) as cm:
-            tag_admin.register([self.model, self.model], self.admin, site=self.site)
+        with self.assertWarns(DeprecationWarning):
+            with self.assertRaises(exceptions.ImproperlyConfigured) as cm:
+                tag_admin.register([self.model, self.model], self.admin, site=self.site)
         self.assertEqual(
             str(cm.exception),
             "Tagulous can only register a single model with admin.",
@@ -143,49 +191,42 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         self.assertFalse(self.model in self.site._registry)
 
     def test_register_auto(self):
-        "Check register without admin dynamically creates admin class"
+        "Check register without admin class still registers the model"
         self.assertFalse(self.model in self.site._registry)
-        tag_admin.register(self.model, site=self.site)
+        self.register(self.model, site=self.site)
         self.assertTrue(self.model in self.site._registry)
-        ma = self.site._registry[self.model]
-        self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
 
     def test_register_options(self):
-        "Check register with options dynamically creates admin class"
+        "Check register with options passes them through to the admin site"
         self.assertFalse(self.model in self.site._registry)
-        tag_admin.register(
-            self.model, self.admin, site=self.site, list_display=["name"]
-        )
+        self.register(self.model, self.admin, site=self.site, list_display=["name"])
         self.assertTrue(self.model in self.site._registry)
         ma = self.site._registry[self.model]
-        self.assertIsInstance(ma, tag_admin.TaggedModelAdmin)
         self.assertSequenceEqual(ma.get_list_display(self.mock_request()), ["name"])
 
     def test_register_tag_descriptor(self):
-        "Check register tag descriptor creates correct admin class"
+        "Check register tag descriptor registers the tag model"
         self.assertFalse(self.model_singletag in self.site._registry)
-        tag_admin.register(self.model.singletag, self.admin, site=self.site)
+        self.register(self.model.singletag, self.admin, site=self.site)
         self.assertTrue(self.model_singletag in self.site._registry)
         ma = self.site._registry[self.model_singletag]
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
 
     def test_register_tag_model(self):
-        "Check register tag model creates correct admin class"
+        "Check register tag model gets TagModelAdmin features"
         self.assertFalse(self.model_singletag in self.site._registry)
-        tag_admin.register(self.model_singletag, site=self.site)
+        self.register(self.model_singletag, site=self.site)
         self.assertTrue(self.model_singletag in self.site._registry)
         ma = self.site._registry[self.model_singletag]
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
 
     def test_register_tag_model_class_properties(self):
         """
-        Check list_display, list_filter, exclude and actions can be set in a
-        tag modeladmin which doesn't explicitly subclass TagModelAdmin
+        Check that a custom admin class's attributes take priority over
+        TagModelAdmin defaults when registering a tag model
         """
-        # register class SimpleMixedTestTagsAdmin(admin.ModelAdmin):
-        # against self.model
         self.assertFalse(self.model.singletag.tag_model in self.site._registry)
-        tag_admin.register(
+        self.register(
             self.model.singletag.tag_model,
             test_admin.SimpleMixedTestTagsAdmin,
             site=self.site,
@@ -193,7 +234,7 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         self.assertTrue(self.model.singletag.tag_model in self.site._registry)
         ma = self.site._registry[self.model.singletag.tag_model]
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
-        self.assertEqual(ma.list_display, ("name",))
+        self.assertEqual(list(ma.list_display), ["name"])
         self.assertEqual(ma.list_filter, ["count"])
         self.assertEqual(ma.exclude, ["name"])
         self.assertEqual(ma.actions, [])
@@ -202,7 +243,7 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
         "Check register tag tree model creates correct admin class"
         tag_model = test_models.TreeTest.tags.tag_model
         self.assertFalse(tag_model in self.site._registry)
-        tag_admin.register(tag_model, site=self.site)
+        self.register(tag_model, site=self.site)
         self.assertTrue(tag_model in self.site._registry)
         ma = self.site._registry[tag_model]
         self.assertIsInstance(ma, tag_admin.TagModelAdmin)
@@ -224,7 +265,7 @@ class TaggedAdminTest(TestRequestMixin, AdminTestManager, TagTestManager, TestCa
         self.model_singletag = self.model.singletag.tag_model
         self.model_tags = self.model.tags.tag_model
         self.site = admin.AdminSite(name="tagulous_admin")
-        tag_admin.register(self.model, self.admin, site=self.site)
+        self.site.register(self.model, self.admin)
         self.ma = self.site._registry[self.model]
         self.cl = None
 
@@ -349,7 +390,7 @@ class TaggedAdminHttpTest(TestRequestMixin, AdminTestManager, TagTestManager, Te
         self.model_singletag = self.model.singletag.tag_model
         self.model_tags = self.model.tags.tag_model
         self.site = admin.AdminSite(name="tagulous_admin")
-        tag_admin.register(self.model, self.admin, site=self.site)
+        self.site.register(self.model, self.admin)
 
         User = get_user_model()
         self.superuser = User.objects.create_superuser(
@@ -467,7 +508,7 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
     def setUpExtra(self):
         self.setUpModels()
         self.site = admin.AdminSite(name="tagulous_admin")
-        tag_admin.register(self.model, site=self.site)
+        self.site.register(self.model)
         self.ma = self.site._registry[self.model]
         self.cl = None
 
@@ -920,7 +961,7 @@ class TaggedInlineSingleAdminTest(AdminTestManager, TagTestManager, TestCase):
 
     def setUpExtra(self):
         self.site = admin.AdminSite(name="tagulous_admin")
-        tag_admin.register(self.model, admin_class=self.admin_cls, site=self.site)
+        self.site.register(self.model, self.admin_cls)
         self.ma = self.site._registry[self.model]
         self.cl = None
 

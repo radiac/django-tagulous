@@ -89,8 +89,8 @@ must use the ``TaggedInlineFormSet`` class. For example::
 This would allow you to generate a formset for all ``Person`` objects which
 use a specific ``title`` tag.
 
-Tagulous will automatically apply this fix in the admin site, as long as the
-tag admin class is registered using ``tagulous.admin.register``.
+Tagulous will automatically apply this fix in the admin site when the tag
+model admin is registered using the standard Django admin API.
 
 Without the ``TaggedInlineFormSet`` class in this situation, the tag count will
 be incorrect when adding tagged model instances, and editing will fail because

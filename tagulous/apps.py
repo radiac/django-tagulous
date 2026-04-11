@@ -11,6 +11,7 @@ class TagulousConfig(AppConfig):
         register_checks()
         register_post_signals()
         self._enhance_forms()
+        self._enhance_admin()
 
     def _enhance_forms(self):
         from . import settings as tag_settings
@@ -27,3 +28,16 @@ class TagulousConfig(AppConfig):
             Form.__bases__ = (TagFormMixin,) + Form.__bases__
         if TagFormMixin not in BaseModelForm.__bases__:
             BaseModelForm.__bases__ = (TagFormMixin,) + BaseModelForm.__bases__
+
+    def _enhance_admin(self):
+        from . import settings as tag_settings
+
+        if not tag_settings.ENHANCE_MODELS:
+            return
+
+        try:
+            from .admin import enhance
+        except ImportError:
+            return  # django.contrib.admin not installed
+
+        enhance()

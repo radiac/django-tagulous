@@ -48,6 +48,17 @@ class TagTestManager(object):
                 tag_models.initial.model_initialise_tags(model)
                 tag_models.initial.model_initialise_tags(model)
 
+        # Save admin class __bases__ so mutations by tagulous.admin.enhance()
+        # (injecting mixins into registered admin class bases) don't bleed
+        # between tests.
+        from tests.tagulous_tests_app import admin as test_admin
+
+        self._saved_admin_bases = {
+            cls: cls.__bases__
+            for cls in vars(test_admin).values()
+            if isinstance(cls, type)
+        }
+
         if hasattr(self, "setUpExtra"):
             self.setUpExtra()
 
@@ -55,9 +66,12 @@ class TagTestManager(object):
         """
         Common tear down operations
         """
-        # Only here for consistency
         if hasattr(self, "tearDownExtra"):
             self.tearDownExtra()
+
+        # Restore admin class __bases__ mutated during registration
+        for cls, bases in self._saved_admin_bases.items():
+            cls.__bases__ = bases
 
     def create(self, model, **kwargs):
         # This could be replaced with the Tagulous create() method, but do it

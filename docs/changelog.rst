@@ -13,10 +13,15 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-2.2.0, TBD
+2.2.0, TBC
 ----------
 
-Feature:
+Upgrade notes: :ref:`upgrade_2-1-1`
+
+* This version introduces several significant changes which will raise deprecation
+  warnings unless addressed. These will become breaking changes in version 3.0.0.
+
+Features:
 
 * Support Django 5.2
 * Add :ref:`option_can_create` tag option to restrict tag creation to existing
@@ -29,6 +34,7 @@ Feature:
 
 Changes:
 
+* Automatic admin enhancement - no need for ``tagulous.admin.register`` any more
 * Moved the example project into a nanodjango single file ``example.py``, and added it
   to the nanodjango playground for a
   `live demo <https://radiac-django-tagulous-demo.nanodjango.dev>`_
