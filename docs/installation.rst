@@ -229,10 +229,10 @@ add a new tagulous TagField, then copy the tags back across.
    ``django-taggit`` example::
 
         def store_tags(apps, schema_editor):
-            import django_tagulous
+            from django_tagulous.utils import render_tags
             model = apps.get_model('myapp', 'MyModel')
             for obj in model.objects.all():
-                obj.tags_store = django_tagulous.utils.render_tags(obj.tags.all())
+                obj.tags_store = render_tags(obj.tags.all())
 
         class Migration(migrations.Migration):
             operations = [
@@ -247,9 +247,10 @@ add a new tagulous TagField, then copy the tags back across.
 
 4. Add a ``TagField`` to your tagged model and create a schema migration::
 
-        import django_tagulous
+        from django_tagulous.models import TagField
+
         class MyModel(models.Model):
-            tags = django_tagulous.models.TagField()
+            tags = TagField()
             tags_store = models.TextField(blank=True)
 
    Be careful to set appropriate arguments, ie ``blank=True`` if some of your

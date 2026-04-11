@@ -158,8 +158,9 @@ the ``TagMeta`` of a parent model can be overridden by options in the
 
 Example::
 
-    import django_tagulous
-    class MyTagModel(django_tagulous.models.TagModel):
+    from django_tagulous.models import TagModel
+
+    class MyTagModel(TagModel):
         class TagMeta:
             initial = 'judo, karate'
 

@@ -118,7 +118,7 @@ class TaggedModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class TagModelAdmin(admin.ModelAdmin):
+class TagModelAdmin(TaggedBaseModelAdminMixin, admin.ModelAdmin):
     list_display = ["name", "count", "protected"]
     list_filter = ["protected"]
     search_fields = ["name"]
@@ -343,9 +343,13 @@ def enhance():
             ):
                 for inline_cls in admin_class.inlines:
                     if not issubclass(inline_cls, TaggedBaseModelAdminMixin):
+                        # TaggedBaseModelAdminMixin.checks_class is ModelAdminChecks-based
+                        # and must not replace InlineModelAdminChecks on inline classes
+                        original_checks_class = inline_cls.checks_class
                         inline_cls.__bases__ = (
                             TaggedBaseModelAdminMixin,
                         ) + inline_cls.__bases__
+                        inline_cls.checks_class = original_checks_class
                     if issubclass(
                         inline_cls.model, tag_models.TaggedModel
                     ) and not issubclass(

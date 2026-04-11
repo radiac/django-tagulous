@@ -76,14 +76,17 @@ formset for tagged models, with a tag as their parent model - eg when you edit
 a tag and its corresponding instances of the tagged model. That is when you
 must use the ``TaggedInlineFormSet`` class. For example::
 
+    from django_tagulous.models import SingleTagField
+    from django_tagulous.forms import TaggedInlineFormSet
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        title = django_tagulous.models.SingleTagField(initial='Mr, Mrs')
+        title = SingleTagField(initial='Mr, Mrs')
 
     PersonInline = forms.models.inlineformset_factory(
         Person.title.tag_model,
         Person,
-        formset=django_tagulous.forms.TaggedInlineFormSet,
+        formset=TaggedInlineFormSet,
     )
 
 This would allow you to generate a formset for all ``Person`` objects which

@@ -32,12 +32,11 @@ with defer:
     from django.http import HttpResponseRedirect
     from django.urls import reverse
 
-    import django_tagulous.admin
-    import django_tagulous.models
+    from django_tagulous.models import SingleTagField, TagField
 
 app = Django(
     ADMIN_URL="admin/",
-    EXTRA_APPS=["tagulous"],
+    EXTRA_APPS=["django_tagulous"],
     SERIALIZATION_MODULES={
         "xml": "django_tagulous.serializers.xml_serializer",
         "json": "django_tagulous.serializers.json",
@@ -57,7 +56,7 @@ class Participant(models.Model):
     name = models.CharField(max_length=255)
 
     # can_create=False on the field - new categories are never allowed
-    category = django_tagulous.models.SingleTagField(
+    category = SingleTagField(
         initial="Bronze, Silver, Gold",
         can_create=False,
         blank=True,
@@ -68,7 +67,7 @@ class Participant(models.Model):
 
     # can_create=False on the field, overridden to True on the model class -
     # new skills are allowed (model class takes priority over field)
-    skill = django_tagulous.models.TagField(
+    skill = TagField(
         initial="Python, JavaScript, SQL, HTML, CSS",
         can_create=False,
         space_delimiter=False,
@@ -79,7 +78,7 @@ class Participant(models.Model):
 
     # No restriction on the field - can_create_hobby=False is set on the form
     # class, so new hobbies are always blocked via this form
-    hobby = django_tagulous.models.TagField(
+    hobby = TagField(
         initial="reading, cooking, cycling, gaming, hiking",
         force_lowercase=True,
         blank=True,
@@ -111,10 +110,10 @@ class ParticipantAdmin(admin.ModelAdmin):
     list_display = ("name", "category", "skill", "hobby")
 
 
-django_tagulous.admin.register(Participant, ParticipantAdmin)
-django_tagulous.admin.register(Participant.category.tag_model)
-django_tagulous.admin.register(Participant.skill.tag_model)
-django_tagulous.admin.register(Participant.hobby.tag_model)
+admin.site.register(Participant, ParticipantAdmin)
+admin.site.register(Participant.category.tag_model)
+admin.site.register(Participant.skill.tag_model)
+admin.site.register(Participant.hobby.tag_model)
 
 
 # Views

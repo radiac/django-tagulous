@@ -231,7 +231,7 @@ required:
 
    2. Add the unique field::
 
-        import django_tagulous.models.migrations
+        from django_tagulous.models import migrations as tagulous_migrations
         ...
 
         class Migration(migrations.Migration):
@@ -239,7 +239,7 @@ required:
             operations = [
                 ...
                 # Leave other operations as they are, just replace AddField:
-            ] + django_tagulous.models.migration.add_unique_field(
+            ] + tagulous_migrations.add_unique_field(
                 model_name='_tagulous_mymodel_tags',
                 name='path',
                 field=models.TextField(unique=True),
@@ -265,15 +265,16 @@ required:
    ``ChangeModelBases`` to the end of your ``operations`` list, as the last
    operation::
 
-        import django_tagulous.models.migrations
+        from django_tagulous.models import migrations as tagulous_migrations
+        from django_tagulous.models.models import BaseTagTreeModel
 
         class Migration(migrations.Migration):
             # ... rest of Migration as generated
             operations = [
                 # ... rest of operations
-                django_tagulous.models.migrations.ChangeModelBases(
+                tagulous_migrations.ChangeModelBases(
                     name='_tagulous_mymodel_tags',
-                    bases=(django_tagulous.models.models.BaseTagTreeModel, models.Model),
+                    bases=(BaseTagTreeModel, models.Model),
                 )
             ]
 

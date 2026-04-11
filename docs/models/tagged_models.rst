@@ -77,12 +77,14 @@ The three tagged base classes each have a class method ``cast_class`` which can
 change existing classes so that they become ``CastTagged`` subclasses of
 themselves; for example::
 
-    class MyModel(django_tagulous.TaggedModel):
+    from django_tagulous.models import TaggedModel, TagField, TaggedManager
+
+    class MyModel(TaggedModel):
         name = models.CharField(max_length=255)
-        tags = django_tagulous.models.TagField()
-        objects = django_tagulous.models.TaggedManager.cast_class(MyModelManager)
+        tags = TagField()
+        objects = TaggedManager.cast_class(MyModelManager)
         other_manager = MyOtherManager
-    django_tagulous.models.TaggedManager.cast_class(MyModel.other_manager)
+    TaggedManager.cast_class(MyModel.other_manager)
 
 This can be useful when working with other third-party libraries which insist
 on you doing things a certain way.

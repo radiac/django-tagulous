@@ -19,15 +19,15 @@ This simple example creates a ``SingleTagField`` (a glorified ``ForeignKey``)
 and two ``TagField`` (a typical tag field, using ``ManyToManyField``)::
 
     from django.db import models
-    import django_tagulous.models
+    from django_tagulous.models import SingleTagField, TagField
 
     class Person(models.Model):
-        title = django_tagulous.models.SingleTagField(
+        title = SingleTagField(
             label="Your preferred title",
             initial="Mr, Mrs, Ms",
         )
         name = models.CharField(max_length=255)
-        skills = django_tagulous.models.TagField(
+        skills = TagField(
             force_lowercase=True,
             max_count=5,
         )
@@ -80,9 +80,9 @@ Custom models
 
 You can create a tag model manually, and specify it in one or more tag fields::
 
-    import django_tagulous.models
+    from django_tagulous.models import TagModel, TagField
 
-    class Hobbies(django_tagulous.models.TagModel):
+    class Hobbies(TagModel):
         class TagMeta:
             # Tag options
             initial = "eating, coding, gaming"
@@ -91,7 +91,7 @@ You can create a tag model manually, and specify it in one or more tag fields::
 
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        hobbies = django_tagulous.models.TagField(to=Hobbies)
+        hobbies = TagField(to=Hobbies)
 
 Options for a custom tag model must be set in :ref:`tagmeta` - you cannot
 pass them as arguments in tag fields.
@@ -107,10 +107,11 @@ Tag Trees
 A tag field can specify ``tree=True`` to use slashes in tag names to denote
 children::
 
-    import django_tagulous.models
+    from django_tagulous.models import TagField
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        skills = django_tagulous.models.TagField(
+        skills = TagField(
             force_lowercase=True,
             max_count=5,
             tree=True,
@@ -119,7 +120,9 @@ children::
 This can't be set in the tag model's ``TagMeta`` object; the tag model must
 instead subclass :ref:`tagtreemodel`::
 
-    class Hobbies(django_tagulous.models.TagTreeModel):
+    from django_tagulous.models import TagField, TagTreeModel
+
+    class Hobbies(TagTreeModel):
         class TagMeta:
             initial = "food/eating, food/cooking, gaming/football"
             force_lowercase = True
@@ -127,7 +130,7 @@ instead subclass :ref:`tagtreemodel`::
 
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        hobbies = django_tagulous.models.TagField(to=Hobbies)
+        hobbies = TagField(to=Hobbies)
 
 You can add tags as normal, and then query using tree relationships::
 
@@ -158,11 +161,11 @@ objects absolute URLs without needing to create a custom tag model::
 
     from django.db import models
     from django.core.urlresolvers import reverse
-    import django_tagulous.models
+    from django_tagulous.models import TagField
 
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        skills = django_tagulous.models.TagField(
+        skills = TagField(
             get_absolute_url=lambda tag: reverse(
                 'myapp.views.by_skill', kwargs={'skill_slug': tag.slug}
             ),
@@ -177,7 +180,7 @@ a template::
 
 If you are using a tree, you will want to use the path instead::
 
-    skills = django_tagulous.models.TagField(
+    skills = TagField(
         tree=True,
         get_absolute_url=lambda tag: reverse(
             'myapp.views.by_skill', kwargs={'skill_path': tag.path}
@@ -196,11 +199,11 @@ A ``ModelForm`` with tag fields needs no special treatment::
 
     from django.db import models
     from django import forms
-    import django_tagulous.models
+    from django_tagulous.models import TagField
 
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        skills = django_tagulous.models.TagField()
+        skills = TagField()
 
     class PersonForm(forms.ModelForm):
         class Meta:
@@ -231,10 +234,14 @@ However, because a ``TagField`` is based on a ``ManyToManyField``, if you save
 your form using ``commit=False``, you will need to call ``save_m2m`` to save
 the tags::
 
+    from django.db import models
+    from django import forms
+    from django_tagulous.models import TagField
+
     class Pet(models.Model):
         owner = models.ForeignKey('auth.User')
         name = models.CharField(max_length=255)
-        skills = django_tagulous.models.TagField()
+        skills = TagField()
 
     class PetForm(forms.ModelForm):
         class Meta:
@@ -271,15 +278,16 @@ Tagulous form fields take tag options as a single ``TagOptions`` object, rather
 than as separate arguments as a model form does::
 
     from django import forms
-    import django_tagulous.forms
+    from django_tagulous.forms import SingleTagField, TagField
+    from django_tagulous.models import TagOptions
 
     class PersonForm(forms.ModelForm):
-        title = django_tagulous.forms.SingleTagField(
+        title = SingleTagField(
             autocomplete_tags=['Mr', 'Mrs', 'Ms']
         )
         name = forms.CharField(max_length=255)
-        skills = django_tagulous.forms.TagField(
-            tag_options=django_tagulous.models.TagOptions(
+        skills = TagField(
+            tag_options=TagOptions(
                 force_lowercase=True,
             ),
             autocomplete_tags=['running', 'jumping', 'judo']
@@ -311,8 +319,10 @@ If it often useful for autocomplete to only list your initial tags, and not
 those added by others; Tagulous makes this easy with the
 ``autocomplete_initial`` field option::
 
+    from django_tagulous.models import SingleTagField
+
     class Person(models.Model):
-        title = django_tagulous.models.SingleTagField(
+        title = SingleTagField(
             label="Your preferred title",
             initial="Mr, Mrs, Ms",
             autocomplete_initial=True,
@@ -336,12 +346,12 @@ Filter the ``autocomplete_tags`` queryset after the form initialises::
 
     from django.db import models
     from django import forms
-    import django_tagulous
+    from django_tagulous.models import TagField
 
     class Pet(models.Model):
         owner = models.ForeignKey('auth.User')
         name = models.CharField(max_length=255)
-        skills = django_tagulous.models.TagField()
+        skills = TagField()
 
     class PetForm(forms.ModelForm):
         def __init__(self, user, *args, **kwargs):
@@ -373,20 +383,22 @@ Autocomplete AJAX Views
 To use AJAX to populate your autocomplete using JavaScript, set the tag option
 ``autocomplete_view`` in your models to a value for ``reverse()``::
 
+    from django_tagulous.models import TagField
+
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        skills = django_tagulous.models.TagField(
+        skills = TagField(
             autocomplete_view='person_skills_autocomplete'
         )
 
 You can then use the default autocomplete views directly in your urls::
 
-    import django_tagulous
+    from django_tagulous.views import autocomplete
     from myapp.models import Person
     urlpatterns = [
         url(
             r'^person/skills/autocomplete/',
-            django_tagulous.views.autocomplete,
+            autocomplete,
             {'tag_model': Person},
             name='person_skills_autocomplete',
         ),
