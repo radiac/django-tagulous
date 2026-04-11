@@ -96,7 +96,7 @@ work as it would normally.
 Disabling auto-enhancement
 ===========================
 
-You can set ``TAGULOUS_ENHANCE_MODELS = False`` in your settings to opt out of the
+You can set ``TAGULOUS_ENHANCE = False`` in your settings to opt out of the
 global ``AdminSite.register`` patch. You can then apply tag field support
 selectively by subclassing ``TaggedModelAdmin`` directly::
 

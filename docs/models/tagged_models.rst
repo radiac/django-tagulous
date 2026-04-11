@@ -10,7 +10,7 @@ Because Tagulous's fields work by subclassing ``ForeignKey`` and
 expect to use tag strings but cannot - constructors and filtering, for example.
 Tagulous therefore adds this functionality through the :ref:`taggedmodel` base class for tagged models.
 
-If ``TAGULOUS_ENHANCE_MODELS = True`` (which it is by default - see
+If ``TAGULOUS_ENHANCE = True`` (which it is by default - see
 :ref:`settings`), this base class will be applied automatically, otherwise read
 on to :ref:`taggedmanually`.
 
@@ -71,7 +71,7 @@ Setting tagged base classes manually
 ====================================
 
 However, if you want to avoid this automatic subclassing, you can set
-``TAGULOUS_ENHANCE_MODELS = False`` and manage this yourself:
+``TAGULOUS_ENHANCE = False`` and manage this yourself:
 
 The three tagged base classes each have a class method ``cast_class`` which can
 change existing classes so that they become ``CastTagged`` subclasses of

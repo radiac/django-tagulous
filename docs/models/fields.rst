@@ -22,7 +22,7 @@ Like a ``CharField``, changes made by assigning a value will not be committed
 until the model is saved, although you can still make immediate changes by
 calling the standard m2m methods ``add``, ``remove`` and ``clear``.
 
-If ``TAGULOUS_ENHANCE_MODELS`` is ``True`` (which it is by default -
+If ``TAGULOUS_ENHANCE`` is ``True`` (which it is by default -
 see :ref:`settings`), you can also use tag strings and lists of tag names in
 ``get`` and ``filter``, and model constructors and ``object.create()`` - see
 :doc:`tagged_models` for more details.

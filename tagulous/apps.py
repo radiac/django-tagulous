@@ -16,7 +16,7 @@ class TagulousConfig(AppConfig):
     def _enhance_forms(self):
         from . import settings as tag_settings
 
-        if not tag_settings.ENHANCE_MODELS:
+        if not tag_settings.ENHANCE:
             return
 
         from django.forms.forms import Form
@@ -32,7 +32,7 @@ class TagulousConfig(AppConfig):
     def _enhance_admin(self):
         from . import settings as tag_settings
 
-        if not tag_settings.ENHANCE_MODELS:
+        if not tag_settings.ENHANCE:
             return
 
         try:

@@ -143,7 +143,7 @@ class TagFormMixin:
     """
     Enforces can_create on tag fields after form cleaning.
 
-    Auto-injected into Django's form base classes when TAGULOUS_ENHANCE_MODELS
+    Auto-injected into Django's form base classes when TAGULOUS_ENHANCE
     is True (the default). Can also be added manually to individual form classes
     if that setting is disabled.
 

@@ -43,7 +43,7 @@ class TaggedBaseModelAdminMixin:
     """
     Mixin providing tagulous support for ModelAdmin subclasses.
 
-    Can be used explicitly in a custom ModelAdmin. When TAGULOUS_ENHANCE_MODELS
+    Can be used explicitly in a custom ModelAdmin. When TAGULOUS_ENHANCE
     is True (the default), it is also automatically injected into
     ModelAdmin.__bases__ so that standard admin registration works without any
     tagulous-specific imports.
@@ -279,7 +279,7 @@ def enhance():
     Apply tagulous enhancements to Django's admin framework globally.
 
     Called automatically by the tagulous ``AppConfig.ready()`` when
-    ``TAGULOUS_ENHANCE_MODELS`` is ``True`` (the default).
+    ``TAGULOUS_ENHANCE`` is ``True`` (the default).
 
     Patches ``AdminSite.register`` so that any model registered with the
     standard Django admin automatically gets:
@@ -370,7 +370,7 @@ def register(model, admin_class=None, site=None, **options):
 
     .. deprecated::
         Use ``django.contrib.admin.site.register()`` directly. When
-        ``TAGULOUS_ENHANCE_MODELS`` is ``True`` (the default), tagulous admin
+        ``TAGULOUS_ENHANCE`` is ``True`` (the default), tagulous admin
         enhancements are applied automatically via :func:`enhance`.
 
     Arguments:

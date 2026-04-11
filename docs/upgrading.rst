@@ -73,7 +73,7 @@ or the older syntax::
         pass
     admin.site.register(MyModel, MyAdmin)
 
-If you have ``TAGULOUS_ENHANCE_MODELS = False``, then you can manually upgrade your
+If you have ``TAGULOUS_ENHANCE = False``, then you can manually upgrade your
 model admins by subclassing ``TaggedModelAdmin``::
 
     from tagulous.admin import TaggedModelAdmin
@@ -83,6 +83,29 @@ model admins by subclassing ``TaggedModelAdmin``::
         list_display = ['name', 'tags']
 
 ``tagulous.admin.register`` will be removed in Tagulous 3.0.0.
+
+
+TAGULOUS_ENHANCE_MODELS deprecated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Most users can ignore this** - it only applies to users who have
+``TAGULOUS_ENHANCE_MODELS = False`` in their settings.
+
+The ``TAGULOUS_ENHANCE_MODELS`` setting has been renamed to ``TAGULOUS_ENHANCE``, as it
+now also controls the admin enhancements.
+
+If you currently disable tagulous model enhancements, you will need to update your
+settings file::
+
+    # Old (deprecated):
+    TAGULOUS_ENHANCE_MODELS = False
+
+    # New:
+    TAGULOUS_ENHANCE = False
+
+**If you do not have this setting, you do not need to add it.**
+
+``TAGULOUS_ENHANCE_MODELS`` will be removed in Tagulous 3.0.0.
 
 
 .. _upgrade-1-3-3:

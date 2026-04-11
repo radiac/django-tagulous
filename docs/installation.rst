@@ -159,17 +159,17 @@ Tagulous behaves.
 
     Default: ``6``
 
-``TAGULOUS_ENHANCE_MODELS``
+``TAGULOUS_ENHANCE``
     **Advanced usage** - only use this setting if you know what you're doing.
 
-    Tagulous automatically enhances models, managers and querysets to fully support tag
-    fields. This has the theoretical potential for unexpected results, so this setting
-    lets the cautious disable this enhancement.
+    Tagulous automatically enhances models, managers, querysets and the admin site to
+    fully support tag fields. This has the theoretical potential for unexpected results,
+    so this setting lets the cautious disable this enhancement.
 
     If you set this to False you will need to manually add Tagulous mixins to your
-    models, managers and querysets.
+    models, managers, querysets, and modeladmins.
 
-    See :doc:`models/tagged_models` for more information.
+    See :doc:`models/tagged_models` and :doc:`admin` for more information.
 
     Default: ``True``
 

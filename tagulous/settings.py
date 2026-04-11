@@ -96,4 +96,14 @@ WEIGHT_MAX = getattr(settings, "TAGULOUS_WEIGHT_MAX", 6)
 # If this is set to False, certain aspects of tag fields will not work as
 # expected; you should consider manually subclassing the relevant classes.
 # See settings documentation for more information.
-ENHANCE_MODELS = getattr(settings, "TAGULOUS_ENHANCE_MODELS", True)
+_enhance_default = True
+if hasattr(settings, "TAGULOUS_ENHANCE_MODELS"):
+    import warnings
+
+    warnings.warn(
+        "TAGULOUS_ENHANCE_MODELS is deprecated, use TAGULOUS_ENHANCE instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    _enhance_default = settings.TAGULOUS_ENHANCE_MODELS
+ENHANCE = getattr(settings, "TAGULOUS_ENHANCE", _enhance_default)

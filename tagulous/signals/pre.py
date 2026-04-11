@@ -23,5 +23,5 @@ def register_pre_signals():
     """
     Called from tagulous/models/__init__.py
     """
-    if settings.ENHANCE_MODELS:
+    if settings.ENHANCE:
         class_prepared.connect(class_prepared_listener, weak=False)

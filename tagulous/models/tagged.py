@@ -1,7 +1,7 @@
 """
 Tagulous extensions for models which use tag fields (tagged models)
 
-These are all applied automatically when the TAGULOUS_ENHANCE_MODELS setting
+These are all applied automatically when the TAGULOUS_ENHANCE setting
 is enabled.
 """
 
@@ -382,7 +382,7 @@ class TaggedModel(models.Model):
         """
         If the model contains tag fields, change the model to subclass
         TaggedModel and enhance its managers. Called automatically on all
-        models with tag fields when settings.ENHANCE_MODELS is True.
+        models with tag fields when settings.ENHANCE is True.
 
         Arguments:
             model   The model to turn into a TaggedModel subclass.

@@ -34,7 +34,10 @@ Features:
 
 Changes:
 
-* Automatic admin enhancement - no need for ``tagulous.admin.register`` any more
+* ``TAGULOUS_ENHANCE_MODELS`` has been renamed to ``TAGULOUS_ENHANCE`` (see
+  :ref:`upgrade notes <upgrade_2-1-1>`)
+* Automatic admin enhancement - no need for ``tagulous.admin.register`` any more  (see
+  :ref:`upgrade notes <upgrade_2-1-1>`)
 * Moved the example project into a nanodjango single file ``example.py``, and added it
   to the nanodjango playground for a
   `live demo <https://radiac-django-tagulous-demo.nanodjango.dev>`_

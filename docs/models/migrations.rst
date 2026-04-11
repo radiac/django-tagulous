@@ -6,7 +6,7 @@ Tagulous supports Django migrations.
 
 Both ``SingleTagField`` and ``TagField`` work in schema and data migrations.
 Tagged models will be subclasses of ``TaggedModel`` as normal (as long as
-``TAGULOUS_ENHANCE_MODELS`` is ``True``), and tag fields will work as normal.
+``TAGULOUS_ENHANCE`` is ``True``), and tag fields will work as normal.
 The only difference is that tag models will be instances of ``BaseTagModel``
 and ``BaseTagTreeModel`` rather than their normal non-base versions - but this
 is just how migrations work, and it will makes no practical difference.

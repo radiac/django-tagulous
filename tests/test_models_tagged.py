@@ -1,7 +1,7 @@
 """
 Tagulous test: Enhanced queryset for tagged models
 
-Will fail if settings.ENHANCE_MODELS is not True
+Will fail if settings.ENHANCE is not True
 
 Modules tested:
     tagulous.models.tagged
