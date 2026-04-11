@@ -15,18 +15,18 @@ with defer:
     from django.http import HttpResponseRedirect
     from django.urls import reverse
 
-    import tagulous.admin
-    import tagulous.models
-    import tagulous.views
+    import django_tagulous.admin
+    import django_tagulous.models
+    import django_tagulous.views
 
 app = Django(
     ADMIN_URL="admin/",
     EXTRA_APPS=["tagulous"],
     SERIALIZATION_MODULES={
-        "xml": "tagulous.serializers.xml_serializer",
-        "json": "tagulous.serializers.json",
-        "python": "tagulous.serializers.python",
-        "yaml": "tagulous.serializers.pyyaml",
+        "xml": "django_tagulous.serializers.xml_serializer",
+        "json": "django_tagulous.serializers.json",
+        "python": "django_tagulous.serializers.python",
+        "yaml": "django_tagulous.serializers.pyyaml",
     },
     STYLE_SITE_TITLE="Tagulous example",
     SQLITE_DATABASE="simple.sqlite3",
@@ -37,7 +37,7 @@ app = Django(
 # Models
 
 
-class Skill(tagulous.models.TagTreeModel):
+class Skill(django_tagulous.models.TagTreeModel):
     class TagMeta:
         initial = [
             "Python/Django",
@@ -53,16 +53,16 @@ class Skill(tagulous.models.TagTreeModel):
 
 class Person(models.Model):
     name = models.CharField(max_length=255)
-    title = tagulous.models.SingleTagField(
+    title = django_tagulous.models.SingleTagField(
         initial="Mr, Mrs",
         help_text="A SingleTagField - a CharField with dynamic choices",
         on_delete=models.CASCADE,
     )
-    skills = tagulous.models.TagField(
+    skills = django_tagulous.models.TagField(
         Skill,
         help_text="A TagField referencing a TagTreeModel; does not split on spaces",
     )
-    hobbies = tagulous.models.TagField(
+    hobbies = django_tagulous.models.TagField(
         initial="eating, coding, gaming",
         force_lowercase=True,
         blank=True,
@@ -90,9 +90,9 @@ class PersonAdmin(admin.ModelAdmin):
     list_filter = ("name", "title", "skills", "hobbies")
 
 
-tagulous.admin.register(Person, PersonAdmin)
-tagulous.admin.register(Skill)
-tagulous.admin.register(Person.hobbies.tag_model)
+django_tagulous.admin.register(Person, PersonAdmin)
+django_tagulous.admin.register(Skill)
+django_tagulous.admin.register(Person.hobbies.tag_model)
 
 
 class PersonInline(admin.TabularInline):
@@ -104,7 +104,7 @@ class TitleAdmin(admin.ModelAdmin):
     inlines = [PersonInline]
 
 
-tagulous.admin.register(Person.title.tag_model, TitleAdmin)
+django_tagulous.admin.register(Person.title.tag_model, TitleAdmin)
 
 
 # Views
@@ -112,7 +112,7 @@ tagulous.admin.register(Person.title.tag_model, TitleAdmin)
 
 @app.path("api/skills/", name="person_skills_autocomplete")
 def skills_autocomplete(request):
-    return tagulous.views.autocomplete(request, tag_model=Skill)
+    return django_tagulous.views.autocomplete(request, tag_model=Skill)
 
 
 @app.path("<int:person_pk>/", name="edit")

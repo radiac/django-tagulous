@@ -1,6 +1,10 @@
 from django.test import TestCase, override_settings
 
-from tagulous.checks import SERIALIZATION_MODULES_EXPECTED, WARNING_W001, tagulous_check
+from django_tagulous.checks import (
+    SERIALIZATION_MODULES_EXPECTED,
+    WARNING_W001,
+    tagulous_check,
+)
 
 
 class CheckTest(TestCase):

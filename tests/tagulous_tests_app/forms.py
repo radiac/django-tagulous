@@ -1,6 +1,6 @@
 from django import forms
 
-import tagulous
+import django_tagulous as tagulous
 from tests.tagulous_tests_app import models
 
 # Straight form fields

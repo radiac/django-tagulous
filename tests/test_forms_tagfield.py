@@ -10,9 +10,9 @@ import django
 from django import forms
 from django.test import TestCase
 
-from tagulous import forms as tag_forms
-from tagulous import models as tag_models
-from tagulous import settings as tag_settings
+from django_tagulous import forms as tag_forms
+from django_tagulous import models as tag_models
+from django_tagulous import settings as tag_settings
 from tests.lib import TagTestManager, skip_if_mysql, tagfield_html
 from tests.tagulous_tests_app import forms as test_forms
 from tests.tagulous_tests_app import models as test_models

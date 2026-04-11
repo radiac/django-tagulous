@@ -380,7 +380,7 @@ def register(model, admin_class=None, site=None, **options):
         **options   Passed to the admin site
     """
     warnings.warn(
-        "tagulous.admin.register() is deprecated, use django.contrib.admin.site.register() "
+        "django_tagulous.admin.register() is deprecated, use django.contrib.admin.site.register() "
         "directly - see Upgrading documentation for details",
         DeprecationWarning,
         stacklevel=2,

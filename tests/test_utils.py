@@ -8,7 +8,7 @@ Modules tested:
 
 from django.test import TestCase
 
-from tagulous import utils as tag_utils
+from django_tagulous import utils as tag_utils
 
 # ##############################################################################
 # ###### utils.strip_split()

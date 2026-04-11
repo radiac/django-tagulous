@@ -3,8 +3,8 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-import tagulous.models.fields
-import tagulous.models.models
+import django_tagulous.models.fields
+import django_tagulous.models.models
 
 
 class Migration(migrations.Migration):
@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
                 "abstract": False,
                 "unique_together": {("slug",)},
             },
-            bases=(tagulous.models.models.BaseTagModel, models.Model),
+            bases=(django_tagulous.models.models.BaseTagModel, models.Model),
         ),
         migrations.CreateModel(
             name="Tagulous_CapitalisedTest_singletag",
@@ -84,7 +84,7 @@ class Migration(migrations.Migration):
                 "abstract": False,
                 "unique_together": {("slug",)},
             },
-            bases=(tagulous.models.models.BaseTagModel, models.Model),
+            bases=(django_tagulous.models.models.BaseTagModel, models.Model),
         ),
         migrations.CreateModel(
             name="CapitalisedTest",
@@ -101,7 +101,7 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=10)),
                 (
                     "singletag",
-                    tagulous.models.fields.SingleTagField(
+                    django_tagulous.models.fields.SingleTagField(
                         _set_tag_meta=True,
                         blank=True,
                         force_lowercase=True,
@@ -113,7 +113,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "tags",
-                    tagulous.models.fields.TagField(
+                    django_tagulous.models.fields.TagField(
                         _set_tag_meta=True,
                         blank=True,
                         force_lowercase=True,

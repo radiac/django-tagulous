@@ -4,7 +4,7 @@ Test models for capitalised app names (#60)
 
 from django.db import models
 
-import tagulous
+import django_tagulous as tagulous
 
 
 class CapitalisedTest(models.Model):

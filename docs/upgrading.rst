@@ -21,8 +21,8 @@ Tagulous follows semantic versioning in the format ``BREAKING.FEATURE.BUG``:
 1. Check which version of Tagulous you are upgrading from::
 
     python
-    >>> import tagulous
-    >>> tagulous.__version__
+    >>> import django_tagulous
+    >>> django_tagulous.__version__
 
 2. Upgrade the Tagulous package::
 
@@ -40,10 +40,40 @@ Upgrading from 2.1.0
 Tagulous 2.2.0 introduces several changes which raise deprecation warnings. These will
 become breaking changes in version 3.0.0 - take action now for a smooth upgrade.
 
+Project rename
+~~~~~~~~~~~~~~
+
+The Python project name has changed from ``tagulous`` to ``django_tagulous``, to be
+consistent with Django's updated
+`packaging guidelines <https://docs.djangoproject.com/en/6.0/intro/reusable-apps/#packaging-your-app>`_.
+
+You need to update your ``INSTALLED_APPS``::
+
+    INSTALLED_APPS = [
+        ...
+        # was:
+        # "tagulous",
+        # now:
+        "django_tagulous",
+    ]
+
+and your ``imports``::
+
+    # was:
+    # from tagulous import models
+    # now:
+    from django_tagulous import models
+
+You'll also need to change your ``SERIALIZATION_MODULES`` paths
+
+There is a temporary ``tagulous`` pass-through package which will raise a deprecation
+warning. This will be removed in v3.0.0.
+
+
 Admin registration
 ~~~~~~~~~~~~~~~~~~
 
-Tagulous now automatically patches the admin site, so ``tagulous.admin.register`` has
+Tagulous now automatically patches the admin site, so ``django_tagulous.admin.register`` has
 been deprecated and will show a warning when used.
 
 You should switch to registering directly with Django's admin site using the standard
@@ -76,13 +106,13 @@ or the older syntax::
 If you have ``TAGULOUS_ENHANCE = False``, then you can manually upgrade your
 model admins by subclassing ``TaggedModelAdmin``::
 
-    from tagulous.admin import TaggedModelAdmin
+    from django_tagulous.admin import TaggedModelAdmin
 
     @admin.site.register(MyModel)
     class MyAdmin(TaggedModelAdmin):
         list_display = ['name', 'tags']
 
-``tagulous.admin.register`` will be removed in Tagulous 3.0.0.
+``django_tagulous.admin.register`` will be removed in Tagulous 3.0.0.
 
 
 TAGULOUS_ENHANCE_MODELS deprecated
@@ -352,7 +382,7 @@ Upgrading from 0.8.0
 1. Since 0.9.0, ``SingleTagField`` and ``TagField`` raise an exception if the
    tag model isn't a subclass of TagModel.
 
-2. The documentation for ``tagulous.models.migrations.add_unique_column`` has
+2. The documentation for ``django_tagulous.models.migrations.add_unique_column`` has
    been clarified to illustrate the risk of using it with a non-transactional
    database. If you use this in your migrations, read the documentation to be
    sure you understand the problem involved.

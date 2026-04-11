@@ -10,8 +10,8 @@ import django
 from django.db import connection, models
 from django.test import override_settings, testcases
 
-from tagulous import models as tag_models
-from tagulous import settings as tag_settings
+from django_tagulous import models as tag_models
+from django_tagulous import settings as tag_settings
 
 # Detect test environment
 # This is used when creating files (migrations and fixtures) to ensure that

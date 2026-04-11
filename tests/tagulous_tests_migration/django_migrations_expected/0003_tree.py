@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.db import migrations, models
 
-import tagulous.models.fields
-import tagulous.models.migrations
+import django_tagulous.models.fields
+import django_tagulous.models.migrations
 
 
 class Migration(migrations.Migration):
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 preserve_default=True,
             ),
         ]
-        + tagulous.models.migrations.add_unique_field(
+        + django_tagulous.models.migrations.add_unique_field(
             model_name="tagulous_migrationtestmodel_tags",
             name="path",
             field=models.TextField(),
@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
             migrations.AlterField(
                 model_name="migrationtestmodel",
                 name="tags",
-                field=tagulous.models.fields.TagField(
+                field=django_tagulous.models.fields.TagField(
                     to="tagulous_tests_migration.Tagulous_MigrationTestModel_tags",
                     help_text=b"Enter a comma-separated tag string",
                     _set_tag_meta=True,
@@ -64,9 +64,9 @@ class Migration(migrations.Migration):
                 name="tagulous_migrationtestmodel_tags",
                 unique_together=set([("slug", "parent")]),
             ),
-            tagulous.models.migrations.ChangeModelBases(
+            django_tagulous.models.migrations.ChangeModelBases(
                 name="tagulous_migrationtestmodel_tags",
-                bases=(tagulous.models.models.BaseTagTreeModel, models.Model),
+                bases=(django_tagulous.models.models.BaseTagTreeModel, models.Model),
             ),
         ]
     )

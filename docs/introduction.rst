@@ -20,12 +20,12 @@ See :doc:`<comparison>` for a comparison with other tagging libraries.
 Quickstart
 ==========
 
-Install with ``pip install django-tagulous``, add ``tagulous`` to Django's
+Install with ``pip install django-tagulous``, add ``django_tagulous`` to Django's
 ``INSTALLED_APPS`` and :doc:`define the serializers <installation>`, then start adding
 tag fields to your model::
 
     from django.db import models
-    from tagulous.models import SingleTagField, TagField
+    from django_tagulous.models import SingleTagField, TagField
 
     class Person(models.Model):
         name = models.CharField(max_length=255)

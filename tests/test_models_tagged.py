@@ -14,8 +14,8 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.test import TestCase
 
-from tagulous import models as tag_models
-from tagulous.models.tagged import _split_kwargs
+from django_tagulous import models as tag_models
+from django_tagulous.models.tagged import _split_kwargs
 from tests.lib import TagTestManager, skip_if_mysql
 from tests.tagulous_tests_app import models as test_models
 

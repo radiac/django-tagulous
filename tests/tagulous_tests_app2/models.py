@@ -4,7 +4,7 @@ Test models
 
 from django.db import models
 
-import tagulous
+import django_tagulous as tagulous
 
 
 class MixedModel(models.Model):

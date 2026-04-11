@@ -35,7 +35,7 @@ Tagged model classes
 
 .. _taggedmodel:
 
-``tagulous.models.TaggedModel``
+``django_tagulous.models.TaggedModel``
 -------------------------------
 
 This is the base class for all tagged models. It changes the model constructor
@@ -44,16 +44,16 @@ so that ``TagField`` values can be passed as keywords.
 
 .. _taggedmanager:
 
-``tagulous.models.TaggedManager``
+``django_tagulous.models.TaggedManager``
 ---------------------------------
 
 The base class for managers of tagged models. It only exists to ensure querysets
-are subclasses of ``tagulous.TaggedQuerySet``.
+are subclasses of ``django_tagulous.TaggedQuerySet``.
 
 
 .. _taggedqueryset:
 
-``tagulous.models.TaggedQuerySet``
+``django_tagulous.models.TaggedQuerySet``
 ----------------------------------
 
 The base class for querysets on tagged models. It changes ``get``, ``filter`` and
@@ -77,12 +77,12 @@ The three tagged base classes each have a class method ``cast_class`` which can
 change existing classes so that they become ``CastTagged`` subclasses of
 themselves; for example::
 
-    class MyModel(tagulous.TaggedModel):
+    class MyModel(django_tagulous.TaggedModel):
         name = models.CharField(max_length=255)
-        tags = tagulous.models.TagField()
-        objects = tagulous.models.TaggedManager.cast_class(MyModelManager)
+        tags = django_tagulous.models.TagField()
+        objects = django_tagulous.models.TaggedManager.cast_class(MyModelManager)
         other_manager = MyOtherManager
-    tagulous.models.TaggedManager.cast_class(MyModel.other_manager)
+    django_tagulous.models.TaggedManager.cast_class(MyModel.other_manager)
 
 This can be useful when working with other third-party libraries which insist
 on you doing things a certain way.

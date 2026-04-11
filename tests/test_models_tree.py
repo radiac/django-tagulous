@@ -8,8 +8,8 @@ Modules tested:
 from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
 
-import tagulous.settings as tagulous_settings
-from tagulous import models as tag_models
+import django_tagulous.settings as tagulous_settings
+from django_tagulous import models as tag_models
 from tests.lib import TagTestManager
 from tests.tagulous_tests_app import models as test_models
 

@@ -2,7 +2,8 @@ from django.apps import AppConfig
 
 
 class TagulousConfig(AppConfig):
-    name = "tagulous"
+    name = "django_tagulous"
+    label = "tagulous"  # preserve existing database table names
 
     def ready(self):
         from .checks import register_checks

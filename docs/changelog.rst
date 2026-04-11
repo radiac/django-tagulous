@@ -26,7 +26,7 @@ Features:
 * Support Django 5.2
 * Add :ref:`option_can_create` tag option to restrict tag creation to existing
   tags, with support for logic to control it in forms.
-* Add ``tagulous.admin.list_display_tag_links()`` helper to render tags as links
+* Add ``django_tagulous.admin.list_display_tag_links()`` helper to render tags as links
   to their admin change views in ``list_display``.
 * Add :ref:`tagrelatedmanager_bulk_add` to efficiently tag many instances with
   the same tag in a fixed number of queries rather than one set of queries per
@@ -36,7 +36,7 @@ Changes:
 
 * ``TAGULOUS_ENHANCE_MODELS`` has been renamed to ``TAGULOUS_ENHANCE`` (see
   :ref:`upgrade notes <upgrade_2-1-1>`)
-* Automatic admin enhancement - no need for ``tagulous.admin.register`` any more  (see
+* Automatic admin enhancement - no need for ``django_tagulous.admin.register`` any more  (see
   :ref:`upgrade notes <upgrade_2-1-1>`)
 * Moved the example project into a nanodjango single file ``example.py``, and added it
   to the nanodjango playground for a

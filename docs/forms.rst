@@ -28,7 +28,7 @@ such as ``label`` and ``required``.
 
 .. _form_singletagfield:
 
-``tagulous.forms.SingleTagField``
+``django_tagulous.forms.SingleTagField``
 ---------------------------------
 
 This field accepts two new arguments:
@@ -47,7 +47,7 @@ value is empty.
 
 .. _form_tagfield:
 
-``tagulous.forms.TagField``
+``django_tagulous.forms.TagField``
 ---------------------------
 
 This field accepts the same two new arguments as a ``SingleTagField``:
@@ -65,7 +65,7 @@ strings) - or an empty list if there are no tags.
 
 
 
-``tagulous.forms.TaggedInlineFormSet``
+``django_tagulous.forms.TaggedInlineFormSet``
 --------------------------------------
 
 In most cases Tagulous works with Django's default inline model formsets, and
@@ -78,12 +78,12 @@ must use the ``TaggedInlineFormSet`` class. For example::
 
     class Person(models.Model):
         name = models.CharField(max_length=255)
-        title = tagulous.models.SingleTagField(initial='Mr, Mrs')
+        title = django_tagulous.models.SingleTagField(initial='Mr, Mrs')
 
     PersonInline = forms.models.inlineformset_factory(
         Person.title.tag_model,
         Person,
-        formset=tagulous.forms.TaggedInlineFormSet,
+        formset=django_tagulous.forms.TaggedInlineFormSet,
     )
 
 This would allow you to generate a formset for all ``Person`` objects which
@@ -113,7 +113,7 @@ tags which have been used in conjunction with another field on your model.
 
 Because model tag fields are normal Django relationships, you can filter
 embedded autocomplete tags by overriding the form's ``__init__`` method. To
-filter an ajax autocomplete view, wrap ``tagulous.views.autocomplete`` in your
+filter an ajax autocomplete view, wrap ``django_tagulous.views.autocomplete`` in your
 own view function which filters for you.
 
 For examples of these approaches, see :ref:`example_filter_embedded` and

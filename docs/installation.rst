@@ -18,14 +18,14 @@ Instructions
 
     INSTALLED_APPS = (
         ...
-        'tagulous',
+        'django_tagulous',
     )
 
     SERIALIZATION_MODULES = {
-        'xml':    'tagulous.serializers.xml_serializer',
-        'json':   'tagulous.serializers.json',
-        'python': 'tagulous.serializers.python',
-        'yaml':   'tagulous.serializers.pyyaml',
+        'xml':    'django_tagulous.serializers.xml_serializer',
+        'json':   'django_tagulous.serializers.json',
+        'python': 'django_tagulous.serializers.python',
+        'yaml':   'django_tagulous.serializers.pyyaml',
     }
 
    There are other global :ref:`settings` you can add here.
@@ -179,7 +179,7 @@ System checks
 
 Tagulous adds to the Django system check framework with the following:
 
-``tagulous.W001``
+``django_tagulous.W001``
     ``settings.SERIALIZATION_MODULES`` has not been configured as expected
 
     A common installation error is to forget to set ``SERIALIZATION_MODULES`` as
@@ -189,7 +189,7 @@ Tagulous adds to the Django system check framework with the following:
     Tagulous is expecting (you're subclassing the Tagulous modules, for example), you
     can disable this warning by adding this to your settings::
 
-        SILENCED_SYSTEM_CHECKS = ["tagulous.W001"]
+        SILENCED_SYSTEM_CHECKS = ["django_tagulous.W001"]
 
 
 .. _converting_to_tagulous:
@@ -229,10 +229,10 @@ add a new tagulous TagField, then copy the tags back across.
    ``django-taggit`` example::
 
         def store_tags(apps, schema_editor):
-            import tagulous
+            import django_tagulous
             model = apps.get_model('myapp', 'MyModel')
             for obj in model.objects.all():
-                obj.tags_store = tagulous.utils.render_tags(obj.tags.all())
+                obj.tags_store = django_tagulous.utils.render_tags(obj.tags.all())
 
         class Migration(migrations.Migration):
             operations = [
@@ -247,9 +247,9 @@ add a new tagulous TagField, then copy the tags back across.
 
 4. Add a ``TagField`` to your tagged model and create a schema migration::
 
-        import tagulous
+        import django_tagulous
         class MyModel(models.Model):
-            tags = tagulous.models.TagField()
+            tags = django_tagulous.models.TagField()
             tags_store = models.TextField(blank=True)
 
    Be careful to set appropriate arguments, ie ``blank=True`` if some of your

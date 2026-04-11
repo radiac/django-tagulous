@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.db import migrations, models
 
-import tagulous.models.fields
-import tagulous.models.models
+import django_tagulous.models.fields
+import django_tagulous.models.models
 
 
 class Migration(migrations.Migration):
@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={"ordering": ("name",), "abstract": False},
-            bases=(tagulous.models.models.BaseTagModel, models.Model),
+            bases=(django_tagulous.models.models.BaseTagModel, models.Model),
         ),
         migrations.CreateModel(
             name="Tagulous_MigrationTestModel_tags",
@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={"ordering": ("name",), "abstract": False},
-            bases=(tagulous.models.models.BaseTagModel, models.Model),
+            bases=(django_tagulous.models.models.BaseTagModel, models.Model),
         ),
         migrations.AlterUniqueTogether(
             name="tagulous_migrationtestmodel_tags", unique_together=set([("slug",)])
@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="migrationtestmodel",
             name="singletag",
-            field=tagulous.models.fields.SingleTagField(
+            field=django_tagulous.models.fields.SingleTagField(
                 force_lowercase=False,
                 to="tagulous_tests_migration.Tagulous_MigrationTestModel_singletag",
                 blank=True,
@@ -103,7 +103,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="migrationtestmodel",
             name="tags",
-            field=tagulous.models.fields.TagField(
+            field=django_tagulous.models.fields.TagField(
                 force_lowercase=True,
                 to="tagulous_tests_migration.Tagulous_MigrationTestModel_tags",
                 protect_initial=True,

@@ -22,7 +22,7 @@ Displaying tags as links
 By default, tag fields in ``list_display`` are rendered as plain text. To render
 each tag as a link to its admin change view, use ``list_display_tag_links``::
 
-    from tagulous.admin import list_display_tag_links
+    from django_tagulous.admin import list_display_tag_links
 
     class MyAdmin(admin.ModelAdmin):
         list_display = ['name', 'tags_links']
@@ -71,7 +71,7 @@ You can also pass the tag field descriptor or the tag model class directly::
 
 If you have a custom tag model, subclass ``TagModelAdmin``::
 
-    from tagulous.admin import TagModelAdmin
+    from django_tagulous.admin import TagModelAdmin
 
     class MyModelTagsAdmin(TagModelAdmin):
         list_display = ['name', 'count', 'protected', 'my_extra_field']
@@ -100,7 +100,7 @@ You can set ``TAGULOUS_ENHANCE = False`` in your settings to opt out of the
 global ``AdminSite.register`` patch. You can then apply tag field support
 selectively by subclassing ``TaggedModelAdmin`` directly::
 
-    from tagulous.admin import TaggedModelAdmin
+    from django_tagulous.admin import TaggedModelAdmin
 
     @admin.site.register(MyModel)
     class MyAdmin(TaggedModelAdmin):

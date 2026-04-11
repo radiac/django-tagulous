@@ -128,7 +128,7 @@ class BulkOperationsTest(TagTestManager, TestCase):
     def test_bulk_add_warns_when_max_count_set(self):
         """Test that a warning is issued when the field has max_count set"""
         manage_models = [test_models.TagFieldOptionsModel]
-        from tagulous import models as tag_models
+        from django_tagulous import models as tag_models
 
         tag_models.initial.model_initialise_tags(test_models.TagFieldOptionsModel)
 

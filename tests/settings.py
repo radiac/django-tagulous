@@ -21,7 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.contenttypes",
     "django.contrib.messages",
-    "tagulous",
+    "django_tagulous",
     "tests",
     "tests.tagulous_tests_app",
     "tests.tagulous_tests_app2",
@@ -38,9 +38,9 @@ SECRET_KEY = "secret"
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 ROOT_URLCONF = "tests.tagulous_tests_app.urls"
 SERIALIZATION_MODULES = {
-    "xml": "tagulous.serializers.xml_serializer",
-    "json": "tagulous.serializers.json",
-    "python": "tagulous.serializers.python",
+    "xml": "django_tagulous.serializers.xml_serializer",
+    "json": "django_tagulous.serializers.json",
+    "python": "django_tagulous.serializers.python",
 }
 
 # If pyyaml is installed, add to serialisers
@@ -49,7 +49,7 @@ try:
 except ImportError:
     pass
 else:
-    SERIALIZATION_MODULES["yaml"] = "tagulous.serializers.pyyaml"
+    SERIALIZATION_MODULES["yaml"] = "django_tagulous.serializers.pyyaml"
 
 
 TEMPLATES = [

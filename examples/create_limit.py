@@ -32,17 +32,17 @@ with defer:
     from django.http import HttpResponseRedirect
     from django.urls import reverse
 
-    import tagulous.admin
-    import tagulous.models
+    import django_tagulous.admin
+    import django_tagulous.models
 
 app = Django(
     ADMIN_URL="admin/",
     EXTRA_APPS=["tagulous"],
     SERIALIZATION_MODULES={
-        "xml": "tagulous.serializers.xml_serializer",
-        "json": "tagulous.serializers.json",
-        "python": "tagulous.serializers.python",
-        "yaml": "tagulous.serializers.pyyaml",
+        "xml": "django_tagulous.serializers.xml_serializer",
+        "json": "django_tagulous.serializers.json",
+        "python": "django_tagulous.serializers.python",
+        "yaml": "django_tagulous.serializers.pyyaml",
     },
     STYLE_SITE_TITLE="Tagulous can_create example",
     SQLITE_DATABASE="create_limit.sqlite3",
@@ -57,7 +57,7 @@ class Participant(models.Model):
     name = models.CharField(max_length=255)
 
     # can_create=False on the field - new categories are never allowed
-    category = tagulous.models.SingleTagField(
+    category = django_tagulous.models.SingleTagField(
         initial="Bronze, Silver, Gold",
         can_create=False,
         blank=True,
@@ -68,7 +68,7 @@ class Participant(models.Model):
 
     # can_create=False on the field, overridden to True on the model class -
     # new skills are allowed (model class takes priority over field)
-    skill = tagulous.models.TagField(
+    skill = django_tagulous.models.TagField(
         initial="Python, JavaScript, SQL, HTML, CSS",
         can_create=False,
         space_delimiter=False,
@@ -79,7 +79,7 @@ class Participant(models.Model):
 
     # No restriction on the field - can_create_hobby=False is set on the form
     # class, so new hobbies are always blocked via this form
-    hobby = tagulous.models.TagField(
+    hobby = django_tagulous.models.TagField(
         initial="reading, cooking, cycling, gaming, hiking",
         force_lowercase=True,
         blank=True,
@@ -111,10 +111,10 @@ class ParticipantAdmin(admin.ModelAdmin):
     list_display = ("name", "category", "skill", "hobby")
 
 
-tagulous.admin.register(Participant, ParticipantAdmin)
-tagulous.admin.register(Participant.category.tag_model)
-tagulous.admin.register(Participant.skill.tag_model)
-tagulous.admin.register(Participant.hobby.tag_model)
+django_tagulous.admin.register(Participant, ParticipantAdmin)
+django_tagulous.admin.register(Participant.category.tag_model)
+django_tagulous.admin.register(Participant.skill.tag_model)
+django_tagulous.admin.register(Participant.hobby.tag_model)
 
 
 # Views

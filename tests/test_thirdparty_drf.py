@@ -20,7 +20,7 @@ try:
     import rest_framework
     from rest_framework.serializers import ModelSerializer
 
-    from tagulous.contrib.drf import TagSerializer
+    from django_tagulous.contrib.drf import TagSerializer
 
 except ImportError:
     rest_framework = None

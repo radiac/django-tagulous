@@ -4,7 +4,7 @@ Test models
 
 from django.db import models
 
-import tagulous
+import django_tagulous as tagulous
 
 try:
     import django.apps as django_apps

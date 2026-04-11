@@ -336,7 +336,7 @@ class MonkeypatchTest(TestCase):
         """
         from django.core.serializers import python as python_serializer
 
-        from tagulous.serializers import base
+        from django_tagulous.serializers import base
 
         # Store originals for teardown
         original_module_get_model = getattr(python_serializer, "_get_model", None)

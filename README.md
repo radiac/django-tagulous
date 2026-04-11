@@ -48,14 +48,14 @@ for details of how Tagulous works; in particular:
 Quickstart
 ==========
 
-Install with `pip install django-tagulous`, add `tagulous` to Django's `INSTALLED_APPS`
+Install with `pip install django-tagulous`, add `django_tagulous` to Django's `INSTALLED_APPS`
 and
 [define the serializers](http://radiac.net/projects/django-tagulous/documentation/installation/),
 then start adding tag fields to your model:
 
 ```python
 from django.db import models
-from tagulous.models import SingleTagField, TagField
+from django_tagulous.models import SingleTagField, TagField
 
 class Person(models.Model):
     name = models.CharField(max_length=255)

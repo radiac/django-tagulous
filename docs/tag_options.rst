@@ -358,7 +358,7 @@ field definition, highest priority first:
 To customise the validation error message, set ``can_create_error`` on the
 field::
 
-    tags = tagulous.TagField(can_create=False, can_create_error="Sorry, no new tags.")
+    tags = django_tagulous.models.TagField(can_create=False, can_create_error="Sorry, no new tags.")
 
 .. note::
     Server-side enforcement uses the ``autocomplete_tags`` queryset to determine

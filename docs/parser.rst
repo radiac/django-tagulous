@@ -62,9 +62,9 @@ manually - for example, when :ref:`converting_to_tagulous` or
 In Python
 ---------
 
-The python parser can be found in ``tagulous.utils``:
+The python parser can be found in ``django_tagulous.utils``:
 
-``tag_names = tagulous.utils.parse_tags(tag_string, max_count=0, space_delimiter=True)``
+``tag_names = django_tagulous.utils.parse_tags(tag_string, max_count=0, space_delimiter=True)``
     Given a tag string, returns a sorted list of unique tag names.
 
     The parser does not attempt to enforce :ref:`option_force_lowercase` or
@@ -80,14 +80,14 @@ The python parser can be found in ``tagulous.utils``:
     with priority for commas. If ``False``, only commas will be used as the
     delimiter.
 
-``tag_string = tagulous.utils.render_tags(tag_names)``
+``tag_string = django_tagulous.utils.render_tags(tag_names)``
     Given a list of tags or tag names, generate a tag string.
 
-``node_labels = tagulous.utils.split_tree_name(tag_name)``
+``node_labels = django_tagulous.utils.split_tree_name(tag_name)``
     Given a tree tag name, split it on valid ``/`` characters into a list of
     labels for each node in the tag's path.
 
-``tag_name = tagulous.utils.join_tree_name(parts)``
+``tag_name = django_tagulous.utils.join_tree_name(parts)``
     Given a list of node labels, return a tree tag name.
 
 

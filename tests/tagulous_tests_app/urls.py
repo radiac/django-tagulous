@@ -8,7 +8,7 @@ Usage:
 
 from django.urls import include, re_path
 
-import tagulous.views
+import django_tagulous.views
 from tests.tagulous_tests_app import models, views
 
 tagged_model = models.TagFieldOptionsModel
@@ -34,25 +34,25 @@ urlpatterns = [
                 # Tagulous autocomplete
                 re_path(
                     r"^autocomplete/unlimited/$",
-                    tagulous.views.autocomplete,
+                    django_tagulous.views.autocomplete,
                     {"tag_model": tagged_model.autocomplete_view.tag_model},
                     name="tagulous_tests_app-unlimited",
                 ),
                 re_path(
                     r"^autocomplete/limited/$",
-                    tagulous.views.autocomplete,
+                    django_tagulous.views.autocomplete,
                     {"tag_model": tagged_model.autocomplete_limit.tag_model},
                     name="tagulous_tests_app-limited",
                 ),
                 re_path(
                     r"^autocomplete/unlimited/login/$",
-                    tagulous.views.autocomplete_login,
+                    django_tagulous.views.autocomplete_login,
                     {"tag_model": tagged_model.autocomplete_view.tag_model},
                     name="tagulous_tests_app-login",
                 ),
                 re_path(
                     r"^autocomplete/unlimited/queryset/$",
-                    tagulous.views.autocomplete,
+                    django_tagulous.views.autocomplete,
                     {
                         "tag_model": tagged_model.autocomplete_view.tag_model.objects.filter(
                             name__startswith="tag2"
@@ -62,19 +62,19 @@ urlpatterns = [
                 ),
                 re_path(
                     r"^autocomplete/unlimited/force_lowercase_true/$",
-                    tagulous.views.autocomplete,
+                    django_tagulous.views.autocomplete,
                     {"tag_model": tagged_model.force_lowercase_true.tag_model},
                     name="tagulous_tests_app-force_lowercase_true",
                 ),
                 re_path(
                     r"^autocomplete/unlimited/case_sensitive_false/$",
-                    tagulous.views.autocomplete,
+                    django_tagulous.views.autocomplete,
                     {"tag_model": tagged_model.case_sensitive_false.tag_model},
                     name="tagulous_tests_app-case_sensitive_false",
                 ),
                 re_path(
                     r"^autocomplete/unlimited/case_sensitive_true/$",
-                    tagulous.views.autocomplete,
+                    django_tagulous.views.autocomplete,
                     {"tag_model": tagged_model.case_sensitive_true.tag_model},
                     name="tagulous_tests_app-case_sensitive_true",
                 ),

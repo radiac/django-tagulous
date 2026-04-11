@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import migrations
 
-import tagulous.models
+import django_tagulous.models
 
 #
 # Basic unittest-esque functions
@@ -40,13 +40,13 @@ def test_tagulous_in_migrations(apps, schema_editor):
 
     # Check classes have been assigned correctly
     # If so, everything else will work as it should
-    assertIsSubclass(model, tagulous.models.TaggedModel)
+    assertIsSubclass(model, django_tagulous.models.TaggedModel)
 
-    assertIsInstance(model.singletag, tagulous.models.SingleTagDescriptor)
-    assertIsSubclass(model.singletag.tag_model, tagulous.models.BaseTagModel)
+    assertIsInstance(model.singletag, django_tagulous.models.SingleTagDescriptor)
+    assertIsSubclass(model.singletag.tag_model, django_tagulous.models.BaseTagModel)
 
-    assertIsInstance(model.tags, tagulous.models.TagDescriptor)
-    assertIsSubclass(model.tags.tag_model, tagulous.models.BaseTagTreeModel)
+    assertIsInstance(model.tags, django_tagulous.models.TagDescriptor)
+    assertIsSubclass(model.tags.tag_model, django_tagulous.models.BaseTagTreeModel)
 
 
 class Migration(migrations.Migration):

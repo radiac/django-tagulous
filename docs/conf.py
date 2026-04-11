@@ -43,7 +43,7 @@ def find_version(*paths):
 
 
 # The full version, including alpha/beta/rc tags
-release = find_version("..", "tagulous", "__init__.py")
+release = find_version("..", "django_tagulous", "__init__.py")
 
 
 # -- General configuration ---------------------------------------------------

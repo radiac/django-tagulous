@@ -15,7 +15,7 @@ from django.core.management import call_command
 from django.db import DatabaseError
 from django.test import TransactionTestCase
 
-from tagulous import models as tag_models
+from django_tagulous import models as tag_models
 from tests import tagulous_tests_migration
 from tests.lib import Capturing, TagTestManager, testenv
 

@@ -13,7 +13,7 @@ from django.core import exceptions
 from django.db import models
 from django.test import TestCase, TransactionTestCase
 
-from tagulous import models as tag_models
+from django_tagulous import models as tag_models
 from tests.lib import TagTestManager, skip_if_mysql
 from tests.tagulous_tests_app import models as test_models
 

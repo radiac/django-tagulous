@@ -16,7 +16,7 @@ Tag model classes
 
 .. _tagmodel:
 
-``tagulous.models.TagModel``
+``django_tagulous.models.TagModel``
 ----------------------------
 
 A ``TagModel`` subclass has the following fields and methods:
@@ -75,7 +75,7 @@ Merge the specified tags into this tag.
 
 .. _tagmodel_manager:
 
-``tagulous.models.TagModelManager``
+``django_tagulous.models.TagModelManager``
 -----------------------------------
 
 A ``TagModelManager`` is the standard manager for a :ref:`tagmodel`; it is a
@@ -104,7 +104,7 @@ This can be used to generate :ref:`tag clouds <tag_clouds>`, for example.
 
 .. _tagmodel_queryset:
 
-``tagulous.models.TagModelQuerySet``
+``django_tagulous.models.TagModelQuerySet``
 ------------------------------------
 
 This is returned by the :ref:`tagmodel_manager`; it is a subclass of the normal
@@ -117,7 +117,7 @@ Django ``QuerySet`` class, but implements the same additional methods as the
 Custom Tag Models
 =================
 
-A custom tag model should subclass ``tagulous.models.TagModel``, so that
+A custom tag model should subclass ``django_tagulous.models.TagModel``, so that
 Tagulous can find the fields and methods it expects, and so it uses the
 appropriate tag model manager and queryset.
 
@@ -128,7 +128,7 @@ There is :ref:`an example <example_custom_tag_model>` which illustrates how to
 create a custom tag model.
 
 If you want to use tag trees, you will need to subclass
-``tagulous.models.TagTreeModel`` instead. The only difference is that
+``django_tagulous.models.TagTreeModel`` instead. The only difference is that
 there will be extra fields on the model - see :doc:`tag_trees` for more
 details.
 
@@ -158,8 +158,8 @@ the ``TagMeta`` of a parent model can be overridden by options in the
 
 Example::
 
-    import tagulous
-    class MyTagModel(tagulous.models.TagModel):
+    import django_tagulous
+    class MyTagModel(django_tagulous.models.TagModel):
         class TagMeta:
             initial = 'judo, karate'
 

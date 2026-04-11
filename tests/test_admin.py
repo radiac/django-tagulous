@@ -24,8 +24,8 @@ from django.urls import get_resolver, re_path, reverse
 from django.urls.resolvers import _get_cached_resolver
 from django.utils.datastructures import MultiValueDict
 
-from tagulous import admin as tag_admin
-from tagulous import forms as tag_forms
+from django_tagulous import admin as tag_admin
+from django_tagulous import forms as tag_forms
 from tests.lib import TagTestManager, tagfield_html
 from tests.tagulous_tests_app import admin as test_admin
 from tests.tagulous_tests_app import models as test_models

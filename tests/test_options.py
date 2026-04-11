@@ -8,8 +8,8 @@ Modules tested:
 
 from django.test import TestCase
 
-from tagulous import constants as tag_constants
-from tagulous import models as tag_models
+from django_tagulous import constants as tag_constants
+from django_tagulous import models as tag_models
 
 from .lib import override_tag_settings
 

@@ -38,27 +38,27 @@ Repository = "https://github.com/radiac/django-tagulous"
 Issues = "https://github.com/radiac/django-tagulous/issues"
 
 [tool.setuptools.packages.find]
-include = ["tagulous*"]
+include = ["django_tagulous*", "tagulous*"]
 exclude = ["docs*", "tests*", "examples*", "dist*"]
 
 [tool.setuptools.package-data]
-tagulous = ["static/**/*", "templates/**/*"]
+django_tagulous = ["static/**/*", "templates/**/*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "tagulous.__version__"}
+version = {attr = "django_tagulous.__version__"}
 
 [tool.pytest.ini_options]
-addopts = "--cov=tagulous --cov-report=term --cov-report=html"
+addopts = "--cov=django_tagulous --cov-report=term --cov-report=html"
 testpaths = [
     "tests",
-    "tagulous",
+    "django_tagulous",
 ]
 django_find_project = false
 DJANGO_SETTINGS_MODULE = "tests.settings"
 
 [tool.coverage.run]
 parallel = true
-source = ["tagulous"]
+source = ["django_tagulous"]
 
 [tool.black]
 line-length = 88

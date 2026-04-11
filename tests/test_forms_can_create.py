@@ -11,9 +11,9 @@ Tests the can_create option which restricts tag creation:
 from django import forms
 from django.test import TestCase
 
-import tagulous
-from tagulous import forms as tag_forms
-from tagulous import models as tag_models
+import django_tagulous as tagulous
+from django_tagulous import forms as tag_forms
+from django_tagulous import models as tag_models
 from tests.lib import TagTestManager
 from tests.tagulous_tests_app import models as test_models
 

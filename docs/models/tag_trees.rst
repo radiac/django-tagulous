@@ -21,7 +21,7 @@ Tag Tree Model Classes
 
 .. _tagtreemodel:
 
-``tagulous.models.TagTreeModel``
+``django_tagulous.models.TagTreeModel``
 --------------------------------
 
 Because tree tag names are fully qualified (include all ancestors) and unique,
@@ -126,7 +126,7 @@ afterwards, eg::
 
 .. _tagtreemodel_manager:
 
-``tagulous.models.TagTreeModelManager``
+``django_tagulous.models.TagTreeModelManager``
 ---------------------------------------
 
 A ``TagTreeModelManager`` is the standard manager for a :ref:`tagtreemodel`; it
@@ -156,7 +156,7 @@ Tags will be in alphabetical order.
 
 .. _tagtreemodel_queryset:
 
-``tagulous.models.TagTreeModelQuerySet``
+``django_tagulous.models.TagTreeModelQuerySet``
 ----------------------------------------
 
 This is returned by the :ref:`tagtreemodel_manager`; it is a subclass of
@@ -231,7 +231,7 @@ required:
 
    2. Add the unique field::
 
-        import tagulous.models.migrations
+        import django_tagulous.models.migrations
         ...
 
         class Migration(migrations.Migration):
@@ -239,7 +239,7 @@ required:
             operations = [
                 ...
                 # Leave other operations as they are, just replace AddField:
-            ] + tagulous.models.migration.add_unique_field(
+            ] + django_tagulous.models.migration.add_unique_field(
                 model_name='_tagulous_mymodel_tags',
                 name='path',
                 field=models.TextField(unique=True),
@@ -265,15 +265,15 @@ required:
    ``ChangeModelBases`` to the end of your ``operations`` list, as the last
    operation::
 
-        import tagulous.models.migrations
+        import django_tagulous.models.migrations
 
         class Migration(migrations.Migration):
             # ... rest of Migration as generated
             operations = [
                 # ... rest of operations
-                tagulous.models.migrations.ChangeModelBases(
+                django_tagulous.models.migrations.ChangeModelBases(
                     name='_tagulous_mymodel_tags',
-                    bases=(tagulous.models.models.BaseTagTreeModel, models.Model),
+                    bases=(django_tagulous.models.models.BaseTagTreeModel, models.Model),
                 )
             ]
 
