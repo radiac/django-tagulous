@@ -7,6 +7,5 @@ pyyaml
 djangorestframework
 
 pytest
-pytest-pythonpath
 pytest-cov
 pytest-django
