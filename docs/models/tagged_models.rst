@@ -60,7 +60,7 @@ The base class for querysets on tagged models. It changes ``get``, ``filter`` an
 ``exclude`` to work with string values, and ``create`` and ``get_or_create`` to
 work with string and ``TagField`` values.
 
-It also adds ``get_similar_objects()`` - see :ref:`finding_similar_objects` for usage.
+It also adds ``similarly_tagged()`` - see :ref:`finding_similar_objects` for usage.
 
 See :ref:`querying` for more details.
 
@@ -75,7 +75,9 @@ However, if you want to avoid this automatic subclassing, you can set
 
 The three tagged base classes each have a class method ``cast_class`` which can
 change existing classes so that they become ``CastTagged`` subclasses of
-themselves; for example::
+themselves; for example:
+
+.. code-block:: python
 
     from django_tagulous.models import TaggedModel, TagField, TaggedManager
 
@@ -101,7 +103,9 @@ query using these relationships in conventional ways.
 
 If you have correctly made your tagged model subclass :ref:`taggedmodel`, you
 can also compare a tag field to a tag string in ``get``, ``filter`` and
-``exclude``::
+``exclude``:
+
+.. code-block:: python
 
     qs = MyModel.objects.get(name="Bob", title="Mr", tags="red, blue, green")
 
@@ -113,7 +117,9 @@ with ``case_sensitive=False``, ``.filter(title='Mr')`` will match ``Mr``,
 Note that when querying a ``TagField`` in this way, the returned queryset will
 include (or exclude) any object which contains all the specified tags - but it
 may also have other tags. To only return objects which have the specified tags
-and no others, use the ``__exact`` field lookup suffix::
+and no others, use the ``__exact`` field lookup suffix:
+
+.. code-block:: python
 
     # Find all MyModel objects which have the tag 'red':
     qs = MyModel.objects.filter(tags='red')
@@ -124,7 +130,9 @@ and no others, use the ``__exact`` field lookup suffix::
     # (will not include those tagged 'red, blue')
 
 This currently does not work across database relations; you will need to use
-the ``name`` field on the tag model for those::
+the ``name`` field on the tag model for those:
+
+.. code-block:: python
 
     # Find
     qs = MyRelatedModel.objects.filter(
@@ -142,12 +150,16 @@ Because tag fields use standard database relationships, you can easily filter
 the tags by other fields in your model.
 
 For example, if your model ``Record`` has a ``tags`` TagField and an ``owner``
-foreign key to ``auth.User``, to get a list of tags which that user has used::
+foreign key to ``auth.User``, to get a list of tags which that user has used:
+
+.. code-block:: python
 
     myobj.tags.tag_model.objects.filter(record__owner=user)
 
 There is a ``filter_or_initial`` helper method on a ``TagModel``'s manager and
-queryset, which will add initial tags to your filtered queryset::
+queryset, which will add initial tags to your filtered queryset:
+
+.. code-block:: python
 
     myobj.tags.tag_model.objects.filter_or_initial(record__owner=user)
 
@@ -157,20 +169,26 @@ queryset, which will add initial tags to your filtered queryset::
 Finding similar objects
 -----------------------
 
-The QuerySet on a tagged model provides the method ``get_similar_objects``, which takes
+The QuerySet on a tagged model provides the method ``similarly_tagged``, which takes
 the instance and field name to compare similarity by, and returns a queryset of similar
-objects from that tagged model, ordered by similarity::
+objects from that tagged model, ordered by similarity:
+
+.. code-block:: python
 
     myobj = MyModel.objects.first()
-    similar = MyModel.objects.get_similar_objects(myobj, 'tags')
+    similar = MyModel.objects.similarly_tagged(myobj, 'tags')
 
 There is a convenience wrapper on the related manager which detects the instance and
-field to compare by::
+field to compare by:
+
+.. code-block:: python
 
     similar = myobj.tags.get_similar_objects()
 
 Although less useful, there is a similar function for single tag fields, which finds all
-objects with the same tag::
+objects with the same tag:
+
+.. code-block:: python
 
     similar = myobj.singletag.get_similar_objects()
 

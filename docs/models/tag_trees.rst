@@ -119,7 +119,9 @@ Returns a queryset of all descendants, ordered by level.
 Returns a queryset of all siblings, ordered by name.
 
 This includes the node itself; if you don't want it in the results, exclude it
-afterwards, eg::
+afterwards, eg:
+
+.. code-block:: python
 
     siblings = node.get_siblings().exclude(pk=node.pk)
 
@@ -137,11 +139,15 @@ queries return a :ref:`tagtreemodel_queryset` instead.
 ``as_nested_list()``
 ~~~~~~~~~~~~~~~~~~~~
 
-Return all tags as a nested list, as lists of ``(tag, children)`` tuples in the format::
+Return all tags as a nested list, as lists of ``(tag, children)`` tuples in the format:
+
+.. code-block:: python
 
     [(tag, [child_tuple, ...]), ...]
 
-For example::
+For example:
+
+.. code-block:: python
 
     [
         (level_1_tag, [
@@ -201,7 +207,9 @@ required:
    You can skip this step if you have been using slashes in normal tags and
    want them to be converted to nested tree nodes.
 
-   Run ``manage.py makemigrations myapp --empty`` and add::
+   Run ``manage.py makemigrations myapp --empty`` and add:
+
+   .. code-block:: python
 
     def escape_tag_names(apps, schema_editor):
         model = apps.get_model('myapp', 'Tagulous_MyModel_Tags')
@@ -229,7 +237,9 @@ required:
       Change the new migration to use the Tagulous helper to add the ``path``
       field.
 
-   2. Add the unique field::
+   2. Add the unique field:
+
+      .. code-block:: python
 
         from django_tagulous.models import migrations as tagulous_migrations
         ...
@@ -263,7 +273,9 @@ required:
    Modify the migration from step 2; if you followed the official Django
    documentation and have several migrations, modify the last one. Add the
    ``ChangeModelBases`` to the end of your ``operations`` list, as the last
-   operation::
+   operation:
+
+   .. code-block:: python
 
         from django_tagulous.models import migrations as tagulous_migrations
         from django_tagulous.models.models import BaseTagTreeModel
@@ -278,7 +290,9 @@ required:
                 )
             ]
 
-4. Create another data migration to rebuild the tag model and set the paths::
+4. Create another data migration to rebuild the tag model and set the paths:
+
+   .. code-block:: python
 
         def rebuild_tag_model(apps, schema_editor):
             model = apps.get_model('myapp', 'Tagulous_MyModel_Tags')

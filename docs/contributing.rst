@@ -15,7 +15,9 @@ Installing
 ==========
 
 The easiest way to work on Tagulous is to fork the project on GitHub, then
-install it to a venv::
+install it to a venv:
+
+.. code-block:: bash
 
     git clone git@github.com:USERNAME/django-tagulous.git
     cd django-tagulous/
@@ -37,7 +39,9 @@ Testing
 
 It is greatly appreciated when contributions come with unit tests.
 
-Pytest is the test runner of choice::
+Pytest is the test runner of choice:
+
+.. code-block:: bash
 
     cd django-tagulous/
     source .venv/bin/activate
@@ -47,22 +51,26 @@ Pytest is the test runner of choice::
     pytest tests/test_admin.py
     pytest tests/test_admin.py::TagAdminTest::test_merge_form_submit
 
-Use ``tox`` to run them on one or more supported versions, eg::
+Use ``tox`` to run them on one or more supported versions, eg:
+
+.. code-block:: bash
 
     cd django-tagulous/
     source .venv/bin/activate
     tox
 
     # or a specific version
-    tox -e py3.10-django4.2
+    tox -e py3.12-django4.2
 
     # or a subset of tests
-    tox -e py3.10-django4.2 -- tests/test_admin.py::TagAdminTest::test_merge_form_submit
+    tox -e py3.12-django4.2 -- tests/test_admin.py::TagAdminTest::test_merge_form_submit
 
 
 To use a different database (mysql, postgres etc) use the environment variables
 ``DATABASE_ENGINE``, ``DATABASE_NAME``, ``DATABASE_USER``,
-``DATABASE_PASSWORD``,  ``DATABASE_HOST`` and ``DATABASE_PORT``, eg::
+``DATABASE_PASSWORD``,  ``DATABASE_HOST`` and ``DATABASE_PORT``, eg:
+
+.. code-block:: bash
 
     DATABASE_ENGINE=pgsql DATABASE_NAME=tagulous_test [...] tox
 
@@ -70,7 +78,9 @@ Most Tagulous python modules have corresponding test modules, with test classes
 which subclass ``tests.lib.TagTestManager``. They use test apps defined under
 the ``tests`` dir where required.
 
-Run the javascript tests using Jasmine::
+Run the javascript tests using Jasmine:
+
+.. code-block:: bash
 
     cd django-tagulous/
     source .venv/bin/activate

@@ -3,27 +3,35 @@ Tag String Parser
 =================
 
 Tagulous model and form fields accept a tag string value - a list of tag names
-separated by spaces or commas::
+separated by spaces or commas:
+
+.. code-block:: python
 
     # These will parse to 'run', 'jump', 'hop'
     'run jump hop'
     'run,jump,hop'
 
 If the tag string contains both spaces and commas, commas take priority. Spaces
-at the start or end of a tag name are ignored by the parser::
+at the start or end of a tag name are ignored by the parser:
+
+.. code-block:: python
 
     # These will parse to 'run', 'shot put', 'hop'
     # This is also how Tagulous will render these tags
     'run, shot put, hop'
 
 If a tag name contains a space or a comma it should be escaped by quote marks
-for clarity, and will be when Tagulous renders the tag string::
+for clarity, and will be when Tagulous renders the tag string:
+
+.. code-block:: python
 
     # This is how Tagulous will render 'run', 'shot put'
     'run, "shot put"'
 
 Again, quoted tag names can be separated by spaces or commas, and commas take
-priority::
+priority:
+
+.. code-block:: python
 
     # These will parse to 'run', 'shot put', 'hop'
     'run "shot put" hop'
@@ -99,9 +107,12 @@ In JavaScript
 The JavaScript parser will normally be automatically added to the page by tag
 fields, as one of the scripts in ``TAGULOUS_AUTOCOMPLETE_JS``
 (see :ref:`settings`). However, if for some reason you want to use it without a
-tag field, you can add it to your page manually with::
+tag field, you can add it to your page manually with:
 
-    <script src="{% static "tagulous/tagulous.js %}"></script>
+.. code-block:: html+django
+
+    {% load static %}
+    <script src="{% static 'tagulous/tagulous.js' %}"></script>
 
 The parser adds the global variable ``Tagulous``:
 
@@ -115,7 +126,9 @@ The parser adds the global variable ``Tagulous``:
     the function will instead return ``[tags, raws]``,  where ``tags`` is a
     list of tags which is unsorted and not unique, and ``raws`` is a list of
     raw strings which were left after the corresponding entry in ``tags`` was
-    parsed. For example::
+    parsed. For example:
+
+    .. code-block:: javascript
 
         var result = Tagulous.parseTags('one,two,three', true, true),
             tags = result[0],

@@ -176,12 +176,12 @@ Specify the view to use for autocomplete queries.
 This should be a value which can be passed to Django's ``reverse()``, eg the
 name of the view.
 
-If ``None``, all tags will be embedded into the form field HTML as the
+If not set, all tags will be embedded into the form field HTML as the
 ``data-autocomplete`` attribute.
 
 If this is an invalid view, a ``ValueError`` will be raised.
 
-Default: ``None``
+Default: ``''``
 
 
 .. _option_autocomplete_view_args:
@@ -238,7 +238,9 @@ Override the default ``TAGULOUS_AUTOCOMPLETE_SETTINGS``.
 
 For example, the select2 control defaults to use the same width as the form element it
 replaces; you can override this by passing their ``width`` option (see their docs on
-`appearance <https://select2.org/appearance>`_) as an autocomplete setting::
+`appearance <https://select2.org/appearance>`_) as an autocomplete setting:
+
+.. code-block:: python
 
     myfield = TagField(... autocomplete_settings={"width": "75%"})
 
@@ -323,7 +325,9 @@ The restriction can also be set dynamically at runtime without changing the
 field definition, highest priority first:
 
 1. ``form.can_create_<fieldname>`` - set as an attribute on the form instance,
-   or passed as a keyword argument to the form constructor::
+   or passed as a keyword argument to the form constructor:
+
+   .. code-block:: python
 
        # In a view, where there is a TagField called `skills`:
        form = MyForm(request.POST, can_create_skills=request.user.is_staff)
@@ -338,7 +342,9 @@ field definition, highest priority first:
    to create tags.
 
 2. ``instance.can_create_<fieldname>`` - set on the model instance (ModelForms
-   only)::
+   only):
+
+   .. code-block:: python
 
        # control the `skills` TagField
        obj.can_create_skills = False
@@ -356,11 +362,18 @@ field definition, highest priority first:
 
 
 To customise the validation error message, set ``can_create_error`` on the
-field::
+form field - it isn't a model tag option, so it can't be set alongside
+``can_create`` on a model ``TagField``:
 
-    from django_tagulous.models import TagField
+.. code-block:: python
 
-    tags = TagField(can_create=False, can_create_error="Sorry, no new tags.")
+    from django_tagulous.forms import TagField
+    from django_tagulous.models import TagOptions
+
+    tags = TagField(
+        tag_options=TagOptions(can_create=False),
+        can_create_error="Sorry, no new tags.",
+    )
 
 .. note::
     Server-side enforcement uses the ``autocomplete_tags`` queryset to determine
@@ -414,7 +427,9 @@ object, except for ``to``. It also provides two instance methods:
     If with_defaults is true, any missing settings will be taken from the
     defaults in ``constants.OPTION_DEFAULTS``.
 
-Example::
+Example:
+
+.. code-block:: python
 
     initial_tags = MyModel.tags.tag_options.initial
     if "force_lowercase" in MyModel.tags.tag_options.items():
@@ -423,7 +438,9 @@ Example::
 ``TagOptions`` instances can be added together to create a new merged set of
 options; note though that this is a shallow merge, ie the value of
 ``autocomplete_settings`` on the left will be replaced by the value on the
-right::
+right:
+
+.. code-block:: python
 
     merged_options = TagOptions(
         autocomplete_settings={'width': 'resolve'}

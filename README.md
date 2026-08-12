@@ -16,7 +16,7 @@ conventional tagging or nested categorisation.
 * [Source code](https://github.com/radiac/django-tagulous)
 * [Documentation](https://django-tagulous.readthedocs.io/)
 * [Live demo](https://radiac-django-tagulous-demo.nanodjango.dev)
-* [Changelog](https://django-tagulous.readthedocs.io/en/latest/changelog.html)
+* [Changelog](https://django-tagulous.readthedocs.io/en/latest/changelog/)
 
 
 ## Features
@@ -28,20 +28,20 @@ conventional tagging or nested categorisation.
 * Supports **trees of nested tags**, for detailed categorisation
 * Admin support for managing tags and tagged models
 
-Supports Django 3.2+, on Python 3.10+.
+Tested on Django 3.2 to 6.1, on Python 3.10+.
 
 
 See the [Documentation](https://django-tagulous.readthedocs.io/)
 for details of how Tagulous works; in particular:
 
-* [Installation](https://django-tagulous.readthedocs.io/en/latest/installation.html) -
+* [Installation](https://django-tagulous.readthedocs.io/en/latest/installation/) -
   how to install Tagulous
-* [Example Usage](https://django-tagulous.readthedocs.io/en/latest/usage.html) -
+* [Example Usage](https://django-tagulous.readthedocs.io/en/latest/usage/) -
   see examples of Tagulous in use
-* [Upgrading](https://django-tagulous.readthedocs.io/en/latest/upgrading.html) -
+* [Upgrading](https://django-tagulous.readthedocs.io/en/latest/upgrading/) -
   how to upgrade Tagulous, and see what has changed in the
-  [changelog](https://django-tagulous.readthedocs.io/en/latest/changelog.html)
-* [Contributing](https://django-tagulous.readthedocs.io/en/latest/contributing.html) -
+  [changelog](https://django-tagulous.readthedocs.io/en/latest/changelog/)
+* [Contributing](https://django-tagulous.readthedocs.io/en/latest/contributing/) -
   for how to contribute to Tagulous
 
 
@@ -50,7 +50,7 @@ Quickstart
 
 Install with `pip install django-tagulous`, add `django_tagulous` to Django's `INSTALLED_APPS`
 and
-[define the serializers](http://radiac.net/projects/django-tagulous/documentation/installation/),
+[define the serializers](https://django-tagulous.readthedocs.io/en/latest/installation/),
 then start adding tag fields to your model:
 
 ```python
@@ -63,7 +63,7 @@ class Person(models.Model):
     skills = TagField()
 ```
 
-You can now set and get them using strings, lists or querysets::
+You can now set and get them using strings, lists or querysets:
 
 ```python
 myperson = Person.objects.create(name='Bob', title='Mr', skills='run, hop')
@@ -75,7 +75,7 @@ runners = Person.objects.filter(skills='run')
 ```
 
 Behind the scenes each tag field is a `ForeignKey` or `ManyToManyField` relationship to
-a separate model (by default), so more complex queries are simple::
+a separate model (by default), so more complex queries are simple:
 
 ```python
 qs = MyRelatedModel.objects.filter(

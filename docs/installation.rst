@@ -8,13 +8,17 @@ Installation
 Instructions
 ============
 
-1. Install ``django-tagulous``::
+1. Install ``django-tagulous``:
+
+   .. code-block:: bash
 
     pip install django-tagulous
 
 
 2. In your site settings, add Tagulous to ``INSTALLED_APPS`` and tell Django to use the
-   Tagulous serialization modules::
+   Tagulous serialization modules:
+
+   .. code-block:: python
 
     INSTALLED_APPS = (
         ...
@@ -66,6 +70,8 @@ Tagulous behaves.
 
     Default:
 
+    .. code-block:: python
+
         TAGULOUS_DEFAULT_TAG_OPTIONS = {}
 
 
@@ -80,9 +86,13 @@ Tagulous behaves.
 
         If you use MySQL, we therefore recommend the following settings:
 
+        .. code-block:: python
+
             TAGULOUS_NAME_MAX_LENGTH=191
 
-    Default::
+    Default:
+
+    .. code-block:: python
 
         TAGULOUS_NAME_MAX_LENGTH = 255
         TAGULOUS_SLUG_MAX_LENGTH = 50
@@ -103,9 +113,8 @@ Tagulous behaves.
 
     Default: ``False``
 
-``TAGULOUS_AUTOCOMPLETE_JS``, ``TAGULOUS_ADMIN_AUTOCOMPLETE_JS``
-    List of static JavaScript files required for Tagulous autocomplete. These will be
-    added to the form media when a Tagulous form field is used.
+``TAGULOUS_AUTOCOMPLETE_JS``
+    List of static JavaScript files required for Tagulous autocomplete on public forms.
 
     The order is important: the adaptor must appear last in the list, so that
     it is loaded after its dependencies.
@@ -113,7 +122,9 @@ Tagulous behaves.
     If you use jQuery elsewhere on your site, you may need to remove `jquery.js` to
     avoid conflicts.
 
-    Default::
+    Default:
+
+    .. code-block:: python
 
         TAGULOUS_AUTOCOMPLETE_JS = (
             "tagulous/lib/jquery.js",
@@ -123,17 +134,49 @@ Tagulous behaves.
         )
 
 
-``TAGULOUS_AUTOCOMPLETE_CSS``, ``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
-    List of static CSS files required for Tagulous autocomplete. These will be added to
-    the form media when a Tagulous form field is used.
+``TAGULOUS_TRANSITION_DROPULOUS``
+    If ``True``, the default public autocomplete adaptor will be Dropulous instead o
+    Select2.
 
-    The default list will use the included version of Select2.
+    This is a temporary transition setting to allow people to try Dropulous before it
+    becomes the default in v3. It will be removed in v3.
 
-    Default::
+    Default: ``False``
+
+
+``TAGULOUS_ADMIN_AUTOCOMPLETE_JS``
+    The equivalent of ``TAGULOUS_AUTOCOMPLETE_JS`` for the admin site.
+
+    Not affected by ``TAGULOUS_TRANSITION_DROPULOUS`` - the admin site always uses
+    select2, for consistency with other select fields.
+
+    Default:
+
+    .. code-block:: python
+
+        TAGULOUS_ADMIN_AUTOCOMPLETE_JS = (
+            "tagulous/tagulous.js",
+            "tagulous/adaptor/select2-4.js",
+        )
+
+
+``TAGULOUS_AUTOCOMPLETE_CSS``
+    List of static CSS files required for Tagulous autocomplete on public forms. The
+    default list will use the included version of Select2.
+
+    Default:
+
+    .. code-block:: python
 
         TAGULOUS_AUTOCOMPLETE_CSS = {
             'all': ['tagulous/lib/select2-4/css/select2.min.css']
         }
+
+``TAGULOUS_ADMIN_AUTOCOMPLETE_CSS``
+    The equivalent of ``TAGULOUS_AUTOCOMPLETE_CSS`` for the admin site. Empty by
+    default, since the admin site already loads select2's CSS itself.
+
+    Default: ``{}``
 
 ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
     Any settings to pass to the JavaScript via the adaptor. They can be overridden by a
@@ -141,13 +184,20 @@ Tagulous behaves.
 
     For example, the select2 control defaults to use the same width as the form element
     it replaces; you can override this by passing their ``width`` option (see their docs
-    on `appearance <https://select2.org/appearance>`_) as an autocomplete setting::
+    on `appearance <https://select2.org/appearance>`_) as an autocomplete setting:
+
+    .. code-block:: python
 
         TAGULOUS_AUTOCOMPLETE_SETTINGS = {"width": "75%"}
 
     If set to ``None``, no settings will be passed.
 
     Default: ``None``
+
+``TAGULOUS_ADMIN_AUTOCOMPLETE_SETTINGS``
+    The equivalent of ``TAGULOUS_AUTOCOMPLETE_SETTINGS`` for the admin site.
+
+    Default: the value of ``TAGULOUS_AUTOCOMPLETE_SETTINGS``
 
 ``TAGULOUS_WEIGHT_MIN``
     The default minimum value for the :ref:`weight <queryset_weight>` queryset method.
@@ -187,7 +237,9 @@ Tagulous adds to the Django system check framework with the following:
 
     This is a straight string comparison. If your serialisation modules don't match what
     Tagulous is expecting (you're subclassing the Tagulous modules, for example), you
-    can disable this warning by adding this to your settings::
+    can disable this warning by adding this to your settings:
+
+    .. code-block:: python
 
         SILENCED_SYSTEM_CHECKS = ["django_tagulous.W001"]
 
@@ -209,14 +261,18 @@ add a new tagulous TagField, then copy the tags back across.
 1. Create a schema migration to add a ``TextField`` to your tagged
    model, where we'll temporarily store the tags for that instance.
 
-   ``django-taggit`` example::
+   ``django-taggit`` example:
+
+   .. code-block:: python
 
         class MyModel(models.Model):
             ...
             tags = TaggableManager()
             tags_store = models.TextField(blank=True)
 
-   ``django-tagging`` example::
+   ``django-tagging`` example:
+
+   .. code-block:: python
 
         class MyModel(models.Model):
             ...
@@ -226,7 +282,9 @@ add a new tagulous TagField, then copy the tags back across.
 2. Create a data migration to copy the tags into the new field as a
    string.
 
-   ``django-taggit`` example::
+   ``django-taggit`` example:
+
+   .. code-block:: python
 
         def store_tags(apps, schema_editor):
             from django_tagulous.utils import render_tags
@@ -245,8 +303,11 @@ add a new tagulous TagField, then copy the tags back across.
 3. Remove the old tagging code from your model, and create a schema migration
    to clean up any unused fields or models.
 
-4. Add a ``TagField`` to your tagged model and create a schema migration::
+4. Add a ``TagField`` to your tagged model and create a schema migration:
 
+   .. code-block:: python
+
+        from django.db import models
         from django_tagulous.models import TagField
 
         class MyModel(models.Model):
@@ -258,7 +319,9 @@ add a new tagulous TagField, then copy the tags back across.
 
 5. Create a data migration to copy the tags into the new field.
 
-   Example::
+   Example:
+
+   .. code-block:: python
 
         def load_tags(apps, schema_editor):
             model = apps.get_model('myapp', 'MyModel')

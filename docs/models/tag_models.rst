@@ -156,7 +156,9 @@ but if it is not provided it will be set to the correct value.
 the ``TagMeta`` of a parent model can be overridden by options in the
 ``TagMeta`` of a child model.
 
-Example::
+Example:
+
+.. code-block:: python
 
     from django_tagulous.models import TagModel
 
@@ -188,7 +190,9 @@ Loading initial tags
 
 Initial tags must be loaded using the ``initial_tags`` management command. You
 can either load all initial tags in your site by not passing in any arguments,
-or specify an app, model or field to load::
+or specify an app, model or field to load:
+
+.. code-block:: bash
 
     python manage.py initial_tags [<app_name>[.<model_name>[.<field_name>]]]
 

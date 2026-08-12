@@ -18,13 +18,20 @@ Tagulous follows semantic versioning in the format ``BREAKING.FEATURE.BUG``:
 * ``FEATURE`` and ``BUG`` releases will be safe to install without reading the upgrade
   notes.
 
-1. Check which version of Tagulous you are upgrading from::
+1. Check which version of Tagulous you are upgrading from:
+
+   .. code-block:: bash
 
     python
+
+   .. code-block:: pycon
+
     >>> import django_tagulous
     >>> django_tagulous.__version__
 
-2. Upgrade the Tagulous package::
+2. Upgrade the Tagulous package:
+
+   .. code-block:: bash
 
     pip install --upgrade django-tagulous
 
@@ -47,7 +54,9 @@ The Python project name has changed from ``tagulous`` to ``django_tagulous``, to
 consistent with Django's updated
 `packaging guidelines <https://docs.djangoproject.com/en/6.0/intro/reusable-apps/#packaging-your-app>`_.
 
-You need to update your ``INSTALLED_APPS``::
+You need to update your ``INSTALLED_APPS``:
+
+.. code-block:: python
 
     INSTALLED_APPS = [
         ...
@@ -57,7 +66,9 @@ You need to update your ``INSTALLED_APPS``::
         "django_tagulous",
     ]
 
-and your ``imports``::
+and your ``imports``:
+
+.. code-block:: python
 
     # was:
     # from tagulous import models
@@ -79,7 +90,9 @@ been deprecated and will show a warning when used.
 You should switch to registering directly with Django's admin site using the standard
 ``admin.register``.
 
-For example, this::
+For example, this:
+
+.. code-block:: python
 
     import tagulous.admin
 
@@ -87,7 +100,9 @@ For example, this::
         list_display = ['name', 'tags']
     tagulous.admin.register(MyModel, MyAdmin)
 
-becomes this::
+becomes this:
+
+.. code-block:: python
 
     from django.contrib import admin
 
@@ -95,7 +110,9 @@ becomes this::
     class MyAdmin(admin.ModelAdmin):
         list_display = ['name', 'tags']
 
-or the older syntax::
+or the older syntax:
+
+.. code-block:: python
 
     from django.contrib import admin
 
@@ -104,11 +121,13 @@ or the older syntax::
     admin.site.register(MyModel, MyAdmin)
 
 If you have ``TAGULOUS_ENHANCE = False``, then you can manually upgrade your
-model admins by subclassing ``TaggedModelAdmin``::
+model admins by subclassing ``TaggedModelAdmin``:
+
+.. code-block:: python
 
     from django_tagulous.admin import TaggedModelAdmin
 
-    @admin.site.register(MyModel)
+    @admin.register(MyModel)
     class MyAdmin(TaggedModelAdmin):
         list_display = ['name', 'tags']
 
@@ -144,7 +163,9 @@ Ooh, swap me to dropulous
 
 You can wait for v3.0.0 when it will switch automatically.
 
-Alternatively you can manually switch to it now - in your settings add::
+Alternatively you can manually switch to it now - in your settings add:
+
+.. code-block:: python
 
     TAGULOUS_TRANSITION_DROPULOUS = True
 
@@ -163,7 +184,9 @@ Noo, let me keep select2
 Select2 will continue to be supported for the foreseeable future - from v3 you just
 need to opt in.
 
-In your settings add::
+In your settings add:
+
+.. code-block:: python
 
     from django_tagulous.constants import AUTOCOMPLETE_JS_SELECT2, AUTOCOMPLETE_CSS_SELECT2
 
@@ -200,7 +223,9 @@ The ``TAGULOUS_ENHANCE_MODELS`` setting has been renamed to ``TAGULOUS_ENHANCE``
 now also controls additional enhancements.
 
 If you currently disable tagulous model enhancements, you will need to update your
-settings file::
+settings file:
+
+.. code-block:: python
 
     # Old (deprecated):
     TAGULOUS_ENHANCE_MODELS = False
@@ -306,12 +331,16 @@ Upgrading from 0.12.0
    indicate they are auto-generated. From now on, they will start
    ``Tagulous_``.
 
-   Django migrations should detect this model name change::
+   Django migrations should detect this model name change:
+
+   .. code-block:: console
 
         ./manage.py makemigrations
         Did you rename the myapp._Tagulous_MyModel model to Tagulous_MyModel? [y/N]
 
-   Answer `y` for all Tagulous auto-generated models, and migrate::
+   Answer `y` for all Tagulous auto-generated models, and migrate:
+
+   .. code-block:: bash
 
         ./manage.py migrate
 
@@ -350,7 +379,9 @@ Upgrading from 0.11.1
 1. Starting with version 0.12.0, Tagulous no longer enforces uniqueness for
    tree ``path`` fields. This means that Django will detect a change to your
    models, and warn you that your migrations are out of sync. It is safe for
-   you to create and apply a standard migration with::
+   you to create and apply a standard migration with:
+
+   .. code-block:: bash
 
         ./manage.py makemigrations
         ./manage.py migrate
@@ -374,7 +405,9 @@ Upgrading from 0.9.0
 
 1. Starting with version 0.10.0, Tagulous is available on pypi. You can
    continue to run the development version direct from github, but if you would
-   prefer to use stable releases you can reinstall::
+   prefer to use stable releases you can reinstall:
+
+   .. code-block:: bash
 
         pip uninstall django-tagulous
         pip install django-tagulous
@@ -392,7 +425,9 @@ Upgrading from 0.9.0
    You will need to create and apply these migrations to each of your tag tree
    models
 
-   Django migrations::
+   Django migrations:
+
+   .. code-block:: bash
 
         python manage.py makemigrations myapp
         python manage.py migrate myapp
@@ -400,7 +435,9 @@ Upgrading from 0.9.0
         # Add data migration operation below
         python manage.py migrate myapp
 
-   Your Django data migration should include::
+   Your Django data migration should include:
+
+   .. code-block:: python
 
         def rebuild_tree(apps, schema_editor):
             # For an auto-generated tag tree model:
@@ -418,7 +455,9 @@ Upgrading from 0.9.0
             ]
 
 
-   South migrations::
+   South migrations:
+
+   .. code-block:: bash
 
         python manage.py schemamigration --auto myapp
         python manage.py migrate myapp
@@ -426,7 +465,9 @@ Upgrading from 0.9.0
         # Add data migration function below
         python manage.py migrate myapp
 
-   Your South data migration function should be::
+   Your South data migration function should be:
+
+   .. code-block:: python
 
         def forwards(self, orm):
             # For an auto-generated tag tree model:
@@ -469,7 +510,9 @@ Upgrading from 0.7.0 or earlier
 -------------------------------
 
 1. ``tagulous.admin.tag_model`` was deprecated in 0.8.0 and removed in 0.9.0;
-   use ``tagulous.admin.register`` instead::
+   use ``tagulous.admin.register`` instead:
+
+.. code-block:: python
 
     tagulous.admin.tag_model(MyModel.tags)
     tagulous.admin.tag_model(MyModel.tags, my_admin_site)
@@ -491,21 +534,29 @@ Upgrading from 0.7.0 or earlier
 3. Any existing South migrations with ``SingleTagField`` or ``TagField``
    definitions which automatically generate their tag models will need to be
    manually modified in the ``Migration.models`` definition to have the
-   attribute ``'_set_tag_meta': 'True'``. For example, the line::
+   attribute ``'_set_tag_meta': 'True'``. For example, the line:
+
+   .. code-block:: python
 
     'labels': ('tagulous.models.fields.TagField', [], {'force_lowercase': 'True', 'to': u"orm['myapp._Tagulous_MyModel_labels']", 'blank': 'True'}),
 
-   becomes::
+   becomes:
+
+   .. code-block:: python
 
     'labels': ('tagulous.models.fields.TagField', [], {'force_lowercase': 'True', 'to': u"orm['myapp._Tagulous_MyModel_labels']", 'blank': 'True', '_set_tag_meta': 'True'}),
 
-   Any `db.add_column` calls will need to be changed too::
+   Any `db.add_column` calls will need to be changed too:
+
+   .. code-block:: python
 
     db.add_column(u'myapp_mymodel', 'singletag',
                   self.gf('tagulous.models.fields.SingleTagField')(null=True, ...),
                   ...)
 
-   becomes::
+   becomes:
+
+   .. code-block:: python
 
     db.add_column(u'myapp_mymodel', 'singletag',
                   self.gf('tagulous.models.fields.SingleTagField')(_set_tag_meta=True, null=True, ...),

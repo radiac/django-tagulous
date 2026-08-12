@@ -23,7 +23,7 @@ Upgrade notes: :ref:`upgrade_2-1-1`
 
 Features:
 
-* Support Django 5.2
+* Support Django 5.2 to 6.1
 * Add :ref:`option_can_create` tag option to restrict tag creation to existing
   tags, with support for logic to control it in forms.
 * Add ``django_tagulous.admin.list_display_tag_links()`` helper to render tags as links
@@ -47,10 +47,12 @@ Changes:
 * The autocomplete view now returns Dropulous's JSON response; this should only affect
   you if you have written a custom adaptor (see
   :ref:`upgrade notes <upgrade_2-1-1>`).
+* All documentation code samples are now explicitly syntax-highlighted
 
 Bugfix:
 
 * Select2 v4 adaptor now correctly handles pagination
+* Fixed and updated documentation examples
 
 Thanks to:
 

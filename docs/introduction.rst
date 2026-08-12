@@ -22,7 +22,9 @@ Quickstart
 
 Install with ``pip install django-tagulous``, add ``django_tagulous`` to Django's
 ``INSTALLED_APPS`` and :doc:`define the serializers <installation>`, then start adding
-tag fields to your model::
+tag fields to your model:
+
+.. code-block:: python
 
     from django.db import models
     from django_tagulous.models import SingleTagField, TagField
@@ -38,7 +40,9 @@ on a ``ManyToManyField``.
 They have relationships to a ``TagModel``, which is automatically created for you if you
 don't specify one.
 
-Assign strings to the fields to create new tags::
+Assign strings to the fields to create new tags:
+
+.. code-block:: python
 
     myperson = Person.objects.create(name='Bob', title='Mr', skills='run, hop')
     # myperson.skills == 'run, hop'
@@ -47,7 +51,9 @@ Assign strings to the fields to create new tags::
     # myperson.skills == 'jump, "kung fu"'
     runners = Person.objects.filter(skills='run')
 
-Use them like a normal Django relationship in your queries::
+Use them like a normal Django relationship in your queries:
+
+.. code-block:: python
 
     qs = MyRelatedModel.objects.filter(
         person__skills__name__in=['run', 'jump'],

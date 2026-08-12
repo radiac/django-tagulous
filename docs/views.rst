@@ -8,7 +8,9 @@ Form templates
 ==============
 
 To render Tagulous fields in forms outside the admin site, add ``{{ form.media }}`` to
-your template to include the JavaScript and CSS resources; for example::
+your template to include the JavaScript and CSS resources; for example:
+
+.. code-block:: html+django
 
     {% block content %}
         {{ form.media }}
@@ -29,6 +31,40 @@ Autocomplete views
 Although Tagulous doesn't need any views by default, it does provide generic
 views in :gitref:`django_tagulous/views.py` to support AJAX autocomplete requests.
 
+
+Class-based view
+----------------
+
+The class-based view is ``django_tagulous.views.TagulousAutocompleteView``.
+It must be configured with the ``tag_model`` tag model:
+
+.. code-block:: python
+
+    # myapp/urls.py
+    from django.urls import path
+    from django_tagulous.views import TagulousAutocompleteView
+    from .models import Person
+
+    urlpatterns = [
+        path(
+            "person/skills/autocomplete/",
+            TagulousAutocompleteView.as_view(tag_model=Person),
+            name='person_skills_autocomplete',
+        ),
+    ]
+
+You can also use a filtered queryset of the tag model, eg:
+
+.. code-block:: python
+
+    TagulousAutocompleteView.as_view(tag_model=Person.objects.active())
+
+
+Function-based views
+--------------------
+
+There are function-based wrappers for the class-based view:
+
 ``response = autocomplete(request, tag_model)``
     This takes the request object from the dispatcher, and a reference to the
     tag model which this is autocompleting.
@@ -37,8 +73,8 @@ views in :gitref:`django_tagulous/views.py` to support AJAX autocomplete request
     itself, in order to filter the tags which will be returned.
 
     It returns an ``HttpResponse`` with content type ``application/json``. The
-    response content is a JSON-encoded object with one key, ``results``, which
-    is a list of tags.
+    response content is a JSON-encoded object with two keys: ``options``, a list
+    of tags, and ``more``, a boolean indicating whether another page is available.
 
 
 ``response = autocomplete_login(request, tag_model)``
@@ -61,7 +97,21 @@ These views look for two GET parameters:
 
     Default: ``1``
 
-For an example, see the :ref:`example_autocomplete_views` example.
+
+For example:
+
+.. code-block:: python
+
+    urlpatterns = [
+        path(
+            'person/skills/autocomplete/',
+            autocomplete,
+            {'tag_model': Person},
+            name='person_skills_autocomplete',
+        ),
+    ]
+
+For a full example, see the :ref:`example_autocomplete_views` example.
 
 
 .. _tag_clouds:
@@ -69,10 +119,12 @@ For an example, see the :ref:`example_autocomplete_views` example.
 Tag clouds
 ==========
 
-Tag clouds are a common way to display tags. Rather than have a template tag
-with templates and options for every eventuality, Tagulous simply offers a
-:ref:`weight() <queryset_weight>` method on tag querysets, which adds a
-``weight`` annotation to tag objects::
+Tag clouds are a way to display tags with more heavily-used tags showing in larger font
+sizes. Rather than have a template tag with templates and options for every eventuality,
+Tagulous simply offers a :ref:`weight() <queryset_weight>` method on tag querysets,
+which adds a ``weight`` annotation to tag objects:
+
+.. code-block:: python
 
     # myapp/view.py
     def tag_cloud(request):
@@ -82,12 +134,16 @@ with templates and options for every eventuality, Tagulous simply offers a
 
 The ``weight`` value will be a number between ``TAGULOUS_WEIGHT_MIN`` and
 ``TAGULOUS_WEIGHT_MAX`` (see :ref:`settings`), although these can be overridden
-by passing arguments to ``weight()`` for new min and/or max values, eg::
+by passing arguments to ``weight()`` for new min and/or max values, eg:
+
+.. code-block:: python
 
     tags = TagModel.objects.weight(min=2, max=4)
 
 You can then render the tag cloud in your template as any other queryset, with
-complete control over how they are displayed::
+complete control over how they are displayed:
+
+.. code-block:: html+django
 
     {% if tags %}
         <h2>Tags</h2>
@@ -103,7 +159,9 @@ In that example, you would then define CSS classes for ``tag_1`` to ``tag_6``,
 which set the appropriate font styles.
 
 If you wanted to insert the tag cloud on every page, it would be easy to wrap
-up in a custom template tag::
+up in a custom template tag:
+
+.. code-block:: python
 
     # myapp/templatetags/myapp_tagcloud.py
     from django import template

@@ -158,7 +158,9 @@ Assignment (setter)
 
     The instance must be saved afterwards.
 
-    Example::
+    Example:
+
+    .. code-block:: python
 
         person.title = "Mr"
         person.save()
@@ -168,14 +170,16 @@ Evaluation (getter)
     model. The tag may not exist in the database yet (its ``pk`` may be
     ``None``).
 
-    Example::
+    Example:
+
+    .. code-block:: python
 
         tag = person.title
         report = "Tag %s used %d times " % (tag.name, tag.count)
 
-The ``tag_model`` and ``tag_options`` attributes are not available on a bound
-field. If you only have an instance of the tagged model, you can access them by
-finding its class, eg ``type(person).title.tag_model``.
+The tag instance returned by a bound field also has ``tag_model`` and
+``tag_options`` attributes, so these can be accessed from either the bound or
+unbound field, eg ``person.title.tag_model`` or ``type(person).title.tag_model``.
 
 
 
@@ -213,7 +217,9 @@ Assignment (setter)
 
     The instance must be saved afterwards.
 
-    Example::
+    Example:
+
+    .. code-block:: python
 
         person.skills = 'Judo, "Kung Fu"'
         person.save()
@@ -229,7 +235,9 @@ Evaluation (getter)
 -------------------------------------
 
 A ``TagRelatedManager`` is a subclass of Django's standard ``RelatedManager``,
-so you can do anything you would normally do with a bound ``ManyToManyField``::
+so you can do anything you would normally do with a bound ``ManyToManyField``:
+
+.. code-block:: python
 
     person.skills.get(name='judo')
     tags = person.skills.all()
@@ -237,13 +245,17 @@ so you can do anything you would normally do with a bound ``ManyToManyField``::
     person.skills.clear()
 
 Because it's a relationship to a :doc:`tag model <tag_models>`, you can also
-filter by its fields::
+filter by its fields:
+
+.. code-block:: python
 
     filtered_tags = person.skills.filter(name__startswith='a')
     popular_tags = person.skills.filter(count__gte=10)
 
 A ``TagRelatedManager`` also provides access to the field's ``tag_model`` and
-``tag_options``::
+``tag_options``:
+
+.. code-block:: python
 
     person.skills.tag_model.objects.all()
     is_lowercase = person.skills.tag_options.force_lowercase
@@ -254,7 +266,8 @@ It also provides the following additional methods:
 ``set_tag_string(tag_string)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the tags for this instance, given a tag string.
-::
+
+.. code-block:: python
 
     person.skills.set_tag_string('Judo, "Kung Fu"')
     person.save()
@@ -264,7 +277,8 @@ Sets the tags for this instance, given a tag string.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the tags for this instance, given an iterable of tag names or tag
 instances.
-::
+
+.. code-block:: python
 
     person.skills.set_tag_list(['Judo', kung_fu_tag])
     person.save()
@@ -274,7 +288,8 @@ instances.
 ~~~~~~~~~~~~~~~~~~~~
 
 Gets the tags as a tag string.
-::
+
+.. code-block:: python
 
     tag_string = person.skills.get_tag_string()
     # tag_string == 'Judo, "Kung Fu"'
@@ -284,16 +299,18 @@ Gets the tags as a tag string.
 ~~~~~~~~~~~~~~~~~~
 
 Returns a list of tag names.
-::
+
+.. code-block:: python
 
     tag_list = person.skills.get_tag_list()
     # tag_list == ['Judo', 'Kung Fu']
 
 
-``__str__()``, ``__unicode__()``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``__str__()``
+~~~~~~~~~~~~~~
 Same as ``get_tag_string``
-::
+
+.. code-block:: python
 
     report = '%s' % person.skills
 
@@ -303,7 +320,8 @@ Same as ``get_tag_string``
 Compare the tags on this instance to a tag string, or an iterable of tags
 or tag names. Order does not matter, and case sensitivity is determined by
 the options :ref:`option_case_sensitive` and :ref:`option_force_lowercase`.
-::
+
+.. code-block:: python
 
     if (
         first.tags == second.tags
@@ -319,7 +337,8 @@ the options :ref:`option_case_sensitive` and :ref:`option_force_lowercase`.
 See if the tag (or string of a tag name) is in the tags. Case sensitivity
 is determined by the options :ref:`option_case_sensitive` and
 :ref:`option_force_lowercase`.
-::
+
+.. code-block:: python
 
     if 'Judo' in person.skills and kung_fu_tag in person.skills:
         candidates.append(person)
@@ -328,7 +347,8 @@ is determined by the options :ref:`option_case_sensitive` and
 ``reload()``
 ~~~~~~~~~~~~
 Discard any unsaved changes to the tags and load tags from the database
-::
+
+.. code-block:: python
 
     person.skills = 'judo'
     person.save()
@@ -366,7 +386,9 @@ In most circumstances you can ignore the ``force`` flag:
   object, and want the tags on this instance to override any changes other
   instances may have made.
 
-For example::
+For example:
+
+.. code-block:: python
 
     person = Person.objects.create(name='Adam', skills='judo')
     person.name = 'Bob'
@@ -390,7 +412,7 @@ need to save afterwards.
 
 Will call ``reload()`` first, so any unsaved changes to tags will be lost.
 
-::
+.. code-block:: python
 
     person.skills.add('Judo', kung_fu_tag)
 
@@ -409,7 +431,7 @@ no need to save afterwards.
 
 Will call ``reload()`` first, so any unsaved changes to tags will be lost.
 
-::
+.. code-block:: python
 
     person.skills.remove('Judo', kung_fu_tag)
 
@@ -448,12 +470,16 @@ already have the tag).
     This method does not enforce :ref:`option_max_count`. If ``max_count``
     is set on the field, a ``UserWarning`` will be issued.
 
-Example - instead of::
+Example - instead of:
+
+.. code-block:: python
 
     for finding in findings:
         finding.tags.add('security-issue')   # several queries per instance
 
-Use::
+Use:
+
+.. code-block:: python
 
     findings[0].tags.bulk_add_tag_to_instances('security-issue', findings)
 

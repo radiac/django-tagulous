@@ -8,7 +8,7 @@ selected :ref:`autocomplete adaptor <autocomplete_adaptors>`.
 
 To save tag fields, just call the ``form.save()`` method as you would normally.
 However, because :ref:`model_tagfield` is based on a ``ManyToManyField``, if
-you call ``form.save(commit=False)`` you will need to call ``form.m2m_save()``
+you call ``form.save(commit=False)`` you will need to call ``form.save_m2m()``
 after to save the tags.
 
 See the :ref:`example_modelform` example for how this works in practice.
@@ -31,7 +31,7 @@ such as ``label`` and ``required``.
 ``django_tagulous.forms.SingleTagField``
 ---------------------------------
 
-This field accepts two new arguments:
+This field accepts three new arguments:
 
 ``tag_options``
     A :ref:`TagOptions <tagoptions>` instance, containing
@@ -40,6 +40,10 @@ This field accepts two new arguments:
 ``autocomplete_tags``
     An iterable of tags to be embedded for autocomplete. This can either be
     a queryset of tag objects, or a list of tag objects or strings.
+
+``can_create_error``
+    Custom error message to use when :ref:`option_can_create` on ``tag_options``
+    blocks a new tag being submitted. Defaults to "You cannot create new tags."
 
 The ``clean`` method returns a single tag name string, or ``None`` if the
 value is empty.
@@ -50,7 +54,7 @@ value is empty.
 ``django_tagulous.forms.TagField``
 ---------------------------
 
-This field accepts the same two new arguments as a ``SingleTagField``:
+This field accepts the same three new arguments as a ``SingleTagField``:
 
 ``tag_options``
     A :ref:`TagOptions <tagoptions>` instance, containing
@@ -59,6 +63,10 @@ This field accepts the same two new arguments as a ``SingleTagField``:
 ``autocomplete_tags``
     An iterable of tags to be embedded for autocomplete. This can either be
     a queryset of tag objects, or a list of tag objects or strings.
+
+``can_create_error``
+    Custom error message to use when :ref:`option_can_create` on ``tag_options``
+    blocks a new tag being submitted. Defaults to "You cannot create new tags."
 
 The ``clean`` method returns a sorted list of unique tag names (a list of
 strings) - or an empty list if there are no tags.
@@ -74,7 +82,9 @@ you don't need to do anything special.
 However, there is a specific case where it doesn't: when you create an inline
 formset for tagged models, with a tag as their parent model - eg when you edit
 a tag and its corresponding instances of the tagged model. That is when you
-must use the ``TaggedInlineFormSet`` class. For example::
+must use the ``TaggedInlineFormSet`` class. For example:
+
+.. code-block:: python
 
     from django_tagulous.models import SingleTagField
     from django_tagulous.forms import TaggedInlineFormSet
@@ -156,7 +166,9 @@ Autocomplete settings should be a dict:
     For example, to use this adaptor with a
     `django-dynamic-formset <https://github.com/elo80ka/django-dynamic-formset>`_
     which uses a ``formTemplate``, set ``{'defer': True}``, then configure
-    the formset with::
+    the formset with:
+
+    .. code-block:: javascript
 
         added: function ($row) {
             Tagulous.select2($row.find('input[data-tagulous]'));
