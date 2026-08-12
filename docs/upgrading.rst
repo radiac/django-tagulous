@@ -115,14 +115,89 @@ model admins by subclassing ``TaggedModelAdmin``::
 ``django_tagulous.admin.register`` will be removed in Tagulous 3.0.0.
 
 
-TAGULOUS_ENHANCE_MODELS deprecated
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Moving from select2 to dropulous
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tagulous has introduced an adaptor for Dropulous, a modern minimal dependency-free
+JavaScript library for select field autocomplete and tag fields. It works as an
+autocomplete for any select field (see
+`django-dropulous <https://pypi.org/project/django-dropulous/>`_ for its Django
+integration), but was written specifically for Tagulous with our tag
+parsing requirements in mind, so we can move away from select2 and jQuery.
+
+Tagulous will be switching to use Dropulous as its default public adaptor in v3.0.0.
+As it's potentially a big change, we're introducing support now to give you time to
+decide if you want to switch to Dropulous.
+
+The default is still select2 for this release, but you will need to decide whether you
+want Dropulous or Select2 by the time we release v3.0.0. There is a deprecation warning
+in this release to remind you to make this choice.
+
+.. note::
+
+    This only applies to the public site. Because Django admin currently uses their own
+    vendored copy of jQuery and select2, Tagulous will continue to use those with the
+    ``select2-4.js`` adaptor for consistency with the rest of the admin site.
+
+Ooh, swap me to dropulous
+'''''''''''''''''''''''''
+
+You can wait for v3.0.0 when it will switch automatically.
+
+Alternatively you can manually switch to it now - in your settings add::
+
+    TAGULOUS_TRANSITION_DROPULOUS = True
+
+There's no need to add ``django_dropulous`` to ``INSTALLED_APPS`` - Tagulous finds its
+static files automatically once the package is installed.
+
+.. note
+
+    ``TAGULOUS_TRANSITION_DROPULOUS`` is a special temporary setting for v2.2 only. You
+    can remove it once we move to v3.0.0, when it will raise a deprecation warning.
+
+
+Noo, let me keep select2
+'''''''''''''''''''''''''
+
+Select2 will continue to be supported for the foreseeable future - from v3 you just
+need to opt in.
+
+In your settings add::
+
+    from django_tagulous.constants import AUTOCOMPLETE_JS_SELECT2, AUTOCOMPLETE_CSS_SELECT2
+
+    TAGULOUS_AUTOCOMPLETE_JS = AUTOCOMPLETE_JS_SELECT2
+    TAGULOUS_AUTOCOMPLETE_CSS = AUTOCOMPLETE_CSS_SELECT2
+
+Add this now for v2.2 to suppress the deprecation warning, and you'll continue to use
+select2 when you upgrade to v3.0.0 in the future.
+
+
+I use something else
+''''''''''''''''''''
+
+If you're using something else you have probably written your own custom adaptor and
+will already be setting ``TAGULOUS_AUTOCOMPLETE_JS``. This means you will not see the
+deprecation warning in v2.2, and will not need to make any changes to your settings to
+continue using your custom adaptor in v3.0.0.
+
+However, the ``autocomplete()`` view response format has changed slightly, from
+Select2 v3's structure using ``results`` to using Dropulous's ``options`` key.
+You may need to update your custom adaptor to match.
+
+The old response format was ``{"results": [...], "more": bool}``; the new format is
+``{"options": [...], "more": bool}``.
+
+
+TAGULOUS_ENHANCE_MODELS renamed to TAGULOUS_ENHANCE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Most users can ignore this** - it only applies to users who have
 ``TAGULOUS_ENHANCE_MODELS = False`` in their settings.
 
 The ``TAGULOUS_ENHANCE_MODELS`` setting has been renamed to ``TAGULOUS_ENHANCE``, as it
-now also controls the admin enhancements.
+now also controls additional enhancements.
 
 If you currently disable tagulous model enhancements, you will need to update your
 settings file::

@@ -1,0 +1,1 @@
+django-dropulous>=0.1

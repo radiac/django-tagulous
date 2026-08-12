@@ -1,5 +1,5 @@
 # /// script
-# dependencies = ["nanodjango", "django-tagulous", "django-style"]
+# dependencies = ["nanodjango", "django-tagulous", "django-dropulous", "django-style"]
 # ///
 #
 # Usage:
@@ -20,7 +20,8 @@ with defer:
 
 app = Django(
     ADMIN_URL="admin/",
-    EXTRA_APPS=["django_tagulous"],
+    EXTRA_APPS=["django_tagulous", "django_dropulous"],
+    TAGULOUS_TRANSITION_DROPULOUS=True,
     SERIALIZATION_MODULES={
         "xml": "django_tagulous.serializers.xml_serializer",
         "json": "django_tagulous.serializers.json",

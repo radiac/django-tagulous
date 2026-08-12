@@ -6,6 +6,7 @@ Modules tested:
 """
 
 import copy
+import importlib
 import re
 from typing import cast
 
@@ -19,13 +20,14 @@ from django.contrib.messages.storage.fallback import CookieStorage
 from django.core import exceptions
 from django.forms import Media
 from django.http import HttpRequest, QueryDict
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import get_resolver, re_path, reverse
 from django.urls.resolvers import _get_cached_resolver
 from django.utils.datastructures import MultiValueDict
 
 from django_tagulous import admin as tag_admin
 from django_tagulous import forms as tag_forms
+from django_tagulous import settings as tag_settings
 from tests.lib import TagTestManager, tagfield_html
 from tests.tagulous_tests_app import admin as test_admin
 from tests.tagulous_tests_app import models as test_models
@@ -142,6 +144,44 @@ class AdminRegisterTest(TestRequestMixin, TagTestManager, TestCase):
             ma.formfield_for_dbfield(db_tags).widget,
             tag_forms.AdminTagWidget,
         )
+
+
+class AdminTagWidgetMediaTest(TestCase):
+    """
+    Test that AdminTagWidget.media always uses select2 + Django's vendored
+    jQuery, regardless of TAGULOUS_TRANSITION_DROPULOUS - Django's own admin
+    core media loads jQuery on every page unconditionally anyway, so there's
+    no dependency-avoidance benefit to switching tag fields to dropulous here
+    """
+
+    def reload_tag_settings(self):
+        importlib.reload(tag_settings)
+        self.addCleanup(importlib.reload, tag_settings)
+
+    def assert_uses_select2(self):
+        media = tag_forms.AdminTagWidget().media
+        # Django 6.1+ wraps each Media.js entry in a Script object rather than a
+        # plain string (Media._normalize_js) - unwrap back to the raw path so
+        # these checks work the same across Django versions
+        js_paths = [getattr(js, "_path", js) for js in media._js]
+        for js in tag_settings.ADMIN_AUTOCOMPLETE_JS:
+            self.assertIn(js, js_paths)
+        self.assertTrue(
+            any("vendor/select2" in js for js in js_paths),
+            "Expected Django's vendored select2 in admin tag widget media",
+        )
+        self.assertTrue(
+            any("vendor/jquery" in js for js in js_paths),
+            "Expected Django's vendored jQuery in admin tag widget media",
+        )
+
+    def test_select2_by_default(self):
+        self.assert_uses_select2()
+
+    def test_select2_even_when_transitioned(self):
+        with override_settings(TAGULOUS_TRANSITION_DROPULOUS=True):
+            self.reload_tag_settings()
+            self.assert_uses_select2()
 
 
 class DeprecatedRegisterTest(TestRequestMixin, TagTestManager, TestCase):
@@ -449,7 +489,10 @@ class TaggedAdminHttpTest(TestRequestMixin, AdminTestManager, TagTestManager, Te
 
         # Check if static files are loaded
         media: Media = response.context["media"]
-        actual = media._js
+        # Django 6.1+ wraps each Media.js entry in a Script object rather than a
+        # plain string (Media._normalize_js) - unwrap back to the raw path so
+        # the string comparisons below work the same across Django versions
+        actual = [getattr(js, "_path", js) for js in media._js]
         if django.VERSION >= (4, 0):
             expected = [
                 "admin/js/vendor/jquery/jquery.min.js",
@@ -595,7 +638,12 @@ class TagAdminTestManager(TestRequestMixin, AdminTestManager, TagTestManager, Te
         options = [
             "<option %s" % opt.strip() for opt in options_raw.split("<option ") if opt
         ]
-        self.assertTrue('<option value="" selected>---------</option>' in options)
+        # Django 6.1 changed the default blank-choice label from the dashes to a
+        # more accessible "- Select an option -" (BLANK_CHOICE_LABEL)
+        blank_label = (
+            "- Select an option -" if django.VERSION >= (6, 1) else "---------"
+        )
+        self.assertTrue(f'<option value="" selected>{blank_label}</option>' in options)
 
         for tag in tags:
             self.assertContains(

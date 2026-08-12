@@ -185,8 +185,14 @@
                     return {q:params.term, p:params.page};
                 },
                 processResults: function (data) {
-                    data['results'] = listToData(data['results']);
-                    return data;
+                    // Server responds using Dropulous API format `{options, more}` -
+                    // change it to select2 API format `{results, pagination}`.
+                    return {
+                        results: (data.options || []).map(function (option) {
+                            return {id: option.value, text: option.label};
+                        }),
+                        pagination: {more: !!data.more}
+                    };
                 }
             };
 

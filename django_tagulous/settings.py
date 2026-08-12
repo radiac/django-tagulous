@@ -4,9 +4,17 @@ Tagulous default settings
 Override these by setting new values in your global settings file
 """
 
+import warnings
+
 from django.conf import settings
 
-from .constants import OPTION_DEFAULTS
+from .constants import (
+    AUTOCOMPLETE_CSS_DROPULOUS,
+    AUTOCOMPLETE_CSS_SELECT2,
+    AUTOCOMPLETE_JS_DROPULOUS,
+    AUTOCOMPLETE_JS_SELECT2,
+    OPTION_DEFAULTS,
+)
 
 #
 # Database control settings
@@ -42,13 +50,24 @@ if _unknown := set(DEFAULT_TAG_OPTIONS) - set(OPTION_DEFAULTS):
 # Autocomplete settings
 #
 
-DEFAULT_AUTOCOMPLETE_JS = (
-    "tagulous/lib/jquery.js",
-    "tagulous/lib/select2-4/js/select2.full.min.js",
-    "tagulous/tagulous.js",
-    "tagulous/adaptor/select2-4.js",
-)
-DEFAULT_AUTOCOMPLETE_CSS = {"all": ["tagulous/lib/select2-4/css/select2.min.css"]}
+# In v3 we're swapping to Dropulous as the default for public forms
+# This temporary transition setting will give people an easy way to try it now, or
+# at least the warning will prompt them to force to select2 to avoid a surprise in v3.
+TRANSITION_DROPULOUS = getattr(settings, "TAGULOUS_TRANSITION_DROPULOUS", False)
+if TRANSITION_DROPULOUS:
+    DEFAULT_AUTOCOMPLETE_JS = AUTOCOMPLETE_JS_DROPULOUS
+    DEFAULT_AUTOCOMPLETE_CSS = AUTOCOMPLETE_CSS_DROPULOUS
+else:
+    DEFAULT_AUTOCOMPLETE_JS = AUTOCOMPLETE_JS_SELECT2
+    DEFAULT_AUTOCOMPLETE_CSS = AUTOCOMPLETE_CSS_SELECT2
+    if not hasattr(settings, "TAGULOUS_AUTOCOMPLETE_JS"):
+        warnings.warn(
+            "Tagulous will switch from select2 to dropulous as its default public"
+            " autocomplete library in v3.0.0. You should decide which to use - see"
+            " upgrade docs for details.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
 AUTOCOMPLETE_JS = getattr(settings, "TAGULOUS_AUTOCOMPLETE_JS", DEFAULT_AUTOCOMPLETE_JS)
 AUTOCOMPLETE_CSS = getattr(
@@ -56,7 +75,7 @@ AUTOCOMPLETE_CSS = getattr(
 )
 AUTOCOMPLETE_SETTINGS = getattr(settings, "TAGULOUS_AUTOCOMPLETE_SETTINGS", None)
 
-# Use vendored jquery and select2 for admin
+# We won't use dropulous in admin - there's no advantage over Django's vendored select2
 DEFAULT_ADMIN_AUTOCOMPLETE_JS = (
     "tagulous/tagulous.js",
     "tagulous/adaptor/select2-4.js",

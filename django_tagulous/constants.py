@@ -50,3 +50,19 @@ FORM_OPTIONS = [
     "autocomplete_settings",
     "can_create",
 ]
+
+# Autocomplete JS/CSS asset lists
+AUTOCOMPLETE_JS_SELECT2 = (
+    "tagulous/lib/jquery.js",
+    "tagulous/lib/select2-4/js/select2.full.min.js",
+    "tagulous/tagulous.js",
+    "tagulous/adaptor/select2-4.js",
+)
+AUTOCOMPLETE_CSS_SELECT2 = {"all": ["tagulous/lib/select2-4/css/select2.min.css"]}
+
+AUTOCOMPLETE_JS_DROPULOUS = (
+    "dropulous/dropulous.js",
+    "tagulous/tagulous.js",
+    "tagulous/adaptor/dropulous.js",
+)
+AUTOCOMPLETE_CSS_DROPULOUS = {"all": ["dropulous/dropulous.css"]}

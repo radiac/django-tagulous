@@ -31,6 +31,9 @@ Features:
 * Add :ref:`tagrelatedmanager_bulk_add` to efficiently tag many instances with
   the same tag in a fixed number of queries rather than one set of queries per
   instance.
+* Introduce django-dropulous support as a replacement for select2 on the public site;
+  currently disabled by default, but will be the default in v3 (see
+  :ref:`upgrade notes <upgrade_2-1-1>`)
 
 Changes:
 
@@ -41,6 +44,13 @@ Changes:
 * Moved the example project into a nanodjango single file ``example.py``, and added it
   to the nanodjango playground for a
   `live demo <https://radiac-django-tagulous-demo.nanodjango.dev>`_
+* The autocomplete view now returns Dropulous's JSON response; this should only affect
+  you if you have written a custom adaptor (see
+  :ref:`upgrade notes <upgrade_2-1-1>`).
+
+Bugfix:
+
+* Select2 v4 adaptor now correctly handles pagination
 
 Thanks to:
 

@@ -205,8 +205,14 @@
                     return {q:term, p:page};
                 },
                 results: function (data) {
-                    data['results'] = listToData(data['results']);
-                    return data;
+                    // Server responds using Dropulous API format `{options, more}` -
+                    // select2 v3 wants `{results, more}`.
+                    return {
+                        results: (data.options || []).map(function (option) {
+                            return {id: option.value, text: option.label};
+                        }),
+                        more: !!data.more
+                    };
                 }
             };
 
