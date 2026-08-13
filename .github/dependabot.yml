@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/tests/requirements"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # Deliberately pinned per Django version for the compatibility test matrix
+      - dependency-name: "django"
+
+  - package-ecosystem: "pip"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
