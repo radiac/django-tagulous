@@ -56,6 +56,7 @@ testpaths = [
     "tests",
     "django_tagulous",
 ]
+pythonpath = ["."]
 django_find_project = false
 DJANGO_SETTINGS_MODULE = "tests.settings"
 
