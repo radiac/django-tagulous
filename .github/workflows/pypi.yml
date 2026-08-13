@@ -10,7 +10,7 @@ jobs:
     name: Build package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build and check package
         uses: hynek/build-and-inspect-python-package@v2
 
