@@ -18,6 +18,8 @@ conventional tagging or nested categorisation.
 * [Live demo](https://radiac-django-tagulous-demo.nanodjango.dev)
 * [Changelog](https://django-tagulous.readthedocs.io/en/latest/changelog/)
 
+If you find this project useful, please do consider [sponsoring development](https://github.com/sponsors/radiac).
+
 
 ## Features
 
