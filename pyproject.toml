@@ -47,6 +47,11 @@ exclude = ["docs*", "tests*", "examples*", "dist*"]
 [tool.setuptools.package-data]
 django_tagulous = ["static/**/*", "templates/**/*"]
 
+[tool.check-wheel-contents]
+# W009: multiple toplevel entries - expected, "tagulous" is a deliberate
+# backward-compat shim re-exporting django_tagulous, to be removed in v3.0.0
+ignore = ["W009"]
+
 [tool.setuptools.dynamic]
 version = {attr = "django_tagulous.__version__"}
 
