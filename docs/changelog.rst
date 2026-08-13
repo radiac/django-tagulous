@@ -13,8 +13,8 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-2.2.0, TBC
-----------
+2.2.0 - 2026-08-13
+------------------
 
 Upgrade notes: :ref:`upgrade_2-1-1`
 
