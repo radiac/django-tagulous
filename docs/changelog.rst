@@ -13,6 +13,14 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
+2.2.1 - 2028-08-13
+------------------
+
+Bugfix
+
+* Fix backwards compatibility shim for ``tagulous`` rename to ``django-tagulous``
+
+
 2.2.0 - 2026-08-13
 ------------------
 
