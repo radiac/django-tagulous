@@ -36,7 +36,7 @@ Tagged model classes
 .. _taggedmodel:
 
 ``django_tagulous.models.TaggedModel``
--------------------------------
+--------------------------------------
 
 This is the base class for all tagged models. It changes the model constructor
 so that ``TagField`` values can be passed as keywords.
@@ -45,7 +45,7 @@ so that ``TagField`` values can be passed as keywords.
 .. _taggedmanager:
 
 ``django_tagulous.models.TaggedManager``
----------------------------------
+----------------------------------------
 
 The base class for managers of tagged models. It only exists to ensure querysets
 are subclasses of ``django_tagulous.TaggedQuerySet``.
@@ -54,7 +54,7 @@ are subclasses of ``django_tagulous.TaggedQuerySet``.
 .. _taggedqueryset:
 
 ``django_tagulous.models.TaggedQuerySet``
-----------------------------------
+-----------------------------------------
 
 The base class for querysets on tagged models. It changes ``get``, ``filter`` and
 ``exclude`` to work with string values, and ``create`` and ``get_or_create`` to

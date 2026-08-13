@@ -17,7 +17,7 @@ Tag model classes
 .. _tagmodel:
 
 ``django_tagulous.models.TagModel``
-----------------------------
+-----------------------------------
 
 A ``TagModel`` subclass has the following fields and methods:
 
@@ -76,7 +76,7 @@ Merge the specified tags into this tag.
 .. _tagmodel_manager:
 
 ``django_tagulous.models.TagModelManager``
------------------------------------
+------------------------------------------
 
 A ``TagModelManager`` is the standard manager for a :ref:`tagmodel`; it is a
 subclass of the normal Django model manager, but its queries return a
@@ -105,7 +105,7 @@ This can be used to generate :ref:`tag clouds <tag_clouds>`, for example.
 .. _tagmodel_queryset:
 
 ``django_tagulous.models.TagModelQuerySet``
-------------------------------------
+-------------------------------------------
 
 This is returned by the :ref:`tagmodel_manager`; it is a subclass of the normal
 Django ``QuerySet`` class, but implements the same additional methods as the

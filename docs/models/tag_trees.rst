@@ -22,7 +22,7 @@ Tag Tree Model Classes
 .. _tagtreemodel:
 
 ``django_tagulous.models.TagTreeModel``
---------------------------------
+---------------------------------------
 
 Because tree tag names are fully qualified (include all ancestors) and unique,
 there is no difference to normal tags in how they are set or compared.
@@ -129,7 +129,7 @@ afterwards, eg:
 .. _tagtreemodel_manager:
 
 ``django_tagulous.models.TagTreeModelManager``
----------------------------------------
+----------------------------------------------
 
 A ``TagTreeModelManager`` is the standard manager for a :ref:`tagtreemodel`; it
 is a subclass of :ref:`tagmodel_manager` so provides those methods, but its
@@ -163,7 +163,7 @@ Tags will be in alphabetical order.
 .. _tagtreemodel_queryset:
 
 ``django_tagulous.models.TagTreeModelQuerySet``
-----------------------------------------
+-----------------------------------------------
 
 This is returned by the :ref:`tagtreemodel_manager`; it is a subclass of
 :ref:`tagmodel_queryset` so provides those methods, but also:

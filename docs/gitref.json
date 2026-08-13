@@ -1,19 +1,19 @@
 {
   "version": 1,
   "hashes": {
-    "tagulous/models/fields.py": "5de9c6339cca6422fabe093c5fe982cac12a60b80fdf0ab5dc21d0b0a52f5171",
-    "tagulous/models/descriptors.py": "337b8ed6034635d902d1701fb985f1f5afecdbd083f813f91ae119842b5719fd",
-    "tagulous/models/managers.py": "56c6969a7049dce1a4dbd97c20b0368e9f087110a64a5ca6afb647002c0800ab",
-    "tagulous/models/tagged.py": "4dee211d8fac0f4f32cb216e8cae3ca1e03b792d23f6f62883c33d865fc2e1cc",
-    "tagulous/models/options.py": "951c7b04597ae801709bf270ca14977668ac5cb65109f6f514a2c22b447915a1",
-    "tagulous/models/initial.py": "6e327e7107b68f870f2b629b8265fb8db942b2bd475fcee1e17c93f1d5ce3add",
-    "tagulous/forms.py": "27bbe9c6b96e9f5a1aa4ea1a3a83801f8d7c40fbd131553a962fec9bcd37d165",
-    "tagulous/utils.py": "b15cfe00ad2970a14a4eec65f14b735930439f6d359fcce0326b790dbaa643e3",
-    "tagulous/admin.py": "023d4c5e4a4bf9b759add20bbd17159cf6c6d90dd39279f310abcf2a0001f1d8",
-    "tests/tagulous_tests_migration/django_migrations_expected/0003_tree.py": "a2c2a8e2407eece129b0c56b07b51c5972bb104bf081b81fbcf52eaee7281a95",
-    "tests/test_utils.py": "f7713d9e149753e4f25745712ae48083652b3b7e45a2bf259d132c60668a1926",
+    "django_tagulous/models/fields.py": "5de9c6339cca6422fabe093c5fe982cac12a60b80fdf0ab5dc21d0b0a52f5171",
+    "django_tagulous/models/descriptors.py": "337b8ed6034635d902d1701fb985f1f5afecdbd083f813f91ae119842b5719fd",
+    "django_tagulous/models/managers.py": "4cb7c14b4ceb681e351ea215c2743d2560e66355700145256b8219ee323700b7",
+    "django_tagulous/models/tagged.py": "9018e6c44a607995cd488d17660ee805f4e9d77ca2a9a587e2d1e4b9be344f1b",
+    "django_tagulous/models/options.py": "951c7b04597ae801709bf270ca14977668ac5cb65109f6f514a2c22b447915a1",
+    "django_tagulous/models/initial.py": "6e327e7107b68f870f2b629b8265fb8db942b2bd475fcee1e17c93f1d5ce3add",
+    "django_tagulous/forms.py": "678b249585108c40870310e95400396d340ebbcf138d0a3ed603301c618269b4",
+    "django_tagulous/utils.py": "b15cfe00ad2970a14a4eec65f14b735930439f6d359fcce0326b790dbaa643e3",
+    "django_tagulous/admin.py": "4ce94592183f08244de9f8ed295d3c21ad807c9df87bd3eed36040968a49891e",
+    "tests/tagulous_tests_migration/django_migrations_expected/0003_tree.py": "8a751d2eca9eee03834cc655d62f3cd7cc5b2c513295a6673ba21033c97cbc78",
+    "tests/test_utils.py": "8c14085685964736b921bbf8864b21395fd14303aaf24e086f1c231ff45f750d",
     "tests/spec/javascripts/tagulous.spec.js": "4e8a06dddb9b68747fcbf2b62b1c3d921c12bbbd4f4812472afbe04634bcc774",
-    "tagulous/views.py": "3dffd32b9a0612b8c63d4e19ebf46d0db63c12314739cdb64b42eeb17cb18b36"
+    "django_tagulous/views.py": "f570d0186e9e4b371053f01d7c2bbda02f1f1daec47700b6a78dc3440aeb8807"
   },
   "lines": {}
 }

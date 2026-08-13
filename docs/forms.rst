@@ -29,7 +29,7 @@ such as ``label`` and ``required``.
 .. _form_singletagfield:
 
 ``django_tagulous.forms.SingleTagField``
----------------------------------
+----------------------------------------
 
 This field accepts three new arguments:
 
@@ -52,7 +52,7 @@ value is empty.
 .. _form_tagfield:
 
 ``django_tagulous.forms.TagField``
----------------------------
+----------------------------------
 
 This field accepts the same three new arguments as a ``SingleTagField``:
 
@@ -74,7 +74,7 @@ strings) - or an empty list if there are no tags.
 
 
 ``django_tagulous.forms.TaggedInlineFormSet``
---------------------------------------
+---------------------------------------------
 
 In most cases Tagulous works with Django's default inline model formsets, and
 you don't need to do anything special.

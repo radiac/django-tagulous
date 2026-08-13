@@ -128,7 +128,7 @@ Default: ``django_tagulous.models.TagModel``
 .. _model_singletagfield:
 
 ``django_tagulous.models.SingleTagField``
-==================================
+=========================================
 
 Unbound field
 -------------
@@ -186,7 +186,7 @@ unbound field, eg ``person.title.tag_model`` or ``type(person).title.tag_model``
 .. _model_tagfield:
 
 ``django_tagulous.models.TagField``
-============================
+===================================
 
 Unbound field
 -------------
@@ -232,7 +232,7 @@ Evaluation (getter)
 .. _tagrelatedmanager:
 
 ``django_tagulous.models.TagRelatedManager``
--------------------------------------
+--------------------------------------------
 
 A ``TagRelatedManager`` is a subclass of Django's standard ``RelatedManager``,
 so you can do anything you would normally do with a bound ``ManyToManyField``:

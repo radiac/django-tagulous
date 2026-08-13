@@ -12,7 +12,7 @@ Features
 * Supports **trees of nested tags**, for detailed categorisation
 * Admin support for managing tags and tagged models
 
-See :doc:`<comparison>` for a comparison with other tagging libraries.
+See :doc:`comparison` for a comparison with other tagging libraries.
 
 
 .. _quickstart:
