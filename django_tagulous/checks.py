@@ -1,10 +1,10 @@
 from django.core.checks import Warning, register
 
 SERIALIZATION_MODULES_EXPECTED = {
-    "xml": "tagulous.serializers.xml_serializer",
-    "json": "tagulous.serializers.json",
-    "python": "tagulous.serializers.python",
-    "yaml": "tagulous.serializers.pyyaml",
+    "xml": "django_tagulous.serializers.xml_serializer",
+    "json": "django_tagulous.serializers.json",
+    "python": "django_tagulous.serializers.python",
+    "yaml": "django_tagulous.serializers.pyyaml",
 }
 
 WARNING_W001 = Warning(

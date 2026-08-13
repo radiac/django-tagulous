@@ -15,6 +15,7 @@ To migrate:
 import importlib
 import sys
 import warnings
+from importlib.machinery import ModuleSpec
 
 warnings.warn(
     "The 'tagulous' package has been renamed to 'django_tagulous'. "
@@ -26,49 +27,30 @@ warnings.warn(
 
 import django_tagulous as _pkg  # noqa: E402
 
-# Register all submodules as tagulous.* aliases so that
-# ``import tagulous.admin``, ``from tagulous.models import …`` etc. all work.
-_submodules = [
-    "admin",
-    "apps",
-    "checks",
-    "constants",
-    "contrib",
-    "contrib.drf",
-    "forms",
-    "management",
-    "management.commands",
-    "management.commands.initial_tags",
-    "models",
-    "models.cast",
-    "models.descriptors",
-    "models.fields",
-    "models.initial",
-    "models.managers",
-    "models.migrations",
-    "models.models",
-    "models.options",
-    "models.tagged",
-    "serializers",
-    "serializers.base",
-    "serializers.json",
-    "serializers.python",
-    "serializers.pyyaml",
-    "serializers.xml_serializer",
-    "settings",
-    "signals",
-    "signals.post",
-    "signals.pre",
-    "utils",
-    "views",
-]
 
-for _name in _submodules:
-    try:
-        _mod = importlib.import_module(f"django_tagulous.{_name}")
-        sys.modules[f"tagulous.{_name}"] = _mod
-    except ImportError:
+class _TagulousAliasFinder:
+    """
+    Resolve ``tagulous.<name>`` imports as aliases for ``django_tagulous.<name>``.
+
+    Import as required to avoid import-time errors
+    """
+
+    prefix = "tagulous."
+
+    def find_spec(self, fullname, path, target=None):
+        if not fullname.startswith(self.prefix):
+            return None
+        return ModuleSpec(fullname, self, is_package=True)
+
+    def create_module(self, spec):
+        real_name = "django_tagulous." + spec.name[len(self.prefix) :]
+        return importlib.import_module(real_name)
+
+    def exec_module(self, module):
         pass
+
+
+sys.meta_path.insert(0, _TagulousAliasFinder())
 
 # Replace this shim with django_tagulous itself so that attribute access on
 # the ``tagulous`` name (e.g. ``tagulous.models.TagField``) works transparently.

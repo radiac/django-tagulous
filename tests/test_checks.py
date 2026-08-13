@@ -20,3 +20,18 @@ class CheckTest(TestCase):
         expected_errors = []
         errors = tagulous_check(app_configs=None)
         self.assertEqual(errors, expected_errors)
+
+    @override_settings(
+        SERIALIZATION_MODULES={
+            "xml": "django_tagulous.serializers.xml_serializer",
+            "json": "django_tagulous.serializers.json",
+            "python": "django_tagulous.serializers.python",
+            "yaml": "django_tagulous.serializers.pyyaml",
+        }
+    )
+    def test_serialization_modules_set_to_django_tagulous_paths__check_raises_no_warning(
+        self,
+    ):
+        expected_errors = []
+        errors = tagulous_check(app_configs=None)
+        self.assertEqual(errors, expected_errors)
