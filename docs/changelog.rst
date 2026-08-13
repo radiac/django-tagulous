@@ -13,6 +13,14 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
+2.2.2 - TBC
+-----------
+
+Bugfix:
+
+* Fix Select2 v4 duplicated options (#192)
+
+
 2.2.1 - 2028-08-13
 ------------------
 

@@ -262,8 +262,10 @@
           if (url) {
             var selectedData = [];
             for (var i=0; i<selectedTags.length; i++) {
-              var option = new Option(selectedTags[i], selectedTags[i], true, true);
-              $selectCtl.append(option).trigger('change');
+              if (!optionExists($selectCtl, selectedTags[i])) {
+                var option = new Option(selectedTags[i], selectedTags[i], true, true);
+                $selectCtl.append(option).trigger('change');
+              }
 
               selectedData.push({id: selectedTags[i], text: selectedTags[i]});
             }
@@ -274,8 +276,10 @@
           } else {
             // For new tags that don't exist, we need to create options first
             for (var i=0; i<selectedTags.length; i++) {
-              var option = new Option(selectedTags[i], selectedTags[i], true, true);
-              $selectCtl.append(option);
+              if (!optionExists($selectCtl, selectedTags[i])) {
+                var option = new Option(selectedTags[i], selectedTags[i], true, true);
+                $selectCtl.append(option);
+              }
             }
             $selectCtl.val(selectedTags);
             $selectCtl.trigger("change");
@@ -309,6 +313,18 @@
         return $el.each(function () {
             apply_select2(this, canDefer);
         });
+    }
+
+    function optionExists($select, value) {
+        /** Check whether a <select> already has an <option> with this value */
+        var exists = false;
+        $select.find('option').each(function () {
+            if (this.value === value) {
+                exists = true;
+                return false;
+            }
+        });
+        return exists;
     }
 
     function listToData(list) {

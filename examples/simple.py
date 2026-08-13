@@ -4,7 +4,7 @@
 #
 # Usage:
 #
-#   uv run example/simple.py
+#   uv run examples/simple.py
 #
 from django.db import models
 from nanodjango import Django, defer
