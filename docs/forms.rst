@@ -141,11 +141,26 @@ Autocomplete Adaptors
 Tagulous uses a javascript file it calls an ``adaptor`` to apply your chosen
 autocomplete library to the Tagulous form field.
 
-Only Select2 is included with Tagulous; if you want to use a different library,
-you will need to add it to your project's static files, and add the relative
-path under ``STATIC_URL`` to the appropriate ``TAGULOUS_`` settings.
+Tagulous supports Select2 and `Dropulous <https://github.com/radiac/dropulous>`_ out of
+the box; if you want to use a different library, you will need to add it
+to your project's static files, and add the relative path under ``STATIC_URL`` to the
+appropriate ``TAGULOUS_`` settings.
 
 Tagulous includes the following adaptors:
+
+
+Dropulous
+---------
+
+An adaptor for `Dropulous <https://github.com/radiac/dropulous>`_, a modern
+minimal dependency-free JavaScript library.
+
+This will be the default adaptor from version 3.0.0. See :ref:`upgrade_2-1-1` for how to
+switch to it early.
+
+Path:
+    ``tagulous/adaptor/dropulous.js``
+
 
 Select2 (version 4)
 -------------------
@@ -185,6 +200,38 @@ Autocomplete settings should be a dict:
 
 All other settings will be passed to the Select2 constructor.
 
+
+Select 2 (version 3)
+-------------------
+
+The legacy adaptor for `Select2 <https://select2.github.io/>`_ version 3.
+
+Path:
+    ``tagulous/adaptor/select2-3.js``
+
+
+.. _listening_for_changes:
+
+Listening for changes
+----------------------
+
+Both dropulous and select2 keep the original field's value in sync, and fire a
+``change`` event whenever a tag is added or removed. This means external code can listen
+on the field itself, the same as any other form field:
+
+.. code-block:: javascript
+
+    document.querySelector('[name=skills]').addEventListener('change', () => {
+        // ...
+    });
+
+or for jQuery:
+
+.. code-block:: javascript
+
+    $(document).on('change', '[name=skills]', () => {
+        // ...
+    });
 
 
 .. _custom_autocomplete_adaptor:

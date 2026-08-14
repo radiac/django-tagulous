@@ -16,6 +16,12 @@ are available by installing the develop branch from github.
 2.2.2 - TBC
 -----------
 
+Change:
+
+* Select2 v4 adaptor now fires a ``change`` event on the original field when a tag
+  is added or removed, matching Dropulous (#156, #171)
+
+
 Bugfix:
 
 * Fix Select2 v4 duplicated options (#192)

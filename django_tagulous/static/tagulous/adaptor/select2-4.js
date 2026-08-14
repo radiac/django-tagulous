@@ -296,6 +296,8 @@
             var rendered = Tagulous.renderTags(values);
             $inputEl.val(rendered);
           }
+          // Trigger change event to let external code know
+          $inputEl.trigger("change");
         });
         return $selectCtl;
     }
