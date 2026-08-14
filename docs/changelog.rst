@@ -27,7 +27,7 @@ Bugfix:
 * Fix Select2 v4 duplicated options (#192)
 
 
-2.2.1 - 2028-08-13
+2.2.1 - 2026-08-13
 ------------------
 
 Bugfix
