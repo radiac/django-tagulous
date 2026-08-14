@@ -208,6 +208,38 @@ If you are using a tree, you will want to use the path instead:
 See the :ref:`option_get_absolute_url` option for more details.
 
 
+Creating the tag view
+---------------------
+
+The ``get_absolute_url`` argument only builds the link; you still need to write the view
+it points to.
+
+Because a tag field is just a normal relationship, filtering by the tag is a plain
+Django query. For example, to filter by a skill slug, you can use the following view:
+
+.. code-block:: python
+
+    # urls.py
+    from django.urls import path
+    from . import views
+
+    urlpatterns = [
+        path('skills/<slug:skill_slug>/', views.by_skill, name='by_skill'),
+    ]
+
+    # views.py
+    from django.shortcuts import render
+
+    def by_skill(request, skill_slug):
+        people = Person.objects.filter(skills__slug=skill_slug)
+        return render(request, 'by_skill.html', {
+            'skill_slug': skill_slug,
+            'people': people,
+        })
+
+See :ref:`querying` for more ways to filter by tag fields.
+
+
 .. _example_modelform:
 
 ModelForms
