@@ -223,6 +223,10 @@ Tagulous behaves.
 
     Default: ``True``
 
+You should also ensure that your project has a ``DEFAULT_AUTO_FIELD`` set, otherwise
+Django will raise a ``models.W042`` warning for any Tagulous-generated tag model.
+See the Django docs on `DEFAULT_AUTO_FIELD <https://docs.djangoproject.com/en/stable/ref/settings/#default-auto-field>`_ for more details.
+
 
 System checks
 =============
