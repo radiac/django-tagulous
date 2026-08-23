@@ -106,7 +106,7 @@ For example:
         path(
             'person/skills/autocomplete/',
             autocomplete,
-            {'tag_model': Person},
+            {'tag_model': Person.skills.tag_model},
             name='person_skills_autocomplete',
         ),
     ]

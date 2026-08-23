@@ -475,7 +475,7 @@ You can then use the default autocomplete views directly in your urls:
         path(
             'person/skills/autocomplete/',
             autocomplete,
-            {'tag_model': Person},
+            {'tag_model': Person.skills.tag_model},
             name='person_skills_autocomplete',
         ),
     ]
