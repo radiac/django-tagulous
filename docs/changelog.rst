@@ -13,8 +13,8 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
-2.2.2 - TBC
------------
+2.2.2 - 2026-08-24
+------------------
 
 Change:
 
