@@ -25,6 +25,12 @@ Change:
 Bugfix:
 
 * Fix Select2 v4 duplicated options (#192)
+* Fix select_related() for SingleTagField (#91)
+* Fix stale cache duplicate tag bug
+
+Docs:
+
+* Document that we expect DEFAULT_AUTO_FIELD to be set (#145)
 
 
 2.2.1 - 2026-08-13

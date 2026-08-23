@@ -306,6 +306,29 @@ class ModelSingleTagFieldTest(TagTestManager, TestCase):
         self.assertTagModel(self.tag_model, {"Mrs": 1})
         self.assertSequenceEqual(model.objects.all(), [t3])
 
+    def test_select_related_avoids_extra_queries(self):
+        "Check select_related() avoids a query per instance when reading the tag (#91)"
+        model = self.test_model
+        model.objects.create(name="Test 1", title="Mr")
+        model.objects.create(name="Test 2", title="Mrs")
+        model.objects.create(name="Test 3", title="Ms")
+
+        with self.assertNumQueries(1):
+            instances = list(model.objects.select_related("title"))
+            titles = [str(instance.title) for instance in instances]
+        self.assertEqual(titles, ["Mr", "Mrs", "Ms"])
+
+    def test_repeated_read_does_not_requery(self):
+        "Check reading the tag twice on the same instance only queries once"
+        instance = self.test_model.objects.create(name="Test 1", title="Mr")
+        instance = self.test_model.objects.get(pk=instance.pk)
+
+        with self.assertNumQueries(1):
+            first = str(instance.title)
+            second = str(instance.title)
+        self.assertEqual(first, "Mr")
+        self.assertEqual(second, "Mr")
+
 
 # ##############################################################################
 # ######  Test it works with concrete inheritance

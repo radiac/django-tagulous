@@ -57,8 +57,6 @@ class SingleTagManager(object):
     def flush_cache(self):
         """
         Clear the FK descriptor's cache
-
-        Must be called after all
         """
         if self.field.is_cached(self.instance):
             self.field.delete_cached_value(self.instance)
@@ -81,23 +79,22 @@ class SingleTagManager(object):
                 value = self.descriptor.descriptor.__get__(self.instance)
             except (self.tag_model.DoesNotExist, self.instance.DoesNotExist):
                 # Django 1.10 returns instance.DoesNotExist, so check for both.
-                #
-                # If the tag is deleted but nobody tells this instance; because
-                # the real cache is kept empty, this will fail. Try our cache,
-                # and if it's set clear the pk.
                 self.changed = True
-                if self.tag_cache:
-                    self.tag_cache.pk = None
+                if not self.tag_cache:
+                    return None
+
+                # It may have been recreated under the same name elsewhere
+                lookup = "name" if self.tag_options.case_sensitive else "name__iexact"
+                try:
+                    return self.tag_model.objects.get(**{lookup: self.tag_cache.name})
+                except self.tag_model.DoesNotExist:
+                    pass
+
+                self.tag_cache.pk = None
                 return self.tag_cache
 
-            # The descriptor will have populated the cache, but Django 1.8
-            # introduces a check of the cache before allowing save() to start.
-            # We can't guarantee that the tag object will have a pk until the
-            # pre-save handler has fired - which happens after the cache check.
-            # We therefore have to keep the cache clean at all times - we don't
-            # lose anything since we keep our own cache, and pre-save will fill
-            # it out in time anyway.
-            self.flush_cache()
+            # Cache is left alone on reads so select_related() works; set(),
+            # post_delete_handler() and pre_save_handler() clear it when needed.
             return value
         return None
 
@@ -106,9 +103,6 @@ class SingleTagManager(object):
         Set the actual value of the instance for the FK descriptor
         """
         self.descriptor.descriptor.__set__(self.instance, value)
-
-        # Django 1.8 cache check fix (see comment in get_actual)
-        self.flush_cache()
 
     def get(self):
         """
@@ -165,10 +159,18 @@ class SingleTagManager(object):
         self.tag_name = tag_name
         self.tag_cache = None
 
+        # get() can return a pk-less placeholder Tag; clear Django's FK cache so
+        # its own pre-save check doesn't see it and block the save
+        self.flush_cache()
+
     def pre_save_handler(self):
         """
         When the model is about to save, update the tag value
         """
+        # Force a fresh check for an externally-deleted tag before save
+        if not self.changed:
+            self.flush_cache()
+
         # Get the new tag
         new_tag = self.get()
 
@@ -231,6 +233,9 @@ class SingleTagManager(object):
             self.tag_name = old_tag.name
         self.tag_cache = None
         self.changed = True
+
+        # set_actual() above cached None, which still counts as cached - see set()
+        self.flush_cache()
 
 
 # ##############################################################################
