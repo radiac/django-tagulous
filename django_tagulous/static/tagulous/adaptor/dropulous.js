@@ -95,3 +95,9 @@ document.addEventListener('formset:added', event => {
   const root = event.detail?.formset ?? event.target;
   root.querySelectorAll(tagulousSelector).forEach(applyTagulousDropulous);
 });
+
+// Activate new dropulous fields when a formset is added by
+// django-fancy-formset (https://github.com/radiac/django-fancy-formset)
+document.addEventListener('formset:form-add', event => {
+  event.detail.form.rootEl.querySelectorAll(tagulousSelector).forEach(applyTagulousDropulous);
+});
