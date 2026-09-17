@@ -3,7 +3,7 @@
   "hashes": {
     "django_tagulous/models/fields.py": "5de9c6339cca6422fabe093c5fe982cac12a60b80fdf0ab5dc21d0b0a52f5171",
     "django_tagulous/models/descriptors.py": "337b8ed6034635d902d1701fb985f1f5afecdbd083f813f91ae119842b5719fd",
-    "django_tagulous/models/managers.py": "4cb7c14b4ceb681e351ea215c2743d2560e66355700145256b8219ee323700b7",
+    "django_tagulous/models/managers.py": "b91b5a3232afe87ff5afec87b70cdd2b827daaadd8cc78c7d1a77cc8b629e89e",
     "django_tagulous/models/tagged.py": "9018e6c44a607995cd488d17660ee805f4e9d77ca2a9a587e2d1e4b9be344f1b",
     "django_tagulous/models/options.py": "951c7b04597ae801709bf270ca14977668ac5cb65109f6f514a2c22b447915a1",
     "django_tagulous/models/initial.py": "6e327e7107b68f870f2b629b8265fb8db942b2bd475fcee1e17c93f1d5ce3add",

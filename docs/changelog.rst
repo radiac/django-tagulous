@@ -13,6 +13,20 @@ Changes for upcoming releases will be listed without a release date - these
 are available by installing the develop branch from github.
 
 
+2.2.3 - 2026-09-17
+------------------
+
+Feature:
+
+* Add Dropulous adaptor support for ``formset:form-add`` event dispatched by
+  `django-fancy-formset <https://github.com/radiac/django-fancy-formset>`_ and others.
+
+
+Bugfix:
+
+* Fix docs
+
+
 2.2.2 - 2026-08-24
 ------------------
 

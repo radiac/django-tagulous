@@ -202,7 +202,7 @@ All other settings will be passed to the Select2 constructor.
 
 
 Select 2 (version 3)
--------------------
+--------------------
 
 The legacy adaptor for `Select2 <https://select2.github.io/>`_ version 3.
 
@@ -213,7 +213,7 @@ Path:
 .. _listening_for_changes:
 
 Listening for changes
-----------------------
+---------------------
 
 Both dropulous and select2 keep the original field's value in sync, and fire a
 ``change`` event whenever a tag is added or removed. This means external code can listen
